@@ -1,0 +1,370 @@
+(card "exp:B-R11-2_blacklist_vol_regime_low" :type "experiment"
+  :subj "exp:B-R11-2_blacklist_vol_regime_low"
+  :body "---\nnav: 27\ntype: experiment\nid: B-R11-2_blacklist_vol_regime_low\nshort_name: blacklist_vol_regime_low\ntitle: \"B-R11-2 — R10-4 ∪ {ticker 30-min realized vol < TRAIN q25}\"\narc: 260516a\nteam: b\nround: r11\nparent_arc: \"[[arcs/260516a]]\"\nparent_lineage: \"[[lineages/arc_260516a__team_b__blacklist_evolution]]\"\ntrain_nav: 2.2664\ntrain_trade_count: 146\ntrain_win_rate: 0.8562\ntrain_sharpe: 7.6468\ntrain_max_drawdown: -0.0108\nval_nav_mean: 1.0595\nval_nav_sigma: 0.0671\nval_window_count: 13\ntest_nav: null\ntest_trade_count: null\ntest_sharpe: null\ntest_win_rate: null\ntest_max_drawdown: null\nanchor_train_nav: 2.1882\nanchor_test_nav: 1.2486\nstatus: falsified\noutcome: no_test_run\nchampion: false\noverfit_score: 0\nleak_audit: structural\naxis: [blacklist]\npast_only_window_days: 30\nwarmup_required: 10\ncreated: 2026-05-17T01:50:00\nlast_updated: 2026-05-17T05:09:00\ntags: [arc/260516a, team/b, round/r11, axis/blacklist, status/falsified, outcome/no_test_run, leak/structural, size/medium]\n---\n\n# B-R11-2 — R10-4 ∪ {ticker 30-min realized vol < TRAIN q25}\n\n> **TL;DR** —— R11 系列尝试用 **TRAIN 期的 vol q25 阈值** 作 blacklist 加到 R10-4 上。train NAV 2.27 / 146 笔；**未跑 hold-out test，因为 critic 发现该 blacklist 是 train-fit threshold（structural leak）—— 等于在 train data 上 fit 一个 cutoff 再用回 train data 评分**。Team H R3a-1 拿它做 base 加 sizing 后 test 直接崩 1.05。\n\n## 假设 (Hypothesis)\n- 假设：低实现波动率（30min realized vol < q25）的 ticker 在该窗口 alpha 很弱，trade 应当砍。\n- 实现错把 **整 TRAIN 期 q25** 作 single threshold，没用 rolling past-only quantile。\n\n## 实现 (Implementation)\n- 主脚本：`/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_b/scripts/round_11_runner.py`\n- 步骤：R10-4 stack ∪ drop legs 当 `ticker_30min_realized_vol < q25(全 TRAIN 期 vols)`\n- 输出 146 笔。\n\n## Past-only window 处理\n- **STRUCTURAL LEAK**：q25 threshold 用整 train 期所有 vol 计算（包括同 trade 之后的数据） → cutoff 用了 future data。\n- critic 2026-05-17 audit: `#leak/structural`，flagged but not auto-fixed（因为 cutoff 本身概念错，rolling 版本也有问题：仍是 train-data fit 不能拿到 test）。\n- **engineer 决定不修，只把候选 mark falsified 留作反例**。\n- ticker_30min_realized_vol 单独是 past-only（trigger 前 30min），但 q25 cutoff 不是。\n\n## 结果 (Results)\n| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 2.2664 | 146 | 7.65 | 85.6% | -1.08% |\n| Val (rolling 13w) | 1.0595 ± 0.067 | - | - | - | - |\n| Test | NOT RUN | - | - | - | - |\n| **Δ train NAV vs anchor** | +0.078 | +6 | 0 | 0 | -0.07pp |\n\ntrain 只 +3.6%，加之 structural leak → 直接砍，未上 hold-out。\n\n## 风险 & overfit 嫌疑\n- overfit_score nominal = 0，但 **leak_audit = structural** 才是真问题。\n- H-R3a-1 用 R11-2 做 base 后 test 1.05 —— 间接 hold-out 证明 R11-2 base 不稳。\n\n## Lineage（双链网）\n- **derived_from**: [[arc_260516a__team_b__B-R10-4__blacklist_stack_3]]\n- **leak_audit_killed**: structural leak (TRAIN-期 q25 threshold)\n- **borrowed_by_failed**: [[arc_260516a__team_h__H-R3a-1__b_r11_2_sizing]] (H 队拿它做 sizing base, hold-out 崩 1.05)\n- **builds against**: [[arc_260516a__team_anchor__anchor_g2__baseline]]\n\n## Reports\n- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_b/output/cross_round_leaderboard_nav.csv` (R11-2)\n- [[arc_260516a__reporter_20260517_0547]]\n\n## Notes / 下次迭代\n- **重要 anti-pattern: train-fit threshold blacklist**。任何 \"drop X when X < q25 of TRAIN\" 类型的 cutoff 都是 structural leak：\n  1. 用了 future data 算 quantile\n  2. 即使改为 rolling quantile，也是 train-data 上 fit 的 cutoff，hold-out 不 transferable\n- 替代设计：用 **leg-time-local** quantile（trigger 前 30d 同 ticker 同 hour vol distribution 算的 q25），保证 strict past-only + 自适应 ticker 时段。\n- 这是 vault 里 leak/structural 唯一 example，**下次 critic 应 reference 本节作 leak audit 模板**。\n"
+  :path "experiments/arc_260516a__team_b__B-R11-2__blacklist_vol_regime_low.md"
+  :source_mtime "2026-05-17T10:22:18+08:00"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a459a8ca" :type "atom"
+  :subj "exp:B-R11-2_blacklist_vol_regime_low"
+  :pred "has_nav"
+  :obj 27
+  :source "experiments/arc_260516a__team_b__B-R11-2__blacklist_vol_regime_low.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c87f6a2b" :type "atom"
+  :subj "exp:B-R11-2_blacklist_vol_regime_low"
+  :pred "has_type"
+  :obj "experiment"
+  :source "experiments/arc_260516a__team_b__B-R11-2__blacklist_vol_regime_low.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_6ad61803" :type "atom"
+  :subj "exp:B-R11-2_blacklist_vol_regime_low"
+  :pred "has_id"
+  :obj "B-R11-2_blacklist_vol_regime_low"
+  :source "experiments/arc_260516a__team_b__B-R11-2__blacklist_vol_regime_low.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_50113b82" :type "atom"
+  :subj "exp:B-R11-2_blacklist_vol_regime_low"
+  :pred "has_short_name"
+  :obj "blacklist_vol_regime_low"
+  :source "experiments/arc_260516a__team_b__B-R11-2__blacklist_vol_regime_low.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_54161aaa" :type "atom"
+  :subj "exp:B-R11-2_blacklist_vol_regime_low"
+  :pred "has_title"
+  :obj "B-R11-2 — R10-4 ∪ {ticker 30-min realized vol < TRAIN q25}"
+  :source "experiments/arc_260516a__team_b__B-R11-2__blacklist_vol_regime_low.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_7efe975d" :type "atom"
+  :subj "exp:B-R11-2_blacklist_vol_regime_low"
+  :pred "has_arc"
+  :obj "260516a"
+  :source "experiments/arc_260516a__team_b__B-R11-2__blacklist_vol_regime_low.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_055dff83" :type "atom"
+  :subj "exp:B-R11-2_blacklist_vol_regime_low"
+  :pred "has_team"
+  :obj "b"
+  :source "experiments/arc_260516a__team_b__B-R11-2__blacklist_vol_regime_low.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_7aa14b4f" :type "atom"
+  :subj "exp:B-R11-2_blacklist_vol_regime_low"
+  :pred "has_round"
+  :obj "r11"
+  :source "experiments/arc_260516a__team_b__B-R11-2__blacklist_vol_regime_low.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e5520ffc" :type "atom"
+  :subj "exp:B-R11-2_blacklist_vol_regime_low"
+  :pred "parent_arc"
+  :obj "arc:260516a"
+  :source "experiments/arc_260516a__team_b__B-R11-2__blacklist_vol_regime_low.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_68b0a325" :type "atom"
+  :subj "exp:B-R11-2_blacklist_vol_regime_low"
+  :pred "parent_lineage"
+  :obj "lin:arc_260516a__team_b__blacklist_evolution"
+  :source "experiments/arc_260516a__team_b__B-R11-2__blacklist_vol_regime_low.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5e8ff332" :type "atom"
+  :subj "exp:B-R11-2_blacklist_vol_regime_low"
+  :pred "has_train_nav"
+  :obj 2.2664
+  :source "experiments/arc_260516a__team_b__B-R11-2__blacklist_vol_regime_low.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_eaeb740b" :type "atom"
+  :subj "exp:B-R11-2_blacklist_vol_regime_low"
+  :pred "has_train_trade_count"
+  :obj 146
+  :source "experiments/arc_260516a__team_b__B-R11-2__blacklist_vol_regime_low.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_7cd4a1ab" :type "atom"
+  :subj "exp:B-R11-2_blacklist_vol_regime_low"
+  :pred "has_train_win_rate"
+  :obj 0.8562
+  :source "experiments/arc_260516a__team_b__B-R11-2__blacklist_vol_regime_low.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f354e6c1" :type "atom"
+  :subj "exp:B-R11-2_blacklist_vol_regime_low"
+  :pred "has_train_sharpe"
+  :obj 7.6468
+  :source "experiments/arc_260516a__team_b__B-R11-2__blacklist_vol_regime_low.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e0b5f532" :type "atom"
+  :subj "exp:B-R11-2_blacklist_vol_regime_low"
+  :pred "has_train_max_drawdown"
+  :obj -0.0108
+  :source "experiments/arc_260516a__team_b__B-R11-2__blacklist_vol_regime_low.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_674f5e53" :type "atom"
+  :subj "exp:B-R11-2_blacklist_vol_regime_low"
+  :pred "has_val_nav_mean"
+  :obj 1.0595
+  :source "experiments/arc_260516a__team_b__B-R11-2__blacklist_vol_regime_low.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_084824f9" :type "atom"
+  :subj "exp:B-R11-2_blacklist_vol_regime_low"
+  :pred "has_val_nav_sigma"
+  :obj 0.0671
+  :source "experiments/arc_260516a__team_b__B-R11-2__blacklist_vol_regime_low.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b8b041e9" :type "atom"
+  :subj "exp:B-R11-2_blacklist_vol_regime_low"
+  :pred "has_val_window_count"
+  :obj 13
+  :source "experiments/arc_260516a__team_b__B-R11-2__blacklist_vol_regime_low.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_dc7ed964" :type "atom"
+  :subj "exp:B-R11-2_blacklist_vol_regime_low"
+  :pred "has_anchor_train_nav"
+  :obj 2.1882
+  :source "experiments/arc_260516a__team_b__B-R11-2__blacklist_vol_regime_low.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ea34a65c" :type "atom"
+  :subj "exp:B-R11-2_blacklist_vol_regime_low"
+  :pred "has_anchor_test_nav"
+  :obj 1.2486
+  :source "experiments/arc_260516a__team_b__B-R11-2__blacklist_vol_regime_low.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b55f9fb5" :type "atom"
+  :subj "exp:B-R11-2_blacklist_vol_regime_low"
+  :pred "has_status"
+  :obj "falsified"
+  :source "experiments/arc_260516a__team_b__B-R11-2__blacklist_vol_regime_low.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d7c914d0" :type "atom"
+  :subj "exp:B-R11-2_blacklist_vol_regime_low"
+  :pred "has_outcome"
+  :obj "no_test_run"
+  :source "experiments/arc_260516a__team_b__B-R11-2__blacklist_vol_regime_low.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d6b13690" :type "atom"
+  :subj "exp:B-R11-2_blacklist_vol_regime_low"
+  :pred "has_champion"
+  :obj false
+  :source "experiments/arc_260516a__team_b__B-R11-2__blacklist_vol_regime_low.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_52044a96" :type "atom"
+  :subj "exp:B-R11-2_blacklist_vol_regime_low"
+  :pred "has_overfit_score"
+  :obj 0
+  :source "experiments/arc_260516a__team_b__B-R11-2__blacklist_vol_regime_low.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1aa3fdad" :type "atom"
+  :subj "exp:B-R11-2_blacklist_vol_regime_low"
+  :pred "has_leak_audit"
+  :obj "structural"
+  :source "experiments/arc_260516a__team_b__B-R11-2__blacklist_vol_regime_low.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5de03b5c" :type "atom"
+  :subj "exp:B-R11-2_blacklist_vol_regime_low"
+  :pred "has_axis"
+  :obj "axis:blacklist"
+  :source "experiments/arc_260516a__team_b__B-R11-2__blacklist_vol_regime_low.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a56edc1d" :type "atom"
+  :subj "exp:B-R11-2_blacklist_vol_regime_low"
+  :pred "has_axis_list"
+  :obj ("blacklist")
+  :source "experiments/arc_260516a__team_b__B-R11-2__blacklist_vol_regime_low.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ab96eda5" :type "atom"
+  :subj "exp:B-R11-2_blacklist_vol_regime_low"
+  :pred "has_past_only_window_days"
+  :obj 30
+  :source "experiments/arc_260516a__team_b__B-R11-2__blacklist_vol_regime_low.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_bf41482c" :type "atom"
+  :subj "exp:B-R11-2_blacklist_vol_regime_low"
+  :pred "has_warmup_required"
+  :obj 10
+  :source "experiments/arc_260516a__team_b__B-R11-2__blacklist_vol_regime_low.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e45e7ccd" :type "atom"
+  :subj "exp:B-R11-2_blacklist_vol_regime_low"
+  :pred "has_created"
+  :obj "2026-05-17 01:50:00"
+  :source "experiments/arc_260516a__team_b__B-R11-2__blacklist_vol_regime_low.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_665fca64" :type "atom"
+  :subj "exp:B-R11-2_blacklist_vol_regime_low"
+  :pred "has_last_updated"
+  :obj "2026-05-17 05:09:00"
+  :source "experiments/arc_260516a__team_b__B-R11-2__blacklist_vol_regime_low.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_64033420" :type "atom"
+  :subj "exp:B-R11-2_blacklist_vol_regime_low"
+  :pred "has_tag"
+  :obj "tag:arc/260516a"
+  :source "experiments/arc_260516a__team_b__B-R11-2__blacklist_vol_regime_low.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_23a9f5a7" :type "atom"
+  :subj "exp:B-R11-2_blacklist_vol_regime_low"
+  :pred "has_tag"
+  :obj "tag:team/b"
+  :source "experiments/arc_260516a__team_b__B-R11-2__blacklist_vol_regime_low.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ce6a26ea" :type "atom"
+  :subj "exp:B-R11-2_blacklist_vol_regime_low"
+  :pred "has_tag"
+  :obj "tag:round/r11"
+  :source "experiments/arc_260516a__team_b__B-R11-2__blacklist_vol_regime_low.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ddc136af" :type "atom"
+  :subj "exp:B-R11-2_blacklist_vol_regime_low"
+  :pred "has_tag"
+  :obj "tag:axis/blacklist"
+  :source "experiments/arc_260516a__team_b__B-R11-2__blacklist_vol_regime_low.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_898912ea" :type "atom"
+  :subj "exp:B-R11-2_blacklist_vol_regime_low"
+  :pred "has_tag"
+  :obj "tag:status/falsified"
+  :source "experiments/arc_260516a__team_b__B-R11-2__blacklist_vol_regime_low.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_582bd192" :type "atom"
+  :subj "exp:B-R11-2_blacklist_vol_regime_low"
+  :pred "has_tag"
+  :obj "tag:outcome/no_test_run"
+  :source "experiments/arc_260516a__team_b__B-R11-2__blacklist_vol_regime_low.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_6191e5b4" :type "atom"
+  :subj "exp:B-R11-2_blacklist_vol_regime_low"
+  :pred "has_tag"
+  :obj "tag:leak/structural"
+  :source "experiments/arc_260516a__team_b__B-R11-2__blacklist_vol_regime_low.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1cabbc7a" :type "atom"
+  :subj "exp:B-R11-2_blacklist_vol_regime_low"
+  :pred "has_tag"
+  :obj "tag:size/medium"
+  :source "experiments/arc_260516a__team_b__B-R11-2__blacklist_vol_regime_low.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_39719a7e" :type "atom"
+  :subj "exp:B-R11-2_blacklist_vol_regime_low"
+  :pred "has_tl_dr"
+  :obj "R11 系列尝试用 **TRAIN 期的 vol q25 阈值** 作 blacklist 加到 R10-4 上。train NAV 2.27 / 146 笔；**未跑 hold-out test，因为 critic 发现该 blacklist 是 train-fit threshold（structural leak）—— 等于在 train data 上 fit 一个 cutoff 再用回 train data 评分**。Team H R3a-1 拿它做 base 加 sizing 后 test 直接崩 1.05。"
+  :source "experiments/arc_260516a__team_b__B-R11-2__blacklist_vol_regime_low.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_16029d4e" :type "atom"
+  :subj "exp:B-R11-2_blacklist_vol_regime_low"
+  :pred "has_section_intro"
+  :obj "# B-R11-2 — R10-4 ∪ {ticker 30-min realized vol < TRAIN q25}\n\n> **TL;DR** —— R11 系列尝试用 **TRAIN 期的 vol q25 阈值** 作 blacklist 加到 R10-4 上。train NAV 2.27 / 146 笔；**未跑 hold-out test，因为 critic 发现该 blacklist 是 train-fit threshold（structural leak）—— 等于在 train data 上 fit 一个 cutoff 再用回 train data 评分**。Team H R3a-1 拿它做 base 加 sizing 后 test 直接崩 1.05。"
+  :source "experiments/arc_260516a__team_b__B-R11-2__blacklist_vol_regime_low.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f72ca5bb" :type "atom"
+  :subj "exp:B-R11-2_blacklist_vol_regime_low"
+  :pred "has_section_hypothesis"
+  :obj "- 假设：低实现波动率（30min realized vol < q25）的 ticker 在该窗口 alpha 很弱，trade 应当砍。\n- 实现错把 **整 TRAIN 期 q25** 作 single threshold，没用 rolling past-only quantile。"
+  :source "experiments/arc_260516a__team_b__B-R11-2__blacklist_vol_regime_low.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_79241a97" :type "atom"
+  :subj "exp:B-R11-2_blacklist_vol_regime_low"
+  :pred "has_section_implementation"
+  :obj "- 主脚本：`/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_b/scripts/round_11_runner.py`\n- 步骤：R10-4 stack ∪ drop legs 当 `ticker_30min_realized_vol < q25(全 TRAIN 期 vols)`\n- 输出 146 笔。"
+  :source "experiments/arc_260516a__team_b__B-R11-2__blacklist_vol_regime_low.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e2f053dd" :type "atom"
+  :subj "exp:B-R11-2_blacklist_vol_regime_low"
+  :pred "has_section_past_only_window"
+  :obj "- **STRUCTURAL LEAK**：q25 threshold 用整 train 期所有 vol 计算（包括同 trade 之后的数据） → cutoff 用了 future data。\n- critic 2026-05-17 audit: `#leak/structural`，flagged but not auto-fixed（因为 cutoff 本身概念错，rolling 版本也有问题：仍是 train-data fit 不能拿到 test）。\n- **engineer 决定不修，只把候选 mark falsified 留作反例**。\n- ticker_30min_realized_vol 单独是 past-only（trigger 前 30min），但 q25 cutoff 不是。"
+  :source "experiments/arc_260516a__team_b__B-R11-2__blacklist_vol_regime_low.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_4e0bc0ed" :type "atom"
+  :subj "exp:B-R11-2_blacklist_vol_regime_low"
+  :pred "has_section_results"
+  :obj "| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 2.2664 | 146 | 7.65 | 85.6% | -1.08% |\n| Val (rolling 13w) | 1.0595 ± 0.067 | - | - | - | - |\n| Test | NOT RUN | - | - | - | - |\n| **Δ train NAV vs anchor** | +0.078 | +6 | 0 | 0 | -0.07pp |\n\ntrain 只 +3.6%，加之 structural leak → 直接砍，未上 hold-out。"
+  :source "experiments/arc_260516a__team_b__B-R11-2__blacklist_vol_regime_low.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_3a57b01d" :type "atom"
+  :subj "exp:B-R11-2_blacklist_vol_regime_low"
+  :pred "has_section_risk_overfit"
+  :obj "- overfit_score nominal = 0，但 **leak_audit = structural** 才是真问题。\n- H-R3a-1 用 R11-2 做 base 后 test 1.05 —— 间接 hold-out 证明 R11-2 base 不稳。"
+  :source "experiments/arc_260516a__team_b__B-R11-2__blacklist_vol_regime_low.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_81cc8aa4" :type "atom"
+  :subj "exp:B-R11-2_blacklist_vol_regime_low"
+  :pred "derived_from"
+  :obj "exp:B-R10-4_blacklist_stack_3"
+  :source "experiments/arc_260516a__team_b__B-R11-2__blacklist_vol_regime_low.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_08334de9" :type "atom"
+  :subj "exp:B-R11-2_blacklist_vol_regime_low"
+  :pred "borrowed_by_failed"
+  :obj "exp:H-R3a-1_b_r11_2_sizing"
+  :source "experiments/arc_260516a__team_b__B-R11-2__blacklist_vol_regime_low.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_4a6a9ee6" :type "atom"
+  :subj "exp:B-R11-2_blacklist_vol_regime_low"
+  :pred "builds_against"
+  :obj "exp:anchor_g2_baseline"
+  :source "experiments/arc_260516a__team_b__B-R11-2__blacklist_vol_regime_low.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_cd8f6837" :type "atom"
+  :subj "exp:B-R11-2_blacklist_vol_regime_low"
+  :pred "has_section_lineage_links"
+  :obj "- **derived_from**: [[arc_260516a__team_b__B-R10-4__blacklist_stack_3]]\n- **leak_audit_killed**: structural leak (TRAIN-期 q25 threshold)\n- **borrowed_by_failed**: [[arc_260516a__team_h__H-R3a-1__b_r11_2_sizing]] (H 队拿它做 sizing base, hold-out 崩 1.05)\n- **builds against**: [[arc_260516a__team_anchor__anchor_g2__baseline]]"
+  :source "experiments/arc_260516a__team_b__B-R11-2__blacklist_vol_regime_low.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_3d4ea05a" :type "atom"
+  :subj "exp:B-R11-2_blacklist_vol_regime_low"
+  :pred "has_section_reports"
+  :obj "- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_b/output/cross_round_leaderboard_nav.csv` (R11-2)\n- [[arc_260516a__reporter_20260517_0547]]"
+  :source "experiments/arc_260516a__team_b__B-R11-2__blacklist_vol_regime_low.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_4a88720d" :type "atom"
+  :subj "exp:B-R11-2_blacklist_vol_regime_low"
+  :pred "has_section_notes"
+  :obj "- **重要 anti-pattern: train-fit threshold blacklist**。任何 \"drop X when X < q25 of TRAIN\" 类型的 cutoff 都是 structural leak：\n  1. 用了 future data 算 quantile\n  2. 即使改为 rolling quantile，也是 train-data 上 fit 的 cutoff，hold-out 不 transferable\n- 替代设计：用 **leg-time-local** quantile（trigger 前 30d 同 ticker 同 hour vol distribution 算的 q25），保证 strict past-only + 自适应 ticker 时段。\n- 这是 vault 里 leak/structural 唯一 example，**下次 critic 应 reference 本节作 leak audit 模板**。"
+  :source "experiments/arc_260516a__team_b__B-R11-2__blacklist_vol_regime_low.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")

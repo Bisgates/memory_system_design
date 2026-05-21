@@ -1,0 +1,419 @@
+(card "exp:D-R2-4_blacklist_stack_quad" :type "experiment"
+  :subj "exp:D-R2-4_blacklist_stack_quad"
+  :body "---\nnav: 30\ntype: experiment\nid: D-R2-4_blacklist_stack_quad\nshort_name: blacklist_stack_quad\ntitle: \"D-R2-4 — default admit ∖ {lc_48h==2 ∪ open_3min ∪ low pre_amt q10 ∪ crowd≥4}\"\narc: 260516a\nteam: d\nround: r2\nparent_arc: \"[[arcs/260516a]]\"\nparent_lineage: \"[[lineages/arc_260516a__team_d__blacklist_default_admit]]\"\ntrain_nav: 2.2257\ntrain_trade_count: 154\ntrain_win_rate: 0.8312\ntrain_sharpe: 7.1762\ntrain_max_drawdown: -0.0101\nval_nav_mean: 1.0591\nval_nav_sigma: 0.0679\nval_window_count: 13\ntest_nav: 1.0113\ntest_trade_count: 10\ntest_sharpe: 1.7363\ntest_win_rate: 0.5\ntest_max_drawdown: -0.0117\nanchor_train_nav: 2.1882\nanchor_test_nav: 1.2486\nstatus: falsified\noutcome: test_fail\nchampion: false\noverfit_score: 0\nleak_audit: clean\naxis: [blacklist, cross_source, timing_filter]\npast_only_window_days: null\nwarmup_required: null\ncreated: 2026-05-17T02:00:00\nlast_updated: 2026-05-17T05:09:00\ntags: [arc/260516a, team/d, round/r2, axis/blacklist, axis/cross_source, axis/timing_filter, status/falsified, outcome/test_fail, leak/clean, size/large]\n---\n\n# D-R2-4 — default admit ∖ 4-stack blacklist\n\n> **TL;DR** —— D 队 stack 顶点：在 D-R2-3 (3-stack) 上再叠 crowd≥4，砍到 154 笔。train NAV 2.23 已掉到 anchor 水平；**test NAV 1.01, sharpe 1.74, win 50%** —— 整个 vault **test 上最惨的 case 之一**。再次证伪 \"default-admit + N-stack blacklist\" 路线，stack 越多越崩。\n\n## 假设 (Hypothesis)\n- 在 D-R2-3 stack (lc_48h==2 + open_3min + low_pre_amt_q10) 上再砍 crowd≥4（同 ticker 同方向 ≥4 个 echo）。\n- 假设：crowd≥4 = 严重过度拥挤 → reversion 已耗尽，强制砍。\n- 实测：crowd≥4 + 前 3 条 stack 互相 mask + train→test 漂移，test 上 win 50% (vs anchor 75%) —— 砍中过多 train-time profitable leg。\n\n## 实现 (Implementation)\n- 主脚本：`/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_d/scripts/round_2_runner.py`\n- 步骤：D-R2-3 stack ∪ drop legs with crowd≥4。\n- 输出 154 笔（vs D-R2-3 171, vs D-R2-1 214）。\n\n## Past-only window 处理\n- 全部 blacklist component 都 past-only (lc_48h / pre_amt_5min / crowd-counting all past-only)。\n- `#leak/clean`。\n\n## 结果 (Results)\n| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 2.2257 | 154 | 7.18 | 83.1% | -1.01% |\n| Val (rolling 13w) | 1.0591 ± 0.068 | - | - | - | - |\n| Test | **1.0113** | 10 | **1.74** | **50.0%** | -1.17% |\n| **Δ test NAV vs anchor** | **-0.237 (FAIL HARD)** | -10 | -5.41 | **-25.0pp** | -0.64pp |\n\ntest sharpe 1.74 / win 50% —— vault 最差测试表现之一。\n\n## 风险 & overfit 嫌疑\n- overfit_score nominal = 0，但 test win 50% / sharpe 1.74 是非常强的 falsification signal。\n- count_pass=True nominal，但 test trade_count 10 已远低于 anchor 20，**统计置信度极低**。\n\n## Lineage（双链网）\n- **derived_from**: [[arc_260516a__team_d__D-R2-3__blacklist_stack_triple]]\n- **inherits_failure_mode**: D-R2-3 hold-out 崩盘 + 进一步 amplified\n- **also_validates**: [[arc_260516a__team_b__B-R10-4__blacklist_stack_3]] anti-pattern (相同 stack 越多越崩 pattern)\n- **builds against**: [[arc_260516a__team_anchor__anchor_g2__baseline]]\n\n## Reports\n- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_d/output/cross_round_leaderboard_nav.csv` (D-R2-4)\n- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/output/cross_team_test_nav_ranking_v2.csv` (D-R2-4 last row test_nav 1.011)\n- [[arc_260516a__reporter_20260517_0547]]\n\n## Notes / 下次迭代\n- **vault 反例库金牌**: D-R2-4 是 \"**default-admit + N-stack blacklist** stack 越多越崩\" pattern 最强证据。下次任何 sub-agent 看到这条 axis 应直接绕开。\n- 推测机理：每条 blacklist train-fit identifiable bad leg 不到 5%；stack 4 条互相耦合，砍掉的 trade 在 hold-out 上有非随机 overlap，导致 statistical power 雪崩。\n- replacement strategy：**sizing axis (H 系列)** 在同 default-admit pool 上的表现远优于 blacklist (H-R3a-2 train 2.77, 虽然 test 1.17 也输, 但比 D-R2-4 sharpe 6.55 vs 1.74 高 ~4x)。\n"
+  :path "experiments/arc_260516a__team_d__D-R2-4__blacklist_stack_quad.md"
+  :source_mtime "2026-05-17T10:26:33+08:00"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a3514d43" :type "atom"
+  :subj "exp:D-R2-4_blacklist_stack_quad"
+  :pred "has_nav"
+  :obj 30
+  :source "experiments/arc_260516a__team_d__D-R2-4__blacklist_stack_quad.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_4b763929" :type "atom"
+  :subj "exp:D-R2-4_blacklist_stack_quad"
+  :pred "has_type"
+  :obj "experiment"
+  :source "experiments/arc_260516a__team_d__D-R2-4__blacklist_stack_quad.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e3934acd" :type "atom"
+  :subj "exp:D-R2-4_blacklist_stack_quad"
+  :pred "has_id"
+  :obj "D-R2-4_blacklist_stack_quad"
+  :source "experiments/arc_260516a__team_d__D-R2-4__blacklist_stack_quad.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_bac3f236" :type "atom"
+  :subj "exp:D-R2-4_blacklist_stack_quad"
+  :pred "has_short_name"
+  :obj "blacklist_stack_quad"
+  :source "experiments/arc_260516a__team_d__D-R2-4__blacklist_stack_quad.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_2cd20e0f" :type "atom"
+  :subj "exp:D-R2-4_blacklist_stack_quad"
+  :pred "has_title"
+  :obj "D-R2-4 — default admit ∖ {lc_48h==2 ∪ open_3min ∪ low pre_amt q10 ∪ crowd≥4}"
+  :source "experiments/arc_260516a__team_d__D-R2-4__blacklist_stack_quad.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_3371b771" :type "atom"
+  :subj "exp:D-R2-4_blacklist_stack_quad"
+  :pred "has_arc"
+  :obj "260516a"
+  :source "experiments/arc_260516a__team_d__D-R2-4__blacklist_stack_quad.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_95b4c063" :type "atom"
+  :subj "exp:D-R2-4_blacklist_stack_quad"
+  :pred "has_team"
+  :obj "d"
+  :source "experiments/arc_260516a__team_d__D-R2-4__blacklist_stack_quad.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_bbabe36a" :type "atom"
+  :subj "exp:D-R2-4_blacklist_stack_quad"
+  :pred "has_round"
+  :obj "r2"
+  :source "experiments/arc_260516a__team_d__D-R2-4__blacklist_stack_quad.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f15a03aa" :type "atom"
+  :subj "exp:D-R2-4_blacklist_stack_quad"
+  :pred "parent_arc"
+  :obj "arc:260516a"
+  :source "experiments/arc_260516a__team_d__D-R2-4__blacklist_stack_quad.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d26183fa" :type "atom"
+  :subj "exp:D-R2-4_blacklist_stack_quad"
+  :pred "parent_lineage"
+  :obj "lin:arc_260516a__team_d__blacklist_default_admit"
+  :source "experiments/arc_260516a__team_d__D-R2-4__blacklist_stack_quad.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_806d04e5" :type "atom"
+  :subj "exp:D-R2-4_blacklist_stack_quad"
+  :pred "has_train_nav"
+  :obj 2.2257
+  :source "experiments/arc_260516a__team_d__D-R2-4__blacklist_stack_quad.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ee6a9252" :type "atom"
+  :subj "exp:D-R2-4_blacklist_stack_quad"
+  :pred "has_train_trade_count"
+  :obj 154
+  :source "experiments/arc_260516a__team_d__D-R2-4__blacklist_stack_quad.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_bebce881" :type "atom"
+  :subj "exp:D-R2-4_blacklist_stack_quad"
+  :pred "has_train_win_rate"
+  :obj 0.8312
+  :source "experiments/arc_260516a__team_d__D-R2-4__blacklist_stack_quad.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_df2a1033" :type "atom"
+  :subj "exp:D-R2-4_blacklist_stack_quad"
+  :pred "has_train_sharpe"
+  :obj 7.1762
+  :source "experiments/arc_260516a__team_d__D-R2-4__blacklist_stack_quad.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1322580f" :type "atom"
+  :subj "exp:D-R2-4_blacklist_stack_quad"
+  :pred "has_train_max_drawdown"
+  :obj -0.0101
+  :source "experiments/arc_260516a__team_d__D-R2-4__blacklist_stack_quad.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a29c5b21" :type "atom"
+  :subj "exp:D-R2-4_blacklist_stack_quad"
+  :pred "has_val_nav_mean"
+  :obj 1.0591
+  :source "experiments/arc_260516a__team_d__D-R2-4__blacklist_stack_quad.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5cbc433f" :type "atom"
+  :subj "exp:D-R2-4_blacklist_stack_quad"
+  :pred "has_val_nav_sigma"
+  :obj 0.0679
+  :source "experiments/arc_260516a__team_d__D-R2-4__blacklist_stack_quad.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d8e3b406" :type "atom"
+  :subj "exp:D-R2-4_blacklist_stack_quad"
+  :pred "has_val_window_count"
+  :obj 13
+  :source "experiments/arc_260516a__team_d__D-R2-4__blacklist_stack_quad.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f78bd73c" :type "atom"
+  :subj "exp:D-R2-4_blacklist_stack_quad"
+  :pred "has_test_nav"
+  :obj 1.0113
+  :source "experiments/arc_260516a__team_d__D-R2-4__blacklist_stack_quad.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c0e21ff8" :type "atom"
+  :subj "exp:D-R2-4_blacklist_stack_quad"
+  :pred "has_test_trade_count"
+  :obj 10
+  :source "experiments/arc_260516a__team_d__D-R2-4__blacklist_stack_quad.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e3720b76" :type "atom"
+  :subj "exp:D-R2-4_blacklist_stack_quad"
+  :pred "has_test_sharpe"
+  :obj 1.7363
+  :source "experiments/arc_260516a__team_d__D-R2-4__blacklist_stack_quad.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_44bd6fa3" :type "atom"
+  :subj "exp:D-R2-4_blacklist_stack_quad"
+  :pred "has_test_win_rate"
+  :obj 0.5
+  :source "experiments/arc_260516a__team_d__D-R2-4__blacklist_stack_quad.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_151e5830" :type "atom"
+  :subj "exp:D-R2-4_blacklist_stack_quad"
+  :pred "has_test_max_drawdown"
+  :obj -0.0117
+  :source "experiments/arc_260516a__team_d__D-R2-4__blacklist_stack_quad.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e12adca1" :type "atom"
+  :subj "exp:D-R2-4_blacklist_stack_quad"
+  :pred "has_anchor_train_nav"
+  :obj 2.1882
+  :source "experiments/arc_260516a__team_d__D-R2-4__blacklist_stack_quad.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_15c11dba" :type "atom"
+  :subj "exp:D-R2-4_blacklist_stack_quad"
+  :pred "has_anchor_test_nav"
+  :obj 1.2486
+  :source "experiments/arc_260516a__team_d__D-R2-4__blacklist_stack_quad.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9a1ca5ad" :type "atom"
+  :subj "exp:D-R2-4_blacklist_stack_quad"
+  :pred "has_status"
+  :obj "falsified"
+  :source "experiments/arc_260516a__team_d__D-R2-4__blacklist_stack_quad.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_556d6395" :type "atom"
+  :subj "exp:D-R2-4_blacklist_stack_quad"
+  :pred "has_outcome"
+  :obj "test_fail"
+  :source "experiments/arc_260516a__team_d__D-R2-4__blacklist_stack_quad.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_3a058918" :type "atom"
+  :subj "exp:D-R2-4_blacklist_stack_quad"
+  :pred "has_champion"
+  :obj false
+  :source "experiments/arc_260516a__team_d__D-R2-4__blacklist_stack_quad.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_71baf417" :type "atom"
+  :subj "exp:D-R2-4_blacklist_stack_quad"
+  :pred "has_overfit_score"
+  :obj 0
+  :source "experiments/arc_260516a__team_d__D-R2-4__blacklist_stack_quad.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c33b87cc" :type "atom"
+  :subj "exp:D-R2-4_blacklist_stack_quad"
+  :pred "has_leak_audit"
+  :obj "clean"
+  :source "experiments/arc_260516a__team_d__D-R2-4__blacklist_stack_quad.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_819ba15d" :type "atom"
+  :subj "exp:D-R2-4_blacklist_stack_quad"
+  :pred "has_axis"
+  :obj "axis:blacklist"
+  :source "experiments/arc_260516a__team_d__D-R2-4__blacklist_stack_quad.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b8e89303" :type "atom"
+  :subj "exp:D-R2-4_blacklist_stack_quad"
+  :pred "has_axis"
+  :obj "axis:cross_source"
+  :source "experiments/arc_260516a__team_d__D-R2-4__blacklist_stack_quad.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5e707a05" :type "atom"
+  :subj "exp:D-R2-4_blacklist_stack_quad"
+  :pred "has_axis"
+  :obj "axis:timing_filter"
+  :source "experiments/arc_260516a__team_d__D-R2-4__blacklist_stack_quad.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_8cab4b92" :type "atom"
+  :subj "exp:D-R2-4_blacklist_stack_quad"
+  :pred "has_axis_list"
+  :obj ("blacklist" "cross_source" "timing_filter")
+  :source "experiments/arc_260516a__team_d__D-R2-4__blacklist_stack_quad.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e60f7f11" :type "atom"
+  :subj "exp:D-R2-4_blacklist_stack_quad"
+  :pred "has_created"
+  :obj "2026-05-17 02:00:00"
+  :source "experiments/arc_260516a__team_d__D-R2-4__blacklist_stack_quad.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ea294956" :type "atom"
+  :subj "exp:D-R2-4_blacklist_stack_quad"
+  :pred "has_last_updated"
+  :obj "2026-05-17 05:09:00"
+  :source "experiments/arc_260516a__team_d__D-R2-4__blacklist_stack_quad.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e8c62103" :type "atom"
+  :subj "exp:D-R2-4_blacklist_stack_quad"
+  :pred "has_tag"
+  :obj "tag:arc/260516a"
+  :source "experiments/arc_260516a__team_d__D-R2-4__blacklist_stack_quad.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1ce7d7a4" :type "atom"
+  :subj "exp:D-R2-4_blacklist_stack_quad"
+  :pred "has_tag"
+  :obj "tag:team/d"
+  :source "experiments/arc_260516a__team_d__D-R2-4__blacklist_stack_quad.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_79b111a2" :type "atom"
+  :subj "exp:D-R2-4_blacklist_stack_quad"
+  :pred "has_tag"
+  :obj "tag:round/r2"
+  :source "experiments/arc_260516a__team_d__D-R2-4__blacklist_stack_quad.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b5e0f179" :type "atom"
+  :subj "exp:D-R2-4_blacklist_stack_quad"
+  :pred "has_tag"
+  :obj "tag:axis/blacklist"
+  :source "experiments/arc_260516a__team_d__D-R2-4__blacklist_stack_quad.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_59def702" :type "atom"
+  :subj "exp:D-R2-4_blacklist_stack_quad"
+  :pred "has_tag"
+  :obj "tag:axis/cross_source"
+  :source "experiments/arc_260516a__team_d__D-R2-4__blacklist_stack_quad.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_44489a38" :type "atom"
+  :subj "exp:D-R2-4_blacklist_stack_quad"
+  :pred "has_tag"
+  :obj "tag:axis/timing_filter"
+  :source "experiments/arc_260516a__team_d__D-R2-4__blacklist_stack_quad.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_dc5bb0d8" :type "atom"
+  :subj "exp:D-R2-4_blacklist_stack_quad"
+  :pred "has_tag"
+  :obj "tag:status/falsified"
+  :source "experiments/arc_260516a__team_d__D-R2-4__blacklist_stack_quad.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_470d95bf" :type "atom"
+  :subj "exp:D-R2-4_blacklist_stack_quad"
+  :pred "has_tag"
+  :obj "tag:outcome/test_fail"
+  :source "experiments/arc_260516a__team_d__D-R2-4__blacklist_stack_quad.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5e19305f" :type "atom"
+  :subj "exp:D-R2-4_blacklist_stack_quad"
+  :pred "has_tag"
+  :obj "tag:leak/clean"
+  :source "experiments/arc_260516a__team_d__D-R2-4__blacklist_stack_quad.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_21bb1194" :type "atom"
+  :subj "exp:D-R2-4_blacklist_stack_quad"
+  :pred "has_tag"
+  :obj "tag:size/large"
+  :source "experiments/arc_260516a__team_d__D-R2-4__blacklist_stack_quad.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_8ef2ae66" :type "atom"
+  :subj "exp:D-R2-4_blacklist_stack_quad"
+  :pred "has_tl_dr"
+  :obj "D 队 stack 顶点：在 D-R2-3 (3-stack) 上再叠 crowd≥4，砍到 154 笔。train NAV 2.23 已掉到 anchor 水平；**test NAV 1.01, sharpe 1.74, win 50%** —— 整个 vault **test 上最惨的 case 之一**。再次证伪 \"default-admit + N-stack blacklist\" 路线，stack 越多越崩。"
+  :source "experiments/arc_260516a__team_d__D-R2-4__blacklist_stack_quad.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d4f7a22c" :type "atom"
+  :subj "exp:D-R2-4_blacklist_stack_quad"
+  :pred "has_section_intro"
+  :obj "# D-R2-4 — default admit ∖ 4-stack blacklist\n\n> **TL;DR** —— D 队 stack 顶点：在 D-R2-3 (3-stack) 上再叠 crowd≥4，砍到 154 笔。train NAV 2.23 已掉到 anchor 水平；**test NAV 1.01, sharpe 1.74, win 50%** —— 整个 vault **test 上最惨的 case 之一**。再次证伪 \"default-admit + N-stack blacklist\" 路线，stack 越多越崩。"
+  :source "experiments/arc_260516a__team_d__D-R2-4__blacklist_stack_quad.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b8f5d996" :type "atom"
+  :subj "exp:D-R2-4_blacklist_stack_quad"
+  :pred "has_section_hypothesis"
+  :obj "- 在 D-R2-3 stack (lc_48h==2 + open_3min + low_pre_amt_q10) 上再砍 crowd≥4（同 ticker 同方向 ≥4 个 echo）。\n- 假设：crowd≥4 = 严重过度拥挤 → reversion 已耗尽，强制砍。\n- 实测：crowd≥4 + 前 3 条 stack 互相 mask + train→test 漂移，test 上 win 50% (vs anchor 75%) —— 砍中过多 train-time profitable leg。"
+  :source "experiments/arc_260516a__team_d__D-R2-4__blacklist_stack_quad.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ebb76f7d" :type "atom"
+  :subj "exp:D-R2-4_blacklist_stack_quad"
+  :pred "has_section_implementation"
+  :obj "- 主脚本：`/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_d/scripts/round_2_runner.py`\n- 步骤：D-R2-3 stack ∪ drop legs with crowd≥4。\n- 输出 154 笔（vs D-R2-3 171, vs D-R2-1 214）。"
+  :source "experiments/arc_260516a__team_d__D-R2-4__blacklist_stack_quad.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_affbcbd4" :type "atom"
+  :subj "exp:D-R2-4_blacklist_stack_quad"
+  :pred "has_section_past_only_window"
+  :obj "- 全部 blacklist component 都 past-only (lc_48h / pre_amt_5min / crowd-counting all past-only)。\n- `#leak/clean`。"
+  :source "experiments/arc_260516a__team_d__D-R2-4__blacklist_stack_quad.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_8a696035" :type "atom"
+  :subj "exp:D-R2-4_blacklist_stack_quad"
+  :pred "has_section_results"
+  :obj "| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 2.2257 | 154 | 7.18 | 83.1% | -1.01% |\n| Val (rolling 13w) | 1.0591 ± 0.068 | - | - | - | - |\n| Test | **1.0113** | 10 | **1.74** | **50.0%** | -1.17% |\n| **Δ test NAV vs anchor** | **-0.237 (FAIL HARD)** | -10 | -5.41 | **-25.0pp** | -0.64pp |\n\ntest sharpe 1.74 / win 50% —— vault 最差测试表现之一。"
+  :source "experiments/arc_260516a__team_d__D-R2-4__blacklist_stack_quad.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_cdb3a2eb" :type "atom"
+  :subj "exp:D-R2-4_blacklist_stack_quad"
+  :pred "has_section_risk_overfit"
+  :obj "- overfit_score nominal = 0，但 test win 50% / sharpe 1.74 是非常强的 falsification signal。\n- count_pass=True nominal，但 test trade_count 10 已远低于 anchor 20，**统计置信度极低**。"
+  :source "experiments/arc_260516a__team_d__D-R2-4__blacklist_stack_quad.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_17cb9310" :type "atom"
+  :subj "exp:D-R2-4_blacklist_stack_quad"
+  :pred "derived_from"
+  :obj "exp:D-R2-3_blacklist_stack_triple"
+  :source "experiments/arc_260516a__team_d__D-R2-4__blacklist_stack_quad.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_bb929781" :type "atom"
+  :subj "exp:D-R2-4_blacklist_stack_quad"
+  :pred "also_validates"
+  :obj "exp:B-R10-4_blacklist_stack_3"
+  :source "experiments/arc_260516a__team_d__D-R2-4__blacklist_stack_quad.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b0116193" :type "atom"
+  :subj "exp:D-R2-4_blacklist_stack_quad"
+  :pred "builds_against"
+  :obj "exp:anchor_g2_baseline"
+  :source "experiments/arc_260516a__team_d__D-R2-4__blacklist_stack_quad.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_4ba37934" :type "atom"
+  :subj "exp:D-R2-4_blacklist_stack_quad"
+  :pred "has_section_lineage_links"
+  :obj "- **derived_from**: [[arc_260516a__team_d__D-R2-3__blacklist_stack_triple]]\n- **inherits_failure_mode**: D-R2-3 hold-out 崩盘 + 进一步 amplified\n- **also_validates**: [[arc_260516a__team_b__B-R10-4__blacklist_stack_3]] anti-pattern (相同 stack 越多越崩 pattern)\n- **builds against**: [[arc_260516a__team_anchor__anchor_g2__baseline]]"
+  :source "experiments/arc_260516a__team_d__D-R2-4__blacklist_stack_quad.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1fdcafc5" :type "atom"
+  :subj "exp:D-R2-4_blacklist_stack_quad"
+  :pred "has_section_reports"
+  :obj "- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_d/output/cross_round_leaderboard_nav.csv` (D-R2-4)\n- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/output/cross_team_test_nav_ranking_v2.csv` (D-R2-4 last row test_nav 1.011)\n- [[arc_260516a__reporter_20260517_0547]]"
+  :source "experiments/arc_260516a__team_d__D-R2-4__blacklist_stack_quad.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_98e52216" :type "atom"
+  :subj "exp:D-R2-4_blacklist_stack_quad"
+  :pred "has_section_notes"
+  :obj "- **vault 反例库金牌**: D-R2-4 是 \"**default-admit + N-stack blacklist** stack 越多越崩\" pattern 最强证据。下次任何 sub-agent 看到这条 axis 应直接绕开。\n- 推测机理：每条 blacklist train-fit identifiable bad leg 不到 5%；stack 4 条互相耦合，砍掉的 trade 在 hold-out 上有非随机 overlap，导致 statistical power 雪崩。\n- replacement strategy：**sizing axis (H 系列)** 在同 default-admit pool 上的表现远优于 blacklist (H-R3a-2 train 2.77, 虽然 test 1.17 也输, 但比 D-R2-4 sharpe 6.55 vs 1.74 高 ~4x)。"
+  :source "experiments/arc_260516a__team_d__D-R2-4__blacklist_stack_quad.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")

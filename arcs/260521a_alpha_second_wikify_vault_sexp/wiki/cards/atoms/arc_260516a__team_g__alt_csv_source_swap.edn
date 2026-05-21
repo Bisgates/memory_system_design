@@ -1,0 +1,202 @@
+(card "lin:arc_260516a__team_g__alt_csv_source_swap" :type "lineage"
+  :subj "lin:arc_260516a__team_g__alt_csv_source_swap"
+  :body "---\ntype: lineage_overview\nteam: g\narc: 260516a\nstatus: falsified\npeak_train_nav: 1.0595\npeak_test_nav: null\nrounds_done: 2\ncandidates_total: 6\nchampions: 0\ntags: [vault/lineage, team/g, arc/260516a, status/falsified, axis/source_swap, axis/cross_source, status/demoted_to_subset]\n---\n\n# Team G — alt csv source swap lineage (arc 260516a)\n\n> Team G 假设 \"替换主信号源 (从 anchor 的主源 swap 到 洛阳铲 / 盈立 / 强 consensus) → 找到更纯净 alpha 源\"。R1 三条 (luoyangchan / yingli / cross-source consensus) 全部 NAV 1.01-1.04 + count fail, R2 在 luoyangchan solo 上 sweep `baseline_max_avg` 三点 grid (2.6M / 5.0M / no-cap), count 在 no-cap 时 recover 到 123 但 NAV 1.0296 << anchor 2.1882。**replacement hypothesis 实证证伪**, lineage demoted to \"subset / augmentation candidate 而非 standalone source\"。\n\n## Round 演进时间线\n\n| Round | candidate | mech | n | train NAV | val_nav | win | Sharpe | NAV champion |\n|---|---|---|---|---|---|---|---|---|\n| R1 | G-R1-1 luoyangchan_solo | swap to 洛阳铲 source | 27 | 1.0395 | — | 74% | 5.0 | ✗ (count fail <60) |\n| R1 | G-R1-2 yingli_solo | swap to 盈利 source | 39 | 1.0096 | — | — | 0.6 | ✗ (count fail, near-flat NAV) |\n| R1 | G-R1-3 cross_source_consensus_strict | 60-min half-open consensus | 27 | matches luoyangchan | — | — | — | ✗ (consensus adds 0 info @60min) |\n| R2 | G-R2-1 luoyangchan cap 2.6M | sweep baseline_max_avg ×2 | 42 | 1.0595 | 1.0054 | 64.3% | 4.53 | ✗ (count <60; gate binding) |\n| R2 | G-R2-2 luoyangchan cap 5.0M | sweep ×3.8 | 70 | 1.0314 | 1.0021 | 55.7% | 1.85 | ✗ (count <100 R2 lower) |\n| R2 | **G-R2-3** luoyangchan no-cap | sweep ×∞ | 123 | 1.0296 | 1.0026 | 52.0% | 0.80 | ✗ (count_pass ✓ but train_nav << anchor 2.19) |\n\nanchor 参考 train_nav 2.1882, val_nav_mean 1.0601, n=140.\n\n## 决策点 / 反思\n\n- **R1 三源对比 finding**: luoyangchan solo NAV 1.04 / sharpe 5.0 / win 74% 是三条里独立信号最强的, 但 anchor's `baseline_max_avg=1.3e6` volume gate 把 99→19 pass-through 大幅削减; yingli solo NAV ~ 1.00 sharpe 0.6 说明 yingli source 在 selector filter 后**几乎没 alpha**; cross-source consensus (strict 60-min) 与 luoyangchan solo 相同 → consensus 在 60-min window 不加信息。\n- **R2 design**: 3-pt pre-committed grid on `baseline_max_avg` (洛阳铲 solo, 其他全 == R1 G-R1-1), 目的是验证 \"volume cap 是 count 限制的 bottleneck\"。\n- **R2 funnel 结果**: pass_volcap_baseline 在 1.3M (R1) / 2.6M / 5.0M / ∞ 下 = 19 / 46 / 84 / 186, **monotonic count ↑ with cap ↑**, 但 **sharpe / win monotonic ↓** (5.0 → 4.53 → 1.85 → 0.80) —— alpha 随 cap 放宽而稀释。\n- **核心 falsification**: 洛阳铲 source **cannot match anchor train NAV at any cap**, 包括 cap=∞ (admission funnel 完全开)。**alt source 的 alpha density 结构性低于 anchor 主源**。\n- **R3 不再做 G-team source sweep**: status.md 推荐 \"handing to cross-team R3 instead of more G sweeps\" —— augmentation hypothesis (anchor ∪ 洛阳铲 cap 2.6M) **未 G 队 execute**, 留给 cross-team round。事实上 R3 in team_g 没出现, lineage end at R2。\n- **0 future-data leaks across 2052 probe records** (R1 809 + R2 1243): mechanism 干净, 不能用 leak / data-snoop 解释 falsification。\n- **G-R2-1 cap 2.6M zone (n=42, sharpe 4.53, win 64%)** 是高 conf 子集 —— **augmentation candidate**: 与 anchor 140 trade 的 ticker/timing overlap profile 未做, 是潜在 productive 维度但需 cross-team 落地。\n\n## 跨 lineage 关系\n\n- **shares_axis_with**: [[arc_260516a__team_d__cross_source_consensus]] —— G R1-3 \"60-min half-open consensus\" + D R1-1 \"lc_48h≥1 keep\" 都是 \"cross-source consensus = signal validation\" hypothesis 的子证伪。G 用 alt source 替换主源 (replacement), D 用 alt source 作 filter (post-filter), **两边都 falsified**。\n- **falsifies_subset_of**: [[arc_260516a__team_anchor__anchor_g2__baseline]] hypothesis \"alt source > 主源 alpha density\" —— G 系 6 candidate 跨 3 cap 测完, alt source standalone 无 alpha density 超过 anchor。\n- **proposes_augmentation_with**: [[arc_260516a__team_anchor__anchor_g2__baseline]] —— R2-1 cap 2.6M (42 trade, sharpe 4.53) 与 anchor 140 trade ticker/timing overlap 未做, **augmentation candidate 仍 open** 但留给 cross-team round。\n- **shares_findings_with**: [[arc_260516a__team_a__multi_axis_singleaxis_discipline]] C7 same_minute_pre_amt outlier-dominated —— G 系 sharpe 高 + n 低 也是 outlier-dominated 模式; cap 放宽 → sharpe 跌断证明 alpha 集中在少数 outlier trade。\n- **does_not_compose_with**: [[arc_260516a__team_c__top_k_no_open3min]] / [[arc_260516a__team_b__blacklist_axis]] —— G 系 alt source standalone NAV 全 ~1.0, 没 enough base 可供其他队 build on; 但 G-R2-1 cap 2.6M 作 augmentation merge 仍 open。\n\n## 终态判定理由（falsified, demoted to subset）\n\n1. **R1 三源对比 + R2 3-pt cap sweep 共 6 candidate train NAV 全 < 1.06 << anchor 2.19**: 一个数量级的 NAV gap, 不是 marginal fail。\n2. **count vs sharpe 倒挂 monotonic** (cap 越大 count 越多 sharpe 越小): alpha density 与 admission rate 成 trade-off, 无 sweet spot 能同时过 count gate 又 NAV-beat anchor。\n3. **cap=∞ (no volume cap) 时 n=123 仍 train_nav 1.0296 < anchor 2.1882**: 说明问题不在 cap, 是 alt source 本身 alpha density 结构性低。\n4. **0 future-data leaks × 2052 records + pre-committed 3-pt grid** 排除 leak / data-snoop 解释。\n5. **status.md 明示 demoted**: \"Replacement hypothesis falsified; subset/augmentation hypothesis open\" + \"Suggest handing to cross-team R3 instead of more G sweeps\" —— R3 未 dispatch, G lineage close。\n6. **augmentation 仍 open but not under G**: cap 2.6M zone 作 anchor ∪ luoyangchan_subset 是 future cross-team R3 候选, 不再由 G 队继续。\n\n## For future sub-agent\n\n**不要重蹈：**\n\n1. **不要 alt source standalone replace 主源** —— G R1 三源 (luoyangchan / yingli / consensus) 全 NAV ~ 1.0, alt source alpha density 结构性低, replacement hypothesis 直接 falsified。\n2. **不要在 alt source 上 sweep baseline_max_avg 想救 count** —— G R2 3-pt grid 验证: cap ↑ → count ↑ 但 alpha 稀释, sharpe/win monotonic ↓, 没有 sweet spot。\n3. **不要 strict 60-min half-open cross-source consensus** —— G R1-3 与 luoyangchan solo 相同, consensus 在 60-min window 不加信息。要 consensus 必须 wider window (6h+) 或 drop side requirement (status.md notes-for-next-round 段)。\n4. **不要在 yingli source 上 sweep 任何 axis** —— yingli solo sharpe 0.6 NAV 1.01, 这个 source 在 selector filter 后几乎没 alpha, 是 dead end source, 别浪费 round 探它。\n5. **不要把 high-sharpe small-n alt source candidate 当 standalone 提案** —— G-R2-1 cap 2.6M (sharpe 4.53 n=42) 看着 \"高 conf\", 但 count 远不过 gate, standalone 无法过任何 production criterion; 只能作 augmentation 候选。\n\n**可以继承：**\n\n1. **G-R2-1 luoyangchan cap 2.6M (42 trade, sharpe 4.53, win 64.3%, NAV 1.0595)** 是 alt source 上**唯一 NAV > 1.05 + 高 sharpe + 中规模 trade** 的子集 —— 作 anchor ∪ luoyangchan_subset augmentation 候选保留。Future cross-team R3 可拿这 42 trade 与 anchor 140 trade 做 ticker/timing overlap 分析, 看 augmentation 是否带来 incremental NAV。\n2. **R2 funnel breakdown** (raw_signals 152, pass_threshold+open 186 const, pass_volcap_baseline 19→46→84→186 across caps) —— 是 alt source admission funnel 的 reference profile, future arc 拿到新 alt source 时 paste 这模板做 admission audit。\n3. **\"count ↑ sharpe ↓ monotonic\" 现象** 作为 vault findings card: alt source 上 cap 放宽 = alpha 稀释 default failure mode, **任何 future alt source sweep 必须先 plot funnel + sharpe-vs-cap curve, 不要只看 count gate**。\n4. **3-pt pre-committed grid (cap 2× / 4× / no-cap) + per-cand audit + leak probe 1243 records** 是 sweep-axis 干净 falsification 模板, future arc 类似 sweep 可 paste-and-rerun。\n5. **consensus-vs-solo 等价 finding** (G R1-3 == luoyangchan solo @60min) 应记入 vault cross-source card: **consensus window 太短 = solo 的 redundant copy, consensus 在 narrow window 不加信息**。下次想测 consensus axis 先确定 window > primary source's natural lag, 否则 mechanism trivially redundant。\n\n## 备注\n\n- final report R1 `output/team_g_R1_report_20260516T185001Z.html` + R2 `team_g/output/round_2/_R2_report.html`。\n- final test slice 未触碰 (无 candidate 值得 burn)。\n- augmentation hypothesis (anchor ∪ G-R2-1 subset) **尚未被任何后续 round 验证**, 是 lineage 留下的唯一 open question, suggest 在 future arc cross-team round 落地 (而不是 G 队自己 sweep)。\n- Team G 是 arc 内**唯一一支主 hypothesis 是 \"替换 anchor 的核心元素 (信号源)\"** 的队伍, 与 Team B/C/H \"改 anchor 的修饰元素 (filter / selector / sizing)\" 形成对比 —— 实证表明 anchor 核心比修饰更难替换, 修饰可加可减但核心结构性 stickier。\n"
+  :path "lineages/arc_260516a__team_g__alt_csv_source_swap.md"
+  :source_mtime "2026-05-17T10:22:11+08:00"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_46d3d91e" :type "atom"
+  :subj "lin:arc_260516a__team_g__alt_csv_source_swap"
+  :pred "has_type"
+  :obj "lineage_overview"
+  :source "lineages/arc_260516a__team_g__alt_csv_source_swap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5cbdf45d" :type "atom"
+  :subj "lin:arc_260516a__team_g__alt_csv_source_swap"
+  :pred "has_team"
+  :obj "g"
+  :source "lineages/arc_260516a__team_g__alt_csv_source_swap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_312d8dff" :type "atom"
+  :subj "lin:arc_260516a__team_g__alt_csv_source_swap"
+  :pred "has_arc"
+  :obj "260516a"
+  :source "lineages/arc_260516a__team_g__alt_csv_source_swap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_dd3330f5" :type "atom"
+  :subj "lin:arc_260516a__team_g__alt_csv_source_swap"
+  :pred "has_status"
+  :obj "falsified"
+  :source "lineages/arc_260516a__team_g__alt_csv_source_swap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_74ae89be" :type "atom"
+  :subj "lin:arc_260516a__team_g__alt_csv_source_swap"
+  :pred "has_peak_train_nav"
+  :obj 1.0595
+  :source "lineages/arc_260516a__team_g__alt_csv_source_swap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_0b28615c" :type "atom"
+  :subj "lin:arc_260516a__team_g__alt_csv_source_swap"
+  :pred "has_rounds_done"
+  :obj 2
+  :source "lineages/arc_260516a__team_g__alt_csv_source_swap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5c461892" :type "atom"
+  :subj "lin:arc_260516a__team_g__alt_csv_source_swap"
+  :pred "has_candidates_total"
+  :obj 6
+  :source "lineages/arc_260516a__team_g__alt_csv_source_swap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d6dfa69f" :type "atom"
+  :subj "lin:arc_260516a__team_g__alt_csv_source_swap"
+  :pred "has_champions"
+  :obj 0
+  :source "lineages/arc_260516a__team_g__alt_csv_source_swap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d9fb635e" :type "atom"
+  :subj "lin:arc_260516a__team_g__alt_csv_source_swap"
+  :pred "has_tag"
+  :obj "tag:vault/lineage"
+  :source "lineages/arc_260516a__team_g__alt_csv_source_swap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c02fd8eb" :type "atom"
+  :subj "lin:arc_260516a__team_g__alt_csv_source_swap"
+  :pred "has_tag"
+  :obj "tag:team/g"
+  :source "lineages/arc_260516a__team_g__alt_csv_source_swap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_6b9a063d" :type "atom"
+  :subj "lin:arc_260516a__team_g__alt_csv_source_swap"
+  :pred "has_tag"
+  :obj "tag:arc/260516a"
+  :source "lineages/arc_260516a__team_g__alt_csv_source_swap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_13845454" :type "atom"
+  :subj "lin:arc_260516a__team_g__alt_csv_source_swap"
+  :pred "has_tag"
+  :obj "tag:status/falsified"
+  :source "lineages/arc_260516a__team_g__alt_csv_source_swap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f23a3ce1" :type "atom"
+  :subj "lin:arc_260516a__team_g__alt_csv_source_swap"
+  :pred "has_tag"
+  :obj "tag:axis/source_swap"
+  :source "lineages/arc_260516a__team_g__alt_csv_source_swap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f42e1a88" :type "atom"
+  :subj "lin:arc_260516a__team_g__alt_csv_source_swap"
+  :pred "has_tag"
+  :obj "tag:axis/cross_source"
+  :source "lineages/arc_260516a__team_g__alt_csv_source_swap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_8d6d98ff" :type "atom"
+  :subj "lin:arc_260516a__team_g__alt_csv_source_swap"
+  :pred "has_tag"
+  :obj "tag:status/demoted_to_subset"
+  :source "lineages/arc_260516a__team_g__alt_csv_source_swap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_63ab75ce" :type "atom"
+  :subj "lin:arc_260516a__team_g__alt_csv_source_swap"
+  :pred "has_section_intro"
+  :obj "# Team G — alt csv source swap lineage (arc 260516a)\n\n> Team G 假设 \"替换主信号源 (从 anchor 的主源 swap 到 洛阳铲 / 盈立 / 强 consensus) → 找到更纯净 alpha 源\"。R1 三条 (luoyangchan / yingli / cross-source consensus) 全部 NAV 1.01-1.04 + count fail, R2 在 luoyangchan solo 上 sweep `baseline_max_avg` 三点 grid (2.6M / 5.0M / no-cap), count 在 no-cap 时 recover 到 123 但 NAV 1.0296 << anchor 2.1882。**replacement hypothesis 实证证伪**, lineage demoted to \"subset / augmentation candidate 而非 standalone source\"。"
+  :source "lineages/arc_260516a__team_g__alt_csv_source_swap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a7fa56ff" :type "atom"
+  :subj "lin:arc_260516a__team_g__alt_csv_source_swap"
+  :pred "has_section_round_table"
+  :obj "| Round | candidate | mech | n | train NAV | val_nav | win | Sharpe | NAV champion |\n|---|---|---|---|---|---|---|---|---|\n| R1 | G-R1-1 luoyangchan_solo | swap to 洛阳铲 source | 27 | 1.0395 | — | 74% | 5.0 | ✗ (count fail <60) |\n| R1 | G-R1-2 yingli_solo | swap to 盈利 source | 39 | 1.0096 | — | — | 0.6 | ✗ (count fail, near-flat NAV) |\n| R1 | G-R1-3 cross_source_consensus_strict | 60-min half-open consensus | 27 | matches luoyangchan | — | — | — | ✗ (consensus adds 0 info @60min) |\n| R2 | G-R2-1 luoyangchan cap 2.6M | sweep baseline_max_avg ×2 | 42 | 1.0595 | 1.0054 | 64.3% | 4.53 | ✗ (count <60; gate binding) |\n| R2 | G-R2-2 luoyangchan cap 5.0M | sweep ×3.8 | 70 | 1.0314 | 1.0021 | 55.7% | 1.85 | ✗ (count <100 R2 lower) |\n| R2 | **G-R2-3** luoyangchan no-cap | sweep ×∞ | 123 | 1.0296 | 1.0026 | 52.0% | 0.80 | ✗ (count_pass ✓ but train_nav << anchor 2.19) |\n\nanchor 参考 train_nav 2.1882, val_nav_mean 1.0601, n=140."
+  :source "lineages/arc_260516a__team_g__alt_csv_source_swap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_76e1bbae" :type "atom"
+  :subj "lin:arc_260516a__team_g__alt_csv_source_swap"
+  :pred "has_section_decisions_reflections"
+  :obj "- **R1 三源对比 finding**: luoyangchan solo NAV 1.04 / sharpe 5.0 / win 74% 是三条里独立信号最强的, 但 anchor's `baseline_max_avg=1.3e6` volume gate 把 99→19 pass-through 大幅削减; yingli solo NAV ~ 1.00 sharpe 0.6 说明 yingli source 在 selector filter 后**几乎没 alpha**; cross-source consensus (strict 60-min) 与 luoyangchan solo 相同 → consensus 在 60-min window 不加信息。\n- **R2 design**: 3-pt pre-committed grid on `baseline_max_avg` (洛阳铲 solo, 其他全 == R1 G-R1-1), 目的是验证 \"volume cap 是 count 限制的 bottleneck\"。\n- **R2 funnel 结果**: pass_volcap_baseline 在 1.3M (R1) / 2.6M / 5.0M / ∞ 下 = 19 / 46 / 84 / 186, **monotonic count ↑ with cap ↑**, 但 **sharpe / win monotonic ↓** (5.0 → 4.53 → 1.85 → 0.80) —— alpha 随 cap 放宽而稀释。\n- **核心 falsification**: 洛阳铲 source **cannot match anchor train NAV at any cap**, 包括 cap=∞ (admission funnel 完全开)。**alt source 的 alpha density 结构性低于 anchor 主源**。\n- **R3 不再做 G-team source sweep**: status.md 推荐 \"handing to cross-team R3 instead of more G sweeps\" —— augmentation hypothesis (anchor ∪ 洛阳铲 cap 2.6M) **未 G 队 execute**, 留给 cross-team round。事实上 R3 in team_g 没出现, lineage end at R2。\n- **0 future-data leaks across 2052 probe records** (R1 809 + R2 1243): mechanism 干净, 不能用 leak / data-snoop 解释 falsification。\n- **G-R2-1 cap 2.6M zone (n=42, sharpe 4.53, win 64%)** 是高 conf 子集 —— **augmentation candidate**: 与 anchor 140 trade 的 ticker/timing overlap profile 未做, 是潜在 productive 维度但需 cross-team 落地。"
+  :source "lineages/arc_260516a__team_g__alt_csv_source_swap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f4308caa" :type "atom"
+  :subj "lin:arc_260516a__team_g__alt_csv_source_swap"
+  :pred "shares_axis_with"
+  :obj "lin:arc_260516a__team_d__cross_source_consensus"
+  :source "lineages/arc_260516a__team_g__alt_csv_source_swap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_aa507712" :type "atom"
+  :subj "lin:arc_260516a__team_g__alt_csv_source_swap"
+  :pred "falsifies_subset_of"
+  :obj "exp:anchor_g2_baseline"
+  :source "lineages/arc_260516a__team_g__alt_csv_source_swap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_78c4e823" :type "atom"
+  :subj "lin:arc_260516a__team_g__alt_csv_source_swap"
+  :pred "proposes_augmentation_with"
+  :obj "exp:anchor_g2_baseline"
+  :source "lineages/arc_260516a__team_g__alt_csv_source_swap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a97075e6" :type "atom"
+  :subj "lin:arc_260516a__team_g__alt_csv_source_swap"
+  :pred "shares_findings_with"
+  :obj "lin:arc_260516a__team_a__multi_axis_singleaxis_discipline"
+  :source "lineages/arc_260516a__team_g__alt_csv_source_swap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_453f90fa" :type "atom"
+  :subj "lin:arc_260516a__team_g__alt_csv_source_swap"
+  :pred "does_not_compose_with"
+  :obj "lin:arc_260516a__team_c__top_k_no_open3min"
+  :source "lineages/arc_260516a__team_g__alt_csv_source_swap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5701d794" :type "atom"
+  :subj "lin:arc_260516a__team_g__alt_csv_source_swap"
+  :pred "does_not_compose_with"
+  :obj "lin:arc_260516a__team_b__blacklist_axis"
+  :source "lineages/arc_260516a__team_g__alt_csv_source_swap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_3df86587" :type "atom"
+  :subj "lin:arc_260516a__team_g__alt_csv_source_swap"
+  :pred "has_section_cross_lineage_relations"
+  :obj "- **shares_axis_with**: [[arc_260516a__team_d__cross_source_consensus]] —— G R1-3 \"60-min half-open consensus\" + D R1-1 \"lc_48h≥1 keep\" 都是 \"cross-source consensus = signal validation\" hypothesis 的子证伪。G 用 alt source 替换主源 (replacement), D 用 alt source 作 filter (post-filter), **两边都 falsified**。\n- **falsifies_subset_of**: [[arc_260516a__team_anchor__anchor_g2__baseline]] hypothesis \"alt source > 主源 alpha density\" —— G 系 6 candidate 跨 3 cap 测完, alt source standalone 无 alpha density 超过 anchor。\n- **proposes_augmentation_with**: [[arc_260516a__team_anchor__anchor_g2__baseline]] —— R2-1 cap 2.6M (42 trade, sharpe 4.53) 与 anchor 140 trade ticker/timing overlap 未做, **augmentation candidate 仍 open** 但留给 cross-team round。\n- **shares_findings_with**: [[arc_260516a__team_a__multi_axis_singleaxis_discipline]] C7 same_minute_pre_amt outlier-dominated —— G 系 sharpe 高 + n 低 也是 outlier-dominated 模式; cap 放宽 → sharpe 跌断证明 alpha 集中在少数 outlier trade。\n- **does_not_compose_with**: [[arc_260516a__team_c__top_k_no_open3min]] / [[arc_260516a__team_b__blacklist_axis]] —— G 系 alt source standalone NAV 全 ~1.0, 没 enough base 可供其他队 build on; 但 G-R2-1 cap 2.6M 作 augmentation merge 仍 open。"
+  :source "lineages/arc_260516a__team_g__alt_csv_source_swap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_88b69587" :type "atom"
+  :subj "lin:arc_260516a__team_g__alt_csv_source_swap"
+  :pred "has_section_终态判定理由_falsified_demoted_to_subset"
+  :obj "1. **R1 三源对比 + R2 3-pt cap sweep 共 6 candidate train NAV 全 < 1.06 << anchor 2.19**: 一个数量级的 NAV gap, 不是 marginal fail。\n2. **count vs sharpe 倒挂 monotonic** (cap 越大 count 越多 sharpe 越小): alpha density 与 admission rate 成 trade-off, 无 sweet spot 能同时过 count gate 又 NAV-beat anchor。\n3. **cap=∞ (no volume cap) 时 n=123 仍 train_nav 1.0296 < anchor 2.1882**: 说明问题不在 cap, 是 alt source 本身 alpha density 结构性低。\n4. **0 future-data leaks × 2052 records + pre-committed 3-pt grid** 排除 leak / data-snoop 解释。\n5. **status.md 明示 demoted**: \"Replacement hypothesis falsified; subset/augmentation hypothesis open\" + \"Suggest handing to cross-team R3 instead of more G sweeps\" —— R3 未 dispatch, G lineage close。\n6. **augmentation 仍 open but not under G**: cap 2.6M zone 作 anchor ∪ luoyangchan_subset 是 future cross-team R3 候选, 不再由 G 队继续。"
+  :source "lineages/arc_260516a__team_g__alt_csv_source_swap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c18e72eb" :type "atom"
+  :subj "lin:arc_260516a__team_g__alt_csv_source_swap"
+  :pred "has_section_for_future_sub_agent"
+  :obj "**不要重蹈：**\n\n1. **不要 alt source standalone replace 主源** —— G R1 三源 (luoyangchan / yingli / consensus) 全 NAV ~ 1.0, alt source alpha density 结构性低, replacement hypothesis 直接 falsified。\n2. **不要在 alt source 上 sweep baseline_max_avg 想救 count** —— G R2 3-pt grid 验证: cap ↑ → count ↑ 但 alpha 稀释, sharpe/win monotonic ↓, 没有 sweet spot。\n3. **不要 strict 60-min half-open cross-source consensus** —— G R1-3 与 luoyangchan solo 相同, consensus 在 60-min window 不加信息。要 consensus 必须 wider window (6h+) 或 drop side requirement (status.md notes-for-next-round 段)。\n4. **不要在 yingli source 上 sweep 任何 axis** —— yingli solo sharpe 0.6 NAV 1.01, 这个 source 在 selector filter 后几乎没 alpha, 是 dead end source, 别浪费 round 探它。\n5. **不要把 high-sharpe small-n alt source candidate 当 standalone 提案** —— G-R2-1 cap 2.6M (sharpe 4.53 n=42) 看着 \"高 conf\", 但 count 远不过 gate, standalone 无法过任何 production criterion; 只能作 augmentation 候选。\n\n**可以继承：**\n\n1. **G-R2-1 luoyangchan cap 2.6M (42 trade, sharpe 4.53, win 64.3%, NAV 1.0595)** 是 alt source 上**唯一 NAV > 1.05 + 高 sharpe + 中规模 trade** 的子集 —— 作 anchor ∪ luoyangchan_subset augmentation 候选保留。Future cross-team R3 可拿这 42 trade 与 anchor 140 trade 做 ticker/timing overlap 分析, 看 augmentation 是否带来 incremental NAV。\n2. **R2 funnel breakdown** (raw_signals 152, pass_threshold+open 186 const, pass_volcap_baseline 19→46→84→186 across caps) —— 是 alt source admission funnel 的 reference profile, future arc 拿到新 alt source 时 paste 这模板做 admission audit。\n3. **\"count ↑ sharpe ↓ monotonic\" 现象** 作为 vault findings card: alt source 上 cap 放宽 = alpha 稀释 default failure mode, **任何 future alt source sweep 必须先 plot funnel + sharpe-vs-cap curve, 不要只看 count gate**。\n4. **3-pt pre-committed grid (cap 2× / 4× / no-cap) + per-cand audit + leak probe 1243 records** 是 sweep-axis 干净 falsification 模板, future arc 类似 sweep 可 paste-and-rerun。\n5. **consensus-vs-solo 等价 finding** (G R1-3 == luoyangchan solo @60min) 应记入 vault cross-source card: **consensus window 太短 = solo 的 redundant copy, consensus 在 narrow window 不加信息**。下次想测 consensus axis 先确定 window > primary source's natural lag, 否则 mechanism trivially redundant。"
+  :source "lineages/arc_260516a__team_g__alt_csv_source_swap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a36ca93a" :type "atom"
+  :subj "lin:arc_260516a__team_g__alt_csv_source_swap"
+  :pred "has_section_remarks"
+  :obj "- final report R1 `output/team_g_R1_report_20260516T185001Z.html` + R2 `team_g/output/round_2/_R2_report.html`。\n- final test slice 未触碰 (无 candidate 值得 burn)。\n- augmentation hypothesis (anchor ∪ G-R2-1 subset) **尚未被任何后续 round 验证**, 是 lineage 留下的唯一 open question, suggest 在 future arc cross-team round 落地 (而不是 G 队自己 sweep)。\n- Team G 是 arc 内**唯一一支主 hypothesis 是 \"替换 anchor 的核心元素 (信号源)\"** 的队伍, 与 Team B/C/H \"改 anchor 的修饰元素 (filter / selector / sizing)\" 形成对比 —— 实证表明 anchor 核心比修饰更难替换, 修饰可加可减但核心结构性 stickier。"
+  :source "lineages/arc_260516a__team_g__alt_csv_source_swap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")

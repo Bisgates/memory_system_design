@@ -1,0 +1,15 @@
+(card "d_707447ca" :type "derived"
+  :subj "exp:C8.4_top3_no_open3min_bypass"
+  :pred "derived_from"
+  :obj "exp:C6.4_top3_expand"
+  :derived_from "rule:r001b_descendants_reverse"
+  :parents ("a_2f228223")
+  :generated_at "2026-05-20T17:40:25.560173+00:00")
+
+(card "d_a4db1f73" :type "derived"
+  :subj "exp:F-R2-4_ofi_dir_align"
+  :pred "derived_from"
+  :obj "exp:F-R2-1_vpin_drop_q80_300s"
+  :derived_from "rule:r001b_descendants_reverse"
+  :parents ("a_a6f76921")
+  :generated_at "2026-05-20T17:40:25.560182+00:00")

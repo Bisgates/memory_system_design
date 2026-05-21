@@ -1,0 +1,49 @@
+{
+  "elapsed_sec": 1.329,
+  "store_totals": {
+    "total": 3417,
+    "atoms": 3331,
+    "experiments": 53,
+    "lineages": 8,
+    "rules": 11,
+    "macros": 2
+  },
+  "results": {
+    "cap1": {
+      "input_cards": 3,
+      "suggestions": 9,
+      "macro_cards_in_store": 2
+    },
+    "cap2": {
+      "lazy_refs_resolved": 3,
+      "carrier_cards": 2
+    },
+    "cap3": {
+      "rule_cards": 11,
+      "rules_with_fan_出": 9,
+      "pause_delta": 53,
+      "baseline_total_derived": 99
+    },
+    "cap4": {
+      "restart_cases": 3,
+      "similarity_score": 0.9691,
+      "actions": [
+        "keep-both",
+        "merge-prefer-newer",
+        "supersede"
+      ]
+    },
+    "cap5": {
+      "snapshot_1": 14,
+      "snapshot_2": 15,
+      "snapshot_3": 14,
+      "view_id": "m_5ce4acd2"
+    },
+    "cap6": {
+      "stages": 3,
+      "conf_a": 0.0,
+      "conf_b": 1.0,
+      "conf_c": 0.3333
+    }
+  }
+}

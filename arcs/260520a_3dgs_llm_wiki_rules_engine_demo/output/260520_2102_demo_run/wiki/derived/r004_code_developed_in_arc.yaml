@@ -1,0 +1,357 @@
+- iteration: 1
+  binding:
+    ?A: arc:260508a
+    ?C: code:scripts/transfer_vehicle.py
+  parents:
+  - a_955e235a
+  - a_b73d9d21
+  atom:
+    id: a_7e5ca5ef
+    subj: code:scripts/transfer_vehicle.py
+    pred: developed_in_arc
+    obj: arc:260508a
+    source: ''
+    derived_from: r004_code_developed_in_arc
+    parents:
+    - a_955e235a
+    - a_b73d9d21
+- iteration: 1
+  binding:
+    ?A: arc:260508a
+    ?C: code:drivestudio/tools/render_transfer_vehicle.py
+  parents:
+  - a_78e01f96
+  - a_b73d9d21
+  atom:
+    id: a_a4c7b8c1
+    subj: code:drivestudio/tools/render_transfer_vehicle.py
+    pred: developed_in_arc
+    obj: arc:260508a
+    source: ''
+    derived_from: r004_code_developed_in_arc
+    parents:
+    - a_78e01f96
+    - a_b73d9d21
+- iteration: 1
+  binding:
+    ?A: arc:260508a
+    ?C: code:scripts/gen_demo_traj.py
+  parents:
+  - a_de51e3df
+  - a_b73d9d21
+  atom:
+    id: a_52fc1709
+    subj: code:scripts/gen_demo_traj.py
+    pred: developed_in_arc
+    obj: arc:260508a
+    source: ''
+    derived_from: r004_code_developed_in_arc
+    parents:
+    - a_de51e3df
+    - a_b73d9d21
+- iteration: 1
+  binding:
+    ?A: arc:260508a
+    ?C: code:drivestudio/tools/trajectory_lib.py
+  parents:
+  - a_83d20a64
+  - a_b73d9d21
+  atom:
+    id: a_ff0e4b4e
+    subj: code:drivestudio/tools/trajectory_lib.py
+    pred: developed_in_arc
+    obj: arc:260508a
+    source: ''
+    derived_from: r004_code_developed_in_arc
+    parents:
+    - a_83d20a64
+    - a_b73d9d21
+- iteration: 1
+  binding:
+    ?A: arc:260508a
+    ?C: code:scripts/collision_report.py
+  parents:
+  - a_dda3707b
+  - a_b73d9d21
+  atom:
+    id: a_29f14d9c
+    subj: code:scripts/collision_report.py
+    pred: developed_in_arc
+    obj: arc:260508a
+    source: ''
+    derived_from: r004_code_developed_in_arc
+    parents:
+    - a_dda3707b
+    - a_b73d9d21
+- iteration: 1
+  binding:
+    ?A: arc:260508b
+    ?C: code:utils/metrics/bidirectional_nn.py
+  parents:
+  - a_c067fbb0
+  - a_24713ef7
+  atom:
+    id: a_9b8d28d8
+    subj: code:utils/metrics/bidirectional_nn.py
+    pred: developed_in_arc
+    obj: arc:260508b
+    source: ''
+    derived_from: r004_code_developed_in_arc
+    parents:
+    - a_c067fbb0
+    - a_24713ef7
+- iteration: 1
+  binding:
+    ?A: arc:260508c
+    ?C: code:scripts/glb_to_3dgs.py
+  parents:
+  - a_1796d80e
+  - a_3466841d
+  atom:
+    id: a_e0c7191d
+    subj: code:scripts/glb_to_3dgs.py
+    pred: developed_in_arc
+    obj: arc:260508c
+    source: ''
+    derived_from: r004_code_developed_in_arc
+    parents:
+    - a_1796d80e
+    - a_3466841d
+- iteration: 1
+  binding:
+    ?A: arc:260508c
+    ?C: code:scripts/normalize_to_object_frame.py
+  parents:
+  - a_4f00a56a
+  - a_3466841d
+  atom:
+    id: a_96ce45be
+    subj: code:scripts/normalize_to_object_frame.py
+    pred: developed_in_arc
+    obj: arc:260508c
+    source: ''
+    derived_from: r004_code_developed_in_arc
+    parents:
+    - a_4f00a56a
+    - a_3466841d
+- iteration: 1
+  binding:
+    ?A: arc:260508c
+    ?C: code:scripts/ply_to_rigidnodes_state.py
+  parents:
+  - a_10f6735d
+  - a_3466841d
+  atom:
+    id: a_1185a023
+    subj: code:scripts/ply_to_rigidnodes_state.py
+    pred: developed_in_arc
+    obj: arc:260508c
+    source: ''
+    derived_from: r004_code_developed_in_arc
+    parents:
+    - a_10f6735d
+    - a_3466841d
+- iteration: 1
+  binding:
+    ?A: arc:260508c
+    ?C: code:scripts/transfer_vehicle.py
+  parents:
+  - a_dd08993a
+  - a_3466841d
+  atom:
+    id: a_95713bbe
+    subj: code:scripts/transfer_vehicle.py
+    pred: developed_in_arc
+    obj: arc:260508c
+    source: ''
+    derived_from: r004_code_developed_in_arc
+    parents:
+    - a_dd08993a
+    - a_3466841d
+- iteration: 1
+  binding:
+    ?A: arc:260508c
+    ?C: code:scripts/render_object_views.py
+  parents:
+  - a_ce856eb1
+  - a_3466841d
+  atom:
+    id: a_209d7984
+    subj: code:scripts/render_object_views.py
+    pred: developed_in_arc
+    obj: arc:260508c
+    source: ''
+    derived_from: r004_code_developed_in_arc
+    parents:
+    - a_ce856eb1
+    - a_3466841d
+- iteration: 1
+  binding:
+    ?A: arc:260508c
+    ?C: code:scripts/sam3_car_mask.py
+  parents:
+  - a_3ac44620
+  - a_3466841d
+  atom:
+    id: a_49e6cc44
+    subj: code:scripts/sam3_car_mask.py
+    pred: developed_in_arc
+    obj: arc:260508c
+    source: ''
+    derived_from: r004_code_developed_in_arc
+    parents:
+    - a_3ac44620
+    - a_3466841d
+- iteration: 1
+  binding:
+    ?A: arc:260508c
+    ?C: code:scripts/collision_report.py
+  parents:
+  - a_b35006e8
+  - a_3466841d
+  atom:
+    id: a_475d5e08
+    subj: code:scripts/collision_report.py
+    pred: developed_in_arc
+    obj: arc:260508c
+    source: ''
+    derived_from: r004_code_developed_in_arc
+    parents:
+    - a_b35006e8
+    - a_3466841d
+- iteration: 1
+  binding:
+    ?A: arc:260508c
+    ?C: code:drivestudio/tools/glb_to_3dgs.py
+  parents:
+  - a_d93eeade
+  - a_3466841d
+  atom:
+    id: a_745b82ce
+    subj: code:drivestudio/tools/glb_to_3dgs.py
+    pred: developed_in_arc
+    obj: arc:260508c
+    source: ''
+    derived_from: r004_code_developed_in_arc
+    parents:
+    - a_d93eeade
+    - a_3466841d
+- iteration: 1
+  binding:
+    ?A: arc:260508c
+    ?C: code:drivestudio/tools/object_asset_lib.py
+  parents:
+  - a_d6ddbfc6
+  - a_3466841d
+  atom:
+    id: a_fd492ed4
+    subj: code:drivestudio/tools/object_asset_lib.py
+    pred: developed_in_arc
+    obj: arc:260508c
+    source: ''
+    derived_from: r004_code_developed_in_arc
+    parents:
+    - a_d6ddbfc6
+    - a_3466841d
+- iteration: 1
+  binding:
+    ?A: arc:260508c
+    ?C: code:scripts/arkit_to_colmap.py
+  parents:
+  - a_a099bf88
+  - a_3466841d
+  atom:
+    id: a_e18dcf6e
+    subj: code:scripts/arkit_to_colmap.py
+    pred: developed_in_arc
+    obj: arc:260508c
+    source: ''
+    derived_from: r004_code_developed_in_arc
+    parents:
+    - a_a099bf88
+    - a_3466841d
+- iteration: 1
+  binding:
+    ?A: arc:260508c
+    ?C: code:scripts/zero_sh_rest.py
+  parents:
+  - a_0f781517
+  - a_3466841d
+  atom:
+    id: a_7277fc88
+    subj: code:scripts/zero_sh_rest.py
+    pred: developed_in_arc
+    obj: arc:260508c
+    source: ''
+    derived_from: r004_code_developed_in_arc
+    parents:
+    - a_0f781517
+    - a_3466841d
+- iteration: 1
+  binding:
+    ?A: arc:260508c
+    ?C: code:scripts/viz_normalized_ply.py
+  parents:
+  - a_3a2ed88b
+  - a_3466841d
+  atom:
+    id: a_a48dbcac
+    subj: code:scripts/viz_normalized_ply.py
+    pred: developed_in_arc
+    obj: arc:260508c
+    source: ''
+    derived_from: r004_code_developed_in_arc
+    parents:
+    - a_3a2ed88b
+    - a_3466841d
+- iteration: 1
+  binding:
+    ?A: arc:260512a
+    ?C: code:scripts/apply_drivestudio_patch.py
+  parents:
+  - a_16ce902c
+  - a_737a0b50
+  atom:
+    id: a_c71b79a8
+    subj: code:scripts/apply_drivestudio_patch.py
+    pred: developed_in_arc
+    obj: arc:260512a
+    source: ''
+    derived_from: r004_code_developed_in_arc
+    parents:
+    - a_16ce902c
+    - a_737a0b50
+- iteration: 1
+  binding:
+    ?A: arc:260513a
+    ?C: code:tools/train.py
+  parents:
+  - a_e80d88ca
+  - a_63fbd84c
+  atom:
+    id: a_137803d2
+    subj: code:tools/train.py
+    pred: developed_in_arc
+    obj: arc:260513a
+    source: ''
+    derived_from: r004_code_developed_in_arc
+    parents:
+    - a_e80d88ca
+    - a_63fbd84c
+- iteration: 1
+  binding:
+    ?A: arc:260513a
+    ?C: code:drivestudio/configs/omnire_fabu_ego_filter.yaml
+  parents:
+  - a_16f81a82
+  - a_63fbd84c
+  atom:
+    id: a_241bd562
+    subj: code:drivestudio/configs/omnire_fabu_ego_filter.yaml
+    pred: developed_in_arc
+    obj: arc:260513a
+    source: ''
+    derived_from: r004_code_developed_in_arc
+    parents:
+    - a_16f81a82
+    - a_63fbd84c

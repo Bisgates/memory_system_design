@@ -1,0 +1,1395 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>LLM-Wiki 规则引擎最小可运行原型 · arc 260520a · 鸟瞰 ↔ 蛙跳</title>
+
+<!--
+  ============================================================
+  simple-dual-tab skeleton — the new default visual layer for
+  grok's dual-tab output. Both tabs render under `simple`:
+    - bird tab uses simple-bird's CSS (Roman-numeral chapter
+      openers, drop-cap lede, callout / pull / matrix)
+    - frog tab uses simple-frog's CSS (cell.md / cell.code /
+      cell.out, mono section headings, stop-and-think)
+
+  Hard contract:
+    - Zero external assets — no Google Fonts, no KaTeX, no Prism.
+    - Both tabs share the warm-paper color tokens declared once
+      in :root below.
+    - All bird styles live under `.tab-bird ...`; all frog styles
+      under `.tab-frog ...`. The two sub-styles share class names
+      (`.callout`, `.cell`) and mean different things — un-namespaced
+      rules cross-wire.
+    - Tab bar is sticky-top, small-caps button text, active state
+      = accent-colored underline.
+    - Hash routing: #bird-<slug> activates bird tab + scrolls;
+      #frog-<slug> activates frog tab + scrolls; legacy #mit- and
+      #stanford- prefixes remap silently for backward compatibility.
+
+  Fill order:
+    1. Drop simple-bird-skeleton.html's body content into
+       <section id="tab-bird"> below. Rewrite all section ids
+       `id="x"` → `id="bird-x"`.
+    2. Drop simple-frog-skeleton.html's body content into
+       <section id="tab-frog">. Section ids `id="x"` → `id="frog-x"`.
+       Match slugs `x` across tabs.
+    3. Don't add per-section "↔ 另一视角" jump buttons. The tab
+       bar at the top is the only cross-tab affordance.
+
+  If the source has heavy LaTeX, either pass --math (and add the
+  KaTeX CDN block back at the document level) or rerun with
+  --visual magazine.
+  ============================================================
+-->
+
+<style>
+/* ============================================================
+   Shared tokens (apply to both tabs)
+   ============================================================ */
+:root {
+  --paper:        #fbf6e9;
+  --paper-2:      #f3ebd6;
+  --ink:          #1f1a14;
+  --ink-soft:     #3b332a;
+  --ink-faint:    #6b6052;
+  --rule:         #b8a583;
+  --rule-soft:    #d8c9a2;
+  --accent:       #8c2f1c;
+  --accent-2:     #2c5340;
+  --gold:         #a37c2a;
+  --quote-bg:     #f0e6cd;
+  --code-bg:      #efe6ce;
+  --code-fg:      #1a140d;
+}
+* { box-sizing: border-box; }
+html, body {
+  margin: 0; padding: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: -apple-system, "Iowan Old Style", "Charter", "Cormorant Garamond", "Playfair Display", Georgia, "Times New Roman", serif;
+  font-size: 18px; line-height: 1.7;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+body { padding-bottom: 6em; }
+.mono, code, pre {
+  font-family: ui-monospace, "SF Mono", Menlo, Monaco, "Cascadia Mono", Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+/* ============================================================
+   Tab bar — sticky, small-caps, accent underline on active
+   ============================================================ */
+.tabbar {
+  position: sticky; top: 0; z-index: 50;
+  display: flex; gap: 0;
+  background: var(--paper-2);
+  border-bottom: 1px solid var(--rule);
+  padding: 0 24px;
+}
+.tab-btn {
+  appearance: none; border: 0; background: transparent;
+  font: inherit; font-size: 14px; color: var(--ink-faint);
+  padding: 14px 22px; cursor: pointer;
+  border-bottom: 2px solid transparent;
+  font-variant: small-caps; letter-spacing: 0.12em;
+}
+.tab-btn:hover { color: var(--ink); }
+.tab-btn.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+.tab-meta {
+  margin-left: auto; align-self: center;
+  font-size: 12px; color: var(--ink-faint);
+  font-style: italic;
+}
+
+main { max-width: 820px; margin: 0 auto; padding: 56px 32px 0; }
+.tab-pane { display: none; }
+.tab-pane.active { display: block; }
+
+/* ============================================================
+   bird-tab scope — paste simple-bird-skeleton.html's CSS here,
+   each selector under `.tab-bird ...`.
+   ============================================================ */
+
+.tab-bird .masthead {
+  text-align: center;
+  border-top: 4px double var(--rule);
+  border-bottom: 1px solid var(--rule);
+  padding: 32px 0 22px;
+  margin-bottom: 36px;
+}
+.tab-bird .masthead .kicker {
+  font-variant: small-caps; letter-spacing: 0.28em;
+  font-size: 12px; color: var(--accent);
+}
+.tab-bird .masthead h1 {
+  font-size: 44px; line-height: 1.18; margin: 14px 0 8px;
+  font-weight: 500;
+}
+.tab-bird .masthead .deck {
+  font-style: italic; color: var(--ink-soft);
+  font-size: 18px; max-width: 620px; margin: 0 auto;
+}
+.tab-bird .masthead .byline {
+  margin-top: 14px;
+  font-size: 12px; letter-spacing: 0.18em;
+  text-transform: uppercase; color: var(--ink-faint);
+}
+
+.tab-bird .chapter-rule {
+  text-align: center;
+  margin: 64px 0 26px;
+  color: var(--accent);
+  font-variant: small-caps; letter-spacing: 0.3em;
+}
+.tab-bird .chapter-rule .roman {
+  display: inline-block; font-size: 22px; font-style: italic;
+  padding: 0 18px;
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  line-height: 2;
+}
+.tab-bird .chapter-title {
+  text-align: center; font-size: 26px;
+  font-style: italic; font-weight: 500;
+  margin: 0 0 28px; color: var(--ink);
+}
+
+.tab-bird p { margin: 0 0 1.05em; }
+.tab-bird .lede::first-letter {
+  font-size: 4.4em; line-height: 0.86;
+  float: left; padding: 6px 12px 0 0;
+  color: var(--accent);
+  font-family: "Iowan Old Style", "Cormorant Garamond", "Playfair Display", Georgia, serif;
+  font-weight: 500;
+}
+.tab-bird h3 {
+  font-size: 19px; font-weight: 500;
+  font-variant: small-caps; letter-spacing: 0.08em;
+  margin: 32px 0 12px;
+  color: var(--ink-soft);
+  border-bottom: 1px solid var(--rule-soft);
+  padding-bottom: 4px;
+}
+
+.tab-bird .callout {
+  border-left: 3px solid var(--accent);
+  background: rgba(140,47,28,0.05);
+  padding: 14px 18px; margin: 22px 0;
+  font-size: 16.5px;
+}
+.tab-bird .callout .ctitle {
+  font-variant: small-caps; letter-spacing: 0.12em;
+  font-size: 12px; color: var(--accent); margin-bottom: 4px;
+}
+.tab-bird .pull {
+  margin: 28px 0; text-align: center;
+  font-style: italic; font-size: 22px;
+  color: var(--accent-2); line-height: 1.4;
+  border-top: 1px solid var(--rule-soft);
+  border-bottom: 1px solid var(--rule-soft);
+  padding: 14px 0;
+}
+.tab-bird .pull .who {
+  display: block; margin-top: 8px;
+  font-size: 12px; letter-spacing: 0.12em;
+  font-style: normal; color: var(--ink-faint);
+  text-transform: uppercase;
+}
+.tab-bird .matrix {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 16px; margin: 22px 0;
+}
+.tab-bird .matrix .cell {
+  border: 1px solid var(--rule);
+  background: var(--paper-2);
+  padding: 14px 16px; font-size: 15.5px;
+}
+.tab-bird .matrix .cell .h {
+  font-variant: small-caps; letter-spacing: 0.1em;
+  font-size: 12px; color: var(--accent); margin-bottom: 6px;
+}
+
+.tab-bird code {
+  background: var(--code-bg); color: var(--code-fg);
+  padding: 1px 5px; border-radius: 2px;
+  font-size: 0.88em;
+}
+.tab-bird pre {
+  background: var(--code-bg);
+  border-left: 3px solid var(--gold);
+  padding: 14px 18px; overflow-x: auto;
+  font-size: 13.5px; line-height: 1.55;
+  margin: 22px 0;
+}
+.tab-bird pre code { background: transparent; padding: 0; }
+
+.tab-bird table {
+  width: 100%; border-collapse: collapse;
+  margin: 22px 0; font-size: 15.5px;
+}
+.tab-bird th, .tab-bird td {
+  border-top: 1px solid var(--rule-soft);
+  border-bottom: 1px solid var(--rule-soft);
+  padding: 8px 10px; text-align: left;
+  vertical-align: top;
+}
+.tab-bird th {
+  font-variant: small-caps; letter-spacing: 0.08em;
+  color: var(--accent);
+  border-bottom: 1px solid var(--rule);
+}
+
+.tab-bird .afterword {
+  margin: 56px 0 28px;
+  border: 1px solid var(--ink-soft);
+  background: var(--paper-2);
+  padding: 22px 24px;
+}
+.tab-bird .afterword .label {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 11px; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--ink-faint);
+}
+.tab-bird .afterword h4 {
+  font-style: italic; font-weight: 500;
+  font-size: 22px; margin: 6px 0 12px;
+  color: var(--ink);
+}
+
+/* ============================================================
+   frog-tab scope — paste simple-frog-skeleton.html's CSS here,
+   each selector under `.tab-frog ...`.
+   ============================================================ */
+
+.tab-frog {
+  font-family: -apple-system, "Charter", "Iowan Old Style", Georgia, "Times New Roman", serif;
+}
+.tab-frog .nb-head {
+  border-bottom: 2px solid var(--ink-soft);
+  padding: 0 0 18px; margin-bottom: 26px;
+}
+.tab-frog .nb-head .stamp {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 12px; color: var(--ink-faint);
+  letter-spacing: 0.05em;
+}
+.tab-frog .nb-head h1 {
+  margin: 6px 0 4px; font-size: 30px; font-weight: 500;
+}
+.tab-frog .nb-head .sub {
+  font-style: italic; color: var(--ink-soft); font-size: 16px;
+}
+
+.tab-frog h2.section {
+  font-size: 18px;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-variant: small-caps; letter-spacing: 0.14em;
+  color: var(--accent-2);
+  margin: 42px 0 10px;
+  padding: 0 0 4px;
+  border-bottom: 1px solid var(--rule);
+  display: flex; align-items: baseline; gap: 12px;
+}
+.tab-frog h2.section .num {
+  color: var(--ink-faint); font-size: 12px;
+}
+.tab-frog h3.subsection {
+  font-size: 16px; font-weight: 500;
+  color: var(--ink-soft);
+  margin: 22px 0 6px;
+}
+
+.tab-frog .cell {
+  margin: 14px 0;
+  border-left: 4px solid transparent;
+  padding-left: 14px;
+}
+.tab-frog .cell.md   { border-color: var(--rule); }
+.tab-frog .cell.code { border-color: var(--accent-2); }
+.tab-frog .cell.out  { border-color: var(--gold); }
+.tab-frog .cell .label {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 11px; color: var(--ink-faint);
+  margin-bottom: 4px;
+  letter-spacing: 0.04em;
+}
+.tab-frog .cell.code pre {
+  background: var(--code-bg);
+  padding: 12px 14px;
+  font-size: 13px; line-height: 1.55;
+  overflow-x: auto; margin: 0;
+}
+.tab-frog .cell.out pre {
+  background: transparent;
+  padding: 6px 0 0;
+  font-size: 13px; line-height: 1.55;
+  margin: 0; color: var(--ink-soft);
+  white-space: pre-wrap;
+}
+.tab-frog .cell.md p { margin: 0 0 8px; }
+
+.tab-frog code {
+  background: var(--code-bg);
+  padding: 1px 5px; border-radius: 2px;
+  font-size: 0.86em;
+}
+
+.tab-frog .stop {
+  background: rgba(44,83,64,0.06);
+  border-left: 4px solid var(--accent-2);
+  padding: 12px 16px; margin: 18px 0;
+  font-size: 15.5px;
+}
+.tab-frog .stop .h {
+  font-variant: small-caps; letter-spacing: 0.12em;
+  font-size: 12px; color: var(--accent-2); margin-bottom: 4px;
+}
+
+.tab-frog .callout {
+  border-left: 3px solid var(--ink-faint);
+  background: var(--paper-2);
+  padding: 12px 16px; margin: 18px 0;
+  font-size: 15.5px;
+}
+.tab-frog .callout .tag {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 11px; letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-faint); margin-bottom: 4px;
+}
+.tab-frog .callout.warn  { border-color: var(--gold); }
+.tab-frog .callout.warn  .tag { color: var(--gold); }
+.tab-frog .callout.red   { border-color: var(--accent); background: rgba(140,47,28,0.05); }
+.tab-frog .callout.red   .tag { color: var(--accent); }
+.tab-frog .callout.green { border-color: var(--accent-2); background: rgba(44,83,64,0.05); }
+.tab-frog .callout.green .tag { color: var(--accent-2); }
+
+.tab-frog .nums {
+  display: grid; gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  margin: 18px 0;
+}
+.tab-frog .nums .num-box {
+  border: 1px solid var(--rule);
+  background: var(--paper-2);
+  padding: 10px 14px;
+}
+.tab-frog .nums .k {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 11px; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--ink-faint);
+}
+.tab-frog .nums .v {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 22px; font-weight: 500; color: var(--ink);
+}
+
+.tab-frog .nb-foot {
+  margin-top: 56px; padding-top: 14px;
+  border-top: 1px solid var(--rule);
+  font-size: 13px; color: var(--ink-faint); font-style: italic;
+}
+
+/* ============================================================
+   Shared: uncertainty marker
+   ============================================================ */
+.uncertain {
+  border-left: 3px dashed var(--accent);
+  background: rgba(140,47,28,0.04);
+  padding: 10px 14px; margin: 18px 0;
+  font-style: italic; color: var(--ink-soft);
+}
+
+/* responsive */
+@media (max-width: 640px) {
+  .tab-bird .masthead h1 { font-size: 32px; }
+  .tab-bird .matrix { grid-template-columns: 1fr; }
+  main { padding: 32px 18px 0; }
+}
+
+/* ============================================================
+   Narrow-screen (iPhone / mobile) — additive only.
+   Tab bar must NOT wrap character-by-character ("鸟/瞰" split is the
+   bug we're fixing); code cells get horizontal scroll instead of
+   bleeding past the viewport; section padding tightens.
+   ============================================================ */
+@media (max-width: 720px) {
+  /* Tab bar — keep on one line, allow horizontal scroll if needed,
+     hide non-essential meta. */
+  .tabbar {
+    padding: 0 12px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .tabbar::-webkit-scrollbar { display: none; }
+  .tab-btn {
+    padding: 12px 14px;
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .tab-meta { display: none; }
+
+  /* Shell */
+  main { padding: 28px 14px 0; max-width: 100%; }
+  body { font-size: 16px; line-height: 1.6; }
+
+  /* Bird tab — text scales, drop cap shrinks, matrix stacks */
+  .tab-bird .masthead { padding: 22px 0 16px; margin-bottom: 24px; }
+  .tab-bird .masthead h1 { font-size: 28px; line-height: 1.22; }
+  .tab-bird .masthead .deck { font-size: 16px; }
+  .tab-bird .chapter-rule { margin: 44px 0 18px; }
+  .tab-bird .chapter-rule .roman { font-size: 18px; }
+  .tab-bird .chapter-title { font-size: 22px; margin-bottom: 20px; }
+  .tab-bird .lede::first-letter { font-size: 3.2em; padding: 4px 8px 0 0; }
+  .tab-bird h3 { font-size: 17px; }
+  .tab-bird .callout { padding: 12px 14px; margin: 18px 0; font-size: 15.5px; }
+  .tab-bird .pull { font-size: 18px; padding: 12px 0; margin: 22px 0; }
+  .tab-bird .matrix { grid-template-columns: 1fr; gap: 12px; }
+  .tab-bird .matrix .cell { padding: 12px 14px; font-size: 15px; }
+  .tab-bird pre {
+    padding: 10px 12px;
+    font-size: 12.5px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .tab-bird pre code { white-space: pre; }
+  .tab-bird table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    white-space: nowrap;
+    font-size: 14px;
+  }
+  .tab-bird th, .tab-bird td { padding: 6px 8px; }
+  .tab-bird .afterword { padding: 18px 18px; margin: 36px 0 22px; }
+  .tab-bird .afterword h4 { font-size: 18px; }
+
+  /* Frog tab — notebook cell rhythm preserved, padding tightens */
+  .tab-frog .nb-head h1 { font-size: 24px; }
+  .tab-frog h2.section { font-size: 16px; margin: 32px 0 8px; }
+  .tab-frog h3.subsection { font-size: 15px; }
+  .tab-frog .cell { padding-left: 10px; margin: 12px 0; }
+  .tab-frog .cell.code pre,
+  .tab-frog .cell.out pre {
+    padding: 10px 12px;
+    font-size: 12px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .tab-frog .cell.code pre { white-space: pre; }
+  .tab-frog .stop { padding: 10px 14px; font-size: 14.5px; margin: 14px 0; }
+  .tab-frog .callout { padding: 10px 14px; font-size: 14.5px; margin: 14px 0; }
+  .tab-frog .nums { gap: 10px; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); }
+  .tab-frog .nums .num-box { padding: 8px 12px; }
+  .tab-frog .nums .v { font-size: 18px; }
+}
+
+@media (max-width: 480px) {
+  .tabbar { padding: 0 8px; }
+  .tab-btn { padding: 10px 11px; font-size: 12px; letter-spacing: 0.06em; }
+  main { padding: 22px 12px 0; }
+  body { font-size: 15px; }
+
+  .tab-bird .masthead h1 { font-size: 24px; }
+  .tab-bird .chapter-title { font-size: 19px; }
+  .tab-bird .lede::first-letter { font-size: 2.8em; }
+  .tab-bird pre { padding: 8px 10px; font-size: 11.5px; }
+  .tab-bird .pull { font-size: 17px; }
+
+  .tab-frog .nb-head h1 { font-size: 21px; }
+  .tab-frog .cell.code pre,
+  .tab-frog .cell.out pre { padding: 8px 10px; font-size: 11.5px; }
+}
+</style>
+</head>
+<body>
+
+<nav class="tabbar">
+  <button class="tab-btn active" data-tab="bird">Bird &middot; 鸟瞰</button>
+  <button class="tab-btn" data-tab="frog">Frog &middot; 蛙跳</button>
+  <span class="tab-meta">arc 260520a · 2026-05-20</span>
+</nav>
+
+<main>
+
+<!-- ============ BIRD TAB ============ -->
+<!-- Paste simple-bird-skeleton.html's <body><main>…</main></body> contents
+     here. Rewrite all `id="x"` → `id="bird-x"`. Match slugs `x` across tabs
+     so #frog-<slug> ↔ #bird-<slug> deep-links resolve to corresponding
+     sections under the global tab bar (do NOT add per-section jump buttons). -->
+<section class="tab-pane tab-bird active" id="tab-bird">
+<header class="masthead">
+  <div class="kicker">arc 260520a · DESIGN LOGIC · 鸟瞰</div>
+  <h1>LLM-Wiki 规则引擎最小可运行原型</h1>
+  <div class="deck">一份让 agent 真的"读规则、写规则"的 wiki 怎么会长成这个样子——从 form 反推回 force，再用一组真实数字去试它的脆点。</div>
+  <div class="byline">arc 260520a · 2026-05-20 · bird · 鸟瞰</div>
+</header>
+
+<!-- ============================================================
+     I · 问题的形状
+     ============================================================ -->
+<section>
+  <div class="chapter-rule"><span class="roman">I · 提问</span></div>
+  <h2 class="chapter-title" id="bird-the-question">如果 agent 自己维护 wiki，"维护"到底是什么？</h2>
+
+  <p class="lede">把所有关于"个人知识库"的工程话术先剥掉，剩下的题面其实只有一句话：一个长得像 markdown 仓库的对象，每天有新材料进来，agent 要让它<em>整体保持自洽，且让每一次新材料的接入都把过往的价值放大一些</em>。听起来温和，工程上却是七十年没人扛得动的活——所有人写到几百页就放弃，不是因为读不动了，是因为维护交叉引用、同步综述、标注矛盾这件事的成本曲线比内容曲线陡。</p>
+
+  <p>所以问的不是"怎么搭一个 wiki"。那是工具问题。问的是：当人不再做这份 bookkeeping 之后，那份 bookkeeping <em>真正的形状</em>是什么。它如果只是"把若干段文字写到若干份文件"，LLM-wiki 就退化成一个比 RAG 漂亮一点的散文生成器——每一份新材料让 wiki 的总价值线性涨一点，每一次 query 又得重新拼接。这不是 wiki，这是更省力的搜索。</p>
+
+  <div class="callout">
+    <div class="ctitle">朴素方案 · 它为什么不够</div>
+    <p>最自然的写法：LLM 拿到新源，写若干个 markdown 文件，更新 <code>index.md</code>，append 一行 <code>log.md</code>。能跑。但<em>规则藏在 prompt 散文里</em>——"看到新人名就建 entity 页"、"看到 contradiction 就标记两边"——它们没有结构、不可独立触发、不可单元测试、不可 retract 单条。等 prompt 长到三千字，agent 就开始失忆，wiki 也开始失自洽。</p>
+  </div>
+
+  <p>把这件事押在更尖的形上：我们要找的，是一个让 wiki 的<em>价值乘法</em>而不是<em>价值加法</em>的抽象。每加 1 个源能触达过去所有源；每加 1 条规则能回溯吃过去所有源。N 源 × M 规则 → 至多 N·M 条关系。如果只能做到 N + M，那就是失败。</p>
+
+  <div class="matrix">
+    <div class="cell">
+      <div class="h">朴素 wiki · 加法</div>
+      <p>每个源最多触达几页相关页。Agent 写完<em>这一页</em>就走。维护成本 ∝ 内容量；过半年没人想动它。</p>
+    </div>
+    <div class="cell">
+      <div class="h">规则引擎 wiki · 乘法</div>
+      <p>规则升格成一等数据。每加 1 条规则在<em>过去所有原子上</em>回溯派生；每加 1 个源让<em>所有现存规则</em>都跑一次。结构性放大。</p>
+    </div>
+  </div>
+
+  <p>这是问题的形状。它不是"该用 lisp 还是 python"，也不是"该不该上 vector store"——那些都是底下的选择。真正的 leverage 在于：<em>能不能让 agent 的主产物从"页"变成"规则"</em>。</p>
+
+  <div class="pull">
+    Agent 的产物如果还是"散文"，wiki 永远是线性的。<br>
+    把产物换成"规则"，它一夜之间就有了第二个维度。
+  </div>
+</section>
+
+<!-- ============================================================
+     II · 原子
+     ============================================================ -->
+<section>
+  <div class="chapter-rule"><span class="roman">II · 原子</span></div>
+  <h2 class="chapter-title" id="bird-atoms">事实的最小形状</h2>
+
+  <p class="lede">先把"facts"这件事推到极限。如果一份 wiki 里所有的"事实"都长一个样，那个样子最少要带几个字段？把它推到 0 个，全是自由文本——就回到 RAG。推到 ∞ 个，每条 fact 都是一个完整的关系数据库表——你失去了 markdown 的 ergonomic。在这两个极端之间，<em>有且只有一个</em>稳定的最小形状能让 forward chaining 跑得动而不爆炸：三元组 + provenance。</p>
+
+  <p>三元组 <code>(subj, pred, obj)</code> 来自一个非常古老的传统——RDF / Datalog / Datomic 都把它当原语——理由都一样：它是"能被 pattern 匹配的最小语义单元"。少一项变 unary（"事实的内容"找不到落点），多一项变 quad/quint（你不得不给每个 slot 起一个名字，DSL 复杂度 explode）。把这层抽象放回到 markdown 域里：</p>
+
+<pre><code>id: a_a26feb5c             # stable hash of (subj, pred, obj)
+subj: arc:260508b          # 跨 namespace 的 symbol
+pred: introduces_doc       # 一个固定词汇表里的动词
+obj:  doc:notes/lidar_merge_quality_metric.md
+source:       arcs/all/260508b_l2_lidar_merge_metric/9_summary.md
+derived_from: null         # null = extracted; 否则 = rule_id
+parents:      []           # 仅 derived 时非空
+</code></pre>
+
+  <p><code>source</code> 和 <code>derived_from</code>/<code>parents</code> 这一组字段不是装饰。它是<em>整个抽象的承重柱</em>。少了它们，wiki 就退化回"一堆事实"，撤回一条 bad rule 时无法逆向；多了它们，每条原子都是它自己的 git diff，retract 一条规则 = 删 markdown + 重跑 = 它派生的全部 atoms 自动消失。这是 event sourcing 的味道，但事件粒度细到了三元组级别。</p>
+
+  <h3>asymptotic check</h3>
+
+  <p>把 <code>derived_from</code> 去掉会怎样？答案是：你立刻失去 chain 的可调试性——一条 derived atom 不知道是谁派生的，撤一条规则就要全量重跑而不能局部修。把 <code>parents</code> 去掉会怎样？你失去了 viz 反向链——"这条结论从哪些事实里来的"这件事不能在 1 ms 内回答。两个字段都不能省。</p>
+
+  <div class="callout">
+    <div class="ctitle">命名空间约定</div>
+    <p>每个 subj/obj 以 <code>ns:id</code> 形式存在——<code>arc:260508b</code>、<code>doc:notes/foo.md</code>、<code>code:utils/x.py</code>、<code>topic:lidar</code>、<code>type:arc</code>。这件事看着小，实际它让 pattern matching 不用 schema 也能正确分轨——<code>(?A, mentions_code, ?C)</code> 自动只跟 code namespace 的 obj 对上。Datomic 里也是同一招。</p>
+  </div>
+
+  <p>这一节的元反思：当你能把"事实"压到这个粒度，wiki 的 mutable state 就从"段落"降到"三元组"——它成为可<em>组合</em>的对象，而段落永远不可组合。</p>
+</section>
+
+<!-- ============================================================
+     III · 规则
+     ============================================================ -->
+<section>
+  <div class="chapter-rule"><span class="roman">III · 规则</span></div>
+  <h2 class="chapter-title" id="bird-rules">让规则也是 wiki 的一页</h2>
+
+  <p class="lede">原子是事实，规则是从事实到事实的<em>函数</em>。Norvig 在 PAIP 里有一句话："Lisp 派 30 年来一直坚持的同一个论点是 schema 即数据"。把这句话扣到 wiki 上的代价非常便宜——规则只要也写成一份 markdown，agent 就能 lint 它、grep 它、版本化它、单测它、删掉一条 retract 它。规则 = page，而不是"prompt 的某一段"。</p>
+
+  <p>每条规则的形状大致就这么多：</p>
+
+<pre><code>---
+id: r002_doc_used_by_arc
+when:
+  - {subj: "?A", pred: introduces_doc, obj: "?D"}
+  - {subj: "?B", pred: mentions_doc,   obj: "?D"}
+constraint: "?A != ?B"
+then:
+  - {subj: "?D", pred: used_by_arc, obj: "?B"}
+---
+# r002 · 复用监测：doc 被引入后又被其他 arc 提到
+A 引入 D，B 也提到 D（B≠A）→ D 被 B 复用。
+被 r009 链式消费（co_used_with）。
+</code></pre>
+
+  <p>frontmatter 是<em>可执行</em>的部分——agent 不写 prose 解释自己的规则就 prose 解释；它通过 frontmatter 把 pattern 交给引擎，body 留给人和 agent 自己读。Pattern 的语法刻意做到只有三件事：conjunction、变量 bind、constraint。<em>没有</em>否定，<em>没有</em>聚合，<em>没有</em>算术。这是 Datalog 的子集——够用就停。每加一条 DSL feature 都得付 termination 复杂度的钱，不挣钱不加。</p>
+
+  <h3>cross-domain transfer</h3>
+
+  <p>"规则即数据"这个形状以前出现过至少四次——每一次背后的<em>抽象理由</em>是同一个：</p>
+
+  <div class="matrix">
+    <div class="cell">
+      <div class="h">make · 构建系统</div>
+      <p><code>foo.o: foo.c</code> 是 pattern；<code>$(CC) -c $&lt;</code> 是 action。Makefile 自己是 makefile 的输入。</p>
+    </div>
+    <div class="cell">
+      <div class="h">Datalog · 演绎数据库</div>
+      <p>事实集合 + Horn 子句 + fixpoint。1985 年就把这件事的语义封死了。</p>
+    </div>
+    <div class="cell">
+      <div class="h">Event sourcing · CRDT</div>
+      <p>状态 = 折叠（事件流）。事件是只追加的事实；折叠规则是可演化的代码。</p>
+    </div>
+    <div class="cell">
+      <div class="h">Emacs / Org · 自描述编辑器</div>
+      <p>同一个 buffer 既是数据又是程序。<code>C-x C-e</code> 在原地求值——schema 改 schema 的最纯实现。</p>
+    </div>
+  </div>
+
+  <p>四个不同的领域都收敛到了同一个 shape——这是 Hamming 反复说的"同一个数学结构在不同伪装下反复出现"——LLM-wiki 是第五个，区别只在于 eval 是个概率函数而不是确定函数。但 form 完全一样。</p>
+
+  <div class="callout">
+    <div class="ctitle">这一招要发生，要付的代价</div>
+    <p>放弃 turing-完备的 DSL。放弃在 rule body 里写代码。放弃 negation。放弃聚合。换来的是：fixpoint 一定收敛、每条规则可单测、每条规则可独立 retract。这是非常划算的交易——但只要你试图加 negation，整个抽象就开始漏水。</p>
+  </div>
+</section>
+
+<!-- ============================================================
+     IV · 引擎
+     ============================================================ -->
+<section>
+  <div class="chapter-rule"><span class="roman">IV · 引擎</span></div>
+  <h2 class="chapter-title" id="bird-engine">forward chaining 是这个抽象唯一允许的计算</h2>
+
+  <p class="lede">有了原子和规则，"跑 wiki"是什么意思？严格地讲，只能是一件事：把所有规则在所有原子上反复匹配，把每次匹配派生出的新原子加进去，直到没有新原子可加。这是<em>不动点</em>。不是优化、不是策略选择——它是这个抽象唯一允许的计算。换句话说，<em>引擎的设计从抽象里掉出来，不是被设计出来</em>。</p>
+
+  <p>核心循环大概十行：</p>
+
+<pre><code>def run(atoms, rules, max_iter=20):
+    store = AtomStore(atoms)
+    while True:
+        added = 0
+        for rule in rules:
+            for binding, parents in match_all(rule.when, rule.constraint, store):
+                for tpat in rule.then:
+                    new = instantiate(tpat, binding, rule.id, parents)
+                    if store.add(new):  # dedupe by (subj, pred, obj)
+                        added += 1
+        if added == 0:
+            break
+    return store
+</code></pre>
+
+  <p>"由不动点掉出来"的另一面是<em>必然 idempotent</em>。<code>store.add</code> 用 <code>(subj, pred, obj)</code> 的 hash 去重，所以重跑一万次和重跑一次结果完全一样。这件事重要到值得停一秒：在一个 LLM-参与的环境里，输入是 stochastic 的、prompt 是 mutable 的，<em>整套机械化部分必须是 idempotent 的</em>，否则你没有办法 reason about state。</p>
+
+  <h3>semi-naive 的小诡计</h3>
+
+  <p>实现上有一个不显眼的工程选择：同一 iteration 里，<em>后跑的规则可以看到前跑的规则在本轮派生的新原子</em>。这违反了 strict naive forward chaining 的语义（应该等本轮所有规则跑完才更新 store），但代价是测出来的 iteration 数字变得没意义。我故意选了 semi-naive——因为收敛速度更快、产物完全一样、且实测上 fixpoint 在 2 iterations 内就到。Datalog 的标准实现也是 semi-naive。</p>
+
+  <div class="callout">
+    <div class="ctitle">为什么不要做"smarter"的引擎</div>
+    <p>在 200 行代码 + 30 sources 的尺度上，<em>聪明的索引</em>带来的省时不抵代码复杂度的代价。引擎要么停在 naive forward chain（≤200 行）、要么直接上 Datalog 编译器（≥ 3000 行）。中间形态都是输。</p>
+  </div>
+
+  <p>这一节的元反思：当你的 wiki 形状选对了，计算就不再是 design space 的一个维度——它变成了 form 的一个推论。这是"abstraction collapse"最爽的一面——不止设计变薄，<em>设计选择本身也少了一层</em>。</p>
+</section>
+
+<!-- ============================================================
+     V · 链
+     ============================================================ -->
+<section>
+  <div class="chapter-rule"><span class="roman">V · 链</span></div>
+  <h2 class="chapter-title" id="bird-chains">为什么这一切到这里才开始变得有意思</h2>
+
+  <p class="lede">到目前为止描述的东西，是一个三元组数据库 + 一个 Datalog 引擎——挺老的技术。真正的新意——也是这次 arc 想押的东西——在于 <em>chain</em>：一条规则的<em>派生</em>原子可以被另一条规则<em>消费</em>。这是 forward chaining 在 LLM-wiki 场景里的真正杠杆，它是"价值乘法"的微观机制。</p>
+
+  <p>把规则分成两类。第一类是 <em>extracted-only join</em>——只匹配 ingest 阶段抽出来的原始事实。第二类是 <em>chain rule</em>——它的 <code>when</code> 里至少有一个 predicate 是别的规则派生出来的。把这两类摆并排：</p>
+
+  <div class="matrix">
+    <div class="cell">
+      <div class="h">extracted-only join · r007</div>
+      <p><code>has_topic(?D, ?T)</code> + <code>has_topic(?E, ?T)</code> → <code>shares_topic_with(?D, ?E)</code>。两个槽都吃原始事实。yield ∝ <code>Σ_T (N_T choose 2)</code>，topic 越热 yield 越大。</p>
+    </div>
+    <div class="cell">
+      <div class="h">chain rule · r009</div>
+      <p><code>used_by_arc(?D, ?B)</code> + <code>used_by_arc(?E, ?B)</code> → <code>co_used_with(?D, ?E)</code>。<em>消费 r002 派生</em>。yield 完全被 r002 的输出尾巴卡住。</p>
+    </div>
+  </div>
+
+  <p>chain rule 的价值在于"<em>每加 1 条 chain rule，理论上释放 N·M 的潜在边</em>"。它不是直接读源，是读"规则读源之后的产物"——它在做<em>语义层面的二阶组合</em>。这件事其它范式里非常难表达：散文 prompt 里你没法 cleanly 说"消费上一条 prompt 的结论"；vector store 里则根本不存在"派生事实"这种东西。</p>
+
+  <h3>kernel_v3 四招都掉出来了</h3>
+
+  <p>这件事是这次 arc 最值的发现：之前那个 alpha_second/kernel_v3 分支里 4 种 lisp-pro 招（macros / multimethod / condition-restart / lazy streams）原本是各自独立的机制；放到这个 rule-engine 抽象里，<em>它们全部从一个机制里掉出来</em>。一对一对应：</p>
+
+  <table>
+    <thead><tr><th>kernel_v3 招</th><th>在 rule engine wiki 里的对应物</th></tr></thead>
+    <tbody>
+      <tr><td>homoiconic sexp + macro</td><td>规则就是 markdown 页；规则可以匹配规则（meta-rule，schema 自描述）</td></tr>
+      <tr><td>CLOS multimethod</td><td>规则的 <code>when</code> pattern 就是多轴 predicate；新源类型 = 新规则（一文件）</td></tr>
+      <tr><td>condition / restart</td><td><code>has_duplicate_introducer</code> 这种 derived atom 是结构化矛盾；用户的"<code>skip / merge / branch / supersede</code>"选择是写回引擎的另一条规则</td></tr>
+      <tr><td>lazy stream sharing</td><td>forward chaining 本身就是"一份事实，多条规则同时消费"——一次 extract 喂 N 条 chain</td></tr>
+    </tbody>
+  </table>
+
+  <p>这才是"kernel_v3 神迹"的真正复现——不是把四招迁移过来，是<em>找到一个抽象，让四套独立机制变成同一套机制的不同侧面</em>。这是 Hamming 反复在 "Coding Theory" 一讲里说的那种现象——若干个不同的工程构件，<em>背后是同一个数学结构在作怪</em>。</p>
+
+  <div class="pull">
+    四个机制坍缩成一个机制。这不是设计上的胜利，是发现上的胜利。
+  </div>
+
+  <p>这一节的元反思：当你看到不同领域的若干个 mechanism 都开始向一个 shape 收敛，停下来——你大概率正站在一个更深的抽象的边缘。push 它，把那个抽象写出来；不要满足于"我注意到这件事"。</p>
+</section>
+
+<!-- ============================================================
+     VI · 实验
+     ============================================================ -->
+<section>
+  <div class="chapter-rule"><span class="roman">VI · 实验</span></div>
+  <h2 class="chapter-title" id="bird-experiment">把数字砸到形上看它的脆点</h2>
+
+  <p class="lede">抽象漂亮不算数，得让它顶着真实数据跑一下。30 份 3dgs 项目源（8 arcs / 14 notes / 2 decisions / 1 paper / 5 specs），10 条手写 seed rules + 1 条 chain² ablation r011。359 个 atoms，211 条 derivations，跑 26 ms。下面是<em>没有被美化过的</em>四张验收卡：</p>
+
+  <table>
+    <thead><tr><th>L1 指标</th><th>目标</th><th>实测</th><th>判定</th></tr></thead>
+    <tbody>
+      <tr><td>10 条规则总 derivation 数</td><td>≥ 50</td><td>209</td><td>PASS</td></tr>
+      <tr><td>第 11 条规则边际增益</td><td>≥ 5</td><td><strong>2</strong></td><td><strong>FAIL</strong></td></tr>
+      <tr><td>引擎全量 wall time</td><td>&lt; 5 s</td><td>26 ms</td><td>PASS</td></tr>
+      <tr><td>spot-check 抽样有效率</td><td>≥ 30%</td><td>manual</td><td>—</td></tr>
+    </tbody>
+  </table>
+
+  <p>L1.2 没过。要说清楚是<em>为什么</em>不过——而不是把数字往好处粉饰。</p>
+
+  <h3>断在哪里</h3>
+
+  <p>每条 rule 的产量分布是这样的：</p>
+
+<pre><code>r007_doc_co_topic_neighbor      152   <- dense join, extracted-only
+r004_code_developed_in_arc       21
+r001_introduces_reverse          15
+r005_arc_contributes_topic        6
+r002_doc_used_by_arc              5
+r003_arc_ref_reverse              4
+r006_arc_depends_on_older_arc     4
+r008_duplicate_introducer         0   <- 数据里就没有矛盾，这是项目质量信号
+r009_co_used_with                 2   <- chain consumer of r002
+r010_topic_shared_arc             0
+r011_ablation_strong_neighbor     2   <- chain² consumer of r009 + r007
+</code></pre>
+
+  <p>看尾巴。<em>chain² 被卡死了，但不是被 chain 机制卡死，是被上游稀疏卡死</em>：r002 只产 5 条 used_by_arc，r009 继承到 2 条 co_used_with，r011 在 r009 ∩ r007 上做 join 只能拿 2 条。这是数据规模问题，不是抽象问题——但抽象层面的教训仍然是真的：<em>chain 的价值高度依赖上游高 cardinality</em>。</p>
+
+  <p>但同时这件事告诉我们另一面：<em>aggregate 的乘法效益其实成立</em>。avg 19.2 derivations/rule，比线性 baseline 大 19 倍。"指数微分"在 aggregate 层面没问题；只是在 chain² 这条特定 ablation 上需要密集上游。</p>
+
+  <div class="callout">
+    <div class="ctitle">r008 = 0 不是 bug，是体检报告</div>
+    <p>contradiction-lint 规则在 30 份源上派生了 0 条——意思是项目里没有任何"两个 arc 都声称 introduces 同一份 doc"的情况。这条规则<em>就是为这种矛盾存在的</em>；它输出 0，本身是结论。这种"用规则把不存在的东西显式化"的体检属性，朴素 wiki 完全做不到。</p>
+  </div>
+
+  <h3>asymptotic 推演</h3>
+
+  <p>把 source 推到 0，aggregate yield 当然归零——退化成空 wiki。把 source 推到 ∞（或者只要 ≥ 50 arcs），r002 类规则上游变密，r009/r011 链条就活了——chain² 的 marginal 应当从 2 上升到几十。这意味着：<em>这次 L1.2 的失败不告诉我们 chain 不 work，它告诉我们 chain 在这个数据规模下还没开始 work</em>。</p>
+
+  <div class="pull">
+    一个抽象在小数据上的失败，往往不是抽象错了。<br>
+    它是在告诉你这个抽象的"启动门槛"在哪里。
+  </div>
+</section>
+
+<!-- ============================================================
+     VII · 收
+     ============================================================ -->
+<section>
+  <div class="chapter-rule"><span class="roman">VII · 收</span></div>
+  <h2 class="chapter-title" id="bird-lessons">这次坍缩留下了什么</h2>
+
+  <p class="lede">最后这一段不打算总结全文——总结上面六章已经够了。它只想留三件等以后细节都忘掉之后还应该记得的事。</p>
+
+  <h3>形状先于实现</h3>
+
+  <p>整个 arc 的成本，集中在一件事上：把抽象坍缩到 <em>(atoms, rules, fixpoint)</em> 这三个名字。一旦这三个名字定下来，引擎是 80 行，DSL parser 是 80 行，ingest 是 120 行，viz 是 200 行——加起来不到 600 行。"难"的地方不是写代码，是<em>认出</em> chain 是 rule-engine 的真承重柱，而不是 lisp 同像性、不是 markdown 语法糖、也不是 LLM 智能本身。</p>
+
+  <h3>chain 是真承重，但有启动门槛</h3>
+
+  <p>chain 让"加 1 条规则放大 N 条原子"这件事可能；但它需要上游 dense。在 30 sources × 11 rules 这个规模上，chain² 还没真正 fire。下一步的工作不是改引擎，是<em>增加 sources，或者设计能把 dense rule 当 upstream 的 chain rule</em>。后者就是用 r007 (152) 当 chain 的源头，而不是 r002 (5)。</p>
+
+  <h3>不要把"指数"喊太响</h3>
+
+  <p>实测上"指数"在 aggregate 层面成立，在 chain² 层面这个数据规模下不成立。诚实地这么写——而不是把 avg/rule 那个 19.2 拿出去当 marketing 数字。<em>这条抽象的真正杠杆点是 chain；chain 的瓶颈是数据稀疏。</em>未来的所有讨论都该围绕这件事，不该被 aggregate 数字遮住。</p>
+
+  <aside class="afterword">
+    <div class="label">EDITOR'S NOTE · meta-reflection</div>
+    <h4>什么时候你才知道找到了正确的抽象？</h4>
+    <p>答案不是"代码变少了"——那只是症状之一。真正的信号是：原来若干个独立的机制开始<em>从同一个机制里掉出来</em>。kernel_v3 的四招在这次 arc 里坍缩成 "rule + forward chain" 一件事；Datomic / Datalog / make / Emacs 这四件看起来不相关的工程在背后共享同一个 form——这是抽象正确的最强信号。但抽象正确不等于<em>立刻就 work</em>。它告诉你向哪走，不告诉你已经到了。这次的 L1.2 = 2 是温柔的提醒——形状对了，但数据规模还差一点。</p>
+  </aside>
+</section>
+
+</section>
+
+<!-- ============ FROG TAB ============ -->
+<!-- Paste simple-frog-skeleton.html's <body><main>…</main></body> contents
+     here. Rewrite all `id="x"` → `id="frog-x"`. Match slugs `x` across tabs. -->
+<section class="tab-pane tab-frog" id="tab-frog">
+<header class="nb-head">
+  <div class="stamp">arc 260520a · 2026-05-20 · frog · 蛙跳</div>
+  <h1>从一份 9_summary.md 长出一个 wiki 规则引擎</h1>
+  <div class="sub">不从抽象开始。先看一份真实的 markdown，看 200 行 Python 怎么把它榨成 (atoms, rules) → derived 的不动点。</div>
+</header>
+
+<h2 class="section" id="frog-the-question"><span class="num">[I]</span> 先看一份真东西</h2>
+
+<div class="cell md">
+  <div class="label">In [md]:</div>
+  <p>okay 在动手写任何抽象之前，我们先打开 <code>arcs/all/260508b_l2_lidar_merge_metric/9_summary.md</code>。这是项目里一篇真实的 arc 总结，刚跑完一组 lidar merge 质量指标实验。这种 markdown 几乎每个礼拜都会新落一篇。</p>
+</div>
+
+<div class="cell code">
+  <div class="label">In [1]: head -22 arcs/all/260508b_l2_lidar_merge_metric/9_summary.md</div>
+<pre><code># 9_summary — l2_lidar_merge_metric
+
+**Status: DONE ✅** — meta-evaluation passed acceptance on all 3 validation clips.
+
+## TL;DR
+
+- 设计了 L2 时序 LiDAR merge 的单标量质量指标 `bidirectional_nn`，在 3 个 fabu clip
+  × 10 级 pose 高斯噪声 sweep 下 Spearman ρ = 1.0000（p = 6.65×10⁻⁶⁴）。
+- ...
+
+## Docs Changes
+
+- **[NEW]** `docs/notes/lidar_merge_quality_metric.md` — 主指标 runbook。
+- **[NEW]** `docs/notes/fabu_pose_floor.md`           — pose 噪声 floor + 噪声 schedule。
+- **[UPDATE]** `docs/notes/lidar_merge_pipeline.md`   — 加 "L2 quality gate" 子节。
+</code></pre>
+</div>
+
+<div class="cell md">
+  <div class="label">In [md]:</div>
+  <p>注意那三行 <code>[NEW] / [NEW] / [UPDATE]</code>。它们不是普通散文 — 它们是规约（convention），项目里每篇 arc 都用同样的格式表达 "这一轮我新建了哪些 doc、改了哪些 doc"。整个项目这种 9_summary.md 大约 8 篇，加 notes / SPECS / paper_read / decisions 一共三十几篇 markdown。</p>
+</div>
+
+<div class="cell code">
+  <div class="label">In [2]:</div>
+<pre><code># 我想知道：能不能让 agent 自动维护一个 wiki，
+# 把上面这些 [NEW] / [UPDATE] / mentions / cross-refs
+# 自动织成反向链 + 邻居关系 + 复用图？
+</code></pre>
+</div>
+
+<div class="cell md">
+  <div class="label">In [md]:</div>
+  <p>第一反应是 "让 LLM 每次写完 arc 之后顺手更新 wiki 页"。但这条路有一个不会自愈的故障模式：agent 的产出是<strong>页面</strong>，而页面 N+1 篇里有 N 处会被 N+2 篇的某个细节悄悄推翻 — 没人审，长出来就老化。<strong>agent 产页面 = 不可维护</strong>。</p>
+  <p>所以我们换个产物：让 agent 产<strong>规则</strong>。规则少（一两百条）、可 grep、可 diff、删一条它派生的链接就消失。页面只是 (atoms × rules) 的<strong>派生投影</strong>。</p>
+</div>
+
+<div class="stop">
+  <div class="h">stop &amp; think</div>
+  <p>这个 reframe 的赌注是：100 条规则 × 1000 条 source ≈ 100k 条关系，而每条规则一次写好可以反复用。如果做不到这一点 — 也就是规则之间不组合，N×M 退化成 N+M — 那这个抽象就破产。本 arc 就是要在 200 行 Python 里把这个赌注的成败实证出来。</p>
+</div>
+
+<h2 class="section" id="frog-atoms"><span class="num">[II]</span> 原子：把 markdown 切成三元组</h2>
+
+<div class="cell md">
+  <div class="label">In [md]:</div>
+  <p>先看刚才那篇 <code>9_summary.md</code> 被抽取后长什么样。<code>scripts/extract_atoms.py</code> 是<strong>纯确定性 regex</strong>，不调 LLM；它扫每一篇 markdown，吐出一份 YAML：</p>
+</div>
+
+<div class="cell out">
+  <div class="label">Out[3]: cat output/260520_2102_demo_run/wiki/atoms/arcs__all__260508b_l2_lidar_merge_metric__9_summary.yaml | head -40</div>
+<pre>- id: a_24713ef7
+  subj: arc:260508b
+  pred: has_type
+  obj: type:arc
+  source: arcs/all/260508b_l2_lidar_merge_metric/9_summary.md
+  derived_from: null
+  parents: []
+- id: a_23497ee8
+  subj: arc:260508b
+  pred: has_title
+  obj: 9_summary — l2_lidar_merge_metric
+  ...
+- id: a_a26feb5c
+  subj: arc:260508b
+  pred: introduces_doc
+  obj: doc:notes/lidar_merge_quality_metric.md
+  source: arcs/all/260508b_l2_lidar_merge_metric/9_summary.md
+  derived_from: null
+  parents: []
+- id: a_6eff8628
+  subj: arc:260508b
+  pred: introduces_doc
+  obj: doc:notes/fabu_pose_floor.md
+  ...
+- id: a_65f358bc
+  subj: arc:260508b
+  pred: updates_doc
+  obj: doc:notes/lidar_merge_pipeline.md
+  ...</pre>
+</div>
+
+<div class="cell md">
+  <div class="label">In [md]:</div>
+  <p>每条 atom 是一份 <code>(subj, pred, obj)</code> 三元组，外加 provenance（<code>source</code> + <code>derived_from</code> + <code>parents</code>）。看 <code>a_a26feb5c</code> 那一行：它就是把刚才那行 <code>**[NEW]** \`docs/notes/lidar_merge_quality_metric.md\`</code> 翻译成 RDF 风味的"事实"。</p>
+</div>
+
+<div class="cell code">
+  <div class="label">In [4]: utils/atom.py（核心 dataclass）</div>
+<pre><code>def _atom_id(subj: str, pred: str, obj: str) -> str:
+    h = hashlib.sha1(f"{subj}|{pred}|{obj}".encode("utf-8")).hexdigest()[:8]
+    return f"a_{h}"
+
+@dataclass(frozen=True)
+class Atom:
+    subj: str
+    pred: str
+    obj: str
+    source: str = ""
+    derived_from: Optional[str] = None
+    parents: tuple = field(default_factory=tuple)
+
+    @property
+    def id(self) -> str:
+        return _atom_id(self.subj, self.pred, self.obj)
+
+    @property
+    def key(self) -> tuple:
+        return (self.subj, self.pred, self.obj)
+</code></pre>
+</div>
+
+<div class="stop">
+  <div class="h">stop &amp; think</div>
+  <p>等等 — 为什么要把句子切成三段 <code>(subj, pred, obj)</code>，而不是直接写 "260508b 这个 arc 引入了 lidar_merge_quality_metric.md"？</p>
+  <p>答案藏在第三章。三元组的形状决定了规则可以写成"<em>当存在 (?A, introduces_doc, ?D) 且存在 (?B, mentions_doc, ?D) 时，派生 (?D, used_by_arc, ?B)</em>"。自然语言版本里 <code>?A / ?D / ?B</code> 不存在 — 没有 hole 就没有 join。RDF 切法是为了让 pattern matcher 能工作。</p>
+  <p>另外注意 <code>id</code> = <code>sha1(subj|pred|obj)[:8]</code>：同一个事实重抽 / 重派生都不重复入库（dedupe-by-content）。<code>parents</code> 是反向链 — 派生 atom 知道它从哪两条父 atom 来的。</p>
+</div>
+
+<div class="cell md">
+  <div class="label">In [md]:</div>
+  <p>项目根上 31 篇 markdown 跑完，<code>extract_atoms.py</code> 吐出 <strong>359 条 atom</strong>。整个抽取过程零 LLM、零网络、毫秒级。这一步的成本几乎为零，意味着 source 再加一倍，atoms 也只是线性涨 — 这是后面"乘法"成立的前提：atoms 是<strong>廉价的事实层</strong>。</p>
+</div>
+
+<h2 class="section" id="frog-rules"><span class="num">[III]</span> 规则：每条规则是一份 markdown</h2>
+
+<div class="cell md">
+  <div class="label">In [md]:</div>
+  <p>看一份完整的、跑在真实数据上的规则。这是 11 条规则里的第 2 条，<code>output/260520_2102_demo_run/wiki/rules/r002_doc_used_by_arc.md</code>：</p>
+</div>
+
+<div class="cell code">
+  <div class="label">In [5]: cat r002_doc_used_by_arc.md</div>
+<pre><code>---
+id: r002_doc_used_by_arc
+when:
+  - {subj: "?A", pred: introduces_doc, obj: "?D"}
+  - {subj: "?B", pred: mentions_doc,   obj: "?D"}
+constraint: "?A != ?B"
+then:
+  - {subj: "?D", pred: used_by_arc, obj: "?B"}
+---
+
+# r002 · 复用监测：doc 被引入后又被其他 arc 提到
+
+A 引入 D，B 也提到 D（B≠A） → D 被 B 复用。
+这是整个 wiki 里"知识在跨 arc 流动"的硬证据。
+
+被 r009 链式消费（co_used_with）。
+</code></pre>
+</div>
+
+<div class="cell md">
+  <div class="label">In [md]:</div>
+  <p>这是规则 DSL 的全部。一行一行拆：</p>
+  <ul>
+    <li><code>id</code> — 规则的稳定标识，也是派生 atom 的 <code>derived_from</code> 字段。</li>
+    <li><code>when</code> — 一个三元组合取式（AND）。每个槽位可以是字面量（<code>introduces_doc</code>）或变量（<code>?A</code>，问号开头）。同名变量在整个 pattern 里共享 binding — 这是 join 的语义。</li>
+    <li><code>constraint</code> — 一个被严格白名单的 Python 表达式（只允许 <code>== != &lt; &gt;</code> 等比较），bind 后求值。这里 <code>?A != ?B</code> 排除"自己引入自己也提到自己"的退化解。</li>
+    <li><code>then</code> — 一条或多条 emit 模板。规则 fire 一次 → 每条 <code>then</code> 派生一个 atom。</li>
+  </ul>
+  <p>body 是给<strong>人</strong>看的：说明语义、预估 yield、写明被哪条下游规则链式消费。<code>r002</code> 这一段尾巴上写着 "被 r009 链式消费" — 这就是第三章的 chain。</p>
+</div>
+
+<div class="cell code">
+  <div class="label">In [6]: utils/rule.py — Rule.from_markdown(path)</div>
+<pre><code>@classmethod
+def from_markdown(cls, path: str | Path) -> "Rule":
+    p = Path(path)
+    text = p.read_text(encoding="utf-8")
+    if not text.startswith("---"):
+        raise ValueError(f"{p}: missing frontmatter")
+    _, fm, body = text.split("---", 2)
+    meta = yaml.safe_load(fm)
+    rule_id = str(meta["id"])
+    when = [Pattern.from_dict(x) for x in meta["when"]]
+    then = [Pattern.from_dict(x) for x in meta["then"]]
+    constraint = meta.get("constraint")
+    if constraint is not None:
+        constraint = str(constraint)
+        if not _SAFE_CONSTRAINT_RE.match(constraint):
+            raise ValueError(f"{p}: unsafe constraint chars: {constraint!r}")
+    return cls(id=rule_id, when=when, then=then,
+               constraint=constraint, source_path=str(p), body_md=body.strip())
+</code></pre>
+</div>
+
+<div class="callout">
+  <div class="tag">DSL 边界</div>
+  <p>明确不支持的 — negation（"没有 X 时…"）、aggregation（count / sum / max）、算术、disjunction（OR）。<strong>conjunction + bind + emit</strong> 三件套，够用即停。这条约束让规则可单测、可 grep、可 lint；也让 engine 100 行写得完。Datalog 的最小子集，没什么神秘的。</p>
+</div>
+
+<div class="cell md">
+  <div class="label">In [md]:</div>
+  <p>类比：你写过 PyTorch 的 <code>nn.Module</code>，每个 module 是一份独立、可序列化、可组合的 spec；这里的 rule 是同样的意思 — 一份独立、可序列化、可组合的"推理单元"。或者更近的类比：<code>make</code> 的 rule（<code>target: deps; recipe</code>），或者 SQL 的一个带 join 的 view。这条规则 = 一个 view definition。</p>
+</div>
+
+<h2 class="section" id="frog-engine"><span class="num">[IV]</span> 引擎：100 行的不动点</h2>
+
+<div class="cell md">
+  <div class="label">In [md]:</div>
+  <p>有了 atoms（数据）和 rules（pattern → action），剩下的就是把 rules 反复扫在 atoms 上直到不再产生新东西。这是 forward chaining 经典套路：每轮所有规则都 fire 一遍，新派生的 atoms 进入 store；下一轮这些新 atoms 又会被消费它们的规则匹配到。直到一轮过去 zero new atoms — 收敛了。</p>
+</div>
+
+<div class="cell code">
+  <div class="label">In [7]: utils/engine.py — run() 主循环</div>
+<pre><code>def run(initial, rules, *, max_iter=20) -> RunResult:
+    store = AtomStore()
+    extracted = 0
+    for a in initial:
+        if store.add(a):
+            extracted += 1
+
+    trace, per_rule = [], {r.id: 0 for r in rules}
+    iteration = 0
+    while iteration < max_iter:
+        iteration += 1
+        added_this_round = 0
+        for rule in rules:
+            for binding, parents in _match_all(rule.when, rule.constraint, store):
+                for tpat in rule.then:
+                    triple = _instantiate(tpat, binding)
+                    if triple is None: continue
+                    subj, pred, obj = triple
+                    new = Atom(subj=subj, pred=pred, obj=obj, source="",
+                               derived_from=rule.id,
+                               parents=tuple(p.id for p in parents))
+                    if store.add(new):                # ← dedupe-by-key
+                        per_rule[rule.id] += 1
+                        added_this_round += 1
+                        trace.append(DerivationStep(
+                            iteration=iteration, rule_id=rule.id,
+                            binding=dict(binding),
+                            parents=tuple(p.id for p in parents),
+                            derived=new))
+        if added_this_round == 0:                     # ← fixpoint reached
+            break
+    ...
+</code></pre>
+</div>
+
+<div class="cell md">
+  <div class="label">In [md]:</div>
+  <p>三个细节值得停下来看。</p>
+  <p><strong>(a) <code>store.add(new)</code> 返回 bool</strong>：(subj, pred, obj) 已经在 store 里就返回 <code>False</code>，<code>added_this_round</code> 不增。这是 dedupe，也是<strong>不动点终止条件</strong>的物理基础 — 因为我们的 then 只 emit，从不删除，新 atom 集是<strong>单调递增</strong>的，又有上界（所有可能 subj×pred×obj 的有限组合），所以必然收敛。</p>
+  <p><strong>(b) <code>derived_from + parents</code></strong>：每个派生 atom 都记得是哪条规则在哪个 binding 下从哪几条父 atom 派生出来的。viz 反向链就靠这两个字段。这跟 PyTorch <code>autograd</code> 的 <code>grad_fn</code> + <code>next_functions</code> 是同一个意思 — backward 的时候沿着这条链回溯。区别只是这里 forward 一次到底，没有 backward。</p>
+  <p><strong>(c) <code>_match_all</code> 是递归</strong>：对 <code>when</code> 里的每个 pattern 逐个尝试匹配，已 bind 的变量在后续 pattern 里被替换成具体值，没 bind 的变量在 candidates 中遍历。这等价于 nested loop join。</p>
+</div>
+
+<div class="cell code">
+  <div class="label">In [8]: utils/engine.py — _match_all（递归 join）</div>
+<pre><code>def _match_all(when, constraint, store):
+    def step(i, binding, parents):
+        if i == len(when):
+            if constraint and not eval_constraint(constraint, binding):
+                return
+            yield binding, parents
+            return
+        for b2, a in _match_one(when[i], store, binding):
+            yield from step(i + 1, b2, parents + (a,))
+    yield from step(0, {}, ())
+</code></pre>
+</div>
+
+<div class="cell md">
+  <div class="label">In [md]:</div>
+  <p>跑 smoke 验证一下。<code>scripts/smoke.py</code> 拿 10 条合成 atom + 3 条合成 rule（第三条<strong>故意</strong>消费第二条的派生）跑一遍：</p>
+</div>
+
+<div class="cell out">
+  <div class="label">Out[8]: python scripts/smoke.py</div>
+<pre>loaded 3 rules: ['r001_reverse_doc', 'r002_used_by_arc', 'r003_chain_co_used']
+extracted=10  derived=11  iters=2
+per-rule yield: {'r001_reverse_doc': 2, 'r002_used_by_arc': 5, 'r003_chain_co_used': 4}
+chained derivations (from r003 consuming r002): 4
+  iter=2 r003_chain_co_used  binding={'?D': 'doc:foo.md', '?B': 'arc:002', '?E': 'doc:bar.md'}
+    -> doc:foo.md  co_used_with  doc:bar.md
+  iter=2 r003_chain_co_used  binding={'?D': 'doc:bar.md', '?B': 'arc:002', '?E': 'doc:foo.md'}
+    -> doc:bar.md  co_used_with  doc:foo.md
+  ...
+SMOKE PASS</pre>
+</div>
+
+<div class="cell md">
+  <div class="label">In [md]:</div>
+  <p>注意 <code>iter=2</code> 那两行 — r003 是<strong>第二轮</strong>才 fire 的，因为它消费 <code>used_by_arc</code>，而 <code>used_by_arc</code> 是 r002 在第一轮才派生出来的。这就是 forward chaining 的本质：派生事实自己变成下一轮的可匹配输入。规则之间通过 atoms 这个共享黑板组合。</p>
+</div>
+
+<h2 class="section" id="frog-chains"><span class="num">[V]</span> 链：rules × atoms 的乘法</h2>
+
+<div class="cell md">
+  <div class="label">In [md]:</div>
+  <p>整个抽象的赌注都在"规则能不能链式组合"。如果不能，加第 N+1 条规则只能从原始 atoms 里榨油，yield 是常数；如果能，第 N+1 条规则可以站在前 N 条派生的 atoms 上 — 它的输入越用越多。</p>
+  <p>第 9 条和第 11 条规则就是为这个验证<strong>故意</strong>设计的。先看 r009：</p>
+</div>
+
+<div class="cell code">
+  <div class="label">In [9]: cat r009_co_used_with.md</div>
+<pre><code>---
+id: r009_co_used_with
+when:
+  - {subj: "?D", pred: used_by_arc, obj: "?B"}
+  - {subj: "?E", pred: used_by_arc, obj: "?B"}
+constraint: "?D != ?E"
+then:
+  - {subj: "?D", pred: co_used_with, obj: "?E"}
+---
+
+# r009 · 同被一个 arc 复用的两个 doc → 互为复用邻居 (CHAIN)
+
+**消费 r002 的 derived atoms**（used_by_arc）—— 第一条 chain 规则。
+
+如果 r009 在 baseline 跑里贡献了非零数字，说明 forward chaining 真的发生了。
+如果它是 0，说明 r002 的 yield 集中在"同一 arc 只复用一个 doc"，rules 没有组合
+— 需要重新设计。
+
+被 r011 (ablation) 链式消费。
+</code></pre>
+</div>
+
+<div class="cell md">
+  <div class="label">In [md]:</div>
+  <p>r009 的 <code>when</code> 里有 <code>used_by_arc</code> — 注意 <strong>extract 阶段从不产生这个 pred</strong>，它<strong>只能</strong>来自 r002 的 <code>then</code>。也就是说 r009 fire 的前提是 r002 先 fire 过。这是 chain¹。</p>
+  <p>r011 更激进 — 它把<strong>两条都派生而来的关系</strong>合取（chain²）：</p>
+</div>
+
+<div class="cell code">
+  <div class="label">In [10]: cat r011_ablation_strong_neighbor.md</div>
+<pre><code>---
+id: r011_ablation_strong_neighbor
+when:
+  - {subj: "?D", pred: co_used_with,       obj: "?E"}
+  - {subj: "?D", pred: shares_topic_with,  obj: "?E"}
+then:
+  - {subj: "?D", pred: strong_neighbor, obj: "?E"}
+---
+
+# r011 · ABLATION · 同时 co_used + shares_topic → strong_neighbor (CHAIN²)
+
+**这条是 ablation：第 11 条 rule，它消费 r009（chains r002）AND r007 的输出**。
+两个 derived predicate 的合取。
+
+如果它贡献 ≥ 5 条 derivations → "rules × atoms 乘法效益" 成立。
+如果它 < 2 条 → 规则之间不正交也不组合，N×M 退化成 N+M，整个抽象证伪。
+</code></pre>
+</div>
+
+<div class="cell md">
+  <div class="label">In [md]:</div>
+  <p>r011 同时消费 <code>co_used_with</code>（来自 r009，r009 来自 r002）和 <code>shares_topic_with</code>（来自 r007）。两条派生 pred 都得对上同一对 <code>(?D, ?E)</code> 才 fire。这条规则<strong>必须</strong>站在派生层上 — 它的原料一行都不在原始 atoms 里。</p>
+  <p>实际跑一遍，r011 fire 了 2 次。看其中一次的 trace：</p>
+</div>
+
+<div class="cell out">
+  <div class="label">Out[11]: cat wiki/derived/r011_ablation_strong_neighbor.yaml (first record)</div>
+<pre>- iteration: 1
+  binding:
+    ?D: doc:notes/lidar_merge_quality_metric.md
+    ?E: doc:notes/fabu_pose_floor.md
+  parents:
+  - a_0ab2ae20         # &lt;- 来自 r009: D co_used_with E
+  - a_3b82573d         # &lt;- 来自 r007: D shares_topic_with E
+  atom:
+    id: a_a07e7af2
+    subj: doc:notes/lidar_merge_quality_metric.md
+    pred: strong_neighbor
+    obj: doc:notes/fabu_pose_floor.md
+    source: ''
+    derived_from: r011_ablation_strong_neighbor
+    parents:
+    - a_0ab2ae20
+    - a_3b82573d</pre>
+</div>
+
+<div class="stop">
+  <div class="h">stop &amp; think</div>
+  <p>盯着这两条 path 看一眼。<code>?D = lidar_merge_quality_metric.md</code> 和 <code>?E = fabu_pose_floor.md</code> — 这正是<strong>第一章那篇 9_summary 里两条 <code>[NEW]</code> docs</strong>。整条 chain 是：</p>
+  <p>1. 260508b arc 在 9_summary 里写了 <code>[NEW] lidar_merge_quality_metric.md</code> 和 <code>[NEW] fabu_pose_floor.md</code> → extract 阶段产生 <code>introduces_doc</code> atom × 2。<br>
+  2. 别的 arc / notes 提到了这两个 doc → extract 产生 <code>mentions_doc</code>。<br>
+  3. <strong>r002</strong> fire：(introduces_doc + mentions_doc) → 两个 doc 各有一条 <code>used_by_arc</code>。<br>
+  4. <strong>r009</strong> fire（iter 2）：两个 doc 共用同一个复用 arc → <code>co_used_with</code> 双向。<br>
+  5. r007 fire：两个 doc 共享 topic → <code>shares_topic_with</code> 双向。<br>
+  6. <strong>r011</strong> fire（iter 1，但读的是已经在 store 里的派生 atoms）：合取成立 → <code>strong_neighbor</code> 双向。</p>
+  <p>这条边在<strong>原始 markdown 里没人写过</strong>。它是 11 条规则 × 359 条 atom 自动派生的。规则 markdown 这种东西，是一段能被另一条规则当数据吃的程序 — 这才是"agent 维护规则，wiki 自动派生"成立的物理机制。</p>
+</div>
+
+<h2 class="section" id="frog-experiment"><span class="num">[VI]</span> 实验：数字 + 一条断了的链</h2>
+
+<div class="cell md">
+  <div class="label">In [md]:</div>
+  <p>跑全量。31 篇 markdown → 359 条 atom → 11 条规则 → 211 条派生。整个 engine wall 26ms。看 <code>run.log</code>：</p>
+</div>
+
+<div class="cell out">
+  <div class="label">Out[12]: cat output/260520_2102_demo_run/run.log（关键段）</div>
+<pre># run.log — 260520_2102_demo_run
+
+## full (11 rules, includes ablation r011)
+- derived atoms:   211
+- iterations:      2
+- engine wall:     25.7 ms
+- per-rule yield:
+    r001_introduces_reverse                       15
+    r002_doc_used_by_arc                           5
+    r003_arc_ref_reverse                           4
+    r004_code_developed_in_arc                    21
+    r005_arc_contributes_topic                     6
+    r006_arc_depends_on_older_arc                  4
+    r007_doc_co_topic_neighbor                   152
+    r008_duplicate_introducer                      0
+    r009_co_used_with                              2
+    r010_topic_shared_arc                          0
+    r011_ablation_strong_neighbor                  2
+
+## marginal-yield test (the exponential differential)
+- derived_full - derived_seed = 211 - 209 = 2
+- r011 direct yield (the 11th rule's own emits): 2
+- acceptance §III L1: marginal ≥ 5 ? FAIL</pre>
+</div>
+
+<div class="cell md">
+  <div class="label">In [md]:</div>
+  <p>r007 一个人 fire 了 152 次，因为它是按 topic 的两两 join — 单个 topic 下有 K 个 doc 就出 K×(K-1) 条边，topic 越热的 doc 越拥挤。把<strong>所有规则平均</strong>看：</p>
+</div>
+
+<div class="cell out">
+  <div class="label">Out[13]: run.log 末尾 — growth curve</div>
+<pre>## growth curve (rules[:k] for k = 1..11)
+  k  rule                                         derived  marginal
+  1  r001_introduces_reverse                           15        15
+  2  r002_doc_used_by_arc                              20         5
+  3  r003_arc_ref_reverse                              24         4
+  4  r004_code_developed_in_arc                        45        21
+  5  r005_arc_contributes_topic                        51         6
+  6  r006_arc_depends_on_older_arc                     55         4
+  7  r007_doc_co_topic_neighbor                       207       152
+  8  r008_duplicate_introducer                        207         0
+  9  r009_co_used_with                                209         2
+ 10  r010_topic_shared_arc                            209         0
+ 11  r011_ablation_strong_neighbor                    211         2
+
+- avg marginal across first 10 rules: 20.9  (linear baseline ≈ 1)
+- avg marginal across 3 chain rules (r009/r010/r011): 1.3
+
+## acceptance summary
+- L1.1 derived ≥ 50 (10 rules):     209  -> PASS
+- L1.2 marginal rule 11 ≥ 5:        2  -> FAIL (sparse upstream — see growth curve)
+- L1.3 engine < 5s:                 0.026s  -> PASS</pre>
+</div>
+
+<div class="nums">
+  <div class="num-box"><div class="k">sources</div><div class="v">31</div></div>
+  <div class="num-box"><div class="k">atoms</div><div class="v">359</div></div>
+  <div class="num-box"><div class="k">rules</div><div class="v">11</div></div>
+  <div class="num-box"><div class="k">derived</div><div class="v">211</div></div>
+  <div class="num-box"><div class="k">avg/rule</div><div class="v">19.2×</div></div>
+  <div class="num-box"><div class="k">wall</div><div class="v">26 ms</div></div>
+</div>
+
+<div class="stop">
+  <div class="h">stop &amp; think</div>
+  <p>L1.2 没过 — 第 11 条规则边际 = 2 &lt; 5。<strong>bug 还是 feature？</strong></p>
+  <p>沿 chain 反推：r011 输入是 r009 ∩ r007；r007 派生了 152，远远不缺；r009 只派生了 2。再回到 r009 输入：r009 输入是 r002 的 <code>used_by_arc</code>；r002 只派生了 5。<strong>r002 的 5 条里，被同一个 arc 复用<strong>两次</strong>的 doc-pair 又只剩 1 对，所以 r009 双向 = 2，r011 双向 = 2。</strong></p>
+  <p>这不是规则不组合 — chain 跑通了，trace 漂亮，<code>strong_neighbor</code> 是真的从 r002 → r009 → r011 两层派生出来的（第五章 trace 看得到）。瓶颈在 source 太少：31 篇 markdown 里"同一个 arc 复用两个 doc"的现象只发生了 1 次。把 source 翻 10 倍，r002 的 yield 会变多，r009 的乘法 effect 才显现。</p>
+  <p>另一个口子的证据：第 1-10 条规则的<strong>平均</strong>边际是 20.9，比线性基线 ≈ 1 高 19 倍。整体看是 super-linear；只是 ablation rule 这一条具体的链恰好压在最稀疏的上游上。这条 arc 的结论是 "<strong>抽象成立，但 strict ablation 没过 — 需要更大的 source 池才能复现单条 rule 的乘法效应</strong>"。如实记录，不粉饰。</p>
+</div>
+
+<h2 class="section" id="frog-lessons"><span class="num">[VII]</span> 教训</h2>
+
+<div class="cell md">
+  <div class="label">In [md]:</div>
+  <p>一个 collapse、一个失败、几条小心得。</p>
+  <p><strong>collapse</strong>：把 wiki 维护问题压成 <code>(atoms, rules) → derived</code> 的纯函数后，agent 的工作量从 N×M 降到 N+M — agent 只需要维护几十到几百条规则，而 sources 用确定性 regex 抽。规则是一等公民：可 grep、可 diff、可单测、删一条它派生的所有连接随之消失。撤销 = git revert + rerun。</p>
+  <p><strong>失败</strong>：strict marginal acceptance（rule 11 ≥ 5）没过，但是好的失败 — chain 跑通了，trace 闭合，瓶颈精确定位在 source pool 太小。如果未来 source 数翻倍 / 翻十倍这条线就会过；不需要重写抽象。</p>
+  <p><strong>小心得</strong></p>
+  <ul>
+    <li>regex extract 在富 markdown 上能撑住，但 <code>00_index.md</code> 这种 catalog 必须排除，不然 <code>mentions_doc</code> 会被 index 大量污染。<code>extract_atoms.py</code> 里 <code>INDEX_FILES = {"00_index.md"}</code> 这个集合的存在是被实际跑出来逼出来的。</li>
+    <li>constraint 用白名单 regex + <code>eval</code> 是不优雅的，但够用，且<strong>只发生在 trust 自己写的 rule.md 上</strong> — 不能允许 LLM 自由 emit constraint 字段，否则有 sandbox 逃逸。下一轮如果让 LLM 写 rule，constraint 要换成 AST allowlist。</li>
+    <li>不动点 ≤ 5 iter 是 forward chaining 的常见情况 — 因为 chain 长度等于规则的 max depth，本 arc 最长 chain（r002 → r009 → r011）刚好 3 跳，所以 2 个 iteration 就够了。</li>
+    <li>"agent 产规则不产页面" 这个 reframe 是真正的 collapse 点。其它都是工程。</li>
+  </ul>
+</div>
+
+<footer class="nb-foot">
+  <p>原料 — <code>/Users/han/project/work/3dgs/arcs/all/260520a_llm_wiki_rules_engine_demo/</code><br>
+  · <code>1_objective.html</code> · <code>2_plan.md</code> · <code>doc/design.md</code><br>
+  · <code>utils/{atom,rule,engine}.py</code> · <code>scripts/{extract_atoms,run_demo,smoke}.py</code><br>
+  · <code>output/260520_2102_demo_run/run.log</code> · <code>wiki/atoms/arcs__all__260508b_l2_lidar_merge_metric__9_summary.yaml</code><br>
+  · <code>wiki/rules/r002_doc_used_by_arc.md</code> · <code>wiki/rules/r009_co_used_with.md</code> · <code>wiki/rules/r011_ablation_strong_neighbor.md</code><br>
+  · <code>wiki/derived/r011_ablation_strong_neighbor.yaml</code><br>
+  来源 9_summary — <code>/Users/han/project/work/3dgs/arcs/all/260508b_l2_lidar_merge_metric/9_summary.md</code></p>
+</footer>
+
+</section>
+
+</main>
+
+<script>
+(function () {
+  var buttons = document.querySelectorAll('.tab-btn');
+  var panes   = document.querySelectorAll('.tab-pane');
+  function activate(name) {
+    buttons.forEach(function (b) {
+      b.classList.toggle('active', b.getAttribute('data-tab') === name);
+    });
+    panes.forEach(function (p) {
+      p.classList.toggle('active', p.id === 'tab-' + name);
+    });
+  }
+  buttons.forEach(function (b) {
+    b.addEventListener('click', function () {
+      activate(b.getAttribute('data-tab'));
+      history.replaceState(null, '', '#' + b.getAttribute('data-tab'));
+    });
+  });
+  // Deep link: #bird-<slug> / #frog-<slug> switches tab + scrolls.
+  // Legacy aliases #mit-<slug> / #stanford-<slug> remap silently.
+  function routeHash() {
+    var h = (location.hash || '').replace(/^#/, '');
+    if (!h) return;
+    if (h.indexOf('mit-') === 0)      h = 'bird-' + h.slice(4);
+    if (h.indexOf('stanford-') === 0) h = 'frog-' + h.slice(9);
+    if (h.indexOf('bird-') === 0) activate('bird');
+    else if (h.indexOf('frog-') === 0) activate('frog');
+    else if (h === 'bird' || h === 'frog') { activate(h); return; }
+    setTimeout(function () {
+      var el = document.getElementById(h);
+      if (el) el.scrollIntoView({ behavior: 'instant', block: 'start' });
+    }, 0);
+  }
+  window.addEventListener('hashchange', routeHash);
+  routeHash();
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,34 @@
+- iteration: 1
+  binding:
+    ?D: doc:notes/lidar_merge_quality_metric.md
+    ?E: doc:notes/fabu_pose_floor.md
+  parents:
+  - a_0ab2ae20
+  - a_3b82573d
+  atom:
+    id: a_a07e7af2
+    subj: doc:notes/lidar_merge_quality_metric.md
+    pred: strong_neighbor
+    obj: doc:notes/fabu_pose_floor.md
+    source: ''
+    derived_from: r011_ablation_strong_neighbor
+    parents:
+    - a_0ab2ae20
+    - a_3b82573d
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_pose_floor.md
+    ?E: doc:notes/lidar_merge_quality_metric.md
+  parents:
+  - a_c4b515af
+  - a_45799f4c
+  atom:
+    id: a_9015cff8
+    subj: doc:notes/fabu_pose_floor.md
+    pred: strong_neighbor
+    obj: doc:notes/lidar_merge_quality_metric.md
+    source: ''
+    derived_from: r011_ablation_strong_neighbor
+    parents:
+    - a_c4b515af
+    - a_45799f4c

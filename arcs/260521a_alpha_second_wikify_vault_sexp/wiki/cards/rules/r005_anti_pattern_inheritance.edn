@@ -1,0 +1,19 @@
+;; r005 — anti-pattern case-example inheritance.
+;;
+;; ANTI_PATTERN_CATALOG.md lists each anti-pattern's case examples; Phase 2
+;; ingest extracts these as (ap:X references_in_case_examples exp:Y) atoms.
+;; r005 reverses the direction so each experiment / lineage knows which
+;; anti-patterns it instantiates — a forward index for "is this a known bad
+;; pattern?" queries.
+;;
+;; Predicate name `references_in_case_examples` matches the ingest output
+;; (see wiki/scripts/ingest_vault.py); the derived predicate is
+;; `is_instance_of_anti_pattern` so the forward index has a name that reads
+;; naturally on the experiment side.
+
+(card "rule:r005_anti_pattern_inheritance" :type "rule"
+  :body "If an anti-pattern catalog entry references an experiment in its case-examples list, the experiment is_instance_of_anti_pattern. Forward index for 'is this a known bad pattern?' queries on the experiment side."
+  :when (("?ap" "references_in_case_examples" "?exp"))
+  :then (("?exp" "is_instance_of_anti_pattern" "?ap"))
+  :status "active"
+  :parents ("r005_anti_pattern_inheritance"))

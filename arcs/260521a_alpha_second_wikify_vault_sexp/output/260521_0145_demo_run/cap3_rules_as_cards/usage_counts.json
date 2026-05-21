@@ -1,0 +1,11 @@
+{
+  "rule:r001a_borrowed_by_keep": 2,
+  "rule:r001b_descendants_reverse": 2,
+  "rule:r001c_base_for_reverse": 3,
+  "rule:r001d_team_top_picks_canonical": 6,
+  "rule:r001e_inherits_failure_mode_canonical": 2,
+  "rule:r001f_inherits_failure_mode_from_canonical": 1,
+  "rule:r002_derived_from_reverse": 53,
+  "rule:r003_competes_with_symmetry": 20,
+  "rule:r005_anti_pattern_inheritance": 10
+}

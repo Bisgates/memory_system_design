@@ -1,0 +1,356 @@
+(card "exp:G-R2-2_luoyangchan_cap5M" :type "experiment"
+  :subj "exp:G-R2-2_luoyangchan_cap5M"
+  :body "---\nnav: 30\ntype: experiment\nid: G-R2-2_luoyangchan_cap5M\nshort_name: luoyangchan_cap5M\ntitle: \"G-R2-2 — 洛阳铲 solo, baseline_max_avg = 5.0M\"\narc: 260516a\nteam: g\nround: r2\nparent_arc: \"[[arcs/260516a]]\"\nparent_lineage: \"[[lineages/arc_260516a__team_g__source_swap]]\"\ntrain_nav: 1.0314\ntrain_trade_count: 70\ntrain_win_rate: 0.5571\ntrain_sharpe: 1.8537\ntrain_max_drawdown: -0.0090\nval_nav_mean: 1.0021\nval_nav_sigma: 0.0071\nval_window_count: 10\ntest_nav: null\ntest_trade_count: null\ntest_sharpe: null\ntest_win_rate: null\ntest_max_drawdown: null\nanchor_train_nav: 2.1882\nanchor_test_nav: 1.2486\nstatus: demoted\noutcome: no_test_run\nchampion: false\noverfit_score: 0\nleak_audit: clean\naxis: [source_swap]\npast_only_window_days: null\nwarmup_required: null\ncreated: 2026-05-17T01:30:00\nlast_updated: 2026-05-17T05:09:00\ntags: [arc/260516a, team/g, round/r2, axis/source_swap, status/demoted, outcome/no_test_run, leak/clean, size/medium]\n---\n\n# G-R2-2 — 洛阳铲 + cap 5M\n\n> **TL;DR** —— cap 再放宽到 5M (≈4× anchor default)。trade_count 升到 70 但 win 55.7% / sharpe 1.85 —— cap 越宽 NAV 越差。confirm 洛阳铲 source 在大 cap 下 alpha 反而稀释。\n\n## 假设 (Hypothesis)\n- 继续放宽 cap 看是否能恢复 anchor-scale 数字。\n- 实测：sample 增但 quality 大幅降 (win 64→56%)。\n\n## 实现 (Implementation)\n- 同 G-R2-1, cap = 5M. 84 笔 post-cap.\n\n## Past-only window 处理\n- 无 rolling. `#leak/clean`.\n\n## 结果 (Results)\n| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 1.0314 | 70 | 1.85 | 55.7% | -0.90% |\n| Val (10w) | 1.0021 ± 0.007 | - | - | - | - |\n| Test | NOT RUN | - | - | - | - |\n\n## 风险 & overfit 嫌疑\n- overfit_score = 0 nominal, 但 win 55% near coin-flip; 实质 fail。\n\n## Lineage（双链网）\n- **derived_from**: [[arc_260516a__team_g__G-R2-1__luoyangchan_cap26M]]\n- **same_axis**: [[arc_260516a__team_g__G-R2-3__luoyangchan_nocap]]\n- **builds against**: [[arc_260516a__team_anchor__anchor_g2__baseline]]\n\n## Reports\n- `team_g/output/cross_round_leaderboard_nav.csv` (G-R2-2)\n- [[arc_260516a__reporter_20260517_0547]]\n\n## Notes / 下次迭代\n- cap relaxation curve: win 74% (cap 1.3M default) → 64% (2.6M) → 56% (5M) → ~52% (no cap)。说明 cap 是 quality filter, source 本身在 cap 之外没 alpha。\n"
+  :path "experiments/arc_260516a__team_g__G-R2-2__luoyangchan_cap5M.md"
+  :source_mtime "2026-05-17T10:30:29+08:00"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_6f7f2f62" :type "atom"
+  :subj "exp:G-R2-2_luoyangchan_cap5M"
+  :pred "has_nav"
+  :obj 30
+  :source "experiments/arc_260516a__team_g__G-R2-2__luoyangchan_cap5M.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_0a1693b1" :type "atom"
+  :subj "exp:G-R2-2_luoyangchan_cap5M"
+  :pred "has_type"
+  :obj "experiment"
+  :source "experiments/arc_260516a__team_g__G-R2-2__luoyangchan_cap5M.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_8bc6fb66" :type "atom"
+  :subj "exp:G-R2-2_luoyangchan_cap5M"
+  :pred "has_id"
+  :obj "G-R2-2_luoyangchan_cap5M"
+  :source "experiments/arc_260516a__team_g__G-R2-2__luoyangchan_cap5M.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_af88255d" :type "atom"
+  :subj "exp:G-R2-2_luoyangchan_cap5M"
+  :pred "has_short_name"
+  :obj "luoyangchan_cap5M"
+  :source "experiments/arc_260516a__team_g__G-R2-2__luoyangchan_cap5M.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a8c9376f" :type "atom"
+  :subj "exp:G-R2-2_luoyangchan_cap5M"
+  :pred "has_title"
+  :obj "G-R2-2 — 洛阳铲 solo, baseline_max_avg = 5.0M"
+  :source "experiments/arc_260516a__team_g__G-R2-2__luoyangchan_cap5M.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e2ee39ec" :type "atom"
+  :subj "exp:G-R2-2_luoyangchan_cap5M"
+  :pred "has_arc"
+  :obj "260516a"
+  :source "experiments/arc_260516a__team_g__G-R2-2__luoyangchan_cap5M.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_2b9068ab" :type "atom"
+  :subj "exp:G-R2-2_luoyangchan_cap5M"
+  :pred "has_team"
+  :obj "g"
+  :source "experiments/arc_260516a__team_g__G-R2-2__luoyangchan_cap5M.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_581758b5" :type "atom"
+  :subj "exp:G-R2-2_luoyangchan_cap5M"
+  :pred "has_round"
+  :obj "r2"
+  :source "experiments/arc_260516a__team_g__G-R2-2__luoyangchan_cap5M.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a15df219" :type "atom"
+  :subj "exp:G-R2-2_luoyangchan_cap5M"
+  :pred "parent_arc"
+  :obj "arc:260516a"
+  :source "experiments/arc_260516a__team_g__G-R2-2__luoyangchan_cap5M.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_4a5eaf8f" :type "atom"
+  :subj "exp:G-R2-2_luoyangchan_cap5M"
+  :pred "parent_lineage"
+  :obj "lin:arc_260516a__team_g__source_swap"
+  :source "experiments/arc_260516a__team_g__G-R2-2__luoyangchan_cap5M.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_37f9b25d" :type "atom"
+  :subj "exp:G-R2-2_luoyangchan_cap5M"
+  :pred "has_train_nav"
+  :obj 1.0314
+  :source "experiments/arc_260516a__team_g__G-R2-2__luoyangchan_cap5M.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_990d2024" :type "atom"
+  :subj "exp:G-R2-2_luoyangchan_cap5M"
+  :pred "has_train_trade_count"
+  :obj 70
+  :source "experiments/arc_260516a__team_g__G-R2-2__luoyangchan_cap5M.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b6a1e2a3" :type "atom"
+  :subj "exp:G-R2-2_luoyangchan_cap5M"
+  :pred "has_train_win_rate"
+  :obj 0.5571
+  :source "experiments/arc_260516a__team_g__G-R2-2__luoyangchan_cap5M.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d956e68c" :type "atom"
+  :subj "exp:G-R2-2_luoyangchan_cap5M"
+  :pred "has_train_sharpe"
+  :obj 1.8537
+  :source "experiments/arc_260516a__team_g__G-R2-2__luoyangchan_cap5M.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5be2e603" :type "atom"
+  :subj "exp:G-R2-2_luoyangchan_cap5M"
+  :pred "has_train_max_drawdown"
+  :obj -0.009
+  :source "experiments/arc_260516a__team_g__G-R2-2__luoyangchan_cap5M.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9bd90fc5" :type "atom"
+  :subj "exp:G-R2-2_luoyangchan_cap5M"
+  :pred "has_val_nav_mean"
+  :obj 1.0021
+  :source "experiments/arc_260516a__team_g__G-R2-2__luoyangchan_cap5M.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_bd511ae5" :type "atom"
+  :subj "exp:G-R2-2_luoyangchan_cap5M"
+  :pred "has_val_nav_sigma"
+  :obj 0.0071
+  :source "experiments/arc_260516a__team_g__G-R2-2__luoyangchan_cap5M.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_7dd139a9" :type "atom"
+  :subj "exp:G-R2-2_luoyangchan_cap5M"
+  :pred "has_val_window_count"
+  :obj 10
+  :source "experiments/arc_260516a__team_g__G-R2-2__luoyangchan_cap5M.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a908ef66" :type "atom"
+  :subj "exp:G-R2-2_luoyangchan_cap5M"
+  :pred "has_anchor_train_nav"
+  :obj 2.1882
+  :source "experiments/arc_260516a__team_g__G-R2-2__luoyangchan_cap5M.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_7c57b99d" :type "atom"
+  :subj "exp:G-R2-2_luoyangchan_cap5M"
+  :pred "has_anchor_test_nav"
+  :obj 1.2486
+  :source "experiments/arc_260516a__team_g__G-R2-2__luoyangchan_cap5M.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_cf7f6112" :type "atom"
+  :subj "exp:G-R2-2_luoyangchan_cap5M"
+  :pred "has_status"
+  :obj "demoted"
+  :source "experiments/arc_260516a__team_g__G-R2-2__luoyangchan_cap5M.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_3e5002a0" :type "atom"
+  :subj "exp:G-R2-2_luoyangchan_cap5M"
+  :pred "has_outcome"
+  :obj "no_test_run"
+  :source "experiments/arc_260516a__team_g__G-R2-2__luoyangchan_cap5M.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_4a77d1c5" :type "atom"
+  :subj "exp:G-R2-2_luoyangchan_cap5M"
+  :pred "has_champion"
+  :obj false
+  :source "experiments/arc_260516a__team_g__G-R2-2__luoyangchan_cap5M.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f55ba164" :type "atom"
+  :subj "exp:G-R2-2_luoyangchan_cap5M"
+  :pred "has_overfit_score"
+  :obj 0
+  :source "experiments/arc_260516a__team_g__G-R2-2__luoyangchan_cap5M.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d85d9125" :type "atom"
+  :subj "exp:G-R2-2_luoyangchan_cap5M"
+  :pred "has_leak_audit"
+  :obj "clean"
+  :source "experiments/arc_260516a__team_g__G-R2-2__luoyangchan_cap5M.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_3d540b1c" :type "atom"
+  :subj "exp:G-R2-2_luoyangchan_cap5M"
+  :pred "has_axis"
+  :obj "axis:source_swap"
+  :source "experiments/arc_260516a__team_g__G-R2-2__luoyangchan_cap5M.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f40e8b4b" :type "atom"
+  :subj "exp:G-R2-2_luoyangchan_cap5M"
+  :pred "has_axis_list"
+  :obj ("source_swap")
+  :source "experiments/arc_260516a__team_g__G-R2-2__luoyangchan_cap5M.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_fddc7b2e" :type "atom"
+  :subj "exp:G-R2-2_luoyangchan_cap5M"
+  :pred "has_created"
+  :obj "2026-05-17 01:30:00"
+  :source "experiments/arc_260516a__team_g__G-R2-2__luoyangchan_cap5M.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_0838b6a2" :type "atom"
+  :subj "exp:G-R2-2_luoyangchan_cap5M"
+  :pred "has_last_updated"
+  :obj "2026-05-17 05:09:00"
+  :source "experiments/arc_260516a__team_g__G-R2-2__luoyangchan_cap5M.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_00cbd0cd" :type "atom"
+  :subj "exp:G-R2-2_luoyangchan_cap5M"
+  :pred "has_tag"
+  :obj "tag:arc/260516a"
+  :source "experiments/arc_260516a__team_g__G-R2-2__luoyangchan_cap5M.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_50b47ce2" :type "atom"
+  :subj "exp:G-R2-2_luoyangchan_cap5M"
+  :pred "has_tag"
+  :obj "tag:team/g"
+  :source "experiments/arc_260516a__team_g__G-R2-2__luoyangchan_cap5M.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d6dc42ce" :type "atom"
+  :subj "exp:G-R2-2_luoyangchan_cap5M"
+  :pred "has_tag"
+  :obj "tag:round/r2"
+  :source "experiments/arc_260516a__team_g__G-R2-2__luoyangchan_cap5M.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_8876fca2" :type "atom"
+  :subj "exp:G-R2-2_luoyangchan_cap5M"
+  :pred "has_tag"
+  :obj "tag:axis/source_swap"
+  :source "experiments/arc_260516a__team_g__G-R2-2__luoyangchan_cap5M.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a5b73a41" :type "atom"
+  :subj "exp:G-R2-2_luoyangchan_cap5M"
+  :pred "has_tag"
+  :obj "tag:status/demoted"
+  :source "experiments/arc_260516a__team_g__G-R2-2__luoyangchan_cap5M.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9b5fb855" :type "atom"
+  :subj "exp:G-R2-2_luoyangchan_cap5M"
+  :pred "has_tag"
+  :obj "tag:outcome/no_test_run"
+  :source "experiments/arc_260516a__team_g__G-R2-2__luoyangchan_cap5M.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b39db014" :type "atom"
+  :subj "exp:G-R2-2_luoyangchan_cap5M"
+  :pred "has_tag"
+  :obj "tag:leak/clean"
+  :source "experiments/arc_260516a__team_g__G-R2-2__luoyangchan_cap5M.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c057954b" :type "atom"
+  :subj "exp:G-R2-2_luoyangchan_cap5M"
+  :pred "has_tag"
+  :obj "tag:size/medium"
+  :source "experiments/arc_260516a__team_g__G-R2-2__luoyangchan_cap5M.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_634d15d0" :type "atom"
+  :subj "exp:G-R2-2_luoyangchan_cap5M"
+  :pred "has_tl_dr"
+  :obj "cap 再放宽到 5M (≈4× anchor default)。trade_count 升到 70 但 win 55.7% / sharpe 1.85 —— cap 越宽 NAV 越差。confirm 洛阳铲 source 在大 cap 下 alpha 反而稀释。"
+  :source "experiments/arc_260516a__team_g__G-R2-2__luoyangchan_cap5M.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5b6b6a4d" :type "atom"
+  :subj "exp:G-R2-2_luoyangchan_cap5M"
+  :pred "has_section_intro"
+  :obj "# G-R2-2 — 洛阳铲 + cap 5M\n\n> **TL;DR** —— cap 再放宽到 5M (≈4× anchor default)。trade_count 升到 70 但 win 55.7% / sharpe 1.85 —— cap 越宽 NAV 越差。confirm 洛阳铲 source 在大 cap 下 alpha 反而稀释。"
+  :source "experiments/arc_260516a__team_g__G-R2-2__luoyangchan_cap5M.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5480e552" :type "atom"
+  :subj "exp:G-R2-2_luoyangchan_cap5M"
+  :pred "has_section_hypothesis"
+  :obj "- 继续放宽 cap 看是否能恢复 anchor-scale 数字。\n- 实测：sample 增但 quality 大幅降 (win 64→56%)。"
+  :source "experiments/arc_260516a__team_g__G-R2-2__luoyangchan_cap5M.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_83e436a0" :type "atom"
+  :subj "exp:G-R2-2_luoyangchan_cap5M"
+  :pred "has_section_implementation"
+  :obj "- 同 G-R2-1, cap = 5M. 84 笔 post-cap."
+  :source "experiments/arc_260516a__team_g__G-R2-2__luoyangchan_cap5M.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f801e749" :type "atom"
+  :subj "exp:G-R2-2_luoyangchan_cap5M"
+  :pred "has_section_past_only_window"
+  :obj "- 无 rolling. `#leak/clean`."
+  :source "experiments/arc_260516a__team_g__G-R2-2__luoyangchan_cap5M.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e4da593c" :type "atom"
+  :subj "exp:G-R2-2_luoyangchan_cap5M"
+  :pred "has_section_results"
+  :obj "| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 1.0314 | 70 | 1.85 | 55.7% | -0.90% |\n| Val (10w) | 1.0021 ± 0.007 | - | - | - | - |\n| Test | NOT RUN | - | - | - | - |"
+  :source "experiments/arc_260516a__team_g__G-R2-2__luoyangchan_cap5M.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e64eda80" :type "atom"
+  :subj "exp:G-R2-2_luoyangchan_cap5M"
+  :pred "has_section_risk_overfit"
+  :obj "- overfit_score = 0 nominal, 但 win 55% near coin-flip; 实质 fail。"
+  :source "experiments/arc_260516a__team_g__G-R2-2__luoyangchan_cap5M.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_77cde0ae" :type "atom"
+  :subj "exp:G-R2-2_luoyangchan_cap5M"
+  :pred "derived_from"
+  :obj "exp:G-R2-1_luoyangchan_cap26M"
+  :source "experiments/arc_260516a__team_g__G-R2-2__luoyangchan_cap5M.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_af5c5994" :type "atom"
+  :subj "exp:G-R2-2_luoyangchan_cap5M"
+  :pred "same_axis"
+  :obj "exp:G-R2-3_luoyangchan_nocap"
+  :source "experiments/arc_260516a__team_g__G-R2-2__luoyangchan_cap5M.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f54f67fa" :type "atom"
+  :subj "exp:G-R2-2_luoyangchan_cap5M"
+  :pred "builds_against"
+  :obj "exp:anchor_g2_baseline"
+  :source "experiments/arc_260516a__team_g__G-R2-2__luoyangchan_cap5M.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_8ff92002" :type "atom"
+  :subj "exp:G-R2-2_luoyangchan_cap5M"
+  :pred "has_section_lineage_links"
+  :obj "- **derived_from**: [[arc_260516a__team_g__G-R2-1__luoyangchan_cap26M]]\n- **same_axis**: [[arc_260516a__team_g__G-R2-3__luoyangchan_nocap]]\n- **builds against**: [[arc_260516a__team_anchor__anchor_g2__baseline]]"
+  :source "experiments/arc_260516a__team_g__G-R2-2__luoyangchan_cap5M.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_51cf12a8" :type "atom"
+  :subj "exp:G-R2-2_luoyangchan_cap5M"
+  :pred "has_section_reports"
+  :obj "- `team_g/output/cross_round_leaderboard_nav.csv` (G-R2-2)\n- [[arc_260516a__reporter_20260517_0547]]"
+  :source "experiments/arc_260516a__team_g__G-R2-2__luoyangchan_cap5M.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_52b458d9" :type "atom"
+  :subj "exp:G-R2-2_luoyangchan_cap5M"
+  :pred "has_section_notes"
+  :obj "- cap relaxation curve: win 74% (cap 1.3M default) → 64% (2.6M) → 56% (5M) → ~52% (no cap)。说明 cap 是 quality filter, source 本身在 cap 之外没 alpha。"
+  :source "experiments/arc_260516a__team_g__G-R2-2__luoyangchan_cap5M.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")

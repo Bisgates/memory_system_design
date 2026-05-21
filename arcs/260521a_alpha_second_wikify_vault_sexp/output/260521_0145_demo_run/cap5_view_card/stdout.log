@@ -1,0 +1,28 @@
+# Capability 5 — 视图卡 (materialized view)  (2026-05-20T17:55:32+00:00)
+----------------------------------------------------------------------
+  store loaded — 3417 cards (3331 atoms, 53 experiments, 8 lineages, 11 rules, 2 macros)
+
+  view card id    : m_5ce4acd2
+  view name       : view_lin:arc_260516a__team_h__sizing_all_candidates
+  view query      : {'filter_pred': 'parent_lineage', 'filter_obj': 'lin:arc_260516a__team_h__sizing'}
+  view body       : All experiments registered under lineage lin:arc_260516a__team_h__sizing. Re-evaluated at read time  …
+
+[snapshot 1] initial materialize
+  total matches      : 14
+  atom-typed matches : 14
+    + a_240fd8ab  subj=exp:H-R1-1_rolling_30d_median_solo
+    + a_429b8dc5  subj=exp:H-R1-2_pre_avg_amount_sizing
+    + a_13739ff4  subj=exp:H-R1-3_ratio_vol_blend
+    + a_9f396a3e  subj=exp:H-R2-1_c75_linear_sizing
+    + a_f7b1fbef  subj=exp:H-R2-2_c84_linear_sizing
+    … and 9 more
+
+[snapshot 2] after adding synthetic atom a_cap5_synthetic_link
+  total matches      : 15
+  atom-typed matches : 15
+  delta vs snapshot 1: 1
+
+[snapshot 3] after delete synthetic atom
+  total matches      : 14
+  atom-typed matches : 14
+  delta vs snapshot 1: 0  (0 ⇒ view correctly tracks live store)

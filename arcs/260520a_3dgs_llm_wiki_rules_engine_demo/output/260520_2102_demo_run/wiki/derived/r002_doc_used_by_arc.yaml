@@ -1,0 +1,90 @@
+- iteration: 1
+  binding:
+    ?A: arc:260508b
+    ?D: doc:notes/lidar_merge_quality_metric.md
+    ?B: doc:notes/fabu_pose_floor.md
+  parents:
+  - a_a26feb5c
+  - a_e4c4b496
+  atom:
+    id: a_392475f4
+    subj: doc:notes/lidar_merge_quality_metric.md
+    pred: used_by_arc
+    obj: doc:notes/fabu_pose_floor.md
+    source: ''
+    derived_from: r002_doc_used_by_arc
+    parents:
+    - a_a26feb5c
+    - a_e4c4b496
+- iteration: 1
+  binding:
+    ?A: arc:260508b
+    ?D: doc:notes/lidar_merge_quality_metric.md
+    ?B: doc:notes/lidar_merge_pipeline.md
+  parents:
+  - a_a26feb5c
+  - a_ecc34a71
+  atom:
+    id: a_065771bf
+    subj: doc:notes/lidar_merge_quality_metric.md
+    pred: used_by_arc
+    obj: doc:notes/lidar_merge_pipeline.md
+    source: ''
+    derived_from: r002_doc_used_by_arc
+    parents:
+    - a_a26feb5c
+    - a_ecc34a71
+- iteration: 1
+  binding:
+    ?A: arc:260508b
+    ?D: doc:notes/fabu_pose_floor.md
+    ?B: arc:260514b
+  parents:
+  - a_6eff8628
+  - a_7d64d4b3
+  atom:
+    id: a_a14ebccb
+    subj: doc:notes/fabu_pose_floor.md
+    pred: used_by_arc
+    obj: arc:260514b
+    source: ''
+    derived_from: r002_doc_used_by_arc
+    parents:
+    - a_6eff8628
+    - a_7d64d4b3
+- iteration: 1
+  binding:
+    ?A: arc:260508b
+    ?D: doc:notes/fabu_pose_floor.md
+    ?B: doc:notes/lidar_merge_pipeline.md
+  parents:
+  - a_6eff8628
+  - a_bf199227
+  atom:
+    id: a_e7436743
+    subj: doc:notes/fabu_pose_floor.md
+    pred: used_by_arc
+    obj: doc:notes/lidar_merge_pipeline.md
+    source: ''
+    derived_from: r002_doc_used_by_arc
+    parents:
+    - a_6eff8628
+    - a_bf199227
+- iteration: 1
+  binding:
+    ?A: arc:260508b
+    ?D: doc:notes/fabu_pose_floor.md
+    ?B: doc:notes/lidar_merge_quality_metric.md
+  parents:
+  - a_6eff8628
+  - a_612c63b1
+  atom:
+    id: a_9197e60d
+    subj: doc:notes/fabu_pose_floor.md
+    pred: used_by_arc
+    obj: doc:notes/lidar_merge_quality_metric.md
+    source: ''
+    derived_from: r002_doc_used_by_arc
+    parents:
+    - a_6eff8628
+    - a_612c63b1

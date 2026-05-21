@@ -1,0 +1,426 @@
+(card "exp:H-R3b-3_c84_kelly_lambda_1.0" :type "experiment"
+  :subj "exp:H-R3b-3_c84_kelly_lambda_1.0"
+  :body "---\nnav: 2\ntype: experiment\nid: H-R3b-3\nshort_name: c84_kelly_lambda_1.0\ntitle: \"H-R3b-3 — C8.4 × Kelly-fraction sizing λ=1.0 (R3b sweep mid)\"\narc: 260516a\nteam: h\nround: r3b\nparent_arc: \"[[arcs/260516a]]\"\nparent_lineage: \"[[lineages/arc_260516a__team_h__sizing]]\"\ntrain_nav: 3.6478\ntrain_trade_count: 179\ntrain_win_rate: 0.8771\ntrain_sharpe: 7.6243\ntrain_max_drawdown: -0.0067\nval_nav_mean: 1.1010\nval_nav_sigma: 0.1139\nval_window_count: 13\ntest_nav: 1.4807\ntest_trade_count: 31\ntest_sharpe: 7.3681\ntest_win_rate: 0.8065\ntest_max_drawdown: -0.0043\nanchor_train_nav: 2.1882\nanchor_test_nav: 1.2486\nstatus: challenger\noutcome: test_pass\nchampion: false\noverfit_score: 0\nleak_audit: clean\naxis: [sizing]\npast_only_window_days: 30\nwarmup_required: 10\ncreated: 2026-05-17T03:30:00\nlast_updated: 2026-05-17T05:09:00\ntags: [arc/260516a, team/h, round/r3b, axis/sizing, status/challenger, outcome/test_pass, leak/clean, size/large]\n---\n\n# H-R3b-3 — C8.4 × Kelly-fraction sizing λ=1.0\n\n> **TL;DR** —— R3b sweep 中 λ=1.0 档（即 Kelly 公式与 H-R2-2 同形式 —— `clip(1.0*(ratio/median-1)+1, 0.5, 1.5)` 与 `clip(ratio/median, 0.5, 1.5)` 数学等价）。train NAV 3.65 / test 1.48，与 [[arc_260516a__team_h__H-R2-2__c84_linear_sizing]] **bit-for-bit 相同**，因为是同公式重跑。R3b champion = λ=1.5 ([[arc_260516a__team_h__H-R3b-4__c84_kelly_lambda_1.5]])。\n\n## 假设 (Hypothesis)\n- λ=1.0 在 Kelly-fraction 公式里是\"等价于 H-R2 linear\"的 zero-point；R3b 整 sweep 设计 [0.25, 0.5, 1.0, 1.5] 时把它做为 reference point。\n- 假设是 monotone：λ↑ → mean_size↑ → NAV↑。R3b sweep 出来的 ranking (λ=1.5 > 1.0 ≈ 0.5 > 0.25) 部分支持，但 0.5 vs 1.0 几乎 tie 暗示 monotonicity 较弱。\n\n## 实现 (Implementation)\n- 主脚本：`/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_h/scripts/round_3b_runner.py`\n- 公式与 H-R2-2 等价：\n\n  $$\n  \\text{size}(t) = \\mathrm{clip}\\!\\left(1.0 \\cdot \\left(\\frac{r_t}{\\widetilde{r}^{\\;\\text{past-30d}}_{\\,t}} - 1\\right) + 1,\\; 0.5,\\; 1.5\\right)\n  $$\n\n- mean_size = 1.179, std_size = 0.350.\n\n## Past-only window 处理\n- 共用 `rolling_30d_ratio_median` helper，strict past-only：`events[event_time < t & event_time >= t-30d]`，warmup<10 时 size=1.0。\n- critic 2026-05-17 audit pass (`#leak/clean`)。\n\n## 结果 (Results)\n| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 3.6478 | 179 | 7.62 | 87.7% | -0.67% |\n| Val (rolling 13w) | 1.1010 ± 0.114 | - | - | - | - |\n| Test | 1.4807 | 31 | 7.37 | 80.6% | -0.43% |\n| **Δ test NAV vs anchor** | +0.232 | +11 | +0.22 | +5.6pp | +0.10pp |\n| **Δ vs R3b-4 (λ=1.5)** | -0.010 | 0 | 0 | 0 | 0 |\n\n## 风险 & overfit 嫌疑\n- overfit_score = 0。单一 grid sweep。\n- 与 R2-2 重复 = sanity check。任何 R3b 重跑必须能 bit-for-bit 复现 H-R2-2，否则 helper drift。\n\n## Lineage（双链网）\n- **same_as**: [[arc_260516a__team_h__H-R2-2__c84_linear_sizing]] (数学等价，R3b 重跑作 sanity)\n- **dominated_by**: [[arc_260516a__team_h__H-R3b-4__c84_kelly_lambda_1.5]]\n- **dominates**: [[arc_260516a__team_h__H-R3b-2__c84_kelly_lambda_0.5]], [[arc_260516a__team_h__H-R3b-1__c84_kelly_lambda_0.25]]\n- **builds on**: [[arc_260516a__team_c__C8.4__top3_no_open3min_bypass]]\n- **builds against**: [[arc_260516a__team_anchor__anchor_g2__baseline]]\n\n## Reports\n- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_h/output/cross_round_leaderboard_nav.csv` (row R3b-3)\n- [[arc_260516a__reporter_20260517_0547]]\n\n## Notes / 下次迭代\n- 把 R3b-3 留在 vault 不是为了独立 hypothesis，是给未来 sub-agent 做 **\"参数 sweep 等价点 sanity check\"** 的例子 —— 任何更复杂的 sizing 重构必须保留 λ=1 ≡ ratio/median 这个等价性。\n"
+  :path "experiments/arc_260516a__team_h__H-R3b-3__c84_kelly_lambda_1.0.md"
+  :source_mtime "2026-05-17T10:14:58+08:00"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b4ecd162" :type "atom"
+  :subj "exp:H-R3b-3_c84_kelly_lambda_1.0"
+  :pred "has_nav"
+  :obj 2
+  :source "experiments/arc_260516a__team_h__H-R3b-3__c84_kelly_lambda_1.0.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_79eb14f3" :type "atom"
+  :subj "exp:H-R3b-3_c84_kelly_lambda_1.0"
+  :pred "has_type"
+  :obj "experiment"
+  :source "experiments/arc_260516a__team_h__H-R3b-3__c84_kelly_lambda_1.0.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_609f876f" :type "atom"
+  :subj "exp:H-R3b-3_c84_kelly_lambda_1.0"
+  :pred "has_id"
+  :obj "H-R3b-3"
+  :source "experiments/arc_260516a__team_h__H-R3b-3__c84_kelly_lambda_1.0.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a51db450" :type "atom"
+  :subj "exp:H-R3b-3_c84_kelly_lambda_1.0"
+  :pred "has_short_name"
+  :obj "c84_kelly_lambda_1.0"
+  :source "experiments/arc_260516a__team_h__H-R3b-3__c84_kelly_lambda_1.0.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_6093b410" :type "atom"
+  :subj "exp:H-R3b-3_c84_kelly_lambda_1.0"
+  :pred "has_title"
+  :obj "H-R3b-3 — C8.4 × Kelly-fraction sizing λ=1.0 (R3b sweep mid)"
+  :source "experiments/arc_260516a__team_h__H-R3b-3__c84_kelly_lambda_1.0.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_55a370dc" :type "atom"
+  :subj "exp:H-R3b-3_c84_kelly_lambda_1.0"
+  :pred "has_arc"
+  :obj "260516a"
+  :source "experiments/arc_260516a__team_h__H-R3b-3__c84_kelly_lambda_1.0.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_fb367d60" :type "atom"
+  :subj "exp:H-R3b-3_c84_kelly_lambda_1.0"
+  :pred "has_team"
+  :obj "h"
+  :source "experiments/arc_260516a__team_h__H-R3b-3__c84_kelly_lambda_1.0.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_7f145406" :type "atom"
+  :subj "exp:H-R3b-3_c84_kelly_lambda_1.0"
+  :pred "has_round"
+  :obj "r3b"
+  :source "experiments/arc_260516a__team_h__H-R3b-3__c84_kelly_lambda_1.0.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a7603560" :type "atom"
+  :subj "exp:H-R3b-3_c84_kelly_lambda_1.0"
+  :pred "parent_arc"
+  :obj "arc:260516a"
+  :source "experiments/arc_260516a__team_h__H-R3b-3__c84_kelly_lambda_1.0.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ba3108ee" :type "atom"
+  :subj "exp:H-R3b-3_c84_kelly_lambda_1.0"
+  :pred "parent_lineage"
+  :obj "lin:arc_260516a__team_h__sizing"
+  :source "experiments/arc_260516a__team_h__H-R3b-3__c84_kelly_lambda_1.0.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ebc3ee3a" :type "atom"
+  :subj "exp:H-R3b-3_c84_kelly_lambda_1.0"
+  :pred "has_train_nav"
+  :obj 3.6478
+  :source "experiments/arc_260516a__team_h__H-R3b-3__c84_kelly_lambda_1.0.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5d7a97d5" :type "atom"
+  :subj "exp:H-R3b-3_c84_kelly_lambda_1.0"
+  :pred "has_train_trade_count"
+  :obj 179
+  :source "experiments/arc_260516a__team_h__H-R3b-3__c84_kelly_lambda_1.0.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_599ee663" :type "atom"
+  :subj "exp:H-R3b-3_c84_kelly_lambda_1.0"
+  :pred "has_train_win_rate"
+  :obj 0.8771
+  :source "experiments/arc_260516a__team_h__H-R3b-3__c84_kelly_lambda_1.0.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9cece87d" :type "atom"
+  :subj "exp:H-R3b-3_c84_kelly_lambda_1.0"
+  :pred "has_train_sharpe"
+  :obj 7.6243
+  :source "experiments/arc_260516a__team_h__H-R3b-3__c84_kelly_lambda_1.0.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_125b6697" :type "atom"
+  :subj "exp:H-R3b-3_c84_kelly_lambda_1.0"
+  :pred "has_train_max_drawdown"
+  :obj -0.0067
+  :source "experiments/arc_260516a__team_h__H-R3b-3__c84_kelly_lambda_1.0.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c0d697fb" :type "atom"
+  :subj "exp:H-R3b-3_c84_kelly_lambda_1.0"
+  :pred "has_val_nav_mean"
+  :obj 1.101
+  :source "experiments/arc_260516a__team_h__H-R3b-3__c84_kelly_lambda_1.0.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_477626d9" :type "atom"
+  :subj "exp:H-R3b-3_c84_kelly_lambda_1.0"
+  :pred "has_val_nav_sigma"
+  :obj 0.1139
+  :source "experiments/arc_260516a__team_h__H-R3b-3__c84_kelly_lambda_1.0.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_8629cef8" :type "atom"
+  :subj "exp:H-R3b-3_c84_kelly_lambda_1.0"
+  :pred "has_val_window_count"
+  :obj 13
+  :source "experiments/arc_260516a__team_h__H-R3b-3__c84_kelly_lambda_1.0.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d84ffdfd" :type "atom"
+  :subj "exp:H-R3b-3_c84_kelly_lambda_1.0"
+  :pred "has_test_nav"
+  :obj 1.4807
+  :source "experiments/arc_260516a__team_h__H-R3b-3__c84_kelly_lambda_1.0.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e23c0565" :type "atom"
+  :subj "exp:H-R3b-3_c84_kelly_lambda_1.0"
+  :pred "has_test_trade_count"
+  :obj 31
+  :source "experiments/arc_260516a__team_h__H-R3b-3__c84_kelly_lambda_1.0.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_846dc71d" :type "atom"
+  :subj "exp:H-R3b-3_c84_kelly_lambda_1.0"
+  :pred "has_test_sharpe"
+  :obj 7.3681
+  :source "experiments/arc_260516a__team_h__H-R3b-3__c84_kelly_lambda_1.0.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_824e2e81" :type "atom"
+  :subj "exp:H-R3b-3_c84_kelly_lambda_1.0"
+  :pred "has_test_win_rate"
+  :obj 0.8065
+  :source "experiments/arc_260516a__team_h__H-R3b-3__c84_kelly_lambda_1.0.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_676f51cb" :type "atom"
+  :subj "exp:H-R3b-3_c84_kelly_lambda_1.0"
+  :pred "has_test_max_drawdown"
+  :obj -0.0043
+  :source "experiments/arc_260516a__team_h__H-R3b-3__c84_kelly_lambda_1.0.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e34d6469" :type "atom"
+  :subj "exp:H-R3b-3_c84_kelly_lambda_1.0"
+  :pred "has_anchor_train_nav"
+  :obj 2.1882
+  :source "experiments/arc_260516a__team_h__H-R3b-3__c84_kelly_lambda_1.0.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_02689e14" :type "atom"
+  :subj "exp:H-R3b-3_c84_kelly_lambda_1.0"
+  :pred "has_anchor_test_nav"
+  :obj 1.2486
+  :source "experiments/arc_260516a__team_h__H-R3b-3__c84_kelly_lambda_1.0.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_8d00c2ba" :type "atom"
+  :subj "exp:H-R3b-3_c84_kelly_lambda_1.0"
+  :pred "has_status"
+  :obj "challenger"
+  :source "experiments/arc_260516a__team_h__H-R3b-3__c84_kelly_lambda_1.0.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_0113dcde" :type "atom"
+  :subj "exp:H-R3b-3_c84_kelly_lambda_1.0"
+  :pred "has_outcome"
+  :obj "test_pass"
+  :source "experiments/arc_260516a__team_h__H-R3b-3__c84_kelly_lambda_1.0.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d8bf5013" :type "atom"
+  :subj "exp:H-R3b-3_c84_kelly_lambda_1.0"
+  :pred "has_champion"
+  :obj false
+  :source "experiments/arc_260516a__team_h__H-R3b-3__c84_kelly_lambda_1.0.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e094cb91" :type "atom"
+  :subj "exp:H-R3b-3_c84_kelly_lambda_1.0"
+  :pred "has_overfit_score"
+  :obj 0
+  :source "experiments/arc_260516a__team_h__H-R3b-3__c84_kelly_lambda_1.0.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_6fc7e20a" :type "atom"
+  :subj "exp:H-R3b-3_c84_kelly_lambda_1.0"
+  :pred "has_leak_audit"
+  :obj "clean"
+  :source "experiments/arc_260516a__team_h__H-R3b-3__c84_kelly_lambda_1.0.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_db4f978e" :type "atom"
+  :subj "exp:H-R3b-3_c84_kelly_lambda_1.0"
+  :pred "has_axis"
+  :obj "axis:sizing"
+  :source "experiments/arc_260516a__team_h__H-R3b-3__c84_kelly_lambda_1.0.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ef076dde" :type "atom"
+  :subj "exp:H-R3b-3_c84_kelly_lambda_1.0"
+  :pred "has_axis_list"
+  :obj ("sizing")
+  :source "experiments/arc_260516a__team_h__H-R3b-3__c84_kelly_lambda_1.0.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_34622cb2" :type "atom"
+  :subj "exp:H-R3b-3_c84_kelly_lambda_1.0"
+  :pred "has_past_only_window_days"
+  :obj 30
+  :source "experiments/arc_260516a__team_h__H-R3b-3__c84_kelly_lambda_1.0.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_fea72cf0" :type "atom"
+  :subj "exp:H-R3b-3_c84_kelly_lambda_1.0"
+  :pred "has_warmup_required"
+  :obj 10
+  :source "experiments/arc_260516a__team_h__H-R3b-3__c84_kelly_lambda_1.0.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_16671580" :type "atom"
+  :subj "exp:H-R3b-3_c84_kelly_lambda_1.0"
+  :pred "has_created"
+  :obj "2026-05-17 03:30:00"
+  :source "experiments/arc_260516a__team_h__H-R3b-3__c84_kelly_lambda_1.0.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_21768670" :type "atom"
+  :subj "exp:H-R3b-3_c84_kelly_lambda_1.0"
+  :pred "has_last_updated"
+  :obj "2026-05-17 05:09:00"
+  :source "experiments/arc_260516a__team_h__H-R3b-3__c84_kelly_lambda_1.0.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_cec09653" :type "atom"
+  :subj "exp:H-R3b-3_c84_kelly_lambda_1.0"
+  :pred "has_tag"
+  :obj "tag:arc/260516a"
+  :source "experiments/arc_260516a__team_h__H-R3b-3__c84_kelly_lambda_1.0.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_43b32aee" :type "atom"
+  :subj "exp:H-R3b-3_c84_kelly_lambda_1.0"
+  :pred "has_tag"
+  :obj "tag:team/h"
+  :source "experiments/arc_260516a__team_h__H-R3b-3__c84_kelly_lambda_1.0.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d8c92214" :type "atom"
+  :subj "exp:H-R3b-3_c84_kelly_lambda_1.0"
+  :pred "has_tag"
+  :obj "tag:round/r3b"
+  :source "experiments/arc_260516a__team_h__H-R3b-3__c84_kelly_lambda_1.0.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_0bcd7088" :type "atom"
+  :subj "exp:H-R3b-3_c84_kelly_lambda_1.0"
+  :pred "has_tag"
+  :obj "tag:axis/sizing"
+  :source "experiments/arc_260516a__team_h__H-R3b-3__c84_kelly_lambda_1.0.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_4ccebf93" :type "atom"
+  :subj "exp:H-R3b-3_c84_kelly_lambda_1.0"
+  :pred "has_tag"
+  :obj "tag:status/challenger"
+  :source "experiments/arc_260516a__team_h__H-R3b-3__c84_kelly_lambda_1.0.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_64469cb1" :type "atom"
+  :subj "exp:H-R3b-3_c84_kelly_lambda_1.0"
+  :pred "has_tag"
+  :obj "tag:outcome/test_pass"
+  :source "experiments/arc_260516a__team_h__H-R3b-3__c84_kelly_lambda_1.0.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_684eb511" :type "atom"
+  :subj "exp:H-R3b-3_c84_kelly_lambda_1.0"
+  :pred "has_tag"
+  :obj "tag:leak/clean"
+  :source "experiments/arc_260516a__team_h__H-R3b-3__c84_kelly_lambda_1.0.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b20aadd6" :type "atom"
+  :subj "exp:H-R3b-3_c84_kelly_lambda_1.0"
+  :pred "has_tag"
+  :obj "tag:size/large"
+  :source "experiments/arc_260516a__team_h__H-R3b-3__c84_kelly_lambda_1.0.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d7211a1f" :type "atom"
+  :subj "exp:H-R3b-3_c84_kelly_lambda_1.0"
+  :pred "has_tl_dr"
+  :obj "R3b sweep 中 λ=1.0 档（即 Kelly 公式与 H-R2-2 同形式 —— `clip(1.0*(ratio/median-1)+1, 0.5, 1.5)` 与 `clip(ratio/median, 0.5, 1.5)` 数学等价）。train NAV 3.65 / test 1.48，与 [[arc_260516a__team_h__H-R2-2__c84_linear_sizing]] **bit-for-bit 相同**，因为是同公式重跑。R3b champion = λ=1.5 ([[arc_260516a__team_h__H-R3b-4__c84_kelly_lambda_1.5]])。"
+  :source "experiments/arc_260516a__team_h__H-R3b-3__c84_kelly_lambda_1.0.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f6a9e6f9" :type "atom"
+  :subj "exp:H-R3b-3_c84_kelly_lambda_1.0"
+  :pred "has_section_intro"
+  :obj "# H-R3b-3 — C8.4 × Kelly-fraction sizing λ=1.0\n\n> **TL;DR** —— R3b sweep 中 λ=1.0 档（即 Kelly 公式与 H-R2-2 同形式 —— `clip(1.0*(ratio/median-1)+1, 0.5, 1.5)` 与 `clip(ratio/median, 0.5, 1.5)` 数学等价）。train NAV 3.65 / test 1.48，与 [[arc_260516a__team_h__H-R2-2__c84_linear_sizing]] **bit-for-bit 相同**，因为是同公式重跑。R3b champion = λ=1.5 ([[arc_260516a__team_h__H-R3b-4__c84_kelly_lambda_1.5]])。"
+  :source "experiments/arc_260516a__team_h__H-R3b-3__c84_kelly_lambda_1.0.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d8fa843e" :type "atom"
+  :subj "exp:H-R3b-3_c84_kelly_lambda_1.0"
+  :pred "has_section_hypothesis"
+  :obj "- λ=1.0 在 Kelly-fraction 公式里是\"等价于 H-R2 linear\"的 zero-point；R3b 整 sweep 设计 [0.25, 0.5, 1.0, 1.5] 时把它做为 reference point。\n- 假设是 monotone：λ↑ → mean_size↑ → NAV↑。R3b sweep 出来的 ranking (λ=1.5 > 1.0 ≈ 0.5 > 0.25) 部分支持，但 0.5 vs 1.0 几乎 tie 暗示 monotonicity 较弱。"
+  :source "experiments/arc_260516a__team_h__H-R3b-3__c84_kelly_lambda_1.0.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_36a5b59e" :type "atom"
+  :subj "exp:H-R3b-3_c84_kelly_lambda_1.0"
+  :pred "has_section_implementation"
+  :obj "- 主脚本：`/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_h/scripts/round_3b_runner.py`\n- 公式与 H-R2-2 等价：\n\n  $$\n  \\text{size}(t) = \\mathrm{clip}\\!\\left(1.0 \\cdot \\left(\\frac{r_t}{\\widetilde{r}^{\\;\\text{past-30d}}_{\\,t}} - 1\\right) + 1,\\; 0.5,\\; 1.5\\right)\n  $$\n\n- mean_size = 1.179, std_size = 0.350."
+  :source "experiments/arc_260516a__team_h__H-R3b-3__c84_kelly_lambda_1.0.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d69b539e" :type "atom"
+  :subj "exp:H-R3b-3_c84_kelly_lambda_1.0"
+  :pred "has_section_past_only_window"
+  :obj "- 共用 `rolling_30d_ratio_median` helper，strict past-only：`events[event_time < t & event_time >= t-30d]`，warmup<10 时 size=1.0。\n- critic 2026-05-17 audit pass (`#leak/clean`)。"
+  :source "experiments/arc_260516a__team_h__H-R3b-3__c84_kelly_lambda_1.0.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_bd4108e0" :type "atom"
+  :subj "exp:H-R3b-3_c84_kelly_lambda_1.0"
+  :pred "has_section_results"
+  :obj "| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 3.6478 | 179 | 7.62 | 87.7% | -0.67% |\n| Val (rolling 13w) | 1.1010 ± 0.114 | - | - | - | - |\n| Test | 1.4807 | 31 | 7.37 | 80.6% | -0.43% |\n| **Δ test NAV vs anchor** | +0.232 | +11 | +0.22 | +5.6pp | +0.10pp |\n| **Δ vs R3b-4 (λ=1.5)** | -0.010 | 0 | 0 | 0 | 0 |"
+  :source "experiments/arc_260516a__team_h__H-R3b-3__c84_kelly_lambda_1.0.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ac1a97a8" :type "atom"
+  :subj "exp:H-R3b-3_c84_kelly_lambda_1.0"
+  :pred "has_section_risk_overfit"
+  :obj "- overfit_score = 0。单一 grid sweep。\n- 与 R2-2 重复 = sanity check。任何 R3b 重跑必须能 bit-for-bit 复现 H-R2-2，否则 helper drift。"
+  :source "experiments/arc_260516a__team_h__H-R3b-3__c84_kelly_lambda_1.0.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_6bac9208" :type "atom"
+  :subj "exp:H-R3b-3_c84_kelly_lambda_1.0"
+  :pred "same_as"
+  :obj "exp:H-R2-2_c84_linear_sizing"
+  :source "experiments/arc_260516a__team_h__H-R3b-3__c84_kelly_lambda_1.0.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d5b9aacc" :type "atom"
+  :subj "exp:H-R3b-3_c84_kelly_lambda_1.0"
+  :pred "dominated_by"
+  :obj "exp:H-R3b-4_c84_kelly_lambda_1.5"
+  :source "experiments/arc_260516a__team_h__H-R3b-3__c84_kelly_lambda_1.0.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_8a5c786d" :type "atom"
+  :subj "exp:H-R3b-3_c84_kelly_lambda_1.0"
+  :pred "dominates"
+  :obj "exp:H-R3b-2_c84_kelly_lambda_0.5"
+  :source "experiments/arc_260516a__team_h__H-R3b-3__c84_kelly_lambda_1.0.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_94d23815" :type "atom"
+  :subj "exp:H-R3b-3_c84_kelly_lambda_1.0"
+  :pred "dominates"
+  :obj "exp:H-R3b-1_c84_kelly_lambda_0.25"
+  :source "experiments/arc_260516a__team_h__H-R3b-3__c84_kelly_lambda_1.0.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_2347e98d" :type "atom"
+  :subj "exp:H-R3b-3_c84_kelly_lambda_1.0"
+  :pred "builds_on"
+  :obj "exp:C8.4_top3_no_open3min_bypass"
+  :source "experiments/arc_260516a__team_h__H-R3b-3__c84_kelly_lambda_1.0.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_96c2b82a" :type "atom"
+  :subj "exp:H-R3b-3_c84_kelly_lambda_1.0"
+  :pred "builds_against"
+  :obj "exp:anchor_g2_baseline"
+  :source "experiments/arc_260516a__team_h__H-R3b-3__c84_kelly_lambda_1.0.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b0145555" :type "atom"
+  :subj "exp:H-R3b-3_c84_kelly_lambda_1.0"
+  :pred "has_section_lineage_links"
+  :obj "- **same_as**: [[arc_260516a__team_h__H-R2-2__c84_linear_sizing]] (数学等价，R3b 重跑作 sanity)\n- **dominated_by**: [[arc_260516a__team_h__H-R3b-4__c84_kelly_lambda_1.5]]\n- **dominates**: [[arc_260516a__team_h__H-R3b-2__c84_kelly_lambda_0.5]], [[arc_260516a__team_h__H-R3b-1__c84_kelly_lambda_0.25]]\n- **builds on**: [[arc_260516a__team_c__C8.4__top3_no_open3min_bypass]]\n- **builds against**: [[arc_260516a__team_anchor__anchor_g2__baseline]]"
+  :source "experiments/arc_260516a__team_h__H-R3b-3__c84_kelly_lambda_1.0.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_68f99169" :type "atom"
+  :subj "exp:H-R3b-3_c84_kelly_lambda_1.0"
+  :pred "has_section_reports"
+  :obj "- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_h/output/cross_round_leaderboard_nav.csv` (row R3b-3)\n- [[arc_260516a__reporter_20260517_0547]]"
+  :source "experiments/arc_260516a__team_h__H-R3b-3__c84_kelly_lambda_1.0.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b38c0022" :type "atom"
+  :subj "exp:H-R3b-3_c84_kelly_lambda_1.0"
+  :pred "has_section_notes"
+  :obj "- 把 R3b-3 留在 vault 不是为了独立 hypothesis，是给未来 sub-agent 做 **\"参数 sweep 等价点 sanity check\"** 的例子 —— 任何更复杂的 sizing 重构必须保留 λ=1 ≡ ratio/median 这个等价性。"
+  :source "experiments/arc_260516a__team_h__H-R3b-3__c84_kelly_lambda_1.0.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")

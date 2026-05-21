@@ -1,0 +1,419 @@
+(card "exp:F-R1-1_ofi_drop_extreme" :type "experiment"
+  :subj "exp:F-R1-1_ofi_drop_extreme"
+  :body "---\nnav: 22\ntype: experiment\nid: F-R1-1_ofi_drop_extreme\nshort_name: ofi_drop_extreme\ntitle: \"F-R1-1 — anchor default-admit + drop |OFI@30s| trailing-cum q90+\"\narc: 260516a\nteam: f\nround: r1\nparent_arc: \"[[arcs/260516a]]\"\nparent_lineage: \"[[lineages/arc_260516a__team_f__microstructure]]\"\ntrain_nav: 2.0846\ntrain_trade_count: 126\ntrain_win_rate: 0.8571\ntrain_sharpe: 7.8574\ntrain_max_drawdown: -0.0096\nval_nav_mean: 1.0562\nval_nav_sigma: 0.0680\nval_window_count: 13\ntest_nav: 1.2530\ntest_trade_count: 18\ntest_sharpe: 7.9723\ntest_win_rate: 0.7778\ntest_max_drawdown: -0.0053\nanchor_train_nav: 2.1882\nanchor_test_nav: 1.2486\nstatus: falsified\noutcome: test_marginal\nchampion: false\noverfit_score: 0\nleak_audit: clean\naxis: [microstructure, blacklist]\npast_only_window_days: null\nwarmup_required: 10\ncreated: 2026-05-17T01:30:00\nlast_updated: 2026-05-17T05:09:00\ntags: [arc/260516a, team/f, round/r1, axis/microstructure, axis/blacklist, status/falsified, outcome/test_marginal, leak/edge_fixed, size/medium]\n---\n\n# F-R1-1 — anchor + drop |OFI@30s| trailing-cum q90+\n\n> **TL;DR** —— Team F 的 microstructure 路线代表：用 trade 前 30s 的 **Order Flow Imbalance** 绝对值，当它落在历史 trailing-cum q90+ (top 10%) 时 drop 该 trade。**train NAV 2.08 < anchor 2.19**（连 train 都没赢），test NAV 1.25 与 anchor tie。Team F 整个 microstructure axis 在 arc 260516a 上**未能 beat anchor**，被记为 lineage-level **falsified**。\n\n## 假设 (Hypothesis)\n- 微观结构假设：极端 OFI = 单向大单已在 trade 前打穿一边 book → 我们的 entry 处于\"被吃过的水位\"，预期 fill 滑点大、win 概率低。\n- 反过来 trade 时刻周围的 OFI 越 neutral → 越是干净的 setup → 优先保留。\n- 实现：用 |OFI@30s| 的 trailing-cumulative quantile（每个 trade 用其之前所有历史 OFI 算的 q90 阈值）—— 落在 q90+ 即 drop。\n- 期待：win_rate 升、笔数适度下降、NAV 上一点。\n\n## 实现 (Implementation)\n- 主脚本：`/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_f/scripts/round_1_runner.py`\n- 实现步骤：\n  1. anchor G2 + default-admit (近似 D-R2-1 的开口设置)\n  2. 算每个 trade 时刻 t 之前的所有 OFI@30s |值| 的 trailing-cumulative q90\n  3. 当前 trade 的 |OFI@30s| ≥ trailing q90 → drop\n  4. warmup 10（前 10 个 trade 直接 admit，没法算 quantile）\n\n## Past-only window 处理\n- **trailing-cumulative** 实现 strict past-only：每个 t 只用 events[t' < t] 算 quantile，**无任何 lookahead**。\n- 初版（R0 prototype）发现过一个**边缘 leak** —— quantile 算 sub-window 时把当前 t 自身的 OFI 包进去了，相对偏差 < 5%。critic 写 `audit/round_1_leak_fix.md`，engineer fork helper 到 `vendored/` 改为严格 `event_time < t`。该 fix 后 trade_count 不变、NAV 漂移 < 1bp，自动 fix 通过，未升级 outbox。\n- 最终 leak verdict：`#leak/edge_fixed`。\n\n## 结果 (Results)\n| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 2.0846 | 126 | 7.86 | 85.7% | -0.96% |\n| Val (rolling 13w) | 1.0562 ± 0.068 | - | - | - | - |\n| Test | 1.2530 | 18 | 7.97 | 77.8% | -0.53% |\n| Anchor train | 2.1882 | 140 | 7.70 | 85.7% | -1.01% |\n| Anchor test | 1.2486 | 20 | 7.15 | 75.0% | -0.53% |\n| **Δ test NAV vs anchor** | +0.004 | -2 | +0.82 | +2.8pp | 0pp |\n| **Δ train NAV vs anchor** | **-0.104 (LOSE)** | -14 | +0.16 | 0pp | +0.05pp |\n\n- **train 上就没赢** —— NAV 2.08 < anchor 2.19，trade_count 也少了 14 笔。Hypothesis 不成立。\n- test 上 NAV 1.253 跟 anchor 1.249 几乎并列（+0.4%），属于\"hold-out 上变得没差\"的 statistical noise。\n- 同 lineage 的 F-R2-x (VPIN-based drop) 全部表现更差（test_nav 1.19 / 1.18），整条 microstructure axis 在本 arc 失败。\n\n## 风险 & overfit 嫌疑\n- overfit_score = 0（leaderboard gate 列）但实际上 **count_pass=True / nav_strict_beat_val=False**，即 val 上未 strict beat anchor。\n- 真正问题：**hypothesis 设错**了 —— extreme OFI 在我们的 trade pool 里**不是** loss predictor，drop 掉这些 trade 反而砍掉了一些 valid win。\n- 笔数下降 (140 → 126) 是 microstructure axis 的通病 —— 强约束 → 数据稀疏 → 统计力不足。\n\n## Lineage（双链网）\n- **derived_from**: [[arc_260516a__team_d__D-R2-1__default_admit_baseline]] (用 default-admit 作 base，与 D 队同源)\n- **descendants_in_team_f**:\n  - [[arc_260516a__team_f__F-R2-1__vpin_drop_q80_300s]] (换 VPIN signal，test_nav 1.19，更差)\n  - [[arc_260516a__team_f__F-R2-3__vpin_drop_q80_600s]] (VPIN 600s window，test_nav 1.18)\n  - [[arc_260516a__team_f__F-R1-2__vpin_q80_admit]] (反向 hypothesis：只保留 q80+，更差 test_nav 1.15)\n- **competes_with**: [[arc_260516a__team_h__H-R3b-4__c84_kelly_lambda_1.5]] (SOTA)\n- **builds against**: [[arc_260516a__team_anchor__anchor_g2__baseline]]\n- **falsifies_lineage**: F 系列所有 microstructure-as-filter 候选\n\n## Reports\n- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/output/team_f_R1_report_20260516T185213Z.html`\n- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/output/cross_team_test_nav_ranking_v2.csv` (F-R1-1 row)\n- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/audit/round_1_leak_fix.md` (edge leak fix audit)\n- [[arc_260516a__reporter_20260517_0547]]\n\n## Notes / 下次迭代\n- **anti-pattern**: 用 microstructure feature 当 **single-axis filter** 在 trade pool ~150 笔的尺度上**没有足够 statistical power**。建议：\n  1. 不要拿 microstructure 单独做 admit/drop —— 把它作为 **sizing input**（接进 H 系列的 Kelly 公式），让强微结构 signal 影响 size 而非 admit。\n  2. 如果一定要做 filter，先在 ≥ 1000 笔的 candidate pool 上验证 hypothesis；arc 260516a 的 base anchor 太稀疏。\n- **edge leak case study**: 本候选是 arc 260516a 第一个触发\"自动 fix\" leak policy 的 case，可作 sub-agent 学习参考（critic audit + vendored fix + outbox 一行通知，未打扰 han）。\n- F-R1-2 (反向 hypothesis：admit only q80+) test_nav 1.148 → 同样失败，**说明 OFI/VPIN 信息在该 trade pool 上不是 monotone 关系**，整个 axis 在本 arc dim 下不可用。\n"
+  :path "experiments/arc_260516a__team_f__F-R1-1__ofi_drop_extreme.md"
+  :source_mtime "2026-05-17T10:03:12+08:00"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e53b1457" :type "atom"
+  :subj "exp:F-R1-1_ofi_drop_extreme"
+  :pred "has_nav"
+  :obj 22
+  :source "experiments/arc_260516a__team_f__F-R1-1__ofi_drop_extreme.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_4b14406f" :type "atom"
+  :subj "exp:F-R1-1_ofi_drop_extreme"
+  :pred "has_type"
+  :obj "experiment"
+  :source "experiments/arc_260516a__team_f__F-R1-1__ofi_drop_extreme.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e28211a3" :type "atom"
+  :subj "exp:F-R1-1_ofi_drop_extreme"
+  :pred "has_id"
+  :obj "F-R1-1_ofi_drop_extreme"
+  :source "experiments/arc_260516a__team_f__F-R1-1__ofi_drop_extreme.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_559c5d95" :type "atom"
+  :subj "exp:F-R1-1_ofi_drop_extreme"
+  :pred "has_short_name"
+  :obj "ofi_drop_extreme"
+  :source "experiments/arc_260516a__team_f__F-R1-1__ofi_drop_extreme.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b327826b" :type "atom"
+  :subj "exp:F-R1-1_ofi_drop_extreme"
+  :pred "has_title"
+  :obj "F-R1-1 — anchor default-admit + drop |OFI@30s| trailing-cum q90+"
+  :source "experiments/arc_260516a__team_f__F-R1-1__ofi_drop_extreme.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_6454a2dc" :type "atom"
+  :subj "exp:F-R1-1_ofi_drop_extreme"
+  :pred "has_arc"
+  :obj "260516a"
+  :source "experiments/arc_260516a__team_f__F-R1-1__ofi_drop_extreme.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5ec40be2" :type "atom"
+  :subj "exp:F-R1-1_ofi_drop_extreme"
+  :pred "has_team"
+  :obj "f"
+  :source "experiments/arc_260516a__team_f__F-R1-1__ofi_drop_extreme.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1ff97156" :type "atom"
+  :subj "exp:F-R1-1_ofi_drop_extreme"
+  :pred "has_round"
+  :obj "r1"
+  :source "experiments/arc_260516a__team_f__F-R1-1__ofi_drop_extreme.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_913eeabc" :type "atom"
+  :subj "exp:F-R1-1_ofi_drop_extreme"
+  :pred "parent_arc"
+  :obj "arc:260516a"
+  :source "experiments/arc_260516a__team_f__F-R1-1__ofi_drop_extreme.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_88a9d684" :type "atom"
+  :subj "exp:F-R1-1_ofi_drop_extreme"
+  :pred "parent_lineage"
+  :obj "lin:arc_260516a__team_f__microstructure"
+  :source "experiments/arc_260516a__team_f__F-R1-1__ofi_drop_extreme.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_83a46b23" :type "atom"
+  :subj "exp:F-R1-1_ofi_drop_extreme"
+  :pred "has_train_nav"
+  :obj 2.0846
+  :source "experiments/arc_260516a__team_f__F-R1-1__ofi_drop_extreme.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_91c89155" :type "atom"
+  :subj "exp:F-R1-1_ofi_drop_extreme"
+  :pred "has_train_trade_count"
+  :obj 126
+  :source "experiments/arc_260516a__team_f__F-R1-1__ofi_drop_extreme.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_522b32ba" :type "atom"
+  :subj "exp:F-R1-1_ofi_drop_extreme"
+  :pred "has_train_win_rate"
+  :obj 0.8571
+  :source "experiments/arc_260516a__team_f__F-R1-1__ofi_drop_extreme.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_7720a7a2" :type "atom"
+  :subj "exp:F-R1-1_ofi_drop_extreme"
+  :pred "has_train_sharpe"
+  :obj 7.8574
+  :source "experiments/arc_260516a__team_f__F-R1-1__ofi_drop_extreme.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1eaa40f7" :type "atom"
+  :subj "exp:F-R1-1_ofi_drop_extreme"
+  :pred "has_train_max_drawdown"
+  :obj -0.0096
+  :source "experiments/arc_260516a__team_f__F-R1-1__ofi_drop_extreme.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e9f6f336" :type "atom"
+  :subj "exp:F-R1-1_ofi_drop_extreme"
+  :pred "has_val_nav_mean"
+  :obj 1.0562
+  :source "experiments/arc_260516a__team_f__F-R1-1__ofi_drop_extreme.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_44fd203b" :type "atom"
+  :subj "exp:F-R1-1_ofi_drop_extreme"
+  :pred "has_val_nav_sigma"
+  :obj 0.068
+  :source "experiments/arc_260516a__team_f__F-R1-1__ofi_drop_extreme.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_0ff32264" :type "atom"
+  :subj "exp:F-R1-1_ofi_drop_extreme"
+  :pred "has_val_window_count"
+  :obj 13
+  :source "experiments/arc_260516a__team_f__F-R1-1__ofi_drop_extreme.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_958a5d01" :type "atom"
+  :subj "exp:F-R1-1_ofi_drop_extreme"
+  :pred "has_test_nav"
+  :obj 1.253
+  :source "experiments/arc_260516a__team_f__F-R1-1__ofi_drop_extreme.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_3c16e320" :type "atom"
+  :subj "exp:F-R1-1_ofi_drop_extreme"
+  :pred "has_test_trade_count"
+  :obj 18
+  :source "experiments/arc_260516a__team_f__F-R1-1__ofi_drop_extreme.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a2d373a5" :type "atom"
+  :subj "exp:F-R1-1_ofi_drop_extreme"
+  :pred "has_test_sharpe"
+  :obj 7.9723
+  :source "experiments/arc_260516a__team_f__F-R1-1__ofi_drop_extreme.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_2c03a294" :type "atom"
+  :subj "exp:F-R1-1_ofi_drop_extreme"
+  :pred "has_test_win_rate"
+  :obj 0.7778
+  :source "experiments/arc_260516a__team_f__F-R1-1__ofi_drop_extreme.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_96366fbd" :type "atom"
+  :subj "exp:F-R1-1_ofi_drop_extreme"
+  :pred "has_test_max_drawdown"
+  :obj -0.0053
+  :source "experiments/arc_260516a__team_f__F-R1-1__ofi_drop_extreme.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_aca75064" :type "atom"
+  :subj "exp:F-R1-1_ofi_drop_extreme"
+  :pred "has_anchor_train_nav"
+  :obj 2.1882
+  :source "experiments/arc_260516a__team_f__F-R1-1__ofi_drop_extreme.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d649ec1b" :type "atom"
+  :subj "exp:F-R1-1_ofi_drop_extreme"
+  :pred "has_anchor_test_nav"
+  :obj 1.2486
+  :source "experiments/arc_260516a__team_f__F-R1-1__ofi_drop_extreme.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e07e9b8a" :type "atom"
+  :subj "exp:F-R1-1_ofi_drop_extreme"
+  :pred "has_status"
+  :obj "falsified"
+  :source "experiments/arc_260516a__team_f__F-R1-1__ofi_drop_extreme.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d1a36c4f" :type "atom"
+  :subj "exp:F-R1-1_ofi_drop_extreme"
+  :pred "has_outcome"
+  :obj "test_marginal"
+  :source "experiments/arc_260516a__team_f__F-R1-1__ofi_drop_extreme.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ee1153ed" :type "atom"
+  :subj "exp:F-R1-1_ofi_drop_extreme"
+  :pred "has_champion"
+  :obj false
+  :source "experiments/arc_260516a__team_f__F-R1-1__ofi_drop_extreme.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d758b280" :type "atom"
+  :subj "exp:F-R1-1_ofi_drop_extreme"
+  :pred "has_overfit_score"
+  :obj 0
+  :source "experiments/arc_260516a__team_f__F-R1-1__ofi_drop_extreme.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e9cb837e" :type "atom"
+  :subj "exp:F-R1-1_ofi_drop_extreme"
+  :pred "has_leak_audit"
+  :obj "clean"
+  :source "experiments/arc_260516a__team_f__F-R1-1__ofi_drop_extreme.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_3517fbcd" :type "atom"
+  :subj "exp:F-R1-1_ofi_drop_extreme"
+  :pred "has_axis"
+  :obj "axis:microstructure"
+  :source "experiments/arc_260516a__team_f__F-R1-1__ofi_drop_extreme.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_81e76656" :type "atom"
+  :subj "exp:F-R1-1_ofi_drop_extreme"
+  :pred "has_axis"
+  :obj "axis:blacklist"
+  :source "experiments/arc_260516a__team_f__F-R1-1__ofi_drop_extreme.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_cb1cfb09" :type "atom"
+  :subj "exp:F-R1-1_ofi_drop_extreme"
+  :pred "has_axis_list"
+  :obj ("microstructure" "blacklist")
+  :source "experiments/arc_260516a__team_f__F-R1-1__ofi_drop_extreme.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9f38372f" :type "atom"
+  :subj "exp:F-R1-1_ofi_drop_extreme"
+  :pred "has_warmup_required"
+  :obj 10
+  :source "experiments/arc_260516a__team_f__F-R1-1__ofi_drop_extreme.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a28b91e9" :type "atom"
+  :subj "exp:F-R1-1_ofi_drop_extreme"
+  :pred "has_created"
+  :obj "2026-05-17 01:30:00"
+  :source "experiments/arc_260516a__team_f__F-R1-1__ofi_drop_extreme.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f2e36c2d" :type "atom"
+  :subj "exp:F-R1-1_ofi_drop_extreme"
+  :pred "has_last_updated"
+  :obj "2026-05-17 05:09:00"
+  :source "experiments/arc_260516a__team_f__F-R1-1__ofi_drop_extreme.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_39e82dbe" :type "atom"
+  :subj "exp:F-R1-1_ofi_drop_extreme"
+  :pred "has_tag"
+  :obj "tag:arc/260516a"
+  :source "experiments/arc_260516a__team_f__F-R1-1__ofi_drop_extreme.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c0cdd514" :type "atom"
+  :subj "exp:F-R1-1_ofi_drop_extreme"
+  :pred "has_tag"
+  :obj "tag:team/f"
+  :source "experiments/arc_260516a__team_f__F-R1-1__ofi_drop_extreme.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ce9783a0" :type "atom"
+  :subj "exp:F-R1-1_ofi_drop_extreme"
+  :pred "has_tag"
+  :obj "tag:round/r1"
+  :source "experiments/arc_260516a__team_f__F-R1-1__ofi_drop_extreme.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ad19926d" :type "atom"
+  :subj "exp:F-R1-1_ofi_drop_extreme"
+  :pred "has_tag"
+  :obj "tag:axis/microstructure"
+  :source "experiments/arc_260516a__team_f__F-R1-1__ofi_drop_extreme.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_50b05c86" :type "atom"
+  :subj "exp:F-R1-1_ofi_drop_extreme"
+  :pred "has_tag"
+  :obj "tag:axis/blacklist"
+  :source "experiments/arc_260516a__team_f__F-R1-1__ofi_drop_extreme.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b99bd863" :type "atom"
+  :subj "exp:F-R1-1_ofi_drop_extreme"
+  :pred "has_tag"
+  :obj "tag:status/falsified"
+  :source "experiments/arc_260516a__team_f__F-R1-1__ofi_drop_extreme.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_277aedbe" :type "atom"
+  :subj "exp:F-R1-1_ofi_drop_extreme"
+  :pred "has_tag"
+  :obj "tag:outcome/test_marginal"
+  :source "experiments/arc_260516a__team_f__F-R1-1__ofi_drop_extreme.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a68de02f" :type "atom"
+  :subj "exp:F-R1-1_ofi_drop_extreme"
+  :pred "has_tag"
+  :obj "tag:leak/edge_fixed"
+  :source "experiments/arc_260516a__team_f__F-R1-1__ofi_drop_extreme.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ab208baa" :type "atom"
+  :subj "exp:F-R1-1_ofi_drop_extreme"
+  :pred "has_tag"
+  :obj "tag:size/medium"
+  :source "experiments/arc_260516a__team_f__F-R1-1__ofi_drop_extreme.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_05f8f6ae" :type "atom"
+  :subj "exp:F-R1-1_ofi_drop_extreme"
+  :pred "has_tl_dr"
+  :obj "Team F 的 microstructure 路线代表：用 trade 前 30s 的 **Order Flow Imbalance** 绝对值，当它落在历史 trailing-cum q90+ (top 10%) 时 drop 该 trade。**train NAV 2.08 < anchor 2.19**（连 train 都没赢），test NAV 1.25 与 anchor tie。Team F 整个 microstructure axis 在 arc 260516a 上**未能 beat anchor**，被记为 lineage-level **falsified**。"
+  :source "experiments/arc_260516a__team_f__F-R1-1__ofi_drop_extreme.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_0639520d" :type "atom"
+  :subj "exp:F-R1-1_ofi_drop_extreme"
+  :pred "has_section_intro"
+  :obj "# F-R1-1 — anchor + drop |OFI@30s| trailing-cum q90+\n\n> **TL;DR** —— Team F 的 microstructure 路线代表：用 trade 前 30s 的 **Order Flow Imbalance** 绝对值，当它落在历史 trailing-cum q90+ (top 10%) 时 drop 该 trade。**train NAV 2.08 < anchor 2.19**（连 train 都没赢），test NAV 1.25 与 anchor tie。Team F 整个 microstructure axis 在 arc 260516a 上**未能 beat anchor**，被记为 lineage-level **falsified**。"
+  :source "experiments/arc_260516a__team_f__F-R1-1__ofi_drop_extreme.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d3aa4a64" :type "atom"
+  :subj "exp:F-R1-1_ofi_drop_extreme"
+  :pred "has_section_hypothesis"
+  :obj "- 微观结构假设：极端 OFI = 单向大单已在 trade 前打穿一边 book → 我们的 entry 处于\"被吃过的水位\"，预期 fill 滑点大、win 概率低。\n- 反过来 trade 时刻周围的 OFI 越 neutral → 越是干净的 setup → 优先保留。\n- 实现：用 |OFI@30s| 的 trailing-cumulative quantile（每个 trade 用其之前所有历史 OFI 算的 q90 阈值）—— 落在 q90+ 即 drop。\n- 期待：win_rate 升、笔数适度下降、NAV 上一点。"
+  :source "experiments/arc_260516a__team_f__F-R1-1__ofi_drop_extreme.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_8e63728a" :type "atom"
+  :subj "exp:F-R1-1_ofi_drop_extreme"
+  :pred "has_section_implementation"
+  :obj "- 主脚本：`/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_f/scripts/round_1_runner.py`\n- 实现步骤：\n  1. anchor G2 + default-admit (近似 D-R2-1 的开口设置)\n  2. 算每个 trade 时刻 t 之前的所有 OFI@30s |值| 的 trailing-cumulative q90\n  3. 当前 trade 的 |OFI@30s| ≥ trailing q90 → drop\n  4. warmup 10（前 10 个 trade 直接 admit，没法算 quantile）"
+  :source "experiments/arc_260516a__team_f__F-R1-1__ofi_drop_extreme.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_400b7fa2" :type "atom"
+  :subj "exp:F-R1-1_ofi_drop_extreme"
+  :pred "has_section_past_only_window"
+  :obj "- **trailing-cumulative** 实现 strict past-only：每个 t 只用 events[t' < t] 算 quantile，**无任何 lookahead**。\n- 初版（R0 prototype）发现过一个**边缘 leak** —— quantile 算 sub-window 时把当前 t 自身的 OFI 包进去了，相对偏差 < 5%。critic 写 `audit/round_1_leak_fix.md`，engineer fork helper 到 `vendored/` 改为严格 `event_time < t`。该 fix 后 trade_count 不变、NAV 漂移 < 1bp，自动 fix 通过，未升级 outbox。\n- 最终 leak verdict：`#leak/edge_fixed`。"
+  :source "experiments/arc_260516a__team_f__F-R1-1__ofi_drop_extreme.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f40d1b36" :type "atom"
+  :subj "exp:F-R1-1_ofi_drop_extreme"
+  :pred "has_section_results"
+  :obj "| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 2.0846 | 126 | 7.86 | 85.7% | -0.96% |\n| Val (rolling 13w) | 1.0562 ± 0.068 | - | - | - | - |\n| Test | 1.2530 | 18 | 7.97 | 77.8% | -0.53% |\n| Anchor train | 2.1882 | 140 | 7.70 | 85.7% | -1.01% |\n| Anchor test | 1.2486 | 20 | 7.15 | 75.0% | -0.53% |\n| **Δ test NAV vs anchor** | +0.004 | -2 | +0.82 | +2.8pp | 0pp |\n| **Δ train NAV vs anchor** | **-0.104 (LOSE)** | -14 | +0.16 | 0pp | +0.05pp |\n\n- **train 上就没赢** —— NAV 2.08 < anchor 2.19，trade_count 也少了 14 笔。Hypothesis 不成立。\n- test 上 NAV 1.253 跟 anchor 1.249 几乎并列（+0.4%），属于\"hold-out 上变得没差\"的 statistical noise。\n- 同 lineage 的 F-R2-x (VPIN-based drop) 全部表现更差（test_nav 1.19 / 1.18），整条 microstructure axis 在本 arc 失败。"
+  :source "experiments/arc_260516a__team_f__F-R1-1__ofi_drop_extreme.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_fcc1ff06" :type "atom"
+  :subj "exp:F-R1-1_ofi_drop_extreme"
+  :pred "has_section_risk_overfit"
+  :obj "- overfit_score = 0（leaderboard gate 列）但实际上 **count_pass=True / nav_strict_beat_val=False**，即 val 上未 strict beat anchor。\n- 真正问题：**hypothesis 设错**了 —— extreme OFI 在我们的 trade pool 里**不是** loss predictor，drop 掉这些 trade 反而砍掉了一些 valid win。\n- 笔数下降 (140 → 126) 是 microstructure axis 的通病 —— 强约束 → 数据稀疏 → 统计力不足。"
+  :source "experiments/arc_260516a__team_f__F-R1-1__ofi_drop_extreme.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d487a4c3" :type "atom"
+  :subj "exp:F-R1-1_ofi_drop_extreme"
+  :pred "derived_from"
+  :obj "exp:D-R2-1_default_admit_baseline"
+  :source "experiments/arc_260516a__team_f__F-R1-1__ofi_drop_extreme.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_24a22173" :type "atom"
+  :subj "exp:F-R1-1_ofi_drop_extreme"
+  :pred "descendants_in_team_f"
+  :obj "exp:F-R2-1_vpin_drop_q80_300s"
+  :source "experiments/arc_260516a__team_f__F-R1-1__ofi_drop_extreme.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_777160bc" :type "atom"
+  :subj "exp:F-R1-1_ofi_drop_extreme"
+  :pred "competes_with"
+  :obj "exp:H-R3b-4_c84_kelly_lambda_1.5"
+  :source "experiments/arc_260516a__team_f__F-R1-1__ofi_drop_extreme.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_bb025093" :type "atom"
+  :subj "exp:F-R1-1_ofi_drop_extreme"
+  :pred "builds_against"
+  :obj "exp:anchor_g2_baseline"
+  :source "experiments/arc_260516a__team_f__F-R1-1__ofi_drop_extreme.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_8e5e05ed" :type "atom"
+  :subj "exp:F-R1-1_ofi_drop_extreme"
+  :pred "has_section_lineage_links"
+  :obj "- **derived_from**: [[arc_260516a__team_d__D-R2-1__default_admit_baseline]] (用 default-admit 作 base，与 D 队同源)\n- **descendants_in_team_f**:\n  - [[arc_260516a__team_f__F-R2-1__vpin_drop_q80_300s]] (换 VPIN signal，test_nav 1.19，更差)\n  - [[arc_260516a__team_f__F-R2-3__vpin_drop_q80_600s]] (VPIN 600s window，test_nav 1.18)\n  - [[arc_260516a__team_f__F-R1-2__vpin_q80_admit]] (反向 hypothesis：只保留 q80+，更差 test_nav 1.15)\n- **competes_with**: [[arc_260516a__team_h__H-R3b-4__c84_kelly_lambda_1.5]] (SOTA)\n- **builds against**: [[arc_260516a__team_anchor__anchor_g2__baseline]]\n- **falsifies_lineage**: F 系列所有 microstructure-as-filter 候选"
+  :source "experiments/arc_260516a__team_f__F-R1-1__ofi_drop_extreme.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d4188c9b" :type "atom"
+  :subj "exp:F-R1-1_ofi_drop_extreme"
+  :pred "has_section_reports"
+  :obj "- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/output/team_f_R1_report_20260516T185213Z.html`\n- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/output/cross_team_test_nav_ranking_v2.csv` (F-R1-1 row)\n- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/audit/round_1_leak_fix.md` (edge leak fix audit)\n- [[arc_260516a__reporter_20260517_0547]]"
+  :source "experiments/arc_260516a__team_f__F-R1-1__ofi_drop_extreme.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_11c7b0df" :type "atom"
+  :subj "exp:F-R1-1_ofi_drop_extreme"
+  :pred "has_section_notes"
+  :obj "- **anti-pattern**: 用 microstructure feature 当 **single-axis filter** 在 trade pool ~150 笔的尺度上**没有足够 statistical power**。建议：\n  1. 不要拿 microstructure 单独做 admit/drop —— 把它作为 **sizing input**（接进 H 系列的 Kelly 公式），让强微结构 signal 影响 size 而非 admit。\n  2. 如果一定要做 filter，先在 ≥ 1000 笔的 candidate pool 上验证 hypothesis；arc 260516a 的 base anchor 太稀疏。\n- **edge leak case study**: 本候选是 arc 260516a 第一个触发\"自动 fix\" leak policy 的 case，可作 sub-agent 学习参考（critic audit + vendored fix + outbox 一行通知，未打扰 han）。\n- F-R1-2 (反向 hypothesis：admit only q80+) test_nav 1.148 → 同样失败，**说明 OFI/VPIN 信息在该 trade pool 上不是 monotone 关系**，整个 axis 在本 arc dim 下不可用。"
+  :source "experiments/arc_260516a__team_f__F-R1-1__ofi_drop_extreme.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")

@@ -1,0 +1,433 @@
+(card "exp:C8.4_top3_no_open3min_bypass" :type "experiment"
+  :subj "exp:C8.4_top3_no_open3min_bypass"
+  :body "---\nnav: 8\ntype: experiment\nid: C8.4\nshort_name: top3_no_open3min_bypass\ntitle: \"C8.4 — top-3 + no_open_3min + high-ratio bypass (Team H sizing base)\"\narc: 260516a\nteam: c\nround: r8\nparent_arc: \"[[arcs/260516a]]\"\nparent_lineage: \"[[lineages/arc_260516a__team_c__no_open3min]]\"\ntrain_nav: 3.1544\ntrain_trade_count: 179\ntrain_win_rate: 0.8771\ntrain_sharpe: 8.3351\ntrain_max_drawdown: -0.0047\nval_nav_mean: 1.0887\nval_nav_sigma: 0.0902\nval_window_count: 13\ntest_nav: 1.4058\ntest_trade_count: 31\ntest_sharpe: 7.7042\ntest_win_rate: 0.8065\ntest_max_drawdown: -0.0029\nanchor_train_nav: 2.1882\nanchor_test_nav: 1.2486\nstatus: champion\noutcome: test_pass\nchampion: false\noverfit_score: 0\nleak_audit: clean\naxis: [whitelist, timing_filter, bypass]\npast_only_window_days: null\nwarmup_required: null\ncreated: 2026-05-17T03:00:00\nlast_updated: 2026-05-17T05:09:00\ntags: [arc/260516a, team/c, round/r8, axis/whitelist, axis/timing_filter, axis/bypass, status/champion, outcome/test_pass, leak/clean, size/large]\n---\n\n# C8.4 — top-3 + no_open_3min + high-ratio bypass\n\n> **TL;DR** —— Team C 在 NAV ranking 切换后冒出来的\"卷王\" trade selector：**top-3 expand + 砍开盘 3min + 高 ratio (>0.40) 绕过 volume cap**。179 笔，train NAV 3.15。**当前所有 H 系列 sizing 候选的 base** —— H-R3b-4 / H-R2-2 / H-R2-1 等都用它选 trade。\n\n## 假设 (Hypothesis)\n- 把 R6 系列的 \"top-3 expand\"（每秒多接 1-2 个 leg）保留，再叠两条独立 lessons：\n  1. **没有 open_3min**：开盘前 3min 的 trade 历史上波动大、win_rate 拉胯（来自 [[arc_260516a__team_b__B-R8-1__no_open3min_bypass03]] 的发现）—— 直接屏蔽。\n  2. **high-ratio bypass**：当 leg ratio > 0.40 时，绕过 baseline_max_avg 的 volume cap（来自 Team B B-R8-2 mechanism）—— 高 ratio leg 不应被 volume cap 砍掉。\n- 假设：这两条加成 + top-3 expand 三个独立 lever 叠加，能在不引入新 leak 的前提下进一步推高 NAV。\n\n## 实现 (Implementation)\n- 主脚本：`/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_c/scripts/round_8_runner.py` (或同 dir)\n- trade selector 步骤：\n  1. baseline G2 配置\n  2. top-3 expand（同秒同 trigger 接 top-3 leg）\n  3. drop trades with minute_of_day in 开盘 3min\n  4. 当 leg.ratio > 0.40 时，跳过 `baseline_max_avg` cap\n- 输出 179 笔（vs anchor 140）。\n\n## Past-only window 处理\n- C8.4 本身不用 rolling stat（filter 都是 within-trade snapshot）。**无 lookahead 风险**。\n- 注意：H 系列在 C8.4 上加 sizing 时引入了 30d rolling median，是 sizing layer 的事，不在 C8.4 本身。\n\n## 结果 (Results)\n| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 3.1544 | 179 | 8.34 | 87.7% | -0.47% |\n| Val (rolling 13w) | 1.0887 ± 0.090 | - | - | - | - |\n| Test | 1.4058 | 31 | 7.70 | 80.6% | -0.29% |\n| **Δ test NAV vs anchor** | **+0.157** | +11 | +0.55 | +5.6pp | +0.24pp |\n\n注意 test sharpe 8.34 → 7.70 的下降是预期（hold-out 上信号弱化），但 NAV 仍强势 beat anchor。\nH-R3b-4 在这之上加 sizing 再把 NAV 拉到 1.49（+0.08）。\n\n## 风险 & overfit 嫌疑\n- overfit_score = 0\n- 三条 lever 都独立 falsifiable（R7 系列单独验证过 no_open_3min 与 bypass 的边际贡献）\n- 唯一隐患：bypass 阈值 0.40 是 R7-3 来的固定值，**没在 C 队 sweep**（B 队 sweep 过 0.30/0.40），下次类似实验应 sweep 阈值。\n\n## Lineage（双链网）\n- **derived_from**: [[arc_260516a__team_c__baseline_C7.5__top3_no_open3min]] (C7.5 是 C8.4 的前身，仅缺 bypass)\n- **borrows_mechanism_from**: [[arc_260516a__team_b__B-R8-1__no_open3min_bypass03]] (no_open_3min 和 bypass 的 origin)\n- **base_for**:\n  - [[arc_260516a__team_h__H-R3b-4__c84_kelly_lambda_1.5]] (SOTA)\n  - [[arc_260516a__team_h__H-R2-2__c84_linear_sizing]]\n  - 其它 H-R2-x / H-R3b-x 全系\n- **competes_with**: [[arc_260516a__team_b__B-R8-1__no_open3min_bypass03]] (B 队同 lessons 但走 default-drop 路线)\n- **builds against**: [[arc_260516a__team_anchor__anchor_g2__baseline]]\n\n## Reports\n- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_c/output/round_8/leaderboard.csv` (row 1, gate=NAV_PASS)\n- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/output/top3_strategies_explainer_20260517_0015.html`\n- [[arc_260516a__reporter_20260517_0547]]\n\n## Notes / 下次迭代\n- C8.4 的真正贡献 = 给 H 系列**搭好了一个 179 笔的 high-quality trade pool**。trade selector 卷到这里基本 plateau；后续 NAV gain 来自 sizing axis。\n- 下次再做 selector 类 lineage 时，\"top-N expand + timing filter + volume bypass\"这套 lever 组合可以直接复用作起点，但记得 sweep bypass threshold (0.30/0.40/0.50)。\n- C8.4 没用 rolling stat 是优点 —— 这意味着 deployment 时 cold-start 无 warmup 需求；H 系列加 sizing 后则需要 ≥10 个 events 才能让 size 生效。\n"
+  :path "experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass.md"
+  :source_mtime "2026-05-17T10:00:50+08:00"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c5e0f304" :type "atom"
+  :subj "exp:C8.4_top3_no_open3min_bypass"
+  :pred "has_nav"
+  :obj 8
+  :source "experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e5cff803" :type "atom"
+  :subj "exp:C8.4_top3_no_open3min_bypass"
+  :pred "has_type"
+  :obj "experiment"
+  :source "experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f3fba9b4" :type "atom"
+  :subj "exp:C8.4_top3_no_open3min_bypass"
+  :pred "has_id"
+  :obj "C8.4"
+  :source "experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_da357fc7" :type "atom"
+  :subj "exp:C8.4_top3_no_open3min_bypass"
+  :pred "has_short_name"
+  :obj "top3_no_open3min_bypass"
+  :source "experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_2e8f1dbf" :type "atom"
+  :subj "exp:C8.4_top3_no_open3min_bypass"
+  :pred "has_title"
+  :obj "C8.4 — top-3 + no_open_3min + high-ratio bypass (Team H sizing base)"
+  :source "experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b4ce0329" :type "atom"
+  :subj "exp:C8.4_top3_no_open3min_bypass"
+  :pred "has_arc"
+  :obj "260516a"
+  :source "experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ea2c1c9c" :type "atom"
+  :subj "exp:C8.4_top3_no_open3min_bypass"
+  :pred "has_team"
+  :obj "c"
+  :source "experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_549081d7" :type "atom"
+  :subj "exp:C8.4_top3_no_open3min_bypass"
+  :pred "has_round"
+  :obj "r8"
+  :source "experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_39ae8237" :type "atom"
+  :subj "exp:C8.4_top3_no_open3min_bypass"
+  :pred "parent_arc"
+  :obj "arc:260516a"
+  :source "experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_60641d29" :type "atom"
+  :subj "exp:C8.4_top3_no_open3min_bypass"
+  :pred "parent_lineage"
+  :obj "lin:arc_260516a__team_c__no_open3min"
+  :source "experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_61df228c" :type "atom"
+  :subj "exp:C8.4_top3_no_open3min_bypass"
+  :pred "has_train_nav"
+  :obj 3.1544
+  :source "experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_71c64486" :type "atom"
+  :subj "exp:C8.4_top3_no_open3min_bypass"
+  :pred "has_train_trade_count"
+  :obj 179
+  :source "experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d41d613d" :type "atom"
+  :subj "exp:C8.4_top3_no_open3min_bypass"
+  :pred "has_train_win_rate"
+  :obj 0.8771
+  :source "experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_6a2403ea" :type "atom"
+  :subj "exp:C8.4_top3_no_open3min_bypass"
+  :pred "has_train_sharpe"
+  :obj 8.3351
+  :source "experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d6a7eab0" :type "atom"
+  :subj "exp:C8.4_top3_no_open3min_bypass"
+  :pred "has_train_max_drawdown"
+  :obj -0.0047
+  :source "experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_4d73c29b" :type "atom"
+  :subj "exp:C8.4_top3_no_open3min_bypass"
+  :pred "has_val_nav_mean"
+  :obj 1.0887
+  :source "experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_0f4dfc1f" :type "atom"
+  :subj "exp:C8.4_top3_no_open3min_bypass"
+  :pred "has_val_nav_sigma"
+  :obj 0.0902
+  :source "experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e528c0f9" :type "atom"
+  :subj "exp:C8.4_top3_no_open3min_bypass"
+  :pred "has_val_window_count"
+  :obj 13
+  :source "experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_fb32682e" :type "atom"
+  :subj "exp:C8.4_top3_no_open3min_bypass"
+  :pred "has_test_nav"
+  :obj 1.4058
+  :source "experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c72b0c99" :type "atom"
+  :subj "exp:C8.4_top3_no_open3min_bypass"
+  :pred "has_test_trade_count"
+  :obj 31
+  :source "experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_cc2aae2e" :type "atom"
+  :subj "exp:C8.4_top3_no_open3min_bypass"
+  :pred "has_test_sharpe"
+  :obj 7.7042
+  :source "experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_88ecde4e" :type "atom"
+  :subj "exp:C8.4_top3_no_open3min_bypass"
+  :pred "has_test_win_rate"
+  :obj 0.8065
+  :source "experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_98b69353" :type "atom"
+  :subj "exp:C8.4_top3_no_open3min_bypass"
+  :pred "has_test_max_drawdown"
+  :obj -0.0029
+  :source "experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_37f73567" :type "atom"
+  :subj "exp:C8.4_top3_no_open3min_bypass"
+  :pred "has_anchor_train_nav"
+  :obj 2.1882
+  :source "experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_cb77d8bb" :type "atom"
+  :subj "exp:C8.4_top3_no_open3min_bypass"
+  :pred "has_anchor_test_nav"
+  :obj 1.2486
+  :source "experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_3451a359" :type "atom"
+  :subj "exp:C8.4_top3_no_open3min_bypass"
+  :pred "has_status"
+  :obj "champion"
+  :source "experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b3e4b2f8" :type "atom"
+  :subj "exp:C8.4_top3_no_open3min_bypass"
+  :pred "has_outcome"
+  :obj "test_pass"
+  :source "experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_62e456bd" :type "atom"
+  :subj "exp:C8.4_top3_no_open3min_bypass"
+  :pred "has_champion"
+  :obj false
+  :source "experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d004ca83" :type "atom"
+  :subj "exp:C8.4_top3_no_open3min_bypass"
+  :pred "has_overfit_score"
+  :obj 0
+  :source "experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_fdd63eff" :type "atom"
+  :subj "exp:C8.4_top3_no_open3min_bypass"
+  :pred "has_leak_audit"
+  :obj "clean"
+  :source "experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a888cf26" :type "atom"
+  :subj "exp:C8.4_top3_no_open3min_bypass"
+  :pred "has_axis"
+  :obj "axis:whitelist"
+  :source "experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_499b61cc" :type "atom"
+  :subj "exp:C8.4_top3_no_open3min_bypass"
+  :pred "has_axis"
+  :obj "axis:timing_filter"
+  :source "experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f2cb1fd5" :type "atom"
+  :subj "exp:C8.4_top3_no_open3min_bypass"
+  :pred "has_axis"
+  :obj "axis:bypass"
+  :source "experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_02384f37" :type "atom"
+  :subj "exp:C8.4_top3_no_open3min_bypass"
+  :pred "has_axis_list"
+  :obj ("whitelist" "timing_filter" "bypass")
+  :source "experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_2b670a37" :type "atom"
+  :subj "exp:C8.4_top3_no_open3min_bypass"
+  :pred "has_created"
+  :obj "2026-05-17 03:00:00"
+  :source "experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_2e403682" :type "atom"
+  :subj "exp:C8.4_top3_no_open3min_bypass"
+  :pred "has_last_updated"
+  :obj "2026-05-17 05:09:00"
+  :source "experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1d74c77a" :type "atom"
+  :subj "exp:C8.4_top3_no_open3min_bypass"
+  :pred "has_tag"
+  :obj "tag:arc/260516a"
+  :source "experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_48b0f293" :type "atom"
+  :subj "exp:C8.4_top3_no_open3min_bypass"
+  :pred "has_tag"
+  :obj "tag:team/c"
+  :source "experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d0bae5a6" :type "atom"
+  :subj "exp:C8.4_top3_no_open3min_bypass"
+  :pred "has_tag"
+  :obj "tag:round/r8"
+  :source "experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_2f814566" :type "atom"
+  :subj "exp:C8.4_top3_no_open3min_bypass"
+  :pred "has_tag"
+  :obj "tag:axis/whitelist"
+  :source "experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_2fe1b6ae" :type "atom"
+  :subj "exp:C8.4_top3_no_open3min_bypass"
+  :pred "has_tag"
+  :obj "tag:axis/timing_filter"
+  :source "experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_646382c3" :type "atom"
+  :subj "exp:C8.4_top3_no_open3min_bypass"
+  :pred "has_tag"
+  :obj "tag:axis/bypass"
+  :source "experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9cca533e" :type "atom"
+  :subj "exp:C8.4_top3_no_open3min_bypass"
+  :pred "has_tag"
+  :obj "tag:status/champion"
+  :source "experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_dc408bb2" :type "atom"
+  :subj "exp:C8.4_top3_no_open3min_bypass"
+  :pred "has_tag"
+  :obj "tag:outcome/test_pass"
+  :source "experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d7624afe" :type "atom"
+  :subj "exp:C8.4_top3_no_open3min_bypass"
+  :pred "has_tag"
+  :obj "tag:leak/clean"
+  :source "experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ac8a4eae" :type "atom"
+  :subj "exp:C8.4_top3_no_open3min_bypass"
+  :pred "has_tag"
+  :obj "tag:size/large"
+  :source "experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5ecbb691" :type "atom"
+  :subj "exp:C8.4_top3_no_open3min_bypass"
+  :pred "has_tl_dr"
+  :obj "Team C 在 NAV ranking 切换后冒出来的\"卷王\" trade selector：**top-3 expand + 砍开盘 3min + 高 ratio (>0.40) 绕过 volume cap**。179 笔，train NAV 3.15。**当前所有 H 系列 sizing 候选的 base** —— H-R3b-4 / H-R2-2 / H-R2-1 等都用它选 trade。"
+  :source "experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f129d5ff" :type "atom"
+  :subj "exp:C8.4_top3_no_open3min_bypass"
+  :pred "has_section_intro"
+  :obj "# C8.4 — top-3 + no_open_3min + high-ratio bypass\n\n> **TL;DR** —— Team C 在 NAV ranking 切换后冒出来的\"卷王\" trade selector：**top-3 expand + 砍开盘 3min + 高 ratio (>0.40) 绕过 volume cap**。179 笔，train NAV 3.15。**当前所有 H 系列 sizing 候选的 base** —— H-R3b-4 / H-R2-2 / H-R2-1 等都用它选 trade。"
+  :source "experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_4f79ac0c" :type "atom"
+  :subj "exp:C8.4_top3_no_open3min_bypass"
+  :pred "has_section_hypothesis"
+  :obj "- 把 R6 系列的 \"top-3 expand\"（每秒多接 1-2 个 leg）保留，再叠两条独立 lessons：\n  1. **没有 open_3min**：开盘前 3min 的 trade 历史上波动大、win_rate 拉胯（来自 [[arc_260516a__team_b__B-R8-1__no_open3min_bypass03]] 的发现）—— 直接屏蔽。\n  2. **high-ratio bypass**：当 leg ratio > 0.40 时，绕过 baseline_max_avg 的 volume cap（来自 Team B B-R8-2 mechanism）—— 高 ratio leg 不应被 volume cap 砍掉。\n- 假设：这两条加成 + top-3 expand 三个独立 lever 叠加，能在不引入新 leak 的前提下进一步推高 NAV。"
+  :source "experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_db6adafb" :type "atom"
+  :subj "exp:C8.4_top3_no_open3min_bypass"
+  :pred "has_section_implementation"
+  :obj "- 主脚本：`/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_c/scripts/round_8_runner.py` (或同 dir)\n- trade selector 步骤：\n  1. baseline G2 配置\n  2. top-3 expand（同秒同 trigger 接 top-3 leg）\n  3. drop trades with minute_of_day in 开盘 3min\n  4. 当 leg.ratio > 0.40 时，跳过 `baseline_max_avg` cap\n- 输出 179 笔（vs anchor 140）。"
+  :source "experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_6a4e3e7d" :type "atom"
+  :subj "exp:C8.4_top3_no_open3min_bypass"
+  :pred "has_section_past_only_window"
+  :obj "- C8.4 本身不用 rolling stat（filter 都是 within-trade snapshot）。**无 lookahead 风险**。\n- 注意：H 系列在 C8.4 上加 sizing 时引入了 30d rolling median，是 sizing layer 的事，不在 C8.4 本身。"
+  :source "experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_83d8ed52" :type "atom"
+  :subj "exp:C8.4_top3_no_open3min_bypass"
+  :pred "has_section_results"
+  :obj "| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 3.1544 | 179 | 8.34 | 87.7% | -0.47% |\n| Val (rolling 13w) | 1.0887 ± 0.090 | - | - | - | - |\n| Test | 1.4058 | 31 | 7.70 | 80.6% | -0.29% |\n| **Δ test NAV vs anchor** | **+0.157** | +11 | +0.55 | +5.6pp | +0.24pp |\n\n注意 test sharpe 8.34 → 7.70 的下降是预期（hold-out 上信号弱化），但 NAV 仍强势 beat anchor。\nH-R3b-4 在这之上加 sizing 再把 NAV 拉到 1.49（+0.08）。"
+  :source "experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_42cc1a21" :type "atom"
+  :subj "exp:C8.4_top3_no_open3min_bypass"
+  :pred "has_section_risk_overfit"
+  :obj "- overfit_score = 0\n- 三条 lever 都独立 falsifiable（R7 系列单独验证过 no_open_3min 与 bypass 的边际贡献）\n- 唯一隐患：bypass 阈值 0.40 是 R7-3 来的固定值，**没在 C 队 sweep**（B 队 sweep 过 0.30/0.40），下次类似实验应 sweep 阈值。"
+  :source "experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_7ace9890" :type "atom"
+  :subj "exp:C8.4_top3_no_open3min_bypass"
+  :pred "derived_from"
+  :obj "exp:baseline_C7.5_top3_no_open3min"
+  :source "experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_28ef6d0e" :type "atom"
+  :subj "exp:C8.4_top3_no_open3min_bypass"
+  :pred "borrows_mechanism_from"
+  :obj "exp:B-R8-1_no_open3min_bypass03"
+  :source "experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_95af57f1" :type "atom"
+  :subj "exp:C8.4_top3_no_open3min_bypass"
+  :pred "base_for"
+  :obj "exp:H-R3b-4_c84_kelly_lambda_1.5"
+  :source "experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c78abca7" :type "atom"
+  :subj "exp:C8.4_top3_no_open3min_bypass"
+  :pred "competes_with"
+  :obj "exp:B-R8-1_no_open3min_bypass03"
+  :source "experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_eb068833" :type "atom"
+  :subj "exp:C8.4_top3_no_open3min_bypass"
+  :pred "builds_against"
+  :obj "exp:anchor_g2_baseline"
+  :source "experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_71f9f31c" :type "atom"
+  :subj "exp:C8.4_top3_no_open3min_bypass"
+  :pred "has_section_lineage_links"
+  :obj "- **derived_from**: [[arc_260516a__team_c__baseline_C7.5__top3_no_open3min]] (C7.5 是 C8.4 的前身，仅缺 bypass)\n- **borrows_mechanism_from**: [[arc_260516a__team_b__B-R8-1__no_open3min_bypass03]] (no_open_3min 和 bypass 的 origin)\n- **base_for**:\n  - [[arc_260516a__team_h__H-R3b-4__c84_kelly_lambda_1.5]] (SOTA)\n  - [[arc_260516a__team_h__H-R2-2__c84_linear_sizing]]\n  - 其它 H-R2-x / H-R3b-x 全系\n- **competes_with**: [[arc_260516a__team_b__B-R8-1__no_open3min_bypass03]] (B 队同 lessons 但走 default-drop 路线)\n- **builds against**: [[arc_260516a__team_anchor__anchor_g2__baseline]]"
+  :source "experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_6a93f276" :type "atom"
+  :subj "exp:C8.4_top3_no_open3min_bypass"
+  :pred "has_section_reports"
+  :obj "- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_c/output/round_8/leaderboard.csv` (row 1, gate=NAV_PASS)\n- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/output/top3_strategies_explainer_20260517_0015.html`\n- [[arc_260516a__reporter_20260517_0547]]"
+  :source "experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d52db534" :type "atom"
+  :subj "exp:C8.4_top3_no_open3min_bypass"
+  :pred "has_section_notes"
+  :obj "- C8.4 的真正贡献 = 给 H 系列**搭好了一个 179 笔的 high-quality trade pool**。trade selector 卷到这里基本 plateau；后续 NAV gain 来自 sizing axis。\n- 下次再做 selector 类 lineage 时，\"top-N expand + timing filter + volume bypass\"这套 lever 组合可以直接复用作起点，但记得 sweep bypass threshold (0.30/0.40/0.50)。\n- C8.4 没用 rolling stat 是优点 —— 这意味着 deployment 时 cold-start 无 warmup 需求；H 系列加 sizing 后则需要 ≥10 个 events 才能让 size 生效。"
+  :source "experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")

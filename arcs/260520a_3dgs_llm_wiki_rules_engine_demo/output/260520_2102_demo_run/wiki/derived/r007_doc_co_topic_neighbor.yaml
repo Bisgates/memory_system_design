@@ -1,0 +1,2736 @@
+- iteration: 1
+  binding:
+    ?D: doc:decisions/fabu_batch001_merged_scene_training.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_batch001_merged_scene.md
+  parents:
+  - a_2c94d40f
+  - a_615ab55a
+  atom:
+    id: a_d3300e3b
+    subj: doc:decisions/fabu_batch001_merged_scene_training.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_batch001_merged_scene.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_2c94d40f
+    - a_615ab55a
+- iteration: 1
+  binding:
+    ?D: doc:decisions/fabu_batch001_merged_scene_training.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_batch_preprocess.md
+  parents:
+  - a_2c94d40f
+  - a_8ecd5b2a
+  atom:
+    id: a_c6fb1b15
+    subj: doc:decisions/fabu_batch001_merged_scene_training.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_batch_preprocess.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_2c94d40f
+    - a_8ecd5b2a
+- iteration: 1
+  binding:
+    ?D: doc:decisions/fabu_batch001_merged_scene_training.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_data.md
+  parents:
+  - a_2c94d40f
+  - a_b27097d1
+  atom:
+    id: a_d29c6068
+    subj: doc:decisions/fabu_batch001_merged_scene_training.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_data.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_2c94d40f
+    - a_b27097d1
+- iteration: 1
+  binding:
+    ?D: doc:decisions/fabu_batch001_merged_scene_training.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_drivestudio_training.md
+  parents:
+  - a_2c94d40f
+  - a_87e8acea
+  atom:
+    id: a_8e224fce
+    subj: doc:decisions/fabu_batch001_merged_scene_training.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_drivestudio_training.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_2c94d40f
+    - a_87e8acea
+- iteration: 1
+  binding:
+    ?D: doc:decisions/fabu_batch001_merged_scene_training.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_ego_masks.md
+  parents:
+  - a_2c94d40f
+  - a_8d0b7816
+  atom:
+    id: a_f61eea04
+    subj: doc:decisions/fabu_batch001_merged_scene_training.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_ego_masks.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_2c94d40f
+    - a_8d0b7816
+- iteration: 1
+  binding:
+    ?D: doc:decisions/fabu_batch001_merged_scene_training.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_pose_floor.md
+  parents:
+  - a_2c94d40f
+  - a_94515365
+  atom:
+    id: a_665ff7ae
+    subj: doc:decisions/fabu_batch001_merged_scene_training.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_pose_floor.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_2c94d40f
+    - a_94515365
+- iteration: 1
+  binding:
+    ?D: doc:decisions/fabu_batch001_merged_scene_training.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_preprocess.md
+  parents:
+  - a_2c94d40f
+  - a_67265c71
+  atom:
+    id: a_d1d7a868
+    subj: doc:decisions/fabu_batch001_merged_scene_training.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_preprocess.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_2c94d40f
+    - a_67265c71
+- iteration: 1
+  binding:
+    ?D: doc:decisions/fabu_batch001_merged_scene_training.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_scene002_waymo_scene788_pedestrian_transfer.md
+  parents:
+  - a_2c94d40f
+  - a_39529fea
+  atom:
+    id: a_d4e47360
+    subj: doc:decisions/fabu_batch001_merged_scene_training.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_scene002_waymo_scene788_pedestrian_transfer.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_2c94d40f
+    - a_39529fea
+- iteration: 1
+  binding:
+    ?D: doc:decisions/fabu_batch001_merged_scene_training.md
+    ?T: topic:fabu
+    ?E: doc:notes/lidar_merge_pipeline.md
+  parents:
+  - a_2c94d40f
+  - a_3f69de48
+  atom:
+    id: a_37eeaa0d
+    subj: doc:decisions/fabu_batch001_merged_scene_training.md
+    pred: shares_topic_with
+    obj: doc:notes/lidar_merge_pipeline.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_2c94d40f
+    - a_3f69de48
+- iteration: 1
+  binding:
+    ?D: doc:decisions/fabu_batch001_merged_scene_training.md
+    ?T: topic:fabu
+    ?E: doc:notes/lidar_merge_quality_metric.md
+  parents:
+  - a_2c94d40f
+  - a_da98091d
+  atom:
+    id: a_118affa4
+    subj: doc:decisions/fabu_batch001_merged_scene_training.md
+    pred: shares_topic_with
+    obj: doc:notes/lidar_merge_quality_metric.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_2c94d40f
+    - a_da98091d
+- iteration: 1
+  binding:
+    ?D: doc:decisions/fabu_batch001_merged_scene_training.md
+    ?T: topic:drivestudio
+    ?E: doc:notes/waymo_8clip_training.md
+  parents:
+  - a_0640c3d8
+  - a_0a3d575a
+  atom:
+    id: a_3f4d5069
+    subj: doc:decisions/fabu_batch001_merged_scene_training.md
+    pred: shares_topic_with
+    obj: doc:notes/waymo_8clip_training.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_0640c3d8
+    - a_0a3d575a
+- iteration: 1
+  binding:
+    ?D: doc:decisions/fabu_batch001_merged_scene_training.md
+    ?T: topic:drivestudio
+    ?E: doc:notes/waymo_scene788_difix3d_training.md
+  parents:
+  - a_0640c3d8
+  - a_ee8b8c3b
+  atom:
+    id: a_f95745c4
+    subj: doc:decisions/fabu_batch001_merged_scene_training.md
+    pred: shares_topic_with
+    obj: doc:notes/waymo_scene788_difix3d_training.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_0640c3d8
+    - a_ee8b8c3b
+- iteration: 1
+  binding:
+    ?D: doc:notes/depth_anything3_bev_scripts.md
+    ?T: topic:depth-anything-3
+    ?E: doc:notes/lidar_merge_pipeline.md
+  parents:
+  - a_e7ba9753
+  - a_8530d339
+  atom:
+    id: a_bc54ac89
+    subj: doc:notes/depth_anything3_bev_scripts.md
+    pred: shares_topic_with
+    obj: doc:notes/lidar_merge_pipeline.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_e7ba9753
+    - a_8530d339
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_batch001_merged_scene.md
+    ?T: topic:fabu
+    ?E: doc:decisions/fabu_batch001_merged_scene_training.md
+  parents:
+  - a_615ab55a
+  - a_2c94d40f
+  atom:
+    id: a_28d70a0e
+    subj: doc:notes/fabu_batch001_merged_scene.md
+    pred: shares_topic_with
+    obj: doc:decisions/fabu_batch001_merged_scene_training.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_615ab55a
+    - a_2c94d40f
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_batch001_merged_scene.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_batch_preprocess.md
+  parents:
+  - a_615ab55a
+  - a_8ecd5b2a
+  atom:
+    id: a_3e8ef0aa
+    subj: doc:notes/fabu_batch001_merged_scene.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_batch_preprocess.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_615ab55a
+    - a_8ecd5b2a
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_batch001_merged_scene.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_data.md
+  parents:
+  - a_615ab55a
+  - a_b27097d1
+  atom:
+    id: a_43893fbf
+    subj: doc:notes/fabu_batch001_merged_scene.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_data.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_615ab55a
+    - a_b27097d1
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_batch001_merged_scene.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_drivestudio_training.md
+  parents:
+  - a_615ab55a
+  - a_87e8acea
+  atom:
+    id: a_99ff7105
+    subj: doc:notes/fabu_batch001_merged_scene.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_drivestudio_training.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_615ab55a
+    - a_87e8acea
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_batch001_merged_scene.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_ego_masks.md
+  parents:
+  - a_615ab55a
+  - a_8d0b7816
+  atom:
+    id: a_5fa1fc18
+    subj: doc:notes/fabu_batch001_merged_scene.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_ego_masks.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_615ab55a
+    - a_8d0b7816
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_batch001_merged_scene.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_pose_floor.md
+  parents:
+  - a_615ab55a
+  - a_94515365
+  atom:
+    id: a_3c778d81
+    subj: doc:notes/fabu_batch001_merged_scene.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_pose_floor.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_615ab55a
+    - a_94515365
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_batch001_merged_scene.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_preprocess.md
+  parents:
+  - a_615ab55a
+  - a_67265c71
+  atom:
+    id: a_31d28bbd
+    subj: doc:notes/fabu_batch001_merged_scene.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_preprocess.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_615ab55a
+    - a_67265c71
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_batch001_merged_scene.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_scene002_waymo_scene788_pedestrian_transfer.md
+  parents:
+  - a_615ab55a
+  - a_39529fea
+  atom:
+    id: a_9d5cde26
+    subj: doc:notes/fabu_batch001_merged_scene.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_scene002_waymo_scene788_pedestrian_transfer.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_615ab55a
+    - a_39529fea
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_batch001_merged_scene.md
+    ?T: topic:fabu
+    ?E: doc:notes/lidar_merge_pipeline.md
+  parents:
+  - a_615ab55a
+  - a_3f69de48
+  atom:
+    id: a_a36f9277
+    subj: doc:notes/fabu_batch001_merged_scene.md
+    pred: shares_topic_with
+    obj: doc:notes/lidar_merge_pipeline.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_615ab55a
+    - a_3f69de48
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_batch001_merged_scene.md
+    ?T: topic:fabu
+    ?E: doc:notes/lidar_merge_quality_metric.md
+  parents:
+  - a_615ab55a
+  - a_da98091d
+  atom:
+    id: a_eda25d58
+    subj: doc:notes/fabu_batch001_merged_scene.md
+    pred: shares_topic_with
+    obj: doc:notes/lidar_merge_quality_metric.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_615ab55a
+    - a_da98091d
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_batch001_merged_scene.md
+    ?T: topic:drivestudio
+    ?E: doc:notes/waymo_8clip_training.md
+  parents:
+  - a_032e6e3c
+  - a_0a3d575a
+  atom:
+    id: a_afe90a27
+    subj: doc:notes/fabu_batch001_merged_scene.md
+    pred: shares_topic_with
+    obj: doc:notes/waymo_8clip_training.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_032e6e3c
+    - a_0a3d575a
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_batch001_merged_scene.md
+    ?T: topic:drivestudio
+    ?E: doc:notes/waymo_scene788_difix3d_training.md
+  parents:
+  - a_032e6e3c
+  - a_ee8b8c3b
+  atom:
+    id: a_edbe1ca8
+    subj: doc:notes/fabu_batch001_merged_scene.md
+    pred: shares_topic_with
+    obj: doc:notes/waymo_scene788_difix3d_training.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_032e6e3c
+    - a_ee8b8c3b
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_batch_preprocess.md
+    ?T: topic:fabu
+    ?E: doc:decisions/fabu_batch001_merged_scene_training.md
+  parents:
+  - a_8ecd5b2a
+  - a_2c94d40f
+  atom:
+    id: a_bd41464e
+    subj: doc:notes/fabu_batch_preprocess.md
+    pred: shares_topic_with
+    obj: doc:decisions/fabu_batch001_merged_scene_training.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_8ecd5b2a
+    - a_2c94d40f
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_batch_preprocess.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_batch001_merged_scene.md
+  parents:
+  - a_8ecd5b2a
+  - a_615ab55a
+  atom:
+    id: a_a0913053
+    subj: doc:notes/fabu_batch_preprocess.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_batch001_merged_scene.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_8ecd5b2a
+    - a_615ab55a
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_batch_preprocess.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_data.md
+  parents:
+  - a_8ecd5b2a
+  - a_b27097d1
+  atom:
+    id: a_94c65f36
+    subj: doc:notes/fabu_batch_preprocess.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_data.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_8ecd5b2a
+    - a_b27097d1
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_batch_preprocess.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_drivestudio_training.md
+  parents:
+  - a_8ecd5b2a
+  - a_87e8acea
+  atom:
+    id: a_3c5adef5
+    subj: doc:notes/fabu_batch_preprocess.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_drivestudio_training.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_8ecd5b2a
+    - a_87e8acea
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_batch_preprocess.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_ego_masks.md
+  parents:
+  - a_8ecd5b2a
+  - a_8d0b7816
+  atom:
+    id: a_2636530c
+    subj: doc:notes/fabu_batch_preprocess.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_ego_masks.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_8ecd5b2a
+    - a_8d0b7816
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_batch_preprocess.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_pose_floor.md
+  parents:
+  - a_8ecd5b2a
+  - a_94515365
+  atom:
+    id: a_e045ee3d
+    subj: doc:notes/fabu_batch_preprocess.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_pose_floor.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_8ecd5b2a
+    - a_94515365
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_batch_preprocess.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_preprocess.md
+  parents:
+  - a_8ecd5b2a
+  - a_67265c71
+  atom:
+    id: a_6ff8fb55
+    subj: doc:notes/fabu_batch_preprocess.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_preprocess.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_8ecd5b2a
+    - a_67265c71
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_batch_preprocess.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_scene002_waymo_scene788_pedestrian_transfer.md
+  parents:
+  - a_8ecd5b2a
+  - a_39529fea
+  atom:
+    id: a_cf989f20
+    subj: doc:notes/fabu_batch_preprocess.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_scene002_waymo_scene788_pedestrian_transfer.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_8ecd5b2a
+    - a_39529fea
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_batch_preprocess.md
+    ?T: topic:fabu
+    ?E: doc:notes/lidar_merge_pipeline.md
+  parents:
+  - a_8ecd5b2a
+  - a_3f69de48
+  atom:
+    id: a_08a0f658
+    subj: doc:notes/fabu_batch_preprocess.md
+    pred: shares_topic_with
+    obj: doc:notes/lidar_merge_pipeline.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_8ecd5b2a
+    - a_3f69de48
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_batch_preprocess.md
+    ?T: topic:fabu
+    ?E: doc:notes/lidar_merge_quality_metric.md
+  parents:
+  - a_8ecd5b2a
+  - a_da98091d
+  atom:
+    id: a_cca6c676
+    subj: doc:notes/fabu_batch_preprocess.md
+    pred: shares_topic_with
+    obj: doc:notes/lidar_merge_quality_metric.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_8ecd5b2a
+    - a_da98091d
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_batch_preprocess.md
+    ?T: topic:drivestudio
+    ?E: doc:notes/waymo_8clip_training.md
+  parents:
+  - a_9fabe79d
+  - a_0a3d575a
+  atom:
+    id: a_ec2d7ff1
+    subj: doc:notes/fabu_batch_preprocess.md
+    pred: shares_topic_with
+    obj: doc:notes/waymo_8clip_training.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_9fabe79d
+    - a_0a3d575a
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_batch_preprocess.md
+    ?T: topic:drivestudio
+    ?E: doc:notes/waymo_scene788_difix3d_training.md
+  parents:
+  - a_9fabe79d
+  - a_ee8b8c3b
+  atom:
+    id: a_d95de95c
+    subj: doc:notes/fabu_batch_preprocess.md
+    pred: shares_topic_with
+    obj: doc:notes/waymo_scene788_difix3d_training.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_9fabe79d
+    - a_ee8b8c3b
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_data.md
+    ?T: topic:fabu
+    ?E: doc:decisions/fabu_batch001_merged_scene_training.md
+  parents:
+  - a_b27097d1
+  - a_2c94d40f
+  atom:
+    id: a_7df90dc2
+    subj: doc:notes/fabu_data.md
+    pred: shares_topic_with
+    obj: doc:decisions/fabu_batch001_merged_scene_training.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_b27097d1
+    - a_2c94d40f
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_data.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_batch001_merged_scene.md
+  parents:
+  - a_b27097d1
+  - a_615ab55a
+  atom:
+    id: a_15b5d0fd
+    subj: doc:notes/fabu_data.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_batch001_merged_scene.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_b27097d1
+    - a_615ab55a
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_data.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_batch_preprocess.md
+  parents:
+  - a_b27097d1
+  - a_8ecd5b2a
+  atom:
+    id: a_3502203a
+    subj: doc:notes/fabu_data.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_batch_preprocess.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_b27097d1
+    - a_8ecd5b2a
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_data.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_drivestudio_training.md
+  parents:
+  - a_b27097d1
+  - a_87e8acea
+  atom:
+    id: a_f32e2ba4
+    subj: doc:notes/fabu_data.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_drivestudio_training.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_b27097d1
+    - a_87e8acea
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_data.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_ego_masks.md
+  parents:
+  - a_b27097d1
+  - a_8d0b7816
+  atom:
+    id: a_8c10c799
+    subj: doc:notes/fabu_data.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_ego_masks.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_b27097d1
+    - a_8d0b7816
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_data.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_pose_floor.md
+  parents:
+  - a_b27097d1
+  - a_94515365
+  atom:
+    id: a_5e3f8a7d
+    subj: doc:notes/fabu_data.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_pose_floor.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_b27097d1
+    - a_94515365
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_data.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_preprocess.md
+  parents:
+  - a_b27097d1
+  - a_67265c71
+  atom:
+    id: a_4f4ac058
+    subj: doc:notes/fabu_data.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_preprocess.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_b27097d1
+    - a_67265c71
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_data.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_scene002_waymo_scene788_pedestrian_transfer.md
+  parents:
+  - a_b27097d1
+  - a_39529fea
+  atom:
+    id: a_5a17cb63
+    subj: doc:notes/fabu_data.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_scene002_waymo_scene788_pedestrian_transfer.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_b27097d1
+    - a_39529fea
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_data.md
+    ?T: topic:fabu
+    ?E: doc:notes/lidar_merge_pipeline.md
+  parents:
+  - a_b27097d1
+  - a_3f69de48
+  atom:
+    id: a_554d3d6a
+    subj: doc:notes/fabu_data.md
+    pred: shares_topic_with
+    obj: doc:notes/lidar_merge_pipeline.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_b27097d1
+    - a_3f69de48
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_data.md
+    ?T: topic:fabu
+    ?E: doc:notes/lidar_merge_quality_metric.md
+  parents:
+  - a_b27097d1
+  - a_da98091d
+  atom:
+    id: a_6347e799
+    subj: doc:notes/fabu_data.md
+    pred: shares_topic_with
+    obj: doc:notes/lidar_merge_quality_metric.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_b27097d1
+    - a_da98091d
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_data.md
+    ?T: topic:drivestudio
+    ?E: doc:notes/waymo_8clip_training.md
+  parents:
+  - a_c332bbb1
+  - a_0a3d575a
+  atom:
+    id: a_ab42dfc2
+    subj: doc:notes/fabu_data.md
+    pred: shares_topic_with
+    obj: doc:notes/waymo_8clip_training.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_c332bbb1
+    - a_0a3d575a
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_data.md
+    ?T: topic:drivestudio
+    ?E: doc:notes/waymo_scene788_difix3d_training.md
+  parents:
+  - a_c332bbb1
+  - a_ee8b8c3b
+  atom:
+    id: a_6d07eccc
+    subj: doc:notes/fabu_data.md
+    pred: shares_topic_with
+    obj: doc:notes/waymo_scene788_difix3d_training.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_c332bbb1
+    - a_ee8b8c3b
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_drivestudio_training.md
+    ?T: topic:fabu
+    ?E: doc:decisions/fabu_batch001_merged_scene_training.md
+  parents:
+  - a_87e8acea
+  - a_2c94d40f
+  atom:
+    id: a_e600f518
+    subj: doc:notes/fabu_drivestudio_training.md
+    pred: shares_topic_with
+    obj: doc:decisions/fabu_batch001_merged_scene_training.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_87e8acea
+    - a_2c94d40f
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_drivestudio_training.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_batch001_merged_scene.md
+  parents:
+  - a_87e8acea
+  - a_615ab55a
+  atom:
+    id: a_c1a17f1b
+    subj: doc:notes/fabu_drivestudio_training.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_batch001_merged_scene.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_87e8acea
+    - a_615ab55a
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_drivestudio_training.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_batch_preprocess.md
+  parents:
+  - a_87e8acea
+  - a_8ecd5b2a
+  atom:
+    id: a_245d1a2b
+    subj: doc:notes/fabu_drivestudio_training.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_batch_preprocess.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_87e8acea
+    - a_8ecd5b2a
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_drivestudio_training.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_data.md
+  parents:
+  - a_87e8acea
+  - a_b27097d1
+  atom:
+    id: a_81ff49a3
+    subj: doc:notes/fabu_drivestudio_training.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_data.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_87e8acea
+    - a_b27097d1
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_drivestudio_training.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_ego_masks.md
+  parents:
+  - a_87e8acea
+  - a_8d0b7816
+  atom:
+    id: a_fa061420
+    subj: doc:notes/fabu_drivestudio_training.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_ego_masks.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_87e8acea
+    - a_8d0b7816
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_drivestudio_training.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_pose_floor.md
+  parents:
+  - a_87e8acea
+  - a_94515365
+  atom:
+    id: a_05fd6544
+    subj: doc:notes/fabu_drivestudio_training.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_pose_floor.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_87e8acea
+    - a_94515365
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_drivestudio_training.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_preprocess.md
+  parents:
+  - a_87e8acea
+  - a_67265c71
+  atom:
+    id: a_9156763a
+    subj: doc:notes/fabu_drivestudio_training.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_preprocess.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_87e8acea
+    - a_67265c71
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_drivestudio_training.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_scene002_waymo_scene788_pedestrian_transfer.md
+  parents:
+  - a_87e8acea
+  - a_39529fea
+  atom:
+    id: a_99fcad58
+    subj: doc:notes/fabu_drivestudio_training.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_scene002_waymo_scene788_pedestrian_transfer.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_87e8acea
+    - a_39529fea
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_drivestudio_training.md
+    ?T: topic:fabu
+    ?E: doc:notes/lidar_merge_pipeline.md
+  parents:
+  - a_87e8acea
+  - a_3f69de48
+  atom:
+    id: a_a7871c55
+    subj: doc:notes/fabu_drivestudio_training.md
+    pred: shares_topic_with
+    obj: doc:notes/lidar_merge_pipeline.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_87e8acea
+    - a_3f69de48
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_drivestudio_training.md
+    ?T: topic:fabu
+    ?E: doc:notes/lidar_merge_quality_metric.md
+  parents:
+  - a_87e8acea
+  - a_da98091d
+  atom:
+    id: a_35d32e26
+    subj: doc:notes/fabu_drivestudio_training.md
+    pred: shares_topic_with
+    obj: doc:notes/lidar_merge_quality_metric.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_87e8acea
+    - a_da98091d
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_drivestudio_training.md
+    ?T: topic:drivestudio
+    ?E: doc:notes/waymo_8clip_training.md
+  parents:
+  - a_6ba673a2
+  - a_0a3d575a
+  atom:
+    id: a_ae74a2f4
+    subj: doc:notes/fabu_drivestudio_training.md
+    pred: shares_topic_with
+    obj: doc:notes/waymo_8clip_training.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_6ba673a2
+    - a_0a3d575a
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_drivestudio_training.md
+    ?T: topic:drivestudio
+    ?E: doc:notes/waymo_scene788_difix3d_training.md
+  parents:
+  - a_6ba673a2
+  - a_ee8b8c3b
+  atom:
+    id: a_cec939ab
+    subj: doc:notes/fabu_drivestudio_training.md
+    pred: shares_topic_with
+    obj: doc:notes/waymo_scene788_difix3d_training.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_6ba673a2
+    - a_ee8b8c3b
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_ego_masks.md
+    ?T: topic:fabu
+    ?E: doc:decisions/fabu_batch001_merged_scene_training.md
+  parents:
+  - a_8d0b7816
+  - a_2c94d40f
+  atom:
+    id: a_ac4ba41a
+    subj: doc:notes/fabu_ego_masks.md
+    pred: shares_topic_with
+    obj: doc:decisions/fabu_batch001_merged_scene_training.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_8d0b7816
+    - a_2c94d40f
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_ego_masks.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_batch001_merged_scene.md
+  parents:
+  - a_8d0b7816
+  - a_615ab55a
+  atom:
+    id: a_967cbfee
+    subj: doc:notes/fabu_ego_masks.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_batch001_merged_scene.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_8d0b7816
+    - a_615ab55a
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_ego_masks.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_batch_preprocess.md
+  parents:
+  - a_8d0b7816
+  - a_8ecd5b2a
+  atom:
+    id: a_07409f16
+    subj: doc:notes/fabu_ego_masks.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_batch_preprocess.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_8d0b7816
+    - a_8ecd5b2a
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_ego_masks.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_data.md
+  parents:
+  - a_8d0b7816
+  - a_b27097d1
+  atom:
+    id: a_44ed3c22
+    subj: doc:notes/fabu_ego_masks.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_data.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_8d0b7816
+    - a_b27097d1
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_ego_masks.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_drivestudio_training.md
+  parents:
+  - a_8d0b7816
+  - a_87e8acea
+  atom:
+    id: a_a92773f0
+    subj: doc:notes/fabu_ego_masks.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_drivestudio_training.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_8d0b7816
+    - a_87e8acea
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_ego_masks.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_pose_floor.md
+  parents:
+  - a_8d0b7816
+  - a_94515365
+  atom:
+    id: a_86933551
+    subj: doc:notes/fabu_ego_masks.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_pose_floor.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_8d0b7816
+    - a_94515365
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_ego_masks.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_preprocess.md
+  parents:
+  - a_8d0b7816
+  - a_67265c71
+  atom:
+    id: a_e8d323c7
+    subj: doc:notes/fabu_ego_masks.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_preprocess.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_8d0b7816
+    - a_67265c71
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_ego_masks.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_scene002_waymo_scene788_pedestrian_transfer.md
+  parents:
+  - a_8d0b7816
+  - a_39529fea
+  atom:
+    id: a_06daa254
+    subj: doc:notes/fabu_ego_masks.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_scene002_waymo_scene788_pedestrian_transfer.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_8d0b7816
+    - a_39529fea
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_ego_masks.md
+    ?T: topic:fabu
+    ?E: doc:notes/lidar_merge_pipeline.md
+  parents:
+  - a_8d0b7816
+  - a_3f69de48
+  atom:
+    id: a_98afc74b
+    subj: doc:notes/fabu_ego_masks.md
+    pred: shares_topic_with
+    obj: doc:notes/lidar_merge_pipeline.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_8d0b7816
+    - a_3f69de48
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_ego_masks.md
+    ?T: topic:fabu
+    ?E: doc:notes/lidar_merge_quality_metric.md
+  parents:
+  - a_8d0b7816
+  - a_da98091d
+  atom:
+    id: a_22c7d4c4
+    subj: doc:notes/fabu_ego_masks.md
+    pred: shares_topic_with
+    obj: doc:notes/lidar_merge_quality_metric.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_8d0b7816
+    - a_da98091d
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_ego_masks.md
+    ?T: topic:drivestudio
+    ?E: doc:notes/waymo_8clip_training.md
+  parents:
+  - a_71b14b27
+  - a_0a3d575a
+  atom:
+    id: a_75fe96a6
+    subj: doc:notes/fabu_ego_masks.md
+    pred: shares_topic_with
+    obj: doc:notes/waymo_8clip_training.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_71b14b27
+    - a_0a3d575a
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_ego_masks.md
+    ?T: topic:drivestudio
+    ?E: doc:notes/waymo_scene788_difix3d_training.md
+  parents:
+  - a_71b14b27
+  - a_ee8b8c3b
+  atom:
+    id: a_e677c153
+    subj: doc:notes/fabu_ego_masks.md
+    pred: shares_topic_with
+    obj: doc:notes/waymo_scene788_difix3d_training.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_71b14b27
+    - a_ee8b8c3b
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_pose_floor.md
+    ?T: topic:fabu
+    ?E: doc:decisions/fabu_batch001_merged_scene_training.md
+  parents:
+  - a_94515365
+  - a_2c94d40f
+  atom:
+    id: a_b8b7b3c7
+    subj: doc:notes/fabu_pose_floor.md
+    pred: shares_topic_with
+    obj: doc:decisions/fabu_batch001_merged_scene_training.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_94515365
+    - a_2c94d40f
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_pose_floor.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_batch001_merged_scene.md
+  parents:
+  - a_94515365
+  - a_615ab55a
+  atom:
+    id: a_1a93b81e
+    subj: doc:notes/fabu_pose_floor.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_batch001_merged_scene.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_94515365
+    - a_615ab55a
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_pose_floor.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_batch_preprocess.md
+  parents:
+  - a_94515365
+  - a_8ecd5b2a
+  atom:
+    id: a_b406e3c4
+    subj: doc:notes/fabu_pose_floor.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_batch_preprocess.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_94515365
+    - a_8ecd5b2a
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_pose_floor.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_data.md
+  parents:
+  - a_94515365
+  - a_b27097d1
+  atom:
+    id: a_77801db5
+    subj: doc:notes/fabu_pose_floor.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_data.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_94515365
+    - a_b27097d1
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_pose_floor.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_drivestudio_training.md
+  parents:
+  - a_94515365
+  - a_87e8acea
+  atom:
+    id: a_a8ef4e3e
+    subj: doc:notes/fabu_pose_floor.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_drivestudio_training.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_94515365
+    - a_87e8acea
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_pose_floor.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_ego_masks.md
+  parents:
+  - a_94515365
+  - a_8d0b7816
+  atom:
+    id: a_abb3f3e3
+    subj: doc:notes/fabu_pose_floor.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_ego_masks.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_94515365
+    - a_8d0b7816
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_pose_floor.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_preprocess.md
+  parents:
+  - a_94515365
+  - a_67265c71
+  atom:
+    id: a_518342cc
+    subj: doc:notes/fabu_pose_floor.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_preprocess.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_94515365
+    - a_67265c71
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_pose_floor.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_scene002_waymo_scene788_pedestrian_transfer.md
+  parents:
+  - a_94515365
+  - a_39529fea
+  atom:
+    id: a_88575d30
+    subj: doc:notes/fabu_pose_floor.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_scene002_waymo_scene788_pedestrian_transfer.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_94515365
+    - a_39529fea
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_pose_floor.md
+    ?T: topic:fabu
+    ?E: doc:notes/lidar_merge_pipeline.md
+  parents:
+  - a_94515365
+  - a_3f69de48
+  atom:
+    id: a_ea1f02fc
+    subj: doc:notes/fabu_pose_floor.md
+    pred: shares_topic_with
+    obj: doc:notes/lidar_merge_pipeline.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_94515365
+    - a_3f69de48
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_pose_floor.md
+    ?T: topic:fabu
+    ?E: doc:notes/lidar_merge_quality_metric.md
+  parents:
+  - a_94515365
+  - a_da98091d
+  atom:
+    id: a_45799f4c
+    subj: doc:notes/fabu_pose_floor.md
+    pred: shares_topic_with
+    obj: doc:notes/lidar_merge_quality_metric.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_94515365
+    - a_da98091d
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_preprocess.md
+    ?T: topic:fabu
+    ?E: doc:decisions/fabu_batch001_merged_scene_training.md
+  parents:
+  - a_67265c71
+  - a_2c94d40f
+  atom:
+    id: a_5bcfc0b7
+    subj: doc:notes/fabu_preprocess.md
+    pred: shares_topic_with
+    obj: doc:decisions/fabu_batch001_merged_scene_training.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_67265c71
+    - a_2c94d40f
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_preprocess.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_batch001_merged_scene.md
+  parents:
+  - a_67265c71
+  - a_615ab55a
+  atom:
+    id: a_224e0ad6
+    subj: doc:notes/fabu_preprocess.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_batch001_merged_scene.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_67265c71
+    - a_615ab55a
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_preprocess.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_batch_preprocess.md
+  parents:
+  - a_67265c71
+  - a_8ecd5b2a
+  atom:
+    id: a_25196511
+    subj: doc:notes/fabu_preprocess.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_batch_preprocess.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_67265c71
+    - a_8ecd5b2a
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_preprocess.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_data.md
+  parents:
+  - a_67265c71
+  - a_b27097d1
+  atom:
+    id: a_31cf49db
+    subj: doc:notes/fabu_preprocess.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_data.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_67265c71
+    - a_b27097d1
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_preprocess.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_drivestudio_training.md
+  parents:
+  - a_67265c71
+  - a_87e8acea
+  atom:
+    id: a_30f308c2
+    subj: doc:notes/fabu_preprocess.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_drivestudio_training.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_67265c71
+    - a_87e8acea
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_preprocess.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_ego_masks.md
+  parents:
+  - a_67265c71
+  - a_8d0b7816
+  atom:
+    id: a_266b9ab5
+    subj: doc:notes/fabu_preprocess.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_ego_masks.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_67265c71
+    - a_8d0b7816
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_preprocess.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_pose_floor.md
+  parents:
+  - a_67265c71
+  - a_94515365
+  atom:
+    id: a_4940ff65
+    subj: doc:notes/fabu_preprocess.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_pose_floor.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_67265c71
+    - a_94515365
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_preprocess.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_scene002_waymo_scene788_pedestrian_transfer.md
+  parents:
+  - a_67265c71
+  - a_39529fea
+  atom:
+    id: a_b0bc62ff
+    subj: doc:notes/fabu_preprocess.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_scene002_waymo_scene788_pedestrian_transfer.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_67265c71
+    - a_39529fea
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_preprocess.md
+    ?T: topic:fabu
+    ?E: doc:notes/lidar_merge_pipeline.md
+  parents:
+  - a_67265c71
+  - a_3f69de48
+  atom:
+    id: a_4259faf0
+    subj: doc:notes/fabu_preprocess.md
+    pred: shares_topic_with
+    obj: doc:notes/lidar_merge_pipeline.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_67265c71
+    - a_3f69de48
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_preprocess.md
+    ?T: topic:fabu
+    ?E: doc:notes/lidar_merge_quality_metric.md
+  parents:
+  - a_67265c71
+  - a_da98091d
+  atom:
+    id: a_9e352b92
+    subj: doc:notes/fabu_preprocess.md
+    pred: shares_topic_with
+    obj: doc:notes/lidar_merge_quality_metric.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_67265c71
+    - a_da98091d
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_preprocess.md
+    ?T: topic:sam3
+    ?E: doc:notes/sam3_cli_inference.md
+  parents:
+  - a_6220d66b
+  - a_1df6beb9
+  atom:
+    id: a_157ccf02
+    subj: doc:notes/fabu_preprocess.md
+    pred: shares_topic_with
+    obj: doc:notes/sam3_cli_inference.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_6220d66b
+    - a_1df6beb9
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_scene002_waymo_scene788_pedestrian_transfer.md
+    ?T: topic:fabu
+    ?E: doc:decisions/fabu_batch001_merged_scene_training.md
+  parents:
+  - a_39529fea
+  - a_2c94d40f
+  atom:
+    id: a_2642b984
+    subj: doc:notes/fabu_scene002_waymo_scene788_pedestrian_transfer.md
+    pred: shares_topic_with
+    obj: doc:decisions/fabu_batch001_merged_scene_training.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_39529fea
+    - a_2c94d40f
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_scene002_waymo_scene788_pedestrian_transfer.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_batch001_merged_scene.md
+  parents:
+  - a_39529fea
+  - a_615ab55a
+  atom:
+    id: a_36ff1b16
+    subj: doc:notes/fabu_scene002_waymo_scene788_pedestrian_transfer.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_batch001_merged_scene.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_39529fea
+    - a_615ab55a
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_scene002_waymo_scene788_pedestrian_transfer.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_batch_preprocess.md
+  parents:
+  - a_39529fea
+  - a_8ecd5b2a
+  atom:
+    id: a_bd143ca1
+    subj: doc:notes/fabu_scene002_waymo_scene788_pedestrian_transfer.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_batch_preprocess.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_39529fea
+    - a_8ecd5b2a
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_scene002_waymo_scene788_pedestrian_transfer.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_data.md
+  parents:
+  - a_39529fea
+  - a_b27097d1
+  atom:
+    id: a_394c7854
+    subj: doc:notes/fabu_scene002_waymo_scene788_pedestrian_transfer.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_data.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_39529fea
+    - a_b27097d1
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_scene002_waymo_scene788_pedestrian_transfer.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_drivestudio_training.md
+  parents:
+  - a_39529fea
+  - a_87e8acea
+  atom:
+    id: a_e317daed
+    subj: doc:notes/fabu_scene002_waymo_scene788_pedestrian_transfer.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_drivestudio_training.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_39529fea
+    - a_87e8acea
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_scene002_waymo_scene788_pedestrian_transfer.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_ego_masks.md
+  parents:
+  - a_39529fea
+  - a_8d0b7816
+  atom:
+    id: a_751f53b7
+    subj: doc:notes/fabu_scene002_waymo_scene788_pedestrian_transfer.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_ego_masks.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_39529fea
+    - a_8d0b7816
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_scene002_waymo_scene788_pedestrian_transfer.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_pose_floor.md
+  parents:
+  - a_39529fea
+  - a_94515365
+  atom:
+    id: a_d04fcbdd
+    subj: doc:notes/fabu_scene002_waymo_scene788_pedestrian_transfer.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_pose_floor.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_39529fea
+    - a_94515365
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_scene002_waymo_scene788_pedestrian_transfer.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_preprocess.md
+  parents:
+  - a_39529fea
+  - a_67265c71
+  atom:
+    id: a_8b107494
+    subj: doc:notes/fabu_scene002_waymo_scene788_pedestrian_transfer.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_preprocess.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_39529fea
+    - a_67265c71
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_scene002_waymo_scene788_pedestrian_transfer.md
+    ?T: topic:fabu
+    ?E: doc:notes/lidar_merge_pipeline.md
+  parents:
+  - a_39529fea
+  - a_3f69de48
+  atom:
+    id: a_aeee0afb
+    subj: doc:notes/fabu_scene002_waymo_scene788_pedestrian_transfer.md
+    pred: shares_topic_with
+    obj: doc:notes/lidar_merge_pipeline.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_39529fea
+    - a_3f69de48
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_scene002_waymo_scene788_pedestrian_transfer.md
+    ?T: topic:fabu
+    ?E: doc:notes/lidar_merge_quality_metric.md
+  parents:
+  - a_39529fea
+  - a_da98091d
+  atom:
+    id: a_2decf566
+    subj: doc:notes/fabu_scene002_waymo_scene788_pedestrian_transfer.md
+    pred: shares_topic_with
+    obj: doc:notes/lidar_merge_quality_metric.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_39529fea
+    - a_da98091d
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_scene002_waymo_scene788_pedestrian_transfer.md
+    ?T: topic:drivestudio
+    ?E: doc:notes/waymo_8clip_training.md
+  parents:
+  - a_8c5eed29
+  - a_0a3d575a
+  atom:
+    id: a_ec04c57e
+    subj: doc:notes/fabu_scene002_waymo_scene788_pedestrian_transfer.md
+    pred: shares_topic_with
+    obj: doc:notes/waymo_8clip_training.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_8c5eed29
+    - a_0a3d575a
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_scene002_waymo_scene788_pedestrian_transfer.md
+    ?T: topic:drivestudio
+    ?E: doc:notes/waymo_scene788_difix3d_training.md
+  parents:
+  - a_8c5eed29
+  - a_ee8b8c3b
+  atom:
+    id: a_73beed13
+    subj: doc:notes/fabu_scene002_waymo_scene788_pedestrian_transfer.md
+    pred: shares_topic_with
+    obj: doc:notes/waymo_scene788_difix3d_training.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_8c5eed29
+    - a_ee8b8c3b
+- iteration: 1
+  binding:
+    ?D: doc:notes/lidar_merge_pipeline.md
+    ?T: topic:lidar
+    ?E: doc:notes/fabu_pose_floor.md
+  parents:
+  - a_ad7cbb4d
+  - a_d780621c
+  atom:
+    id: a_a73ab424
+    subj: doc:notes/lidar_merge_pipeline.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_pose_floor.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_ad7cbb4d
+    - a_d780621c
+- iteration: 1
+  binding:
+    ?D: doc:notes/lidar_merge_pipeline.md
+    ?T: topic:lidar
+    ?E: doc:notes/lidar_merge_quality_metric.md
+  parents:
+  - a_ad7cbb4d
+  - a_42fba56e
+  atom:
+    id: a_ea3f9123
+    subj: doc:notes/lidar_merge_pipeline.md
+    pred: shares_topic_with
+    obj: doc:notes/lidar_merge_quality_metric.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_ad7cbb4d
+    - a_42fba56e
+- iteration: 1
+  binding:
+    ?D: doc:notes/lidar_merge_pipeline.md
+    ?T: topic:fabu
+    ?E: doc:decisions/fabu_batch001_merged_scene_training.md
+  parents:
+  - a_3f69de48
+  - a_2c94d40f
+  atom:
+    id: a_0e0f80f9
+    subj: doc:notes/lidar_merge_pipeline.md
+    pred: shares_topic_with
+    obj: doc:decisions/fabu_batch001_merged_scene_training.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_3f69de48
+    - a_2c94d40f
+- iteration: 1
+  binding:
+    ?D: doc:notes/lidar_merge_pipeline.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_batch001_merged_scene.md
+  parents:
+  - a_3f69de48
+  - a_615ab55a
+  atom:
+    id: a_bc13d06d
+    subj: doc:notes/lidar_merge_pipeline.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_batch001_merged_scene.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_3f69de48
+    - a_615ab55a
+- iteration: 1
+  binding:
+    ?D: doc:notes/lidar_merge_pipeline.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_batch_preprocess.md
+  parents:
+  - a_3f69de48
+  - a_8ecd5b2a
+  atom:
+    id: a_2e0cf2a5
+    subj: doc:notes/lidar_merge_pipeline.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_batch_preprocess.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_3f69de48
+    - a_8ecd5b2a
+- iteration: 1
+  binding:
+    ?D: doc:notes/lidar_merge_pipeline.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_data.md
+  parents:
+  - a_3f69de48
+  - a_b27097d1
+  atom:
+    id: a_e6054b22
+    subj: doc:notes/lidar_merge_pipeline.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_data.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_3f69de48
+    - a_b27097d1
+- iteration: 1
+  binding:
+    ?D: doc:notes/lidar_merge_pipeline.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_drivestudio_training.md
+  parents:
+  - a_3f69de48
+  - a_87e8acea
+  atom:
+    id: a_b3d34e59
+    subj: doc:notes/lidar_merge_pipeline.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_drivestudio_training.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_3f69de48
+    - a_87e8acea
+- iteration: 1
+  binding:
+    ?D: doc:notes/lidar_merge_pipeline.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_ego_masks.md
+  parents:
+  - a_3f69de48
+  - a_8d0b7816
+  atom:
+    id: a_20b9cb4f
+    subj: doc:notes/lidar_merge_pipeline.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_ego_masks.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_3f69de48
+    - a_8d0b7816
+- iteration: 1
+  binding:
+    ?D: doc:notes/lidar_merge_pipeline.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_preprocess.md
+  parents:
+  - a_3f69de48
+  - a_67265c71
+  atom:
+    id: a_87557fb4
+    subj: doc:notes/lidar_merge_pipeline.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_preprocess.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_3f69de48
+    - a_67265c71
+- iteration: 1
+  binding:
+    ?D: doc:notes/lidar_merge_pipeline.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_scene002_waymo_scene788_pedestrian_transfer.md
+  parents:
+  - a_3f69de48
+  - a_39529fea
+  atom:
+    id: a_2e04beaf
+    subj: doc:notes/lidar_merge_pipeline.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_scene002_waymo_scene788_pedestrian_transfer.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_3f69de48
+    - a_39529fea
+- iteration: 1
+  binding:
+    ?D: doc:notes/lidar_merge_pipeline.md
+    ?T: topic:drivestudio
+    ?E: doc:notes/waymo_8clip_training.md
+  parents:
+  - a_3bbd3391
+  - a_0a3d575a
+  atom:
+    id: a_08e1d6ec
+    subj: doc:notes/lidar_merge_pipeline.md
+    pred: shares_topic_with
+    obj: doc:notes/waymo_8clip_training.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_3bbd3391
+    - a_0a3d575a
+- iteration: 1
+  binding:
+    ?D: doc:notes/lidar_merge_pipeline.md
+    ?T: topic:drivestudio
+    ?E: doc:notes/waymo_scene788_difix3d_training.md
+  parents:
+  - a_3bbd3391
+  - a_ee8b8c3b
+  atom:
+    id: a_7a970179
+    subj: doc:notes/lidar_merge_pipeline.md
+    pred: shares_topic_with
+    obj: doc:notes/waymo_scene788_difix3d_training.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_3bbd3391
+    - a_ee8b8c3b
+- iteration: 1
+  binding:
+    ?D: doc:notes/lidar_merge_pipeline.md
+    ?T: topic:depth-anything-3
+    ?E: doc:notes/depth_anything3_bev_scripts.md
+  parents:
+  - a_8530d339
+  - a_e7ba9753
+  atom:
+    id: a_0f2b0767
+    subj: doc:notes/lidar_merge_pipeline.md
+    pred: shares_topic_with
+    obj: doc:notes/depth_anything3_bev_scripts.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_8530d339
+    - a_e7ba9753
+- iteration: 1
+  binding:
+    ?D: doc:notes/lidar_merge_quality_metric.md
+    ?T: topic:lidar
+    ?E: doc:notes/fabu_pose_floor.md
+  parents:
+  - a_42fba56e
+  - a_d780621c
+  atom:
+    id: a_3b82573d
+    subj: doc:notes/lidar_merge_quality_metric.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_pose_floor.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_42fba56e
+    - a_d780621c
+- iteration: 1
+  binding:
+    ?D: doc:notes/lidar_merge_quality_metric.md
+    ?T: topic:lidar
+    ?E: doc:notes/lidar_merge_pipeline.md
+  parents:
+  - a_42fba56e
+  - a_ad7cbb4d
+  atom:
+    id: a_a83f9c06
+    subj: doc:notes/lidar_merge_quality_metric.md
+    pred: shares_topic_with
+    obj: doc:notes/lidar_merge_pipeline.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_42fba56e
+    - a_ad7cbb4d
+- iteration: 1
+  binding:
+    ?D: doc:notes/lidar_merge_quality_metric.md
+    ?T: topic:fabu
+    ?E: doc:decisions/fabu_batch001_merged_scene_training.md
+  parents:
+  - a_da98091d
+  - a_2c94d40f
+  atom:
+    id: a_cf930250
+    subj: doc:notes/lidar_merge_quality_metric.md
+    pred: shares_topic_with
+    obj: doc:decisions/fabu_batch001_merged_scene_training.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_da98091d
+    - a_2c94d40f
+- iteration: 1
+  binding:
+    ?D: doc:notes/lidar_merge_quality_metric.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_batch001_merged_scene.md
+  parents:
+  - a_da98091d
+  - a_615ab55a
+  atom:
+    id: a_f0fdaedb
+    subj: doc:notes/lidar_merge_quality_metric.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_batch001_merged_scene.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_da98091d
+    - a_615ab55a
+- iteration: 1
+  binding:
+    ?D: doc:notes/lidar_merge_quality_metric.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_batch_preprocess.md
+  parents:
+  - a_da98091d
+  - a_8ecd5b2a
+  atom:
+    id: a_94e54768
+    subj: doc:notes/lidar_merge_quality_metric.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_batch_preprocess.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_da98091d
+    - a_8ecd5b2a
+- iteration: 1
+  binding:
+    ?D: doc:notes/lidar_merge_quality_metric.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_data.md
+  parents:
+  - a_da98091d
+  - a_b27097d1
+  atom:
+    id: a_317b179f
+    subj: doc:notes/lidar_merge_quality_metric.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_data.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_da98091d
+    - a_b27097d1
+- iteration: 1
+  binding:
+    ?D: doc:notes/lidar_merge_quality_metric.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_drivestudio_training.md
+  parents:
+  - a_da98091d
+  - a_87e8acea
+  atom:
+    id: a_8c4038e8
+    subj: doc:notes/lidar_merge_quality_metric.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_drivestudio_training.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_da98091d
+    - a_87e8acea
+- iteration: 1
+  binding:
+    ?D: doc:notes/lidar_merge_quality_metric.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_ego_masks.md
+  parents:
+  - a_da98091d
+  - a_8d0b7816
+  atom:
+    id: a_5197639c
+    subj: doc:notes/lidar_merge_quality_metric.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_ego_masks.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_da98091d
+    - a_8d0b7816
+- iteration: 1
+  binding:
+    ?D: doc:notes/lidar_merge_quality_metric.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_preprocess.md
+  parents:
+  - a_da98091d
+  - a_67265c71
+  atom:
+    id: a_c1da8a0b
+    subj: doc:notes/lidar_merge_quality_metric.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_preprocess.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_da98091d
+    - a_67265c71
+- iteration: 1
+  binding:
+    ?D: doc:notes/lidar_merge_quality_metric.md
+    ?T: topic:fabu
+    ?E: doc:notes/fabu_scene002_waymo_scene788_pedestrian_transfer.md
+  parents:
+  - a_da98091d
+  - a_39529fea
+  atom:
+    id: a_a2f2aa38
+    subj: doc:notes/lidar_merge_quality_metric.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_scene002_waymo_scene788_pedestrian_transfer.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_da98091d
+    - a_39529fea
+- iteration: 1
+  binding:
+    ?D: doc:notes/lidar_merge_quality_metric.md
+    ?T: topic:drivestudio
+    ?E: doc:notes/waymo_8clip_training.md
+  parents:
+  - a_99b88b29
+  - a_0a3d575a
+  atom:
+    id: a_31af7e0c
+    subj: doc:notes/lidar_merge_quality_metric.md
+    pred: shares_topic_with
+    obj: doc:notes/waymo_8clip_training.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_99b88b29
+    - a_0a3d575a
+- iteration: 1
+  binding:
+    ?D: doc:notes/lidar_merge_quality_metric.md
+    ?T: topic:drivestudio
+    ?E: doc:notes/waymo_scene788_difix3d_training.md
+  parents:
+  - a_99b88b29
+  - a_ee8b8c3b
+  atom:
+    id: a_98e25b0e
+    subj: doc:notes/lidar_merge_quality_metric.md
+    pred: shares_topic_with
+    obj: doc:notes/waymo_scene788_difix3d_training.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_99b88b29
+    - a_ee8b8c3b
+- iteration: 1
+  binding:
+    ?D: doc:notes/sam3_cli_inference.md
+    ?T: topic:sam3
+    ?E: doc:notes/fabu_preprocess.md
+  parents:
+  - a_1df6beb9
+  - a_6220d66b
+  atom:
+    id: a_99d46440
+    subj: doc:notes/sam3_cli_inference.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_preprocess.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_1df6beb9
+    - a_6220d66b
+- iteration: 1
+  binding:
+    ?D: doc:notes/waymo_8clip_training.md
+    ?T: topic:waymo
+    ?E: doc:notes/waymo_scene788_difix3d_training.md
+  parents:
+  - a_84f1814a
+  - a_4d9d104b
+  atom:
+    id: a_a543e5c4
+    subj: doc:notes/waymo_8clip_training.md
+    pred: shares_topic_with
+    obj: doc:notes/waymo_scene788_difix3d_training.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_84f1814a
+    - a_4d9d104b
+- iteration: 1
+  binding:
+    ?D: doc:notes/waymo_8clip_training.md
+    ?T: topic:drivestudio
+    ?E: doc:decisions/fabu_batch001_merged_scene_training.md
+  parents:
+  - a_0a3d575a
+  - a_0640c3d8
+  atom:
+    id: a_54a08b99
+    subj: doc:notes/waymo_8clip_training.md
+    pred: shares_topic_with
+    obj: doc:decisions/fabu_batch001_merged_scene_training.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_0a3d575a
+    - a_0640c3d8
+- iteration: 1
+  binding:
+    ?D: doc:notes/waymo_8clip_training.md
+    ?T: topic:drivestudio
+    ?E: doc:notes/fabu_batch001_merged_scene.md
+  parents:
+  - a_0a3d575a
+  - a_032e6e3c
+  atom:
+    id: a_6aecaf97
+    subj: doc:notes/waymo_8clip_training.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_batch001_merged_scene.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_0a3d575a
+    - a_032e6e3c
+- iteration: 1
+  binding:
+    ?D: doc:notes/waymo_8clip_training.md
+    ?T: topic:drivestudio
+    ?E: doc:notes/fabu_batch_preprocess.md
+  parents:
+  - a_0a3d575a
+  - a_9fabe79d
+  atom:
+    id: a_09189a8d
+    subj: doc:notes/waymo_8clip_training.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_batch_preprocess.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_0a3d575a
+    - a_9fabe79d
+- iteration: 1
+  binding:
+    ?D: doc:notes/waymo_8clip_training.md
+    ?T: topic:drivestudio
+    ?E: doc:notes/fabu_data.md
+  parents:
+  - a_0a3d575a
+  - a_c332bbb1
+  atom:
+    id: a_bd60bdea
+    subj: doc:notes/waymo_8clip_training.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_data.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_0a3d575a
+    - a_c332bbb1
+- iteration: 1
+  binding:
+    ?D: doc:notes/waymo_8clip_training.md
+    ?T: topic:drivestudio
+    ?E: doc:notes/fabu_drivestudio_training.md
+  parents:
+  - a_0a3d575a
+  - a_6ba673a2
+  atom:
+    id: a_a84b6fa0
+    subj: doc:notes/waymo_8clip_training.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_drivestudio_training.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_0a3d575a
+    - a_6ba673a2
+- iteration: 1
+  binding:
+    ?D: doc:notes/waymo_8clip_training.md
+    ?T: topic:drivestudio
+    ?E: doc:notes/fabu_ego_masks.md
+  parents:
+  - a_0a3d575a
+  - a_71b14b27
+  atom:
+    id: a_43f5bcaf
+    subj: doc:notes/waymo_8clip_training.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_ego_masks.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_0a3d575a
+    - a_71b14b27
+- iteration: 1
+  binding:
+    ?D: doc:notes/waymo_8clip_training.md
+    ?T: topic:drivestudio
+    ?E: doc:notes/fabu_scene002_waymo_scene788_pedestrian_transfer.md
+  parents:
+  - a_0a3d575a
+  - a_8c5eed29
+  atom:
+    id: a_50492ad1
+    subj: doc:notes/waymo_8clip_training.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_scene002_waymo_scene788_pedestrian_transfer.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_0a3d575a
+    - a_8c5eed29
+- iteration: 1
+  binding:
+    ?D: doc:notes/waymo_8clip_training.md
+    ?T: topic:drivestudio
+    ?E: doc:notes/lidar_merge_pipeline.md
+  parents:
+  - a_0a3d575a
+  - a_3bbd3391
+  atom:
+    id: a_17c844be
+    subj: doc:notes/waymo_8clip_training.md
+    pred: shares_topic_with
+    obj: doc:notes/lidar_merge_pipeline.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_0a3d575a
+    - a_3bbd3391
+- iteration: 1
+  binding:
+    ?D: doc:notes/waymo_8clip_training.md
+    ?T: topic:drivestudio
+    ?E: doc:notes/lidar_merge_quality_metric.md
+  parents:
+  - a_0a3d575a
+  - a_99b88b29
+  atom:
+    id: a_1edf6133
+    subj: doc:notes/waymo_8clip_training.md
+    pred: shares_topic_with
+    obj: doc:notes/lidar_merge_quality_metric.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_0a3d575a
+    - a_99b88b29
+- iteration: 1
+  binding:
+    ?D: doc:notes/waymo_scene788_difix3d_training.md
+    ?T: topic:waymo
+    ?E: doc:notes/waymo_8clip_training.md
+  parents:
+  - a_4d9d104b
+  - a_84f1814a
+  atom:
+    id: a_967e46e1
+    subj: doc:notes/waymo_scene788_difix3d_training.md
+    pred: shares_topic_with
+    obj: doc:notes/waymo_8clip_training.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_4d9d104b
+    - a_84f1814a
+- iteration: 1
+  binding:
+    ?D: doc:notes/waymo_scene788_difix3d_training.md
+    ?T: topic:drivestudio
+    ?E: doc:decisions/fabu_batch001_merged_scene_training.md
+  parents:
+  - a_ee8b8c3b
+  - a_0640c3d8
+  atom:
+    id: a_65e544d2
+    subj: doc:notes/waymo_scene788_difix3d_training.md
+    pred: shares_topic_with
+    obj: doc:decisions/fabu_batch001_merged_scene_training.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_ee8b8c3b
+    - a_0640c3d8
+- iteration: 1
+  binding:
+    ?D: doc:notes/waymo_scene788_difix3d_training.md
+    ?T: topic:drivestudio
+    ?E: doc:notes/fabu_batch001_merged_scene.md
+  parents:
+  - a_ee8b8c3b
+  - a_032e6e3c
+  atom:
+    id: a_21be2a1d
+    subj: doc:notes/waymo_scene788_difix3d_training.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_batch001_merged_scene.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_ee8b8c3b
+    - a_032e6e3c
+- iteration: 1
+  binding:
+    ?D: doc:notes/waymo_scene788_difix3d_training.md
+    ?T: topic:drivestudio
+    ?E: doc:notes/fabu_batch_preprocess.md
+  parents:
+  - a_ee8b8c3b
+  - a_9fabe79d
+  atom:
+    id: a_242fd6fd
+    subj: doc:notes/waymo_scene788_difix3d_training.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_batch_preprocess.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_ee8b8c3b
+    - a_9fabe79d
+- iteration: 1
+  binding:
+    ?D: doc:notes/waymo_scene788_difix3d_training.md
+    ?T: topic:drivestudio
+    ?E: doc:notes/fabu_data.md
+  parents:
+  - a_ee8b8c3b
+  - a_c332bbb1
+  atom:
+    id: a_349262d2
+    subj: doc:notes/waymo_scene788_difix3d_training.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_data.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_ee8b8c3b
+    - a_c332bbb1
+- iteration: 1
+  binding:
+    ?D: doc:notes/waymo_scene788_difix3d_training.md
+    ?T: topic:drivestudio
+    ?E: doc:notes/fabu_drivestudio_training.md
+  parents:
+  - a_ee8b8c3b
+  - a_6ba673a2
+  atom:
+    id: a_50a19228
+    subj: doc:notes/waymo_scene788_difix3d_training.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_drivestudio_training.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_ee8b8c3b
+    - a_6ba673a2
+- iteration: 1
+  binding:
+    ?D: doc:notes/waymo_scene788_difix3d_training.md
+    ?T: topic:drivestudio
+    ?E: doc:notes/fabu_ego_masks.md
+  parents:
+  - a_ee8b8c3b
+  - a_71b14b27
+  atom:
+    id: a_f6648768
+    subj: doc:notes/waymo_scene788_difix3d_training.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_ego_masks.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_ee8b8c3b
+    - a_71b14b27
+- iteration: 1
+  binding:
+    ?D: doc:notes/waymo_scene788_difix3d_training.md
+    ?T: topic:drivestudio
+    ?E: doc:notes/fabu_scene002_waymo_scene788_pedestrian_transfer.md
+  parents:
+  - a_ee8b8c3b
+  - a_8c5eed29
+  atom:
+    id: a_c9b1b73a
+    subj: doc:notes/waymo_scene788_difix3d_training.md
+    pred: shares_topic_with
+    obj: doc:notes/fabu_scene002_waymo_scene788_pedestrian_transfer.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_ee8b8c3b
+    - a_8c5eed29
+- iteration: 1
+  binding:
+    ?D: doc:notes/waymo_scene788_difix3d_training.md
+    ?T: topic:drivestudio
+    ?E: doc:notes/lidar_merge_pipeline.md
+  parents:
+  - a_ee8b8c3b
+  - a_3bbd3391
+  atom:
+    id: a_b12f5e4d
+    subj: doc:notes/waymo_scene788_difix3d_training.md
+    pred: shares_topic_with
+    obj: doc:notes/lidar_merge_pipeline.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_ee8b8c3b
+    - a_3bbd3391
+- iteration: 1
+  binding:
+    ?D: doc:notes/waymo_scene788_difix3d_training.md
+    ?T: topic:drivestudio
+    ?E: doc:notes/lidar_merge_quality_metric.md
+  parents:
+  - a_ee8b8c3b
+  - a_99b88b29
+  atom:
+    id: a_bc7d02f6
+    subj: doc:notes/waymo_scene788_difix3d_training.md
+    pred: shares_topic_with
+    obj: doc:notes/lidar_merge_quality_metric.md
+    source: ''
+    derived_from: r007_doc_co_topic_neighbor
+    parents:
+    - a_ee8b8c3b
+    - a_99b88b29

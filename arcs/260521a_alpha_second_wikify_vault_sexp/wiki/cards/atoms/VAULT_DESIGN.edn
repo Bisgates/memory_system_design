@@ -1,0 +1,188 @@
+(card "doc:vault_design" :type "doc"
+  :subj "doc:vault_design"
+  :body "---\nnav: 0\ntype: design_doc\nstatus: draft\ncreated: 2026-05-17\nauthor: TARS (design sub-agent under arc 260516a)\nparent_arc: 260516a\ntags: [vault/meta, vault/design]\n---\n\n# Auto Research Experiment Vault — Design\n\n> 一个 markdown + 双链 + tag 的网状知识库，存放 alpha_second_v1 所有 auto-research 实验候选。\n> 设计目标：**新长实验启动前，sub-agent 可以先 grep 这个 vault，看历史相关 experiment 长什么样、被证伪过什么、当前 SOTA 卡在哪里，再开新 lineage**。\n> 不是另一份 reporter HTML 的复制品 —— reporter 是给 han 看快照的；vault 是给 **未来的 agent** 看 lineage 的。\n\n---\n\n## 1. 方法论（why markdown + double link + tag）\n\n### 1.1 为什么不直接读 CSV / leaderboard\n\n- leaderboard 是数据的**当前快照**。它能告诉你 \"H-R3b-4 train_nav=3.70\"，但不能告诉你 \"H-R3b-4 为什么会出现 / 它是从哪个 lineage 推导出来的 / 它有没有过 future-data audit / 它的 sizing 公式背后的 Kelly 直觉\"。\n- CSV 没有上下文 —— sub-agent 看到一个 candidate 名字，没办法**顺藤摸瓜**找到它的 hypothesis、它打败 / 被打败了谁、critic 给的红线在哪。\n- markdown + 双链 = 每个 candidate 是一个 **节点**，节点之间的边 = lineage / 反驳 / co-champion / SOTA-依赖。Obsidian graph view 直接看到 cluster。\n\n### 1.2 为什么不放进 arc 的 `0_meta.md`\n\n- arc 是**任务**单位，一次性结案。vault 是**跨 arc 的长期记忆** —— 下一次 arc 260601a 跑 alpha 时，应该能查到 arc 260516a 出过的 anti-pattern。\n- arc 内的 audit / notes 只在那次任务有人翻；vault 是设计来让 agent **每次都翻一遍**的（\"先搜 vault，再设计候选\"）。\n\n### 1.3 三种边\n\n| 边类型 | 写法 | 用途 |\n|---|---|---|\n| **`derived_from`** | `[[arc_260516a__team_h__H-R2-2__c84_linear_sizing]]` | 这个 candidate 直接 build on 谁的 logic |\n| **`competes_with`** | `[[arc_260516a__team_b__B-R8-1__no_open3min_bypass03]]` | 同 SOTA 候选/共存 lineage |\n| **`falsifies`** | `[[arc_260516a__team_f__F-R1-1__ofi_drop_extreme]]` | 这个 candidate 证伪了谁的 hypothesis |\n| **`reports_to`** | `[[reports/arc_260516a__reporter_20260517_0547]]` | 这个 candidate 哪份 reporter HTML 详述 |\n| **`parent_arc`** | `[[arc_260516a]]`（frontmatter 字段） | 产出它的 arc |\n| **`parent_lineage`** | `[[lineages/arc_260516a__team_h__sizing]]` | 这个 candidate 所属的 lineage 概览页 |\n\n> 双链统一写成 `[[experiments/<filename>]]`（无 `.md` 后缀），Obsidian 自动解析。\n\n### 1.4 tag 体系（**所有 tag 用 `/` 分层**，Obsidian tag panel 自动折叠）\n\n- `#arc/260516a` —— arc id\n- `#team/h` `#team/b` `#team/c` `#team/d` `#team/f` `#team/g` `#team/anchor` —— team 归属\n- `#round/r1` `#round/r2` `#round/r3a` `#round/r3b` `#round/r8` `#round/r10` —— round\n- `#axis/sizing` `#axis/blacklist` `#axis/timing_filter` `#axis/cross_source` `#axis/source_swap` `#axis/microstructure` —— **direction axis**，跨 arc 复用\n- `#status/champion` `#status/challenger` `#status/falsified` `#status/demoted` `#status/baseline` `#status/anchor` —— 当时定位\n- `#outcome/test_pass` `#outcome/test_marginal` `#outcome/test_fail` `#outcome/no_test_run` —— hold-out 上的 verdict\n- `#leak/clean` `#leak/edge_fixed` `#leak/structural` —— future-data audit verdict\n- `#size/small` (< 50 trades) / `#size/medium` (50-150) / `#size/large` (150+) —— 笔数档\n\n> direction axis 是给**未来新 arc** 找参考用的最重要 tag：要做 sizing 实验？`#axis/sizing`，一秒找到所有历史 sizing 候选。\n\n---\n\n## 2. 目录结构\n\n```\nauto_research_experiment/\n├── VAULT_DESIGN.md          ← 本文件\n├── README.md                ← Obsidian 配置 + 使用说明\n├── experiments/             ← 每个 candidate 一个 .md（flat），靠 tag + 双链组织\n│   ├── arc_260516a__team_anchor__anchor_g2__baseline.md\n│   ├── arc_260516a__team_h__H-R3b-4__c84_kelly_lambda_1.5.md\n│   ├── arc_260516a__team_h__H-R2-2__c84_linear_sizing.md\n│   ├── arc_260516a__team_c__C8.4__top3_no_open3min_bypass.md\n│   ├── arc_260516a__team_b__B-R8-1__no_open3min_bypass03.md\n│   ├── arc_260516a__team_d__D-R2-3__blacklist_stack_triple.md\n│   ├── arc_260516a__team_f__F-R1-1__ofi_drop_extreme.md\n│   └── arc_260516a__team_g__G-R1-1__luoyangchan_solo.md\n├── lineages/                ← 一个 lineage 概览页 = 一条研究脉络\n│   ├── arc_260516a__team_h__sizing.md\n│   ├── arc_260516a__team_b__blacklist_evolution.md\n│   ├── arc_260516a__team_c__no_open3min.md\n│   └── arc_260516a__team_d__blacklist_default_admit.md\n└── reports/                 ← 报告/audit 双链 stub（指向 arcs/all/.../output/*.html）\n    └── arc_260516a__reporter_20260517_0547.md\n```\n\n**为什么 flat experiments/ 不按 team / arc 分子目录**：\n\n- Obsidian 双链不依赖路径 —— 子目录纯粹是\"人眼浏览方便\"。\n- flat + 强命名 `<arc>__<team>__<id>__<short>.md` 让命名本身已经是分类，并且：\n  1. 文件名前缀 grep 就是 team / arc 过滤\n  2. tag panel 同时能按 axis / status / outcome 切面，不绑 team\n  3. 跨 arc 移植 lineage 时不用挪 path\n- 子目录只用来分 **类型**（experiments vs lineages vs reports），不分实例。\n\ntrade-off 我也想过，记录在这：\n\n| 方案 | 优 | 缺 | 决定 |\n|---|---|---|---|\n| 按 arc 分目录 | 直观；归档简单 | grep 跨 arc 难；tag panel 重复维护 | reject |\n| 按 team 分目录 | 一队一坑，干净 | team 跨 arc 不稳定（下一次 arc 不一定还是这堆 team）；axis 切片不顺 | reject |\n| 按 axis 分目录 | sub-agent 找 lineage 最快 | candidate 可能跨 axis（C8.4 既是 timing_filter 也是 SOTA root），多归类难 | reject |\n| **flat + tag + 命名前缀** | tag 自由切；命名仍包含 arc/team/id；跨 arc 移植零摩擦 | 文件多了 ls 会长 | **adopt** |\n\n---\n\n## 3. 文件命名规则\n\n### 3.1 experiments/\n\n```\narc_<arc_id>__team_<team>__<candidate_id>__<short_name>.md\n```\n\n- `<arc_id>` 7 字符（`260516a`）\n- `<team>` 单字母小写（`h` `b` `c` `d` `f` `g` `e` `a`） 或 `anchor`\n- `<candidate_id>` 原 leaderboard 上的 ID，保留大小写（`H-R3b-4`、`C8.4`、`B-R8-1`、`D-R2-3`）\n- `<short_name>` snake_case 人话短描述（`c84_kelly_lambda_1.5` / `no_open3min_bypass03` / `blacklist_stack_triple`）\n- 分隔符**双下划线 `__`**（candidate ID 里有单下划线，所以双下划线区分字段）\n\n### 3.2 lineages/\n\n```\narc_<arc_id>__team_<team>__<axis>.md\n```\n\n例：`arc_260516a__team_h__sizing.md`（team_h 的 sizing 探索全脉络）\n\n### 3.3 reports/\n\n```\narc_<arc_id>__<report_name>.md\n```\n\n例：`arc_260516a__reporter_20260517_0547.md`（一个 stub 指向 HTML，方便 candidate 文件双链）\n\n---\n\n## 4. 标准 frontmatter（YAML）\n\n```yaml\n---\n# === 身份 ===\nnav: <int>                       # 全局排序，按 arc 内 NAV rank 给数（champion=1）\ntype: experiment                 # experiment | lineage | report | design_doc\nid: H-R3b-4                      # candidate id（与 leaderboard 一致）\nshort_name: c84_kelly_lambda_1.5 # snake_case 简称\ntitle: \"C8.4 × Kelly-fraction sizing λ=1.5\"  # 人话标题\n\n# === 归属 ===\narc: 260516a\nteam: h\nround: r3b\nparent_arc: \"[[arcs/260516a]]\"   # 双链到 arc 索引（如果 vault 里有 arc stub）\nparent_lineage: \"[[lineages/arc_260516a__team_h__sizing]]\"\n\n# === 数字（来自 leaderboard） ===\ntrain_nav: 3.6981\ntrain_trade_count: 179\ntrain_win_rate: 0.8771\ntrain_sharpe: 7.5409\ntrain_max_drawdown: -0.0067\nval_nav_mean: 1.1020\nval_nav_sigma: 0.1170\nval_window_count: 13\ntest_nav: 1.4905\ntest_trade_count: 31\ntest_sharpe: 7.3691\ntest_win_rate: 0.8065\ntest_max_drawdown: -0.0043\nanchor_train_nav: 2.1882         # 对比基准（每个 candidate 必填，跨 candidate 可比）\nanchor_test_nav: 1.2486\n\n# === 状态 ===\nstatus: champion                 # champion | challenger | falsified | demoted | baseline | anchor\noutcome: test_pass               # test_pass | test_marginal | test_fail | no_test_run\nchampion: true                   # bool, 是否当前 SOTA\noverfit_score: 0                 # 0-3\nleak_audit: clean                # clean | edge_fixed | structural\n\n# === 形状 ===\naxis: [sizing, microstructure]   # direction axis（list, 可多）\npast_only_window_days: 30        # 用了什么历史窗口；null 表示未用 rolling\nwarmup_required: 10              # 多少个观测才生效\n\n# === 时间戳 ===\ncreated: 2026-05-17T03:30:00\nlast_updated: 2026-05-17T05:09:00\n\n# === Tags（与 frontmatter 字段冗余，但 Obsidian tag panel 需要 inline tag） ===\ntags: [arc/260516a, team/h, round/r3b, axis/sizing, status/champion, outcome/test_pass, leak/clean, size/large]\n---\n```\n\n> 字段冗余说明：`team` / `round` 等既在结构化字段也在 tag 里 —— tag 是给 Obsidian UI 用的（panel / graph），字段是给 dataview / grep 用的。**改字段必同步改 tag**。\n\n---\n\n## 5. 标准 sections（每个 experiment 文件必含）\n\n```markdown\n# <title>\n\n> **TL;DR** —— 一句话讲清这候选是什么、相对 anchor 涨了多少 NAV、是否过 test。\n\n## 假设 (Hypothesis)\n- 中文一段，把 hypothesis 讲清楚。**不抄 leaderboard 的 label 字段**，要还原研究者的思考过程。\n\n## 实现 (Implementation)\n- 关键代码路径：`[[arcs/260516a/team_h/scripts/round_3b_runner.py]]` 行 NN-NN\n- 公式（如果是 sizing / scoring 类）：\n\n  $$\n  \\text{size} = \\mathrm{clip}\\!\\left(\\lambda \\cdot \\left(\\frac{r_t}{\\widetilde{r}_{t,30d}^{\\text{past}}} - 1\\right) + 1,\\; 0.5,\\; 1.5\\right)\n  $$\n\n- 关键参数：λ=1.5, clip=[0.5, 1.5], 30d past-only median of `ratio`, warmup=10\n\n## Past-only window 处理\n- **必填章节**：写清楚这个候选有没有 rolling stat，用了多长窗口，warmup 多少，怎么保证 strict past-only（没有 lookahead）。\n- 例：\"`rolling_30d_ratio_median` 对每个 trade 时刻 t 取 `events[event_time < t & event_time >= t - 30d]` 的中位数；warmup<10 时回退 size=1.0；critic audit pass。\"\n\n## 结果 (Results)\n| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 3.6981 | 179 | 7.54 | 87.7% | -0.67% |\n| Val (rolling 13w) | 1.1020 ± 0.117 | - | - | - | - |\n| Test (hold-out) | **1.4905** | 31 | 7.37 | 80.6% | -0.43% |\n| Anchor train | 2.1882 | 140 | 7.70 | 85.7% | -1.01% |\n| Anchor test | 1.2486 | 20 | 7.15 | 75.0% | -0.53% |\n| **Δ test NAV vs anchor** | **+0.242** | +11 | +0.22 | +5.6pp | +0.10pp |\n\n> 大数字 + 一句话: \"champion of arc 260516a，test NAV 1.49 vs anchor 1.25，cumulative +19.4%。\"\n\n## 风险 & overfit 嫌疑\n- engineer / critic 给的 overfit 评分及理由\n- 关键 risk flag：trade_count 是否在 ±30%、val σ 是否过大、是否对单一 window 过度依赖\n\n## Lineage（双链网）\n- **derived_from**: [[arc_260516a__team_h__H-R2-2__c84_linear_sizing]]（这个是 λ=1 特例的扩展）\n- **builds on**: [[arc_260516a__team_c__C8.4__top3_no_open3min_bypass]]（用它选 trade，自己只负责 sizing）\n- **competes_with**: [[arc_260516a__team_b__B-R8-1__no_open3min_bypass03]]（不同 axis 的并行 challenger）\n- **falsifies**: [[arc_260516a__team_h__H-R3a-2__d_r2_3_sizing]]（同样 sizing 公式套 D-R2-3 base，明显劣）\n\n## Reports\n- [[arc_260516a__reporter_20260517_0547]]\n- [[arc_260516a__comprehensive_evaluation_20260517T0124]]\n\n## Notes / 下次迭代\n- 自由 freeform，写\"如果未来再做 sizing，应该试什么 / 不应该试什么\"\n- 这一段是给 **未来 sub-agent** 看的，比上面所有数字都重要\n```\n\n---\n\n## 6. Tag 列表 demo（完整集合）\n\n```\n#arc/260516a\n\n#team/anchor #team/a #team/b #team/c #team/d #team/e #team/f #team/g #team/h\n\n#round/anchor #round/r1 #round/r2 #round/r3a #round/r3b #round/r4\n#round/r5 #round/r6 #round/r7 #round/r8 #round/r9 #round/r10 #round/r11\n\n#axis/sizing            ← Kelly / linear / sqrt damp / ratio-norm\n#axis/blacklist         ← default-admit + drop pattern X\n#axis/whitelist         ← default-drop + admit only when gate\n#axis/timing_filter     ← open_3min / RTH / pre-market gates\n#axis/cross_source      ← consensus across signal sources\n#axis/source_swap       ← swap primary signal (e.g. luoyangchan, yingli)\n#axis/microstructure    ← OFI / VPIN / impact-based features\n#axis/horizon           ← hold-time tuning\n#axis/bypass            ← high-ratio bypass for volume cap\n\n#status/anchor #status/baseline #status/champion #status/challenger\n#status/falsified #status/demoted\n\n#outcome/test_pass #outcome/test_marginal #outcome/test_fail #outcome/no_test_run\n\n#leak/clean #leak/edge_fixed #leak/structural\n\n#size/small #size/medium #size/large\n```\n\n---\n\n## 7. 几个 example 文件（已 seed）\n\n见同目录下 `experiments/`：\n\n- `arc_260516a__team_anchor__anchor_g2__baseline.md` —— 根节点 (anchor G2)\n- `arc_260516a__team_h__H-R3b-4__c84_kelly_lambda_1.5.md` —— **当前 SOTA**\n- `arc_260516a__team_h__H-R2-2__c84_linear_sizing.md` —— R3b-4 的 λ=1 前身\n- `arc_260516a__team_c__C8.4__top3_no_open3min_bypass.md` —— H 系列 sizing 的 base trade-selector\n- `arc_260516a__team_b__B-R8-1__no_open3min_bypass03.md` —— Team B 的 blacklist 顶点\n- `arc_260516a__team_d__D-R2-3__blacklist_stack_triple.md` —— default-admit + 3-stack blacklist 代表\n- `arc_260516a__team_f__F-R1-1__ofi_drop_extreme.md` —— microstructure 失败代表\n- `arc_260516a__team_g__G-R1-1__luoyangchan_solo.md` —— source-swap demoted 代表\n\n以及 lineages/：\n\n- `arc_260516a__team_h__sizing.md` —— sizing 全 lineage 概览\n\n---\n\n## 8. 给未来 sub-agent 的工作流提示\n\n> 写在这，下次别的 arc 启动时 router agent 应该把这段 paste 给 researcher。\n\n**新 arc 开始前，researcher / critic 必须**：\n\n1. `grep -r \"axis/<your_axis>\" /Users/han/project/alpha/alpha_second_v1/auto_research_experiment/experiments/`\n   找历史相关 candidate 的 frontmatter。\n2. 至少读 3 个最相关 candidate 的 **假设 / 风险 / Notes** 章节。\n3. 在新 candidate 设计 doc 里**引用历史 lessons**：\"本候选避免重蹈 [[arc_260516a__team_f__F-R1-1__ofi_drop_extreme]] 的 trade_count 崩盘 (126→18 上 hold-out)\"。\n4. 任何 anti-pattern（leak / overfit / count崩盘）发现后回写到对应 candidate 的 Notes 章节，新增 tag `#anti_pattern/<name>`。\n\nvault 的价值 = 经验复利。读得越多写得越多，下次 cold-start 越快。\n\n---\n\n## 9. 限制 / 已知 TODO\n\n- 当前只 seed 了 arc 260516a 的 8 个候选；arc 总共 ~35 个 candidate（含被 demoted 的 G-R2-x、F-R1-2、H-R1-2 等），完整 migrate 由 han 拍是否继续。\n- Obsidian dataview 查询暂未写（如 \"列出所有 #status/champion 且 #outcome/test_pass\"），需 han 装 dataview plugin 后再加 query block。\n- arcs/ 目录本身没建 stub —— `parent_arc: \"[[arcs/260516a]]\"` 这种双链当前是 \"悬挂链接\"（unresolved link，Obsidian 灰显）。若 han 要\"激活\"它们，需 seed 一个 `arcs/260516a.md` stub。\n- lineage 概览页只 seed 了 team_h sizing 一条，其它 lineage（team_b blacklist / team_d default-admit / team_c no_open3min）需后续补。\n"
+  :path "VAULT_DESIGN.md"
+  :source_mtime "2026-05-17T09:58:14+08:00"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9e250027" :type "atom"
+  :subj "doc:vault_design"
+  :pred "has_nav"
+  :obj 0
+  :source "VAULT_DESIGN.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9d706c8b" :type "atom"
+  :subj "doc:vault_design"
+  :pred "has_type"
+  :obj "design_doc"
+  :source "VAULT_DESIGN.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d46d8195" :type "atom"
+  :subj "doc:vault_design"
+  :pred "has_status"
+  :obj "draft"
+  :source "VAULT_DESIGN.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_92dfcfb8" :type "atom"
+  :subj "doc:vault_design"
+  :pred "has_created"
+  :obj "2026-05-17"
+  :source "VAULT_DESIGN.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1e3e35e7" :type "atom"
+  :subj "doc:vault_design"
+  :pred "has_author"
+  :obj "TARS (design sub-agent under arc 260516a)"
+  :source "VAULT_DESIGN.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_95b7438e" :type "atom"
+  :subj "doc:vault_design"
+  :pred "parent_arc"
+  :obj "ref:260516a"
+  :source "VAULT_DESIGN.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_36d34b94" :type "atom"
+  :subj "doc:vault_design"
+  :pred "has_tag"
+  :obj "tag:vault/meta"
+  :source "VAULT_DESIGN.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f5880502" :type "atom"
+  :subj "doc:vault_design"
+  :pred "has_tag"
+  :obj "tag:vault/design"
+  :source "VAULT_DESIGN.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_3577cadc" :type "atom"
+  :subj "doc:vault_design"
+  :pred "has_section_intro"
+  :obj "# Auto Research Experiment Vault — Design\n\n> 一个 markdown + 双链 + tag 的网状知识库，存放 alpha_second_v1 所有 auto-research 实验候选。\n> 设计目标：**新长实验启动前，sub-agent 可以先 grep 这个 vault，看历史相关 experiment 长什么样、被证伪过什么、当前 SOTA 卡在哪里，再开新 lineage**。\n> 不是另一份 reporter HTML 的复制品 —— reporter 是给 han 看快照的；vault 是给 **未来的 agent** 看 lineage 的。\n\n---"
+  :source "VAULT_DESIGN.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a2823eb1" :type "atom"
+  :subj "doc:vault_design"
+  :pred "has_section_1_方法论_why_markdown_double_link_tag"
+  :obj "### 1.1 为什么不直接读 CSV / leaderboard\n\n- leaderboard 是数据的**当前快照**。它能告诉你 \"H-R3b-4 train_nav=3.70\"，但不能告诉你 \"H-R3b-4 为什么会出现 / 它是从哪个 lineage 推导出来的 / 它有没有过 future-data audit / 它的 sizing 公式背后的 Kelly 直觉\"。\n- CSV 没有上下文 —— sub-agent 看到一个 candidate 名字，没办法**顺藤摸瓜**找到它的 hypothesis、它打败 / 被打败了谁、critic 给的红线在哪。\n- markdown + 双链 = 每个 candidate 是一个 **节点**，节点之间的边 = lineage / 反驳 / co-champion / SOTA-依赖。Obsidian graph view 直接看到 cluster。\n\n### 1.2 为什么不放进 arc 的 `0_meta.md`\n\n- arc 是**任务**单位，一次性结案。vault 是**跨 arc 的长期记忆** —— 下一次 arc 260601a 跑 alpha 时，应该能查到 arc 260516a 出过的 anti-pattern。\n- arc 内的 audit / notes 只在那次任务有人翻；vault 是设计来让 agent **每次都翻一遍**的（\"先搜 vault，再设计候选\"）。\n\n### 1.3 三种边\n\n| 边类型 | 写法 | 用途 |\n|---|---|---|\n| **`derived_from`** | `[[arc_260516a__team_h__H-R2-2__c84_linear_sizing]]` | 这个 candidate 直接 build on 谁的 logic |\n| **`competes_with`** | `[[arc_260516a__team_b__B-R8-1__no_open3min_bypass03]]` | 同 SOTA 候选/共存 lineage |\n| **`falsifies`** | `[[arc_260516a__team_f__F-R1-1__ofi_drop_extreme]]` | 这个 candidate 证伪了谁的 hypothesis |\n| **`reports_to`** | `[[reports/arc_260516a__reporter_20260517_0547]]` | 这个 candidate 哪份 reporter HTML 详述 |\n| **`parent_arc`** | `[[arc_260516a]]`（frontmatter 字段） | 产出它的 arc |\n| **`parent_lineage`** | `[[lineages/arc_260516a__team_h__sizing]]` | 这个 candidate 所属的 lineage 概览页 |\n\n> 双链统一写成 `[[experiments/<filename>]]`（无 `.md` 后缀），Obsidian 自动解析。\n\n### 1.4 tag 体系（**所有 tag 用 `/` 分层**，Obsidian tag panel 自动折叠）\n\n- `#arc/260516a` —— arc id\n- `#team/h` `#team/b` `#team/c` `#team/d` `#team/f` `#team/g` `#team/anchor` —— team 归属\n- `#round/r1` `#round/r2` `#round/r3a` `#round/r3b` `#round/r8` `#round/r10` —— round\n- `#axis/sizing` `#axis/blacklist` `#axis/timing_filter` `#axis/cross_source` `#axis/source_swap` `#axis/microstructure` —— **direction axis**，跨 arc 复用\n- `#status/champion` `#status/challenger` `#status/falsified` `#status/demoted` `#status/baseline` `#status/anchor` —— 当时定位\n- `#outcome/test_pass` `#outcome/test_marginal` `#outcome/test_fail` `#outcome/no_test_run` —— hold-out 上的 verdict\n- `#leak/clean` `#leak/edge_fixed` `#leak/structural` —— future-data audit verdict\n- `#size/small` (< 50 trades) / `#size/medium` (50-150) / `#size/large` (150+) —— 笔数档\n\n> direction axis 是给**未来新 arc** 找参考用的最重要 tag：要做 sizing 实验？`#axis/sizing`，一秒找到所有历史 sizing 候选。\n\n---"
+  :source "VAULT_DESIGN.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b4357c41" :type "atom"
+  :subj "doc:vault_design"
+  :pred "has_section_2_目录结构"
+  :obj "```\nauto_research_experiment/\n├── VAULT_DESIGN.md          ← 本文件\n├── README.md                ← Obsidian 配置 + 使用说明\n├── experiments/             ← 每个 candidate 一个 .md（flat），靠 tag + 双链组织\n│   ├── arc_260516a__team_anchor__anchor_g2__baseline.md\n│   ├── arc_260516a__team_h__H-R3b-4__c84_kelly_lambda_1.5.md\n│   ├── arc_260516a__team_h__H-R2-2__c84_linear_sizing.md\n│   ├── arc_260516a__team_c__C8.4__top3_no_open3min_bypass.md\n│   ├── arc_260516a__team_b__B-R8-1__no_open3min_bypass03.md\n│   ├── arc_260516a__team_d__D-R2-3__blacklist_stack_triple.md\n│   ├── arc_260516a__team_f__F-R1-1__ofi_drop_extreme.md\n│   └── arc_260516a__team_g__G-R1-1__luoyangchan_solo.md\n├── lineages/                ← 一个 lineage 概览页 = 一条研究脉络\n│   ├── arc_260516a__team_h__sizing.md\n│   ├── arc_260516a__team_b__blacklist_evolution.md\n│   ├── arc_260516a__team_c__no_open3min.md\n│   └── arc_260516a__team_d__blacklist_default_admit.md\n└── reports/                 ← 报告/audit 双链 stub（指向 arcs/all/.../output/*.html）\n    └── arc_260516a__reporter_20260517_0547.md\n```\n\n**为什么 flat experiments/ 不按 team / arc 分子目录**：\n\n- Obsidian 双链不依赖路径 —— 子目录纯粹是\"人眼浏览方便\"。\n- flat + 强命名 `<arc>__<team>__<id>__<short>.md` 让命名本身已经是分类，并且：\n  1. 文件名前缀 grep 就是 team / arc 过滤\n  2. tag panel 同时能按 axis / status / outcome 切面，不绑 team\n  3. 跨 arc 移植 lineage 时不用挪 path\n- 子目录只用来分 **类型**（experiments vs lineages vs reports），不分实例。\n\ntrade-off 我也想过，记录在这：\n\n| 方案 | 优 | 缺 | 决定 |\n|---|---|---|---|\n| 按 arc 分目录 | 直观；归档简单 | grep 跨 arc 难；tag panel 重复维护 | reject |\n| 按 team 分目录 | 一队一坑，干净 | team 跨 arc 不稳定（下一次 arc 不一定还是这堆 team）；axis 切片不顺 | reject |\n| 按 axis 分目录 | sub-agent 找 lineage 最快 | candidate 可能跨 axis（C8.4 既是 timing_filter 也是 SOTA root），多归类难 | reject |\n| **flat + tag + 命名前缀** | tag 自由切；命名仍包含 arc/team/id；跨 arc 移植零摩擦 | 文件多了 ls 会长 | **adopt** |\n\n---"
+  :source "VAULT_DESIGN.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_263a6807" :type "atom"
+  :subj "doc:vault_design"
+  :pred "has_section_3_文件命名规则"
+  :obj "### 3.1 experiments/\n\n```\narc_<arc_id>__team_<team>__<candidate_id>__<short_name>.md\n```\n\n- `<arc_id>` 7 字符（`260516a`）\n- `<team>` 单字母小写（`h` `b` `c` `d` `f` `g` `e` `a`） 或 `anchor`\n- `<candidate_id>` 原 leaderboard 上的 ID，保留大小写（`H-R3b-4`、`C8.4`、`B-R8-1`、`D-R2-3`）\n- `<short_name>` snake_case 人话短描述（`c84_kelly_lambda_1.5` / `no_open3min_bypass03` / `blacklist_stack_triple`）\n- 分隔符**双下划线 `__`**（candidate ID 里有单下划线，所以双下划线区分字段）\n\n### 3.2 lineages/\n\n```\narc_<arc_id>__team_<team>__<axis>.md\n```\n\n例：`arc_260516a__team_h__sizing.md`（team_h 的 sizing 探索全脉络）\n\n### 3.3 reports/\n\n```\narc_<arc_id>__<report_name>.md\n```\n\n例：`arc_260516a__reporter_20260517_0547.md`（一个 stub 指向 HTML，方便 candidate 文件双链）\n\n---"
+  :source "VAULT_DESIGN.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d07460a8" :type "atom"
+  :subj "doc:vault_design"
+  :pred "has_section_4_标准_frontmatter_yaml"
+  :obj "```yaml\n---\n# === 身份 ===\nnav: <int>                       # 全局排序，按 arc 内 NAV rank 给数（champion=1）\ntype: experiment                 # experiment | lineage | report | design_doc\nid: H-R3b-4                      # candidate id（与 leaderboard 一致）\nshort_name: c84_kelly_lambda_1.5 # snake_case 简称\ntitle: \"C8.4 × Kelly-fraction sizing λ=1.5\"  # 人话标题\n\n# === 归属 ===\narc: 260516a\nteam: h\nround: r3b\nparent_arc: \"[[arcs/260516a]]\"   # 双链到 arc 索引（如果 vault 里有 arc stub）\nparent_lineage: \"[[lineages/arc_260516a__team_h__sizing]]\"\n\n# === 数字（来自 leaderboard） ===\ntrain_nav: 3.6981\ntrain_trade_count: 179\ntrain_win_rate: 0.8771\ntrain_sharpe: 7.5409\ntrain_max_drawdown: -0.0067\nval_nav_mean: 1.1020\nval_nav_sigma: 0.1170\nval_window_count: 13\ntest_nav: 1.4905\ntest_trade_count: 31\ntest_sharpe: 7.3691\ntest_win_rate: 0.8065\ntest_max_drawdown: -0.0043\nanchor_train_nav: 2.1882         # 对比基准（每个 candidate 必填，跨 candidate 可比）\nanchor_test_nav: 1.2486\n\n# === 状态 ===\nstatus: champion                 # champion | challenger | falsified | demoted | baseline | anchor\noutcome: test_pass               # test_pass | test_marginal | test_fail | no_test_run\nchampion: true                   # bool, 是否当前 SOTA\noverfit_score: 0                 # 0-3\nleak_audit: clean                # clean | edge_fixed | structural\n\n# === 形状 ===\naxis: [sizing, microstructure]   # direction axis（list, 可多）\npast_only_window_days: 30        # 用了什么历史窗口；null 表示未用 rolling\nwarmup_required: 10              # 多少个观测才生效\n\n# === 时间戳 ===\ncreated: 2026-05-17T03:30:00\nlast_updated: 2026-05-17T05:09:00\n\n# === Tags（与 frontmatter 字段冗余，但 Obsidian tag panel 需要 inline tag） ===\ntags: [arc/260516a, team/h, round/r3b, axis/sizing, status/champion, outcome/test_pass, leak/clean, size/large]\n---\n```\n\n> 字段冗余说明：`team` / `round` 等既在结构化字段也在 tag 里 —— tag 是给 Obsidian UI 用的（panel / graph），字段是给 dataview / grep 用的。**改字段必同步改 tag**。\n\n---"
+  :source "VAULT_DESIGN.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_be4cbd8d" :type "atom"
+  :subj "doc:vault_design"
+  :pred "has_section_5_标准_sections_每个_experiment_文件必含"
+  :obj "```markdown\n# <title>\n\n> **TL;DR** —— 一句话讲清这候选是什么、相对 anchor 涨了多少 NAV、是否过 test。"
+  :source "VAULT_DESIGN.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_52b7b33d" :type "atom"
+  :subj "doc:vault_design"
+  :pred "has_section_hypothesis"
+  :obj "- 中文一段，把 hypothesis 讲清楚。**不抄 leaderboard 的 label 字段**，要还原研究者的思考过程。"
+  :source "VAULT_DESIGN.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_6122482b" :type "atom"
+  :subj "doc:vault_design"
+  :pred "has_section_implementation"
+  :obj "- 关键代码路径：`[[arcs/260516a/team_h/scripts/round_3b_runner.py]]` 行 NN-NN\n- 公式（如果是 sizing / scoring 类）：\n\n  $$\n  \\text{size} = \\mathrm{clip}\\!\\left(\\lambda \\cdot \\left(\\frac{r_t}{\\widetilde{r}_{t,30d}^{\\text{past}}} - 1\\right) + 1,\\; 0.5,\\; 1.5\\right)\n  $$\n\n- 关键参数：λ=1.5, clip=[0.5, 1.5], 30d past-only median of `ratio`, warmup=10"
+  :source "VAULT_DESIGN.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d36f2f47" :type "atom"
+  :subj "doc:vault_design"
+  :pred "has_section_past_only_window"
+  :obj "- **必填章节**：写清楚这个候选有没有 rolling stat，用了多长窗口，warmup 多少，怎么保证 strict past-only（没有 lookahead）。\n- 例：\"`rolling_30d_ratio_median` 对每个 trade 时刻 t 取 `events[event_time < t & event_time >= t - 30d]` 的中位数；warmup<10 时回退 size=1.0；critic audit pass。\""
+  :source "VAULT_DESIGN.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_353ccff7" :type "atom"
+  :subj "doc:vault_design"
+  :pred "has_section_results"
+  :obj "| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 3.6981 | 179 | 7.54 | 87.7% | -0.67% |\n| Val (rolling 13w) | 1.1020 ± 0.117 | - | - | - | - |\n| Test (hold-out) | **1.4905** | 31 | 7.37 | 80.6% | -0.43% |\n| Anchor train | 2.1882 | 140 | 7.70 | 85.7% | -1.01% |\n| Anchor test | 1.2486 | 20 | 7.15 | 75.0% | -0.53% |\n| **Δ test NAV vs anchor** | **+0.242** | +11 | +0.22 | +5.6pp | +0.10pp |\n\n> 大数字 + 一句话: \"champion of arc 260516a，test NAV 1.49 vs anchor 1.25，cumulative +19.4%。\""
+  :source "VAULT_DESIGN.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_eb4188f0" :type "atom"
+  :subj "doc:vault_design"
+  :pred "has_section_risk_overfit"
+  :obj "- engineer / critic 给的 overfit 评分及理由\n- 关键 risk flag：trade_count 是否在 ±30%、val σ 是否过大、是否对单一 window 过度依赖"
+  :source "VAULT_DESIGN.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1527e36b" :type "atom"
+  :subj "doc:vault_design"
+  :pred "has_section_lineage_links"
+  :obj "- **derived_from**: [[arc_260516a__team_h__H-R2-2__c84_linear_sizing]]（这个是 λ=1 特例的扩展）\n- **builds on**: [[arc_260516a__team_c__C8.4__top3_no_open3min_bypass]]（用它选 trade，自己只负责 sizing）\n- **competes_with**: [[arc_260516a__team_b__B-R8-1__no_open3min_bypass03]]（不同 axis 的并行 challenger）\n- **falsifies**: [[arc_260516a__team_h__H-R3a-2__d_r2_3_sizing]]（同样 sizing 公式套 D-R2-3 base，明显劣）"
+  :source "VAULT_DESIGN.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_bcbe6cf0" :type "atom"
+  :subj "doc:vault_design"
+  :pred "has_section_reports"
+  :obj "- [[arc_260516a__reporter_20260517_0547]]\n- [[arc_260516a__comprehensive_evaluation_20260517T0124]]"
+  :source "VAULT_DESIGN.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b13d831f" :type "atom"
+  :subj "doc:vault_design"
+  :pred "has_section_notes"
+  :obj "- 自由 freeform，写\"如果未来再做 sizing，应该试什么 / 不应该试什么\"\n- 这一段是给 **未来 sub-agent** 看的，比上面所有数字都重要\n```\n\n---"
+  :source "VAULT_DESIGN.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_018e479b" :type "atom"
+  :subj "doc:vault_design"
+  :pred "has_section_6_tag_列表_demo_完整集合"
+  :obj "```\n#arc/260516a\n\n#team/anchor #team/a #team/b #team/c #team/d #team/e #team/f #team/g #team/h\n\n#round/anchor #round/r1 #round/r2 #round/r3a #round/r3b #round/r4\n#round/r5 #round/r6 #round/r7 #round/r8 #round/r9 #round/r10 #round/r11\n\n#axis/sizing            ← Kelly / linear / sqrt damp / ratio-norm\n#axis/blacklist         ← default-admit + drop pattern X\n#axis/whitelist         ← default-drop + admit only when gate\n#axis/timing_filter     ← open_3min / RTH / pre-market gates\n#axis/cross_source      ← consensus across signal sources\n#axis/source_swap       ← swap primary signal (e.g. luoyangchan, yingli)\n#axis/microstructure    ← OFI / VPIN / impact-based features\n#axis/horizon           ← hold-time tuning\n#axis/bypass            ← high-ratio bypass for volume cap\n\n#status/anchor #status/baseline #status/champion #status/challenger\n#status/falsified #status/demoted\n\n#outcome/test_pass #outcome/test_marginal #outcome/test_fail #outcome/no_test_run\n\n#leak/clean #leak/edge_fixed #leak/structural\n\n#size/small #size/medium #size/large\n```\n\n---"
+  :source "VAULT_DESIGN.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_6744c0e3" :type "atom"
+  :subj "doc:vault_design"
+  :pred "has_section_7_几个_example_文件_已_seed"
+  :obj "见同目录下 `experiments/`：\n\n- `arc_260516a__team_anchor__anchor_g2__baseline.md` —— 根节点 (anchor G2)\n- `arc_260516a__team_h__H-R3b-4__c84_kelly_lambda_1.5.md` —— **当前 SOTA**\n- `arc_260516a__team_h__H-R2-2__c84_linear_sizing.md` —— R3b-4 的 λ=1 前身\n- `arc_260516a__team_c__C8.4__top3_no_open3min_bypass.md` —— H 系列 sizing 的 base trade-selector\n- `arc_260516a__team_b__B-R8-1__no_open3min_bypass03.md` —— Team B 的 blacklist 顶点\n- `arc_260516a__team_d__D-R2-3__blacklist_stack_triple.md` —— default-admit + 3-stack blacklist 代表\n- `arc_260516a__team_f__F-R1-1__ofi_drop_extreme.md` —— microstructure 失败代表\n- `arc_260516a__team_g__G-R1-1__luoyangchan_solo.md` —— source-swap demoted 代表\n\n以及 lineages/：\n\n- `arc_260516a__team_h__sizing.md` —— sizing 全 lineage 概览\n\n---"
+  :source "VAULT_DESIGN.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_8c98e3d2" :type "atom"
+  :subj "doc:vault_design"
+  :pred "has_section_8_给未来_sub_agent_的工作流提示"
+  :obj "> 写在这，下次别的 arc 启动时 router agent 应该把这段 paste 给 researcher。\n\n**新 arc 开始前，researcher / critic 必须**：\n\n1. `grep -r \"axis/<your_axis>\" /Users/han/project/alpha/alpha_second_v1/auto_research_experiment/experiments/`\n   找历史相关 candidate 的 frontmatter。\n2. 至少读 3 个最相关 candidate 的 **假设 / 风险 / Notes** 章节。\n3. 在新 candidate 设计 doc 里**引用历史 lessons**：\"本候选避免重蹈 [[arc_260516a__team_f__F-R1-1__ofi_drop_extreme]] 的 trade_count 崩盘 (126→18 上 hold-out)\"。\n4. 任何 anti-pattern（leak / overfit / count崩盘）发现后回写到对应 candidate 的 Notes 章节，新增 tag `#anti_pattern/<name>`。\n\nvault 的价值 = 经验复利。读得越多写得越多，下次 cold-start 越快。\n\n---"
+  :source "VAULT_DESIGN.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_8899ae4d" :type "atom"
+  :subj "doc:vault_design"
+  :pred "has_section_9_限制_已知_todo"
+  :obj "- 当前只 seed 了 arc 260516a 的 8 个候选；arc 总共 ~35 个 candidate（含被 demoted 的 G-R2-x、F-R1-2、H-R1-2 等），完整 migrate 由 han 拍是否继续。\n- Obsidian dataview 查询暂未写（如 \"列出所有 #status/champion 且 #outcome/test_pass\"），需 han 装 dataview plugin 后再加 query block。\n- arcs/ 目录本身没建 stub —— `parent_arc: \"[[arcs/260516a]]\"` 这种双链当前是 \"悬挂链接\"（unresolved link，Obsidian 灰显）。若 han 要\"激活\"它们，需 seed 一个 `arcs/260516a.md` stub。\n- lineage 概览页只 seed 了 team_h sizing 一条，其它 lineage（team_b blacklist / team_d default-admit / team_c no_open3min）需后续补。"
+  :source "VAULT_DESIGN.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")

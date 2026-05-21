@@ -1,0 +1,132 @@
+(card "lin:arc_260516a__team_h__sizing" :type "lineage"
+  :subj "lin:arc_260516a__team_h__sizing"
+  :body "---\ntype: lineage\ntitle: \"Team H — sizing axis lineage (arc 260516a)\"\narc: 260516a\nteam: h\naxis: sizing\nstatus: champion_lineage\nchampion_member: H-R3b-4\ncreated: 2026-05-17T05:00:00\ntags: [arc/260516a, team/h, axis/sizing, lineage]\n---\n\n# Team H — sizing axis lineage\n\n> 在 arc 260516a 内，Team H 是**唯一选择 sizing axis 而非 selector axis** 的队伍。其核心 insight = **trade selector 锁定在 C8.4 (179 笔)，专注优化 size 函数**。结果产出了 arc 的 SOTA champion [[arc_260516a__team_h__H-R3b-4__c84_kelly_lambda_1.5]]。\n\n## 演进时间线\n\n| Round | Candidate | base selector | sizing formula | train NAV | test NAV |\n|---|---|---|---|---|---|\n| R1 | [[arc_260516a__team_h__H-R1-1__rolling_30d_median_solo]] | anchor | clip(ratio/30d-median, 0.5, 1.5) | 2.39 | 1.32 |\n| R2 | [[arc_260516a__team_h__H-R2-1__c75_linear_sizing]] | C7.5 | 同上 | 3.43 | 1.48 |\n| R2 | [[arc_260516a__team_h__H-R2-2__c84_linear_sizing]] | C8.4 | 同上 | 3.65 | 1.48 |\n| R2 | [[arc_260516a__team_h__H-R2-3__b_r8_1_sizing]] | B-R8-1 | 同上 | 3.21 | 1.36 |\n| R2 | [[arc_260516a__team_h__H-R2-4__c75_sqrt_damp]] | C7.5 | clip((r/m)^0.5, 0.5, 1.5) | 3.33 | 1.46 |\n| R3a | [[arc_260516a__team_h__H-R3a-1__b_r11_2_sizing]] | B-R11-2 | clip(r/m, 0.5, 1.5) | 2.55 | 1.05 |\n| R3a | [[arc_260516a__team_h__H-R3a-2__d_r2_3_sizing]] | D-R2-3 | clip(r/m, 0.5, 1.5) | 2.77 | 1.17 |\n| R3b | [[arc_260516a__team_h__H-R3b-0-binary__c84_binary_baseline]] | C8.4 | size=1.0 (λ=0 binary baseline) | 3.15 | — |\n| R3b | [[arc_260516a__team_h__H-R3b-1__c84_kelly_lambda_0.25]] | C8.4 | λ=0.25 | 3.48 | 1.44 |\n| R3b | [[arc_260516a__team_h__H-R3b-2__c84_kelly_lambda_0.5]] | C8.4 | λ=0.50 | 3.62 | 1.47 |\n| R3b | [[arc_260516a__team_h__H-R3b-3__c84_kelly_lambda_1.0]] | C8.4 | λ=1.00 | 3.65 | 1.48 |\n| R3b | **[[arc_260516a__team_h__H-R3b-4__c84_kelly_lambda_1.5]]** | C8.4 | **λ=1.50** | **3.70** | **1.49** |\n\n## 关键决策点\n\n- **R2 → R3a**: H 队同时探了 C8.4 / C7.5 / B-R8-1 / B-R11-2 / D-R2-3 五种 selector base 配 linear sizing —— R2 上 **C8.4 base 显著最强**，R3a 验证 B/D base 后正式选定 C8.4 为 R3b 的唯一 base。\n- **R3a → R3b**: 把 sweep 维度从 \"base selector\" 切换为 \"λ in Kelly formula\"，sweep [0, 0.25, 0.5, 1.0, 1.5]。R3b-4 (λ=1.5) 在 train 上微胜，test 上几乎并列。\n- **R3b-0 binary baseline (size=1.0) 的价值**：证明 sizing axis 在 C8.4 base 上**确实有 productive lift** —— R3b-0 train NAV 3.15 vs R3b-4 train 3.70 (+17%)。\n\n## 与其它 lineage 的关系\n\n- **依赖**: 全 lineage 共用 [[arc_260516a__team_c__C8.4__top3_no_open3min_bypass]] 作 trade selector。Team C 的 selector 突破让 Team H 的 sizing 才有用武之地。\n- **对比**: [[arc_260516a__team_b__blacklist_evolution]] 是同 arc 的另一条 challenger 路线（blacklist axis），但 hold-out shrinkage 严重；sizing 路线更稳。\n- **被反衬**: [[lineages/arc_260516a__team_d__blacklist_default_admit]] 的 default-admit + N-stack blacklist 在 test 上崩，更凸显 sizing 路线在 robust。\n\n## 为未来 arc 留的 lessons\n\n1. **trade selector 与 sizing 分层** —— sizing axis 在 fixed selector 上 sweep, 不要试图同时 sweep 两个 axis（搜索空间爆炸 + 难归因）。\n2. **Kelly λ ∈ [0, 1.5] 在 ratio/30d-median 上是 monotone** —— λ 再大没意义除非放宽 clip bound，但放宽 bound 会引入单笔爆仓风险。\n3. **30d 是 rolling window 长度的\"未探\"维度** —— sweep 7d / 14d / 60d 可能给 sub-agent 留下空间。\n4. **sizing axis 在 hold-out 上 robust 于 selector axis** —— train→test edge shrinkage 较小（arc 260516a 数据：sizing test NAV 1.49 vs train 3.70 = 0.40x retention; blacklist test 1.27 vs train 2.80 = 0.45x retention 看似接近但 anchor-relative edge sizing +19% vs blacklist +2%）。\n\n## Champion (current)\n\n[[arc_260516a__team_h__H-R3b-4__c84_kelly_lambda_1.5]] — train 3.70 / test 1.49 / Sharpe 7.37 / Win 80.6%\n"
+  :path "lineages/arc_260516a__team_h__sizing.md"
+  :source_mtime "2026-05-17T10:04:30+08:00"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a8d46c9b" :type "atom"
+  :subj "lin:arc_260516a__team_h__sizing"
+  :pred "has_type"
+  :obj "lineage"
+  :source "lineages/arc_260516a__team_h__sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_4e4d9a82" :type "atom"
+  :subj "lin:arc_260516a__team_h__sizing"
+  :pred "has_title"
+  :obj "Team H — sizing axis lineage (arc 260516a)"
+  :source "lineages/arc_260516a__team_h__sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a904c6df" :type "atom"
+  :subj "lin:arc_260516a__team_h__sizing"
+  :pred "has_arc"
+  :obj "260516a"
+  :source "lineages/arc_260516a__team_h__sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f7259578" :type "atom"
+  :subj "lin:arc_260516a__team_h__sizing"
+  :pred "has_team"
+  :obj "h"
+  :source "lineages/arc_260516a__team_h__sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b5265bcd" :type "atom"
+  :subj "lin:arc_260516a__team_h__sizing"
+  :pred "has_axis"
+  :obj "sizing"
+  :source "lineages/arc_260516a__team_h__sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_3573aa56" :type "atom"
+  :subj "lin:arc_260516a__team_h__sizing"
+  :pred "has_status"
+  :obj "champion_lineage"
+  :source "lineages/arc_260516a__team_h__sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_590a4aec" :type "atom"
+  :subj "lin:arc_260516a__team_h__sizing"
+  :pred "has_champion_member"
+  :obj "H-R3b-4"
+  :source "lineages/arc_260516a__team_h__sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a745d738" :type "atom"
+  :subj "lin:arc_260516a__team_h__sizing"
+  :pred "has_created"
+  :obj "2026-05-17 05:00:00"
+  :source "lineages/arc_260516a__team_h__sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_6e934035" :type "atom"
+  :subj "lin:arc_260516a__team_h__sizing"
+  :pred "has_tag"
+  :obj "tag:arc/260516a"
+  :source "lineages/arc_260516a__team_h__sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_402e1a5e" :type "atom"
+  :subj "lin:arc_260516a__team_h__sizing"
+  :pred "has_tag"
+  :obj "tag:team/h"
+  :source "lineages/arc_260516a__team_h__sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5c958cf9" :type "atom"
+  :subj "lin:arc_260516a__team_h__sizing"
+  :pred "has_tag"
+  :obj "tag:axis/sizing"
+  :source "lineages/arc_260516a__team_h__sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_250bcb70" :type "atom"
+  :subj "lin:arc_260516a__team_h__sizing"
+  :pred "has_tag"
+  :obj "tag:lineage"
+  :source "lineages/arc_260516a__team_h__sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_0e5cbfe0" :type "atom"
+  :subj "lin:arc_260516a__team_h__sizing"
+  :pred "has_section_intro"
+  :obj "# Team H — sizing axis lineage\n\n> 在 arc 260516a 内，Team H 是**唯一选择 sizing axis 而非 selector axis** 的队伍。其核心 insight = **trade selector 锁定在 C8.4 (179 笔)，专注优化 size 函数**。结果产出了 arc 的 SOTA champion [[arc_260516a__team_h__H-R3b-4__c84_kelly_lambda_1.5]]。"
+  :source "lineages/arc_260516a__team_h__sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_14774733" :type "atom"
+  :subj "lin:arc_260516a__team_h__sizing"
+  :pred "has_section_演进时间线"
+  :obj "| Round | Candidate | base selector | sizing formula | train NAV | test NAV |\n|---|---|---|---|---|---|\n| R1 | [[arc_260516a__team_h__H-R1-1__rolling_30d_median_solo]] | anchor | clip(ratio/30d-median, 0.5, 1.5) | 2.39 | 1.32 |\n| R2 | [[arc_260516a__team_h__H-R2-1__c75_linear_sizing]] | C7.5 | 同上 | 3.43 | 1.48 |\n| R2 | [[arc_260516a__team_h__H-R2-2__c84_linear_sizing]] | C8.4 | 同上 | 3.65 | 1.48 |\n| R2 | [[arc_260516a__team_h__H-R2-3__b_r8_1_sizing]] | B-R8-1 | 同上 | 3.21 | 1.36 |\n| R2 | [[arc_260516a__team_h__H-R2-4__c75_sqrt_damp]] | C7.5 | clip((r/m)^0.5, 0.5, 1.5) | 3.33 | 1.46 |\n| R3a | [[arc_260516a__team_h__H-R3a-1__b_r11_2_sizing]] | B-R11-2 | clip(r/m, 0.5, 1.5) | 2.55 | 1.05 |\n| R3a | [[arc_260516a__team_h__H-R3a-2__d_r2_3_sizing]] | D-R2-3 | clip(r/m, 0.5, 1.5) | 2.77 | 1.17 |\n| R3b | [[arc_260516a__team_h__H-R3b-0-binary__c84_binary_baseline]] | C8.4 | size=1.0 (λ=0 binary baseline) | 3.15 | — |\n| R3b | [[arc_260516a__team_h__H-R3b-1__c84_kelly_lambda_0.25]] | C8.4 | λ=0.25 | 3.48 | 1.44 |\n| R3b | [[arc_260516a__team_h__H-R3b-2__c84_kelly_lambda_0.5]] | C8.4 | λ=0.50 | 3.62 | 1.47 |\n| R3b | [[arc_260516a__team_h__H-R3b-3__c84_kelly_lambda_1.0]] | C8.4 | λ=1.00 | 3.65 | 1.48 |\n| R3b | **[[arc_260516a__team_h__H-R3b-4__c84_kelly_lambda_1.5]]** | C8.4 | **λ=1.50** | **3.70** | **1.49** |"
+  :source "lineages/arc_260516a__team_h__sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ffdb6f1e" :type "atom"
+  :subj "lin:arc_260516a__team_h__sizing"
+  :pred "has_section_关键决策点"
+  :obj "- **R2 → R3a**: H 队同时探了 C8.4 / C7.5 / B-R8-1 / B-R11-2 / D-R2-3 五种 selector base 配 linear sizing —— R2 上 **C8.4 base 显著最强**，R3a 验证 B/D base 后正式选定 C8.4 为 R3b 的唯一 base。\n- **R3a → R3b**: 把 sweep 维度从 \"base selector\" 切换为 \"λ in Kelly formula\"，sweep [0, 0.25, 0.5, 1.0, 1.5]。R3b-4 (λ=1.5) 在 train 上微胜，test 上几乎并列。\n- **R3b-0 binary baseline (size=1.0) 的价值**：证明 sizing axis 在 C8.4 base 上**确实有 productive lift** —— R3b-0 train NAV 3.15 vs R3b-4 train 3.70 (+17%)。"
+  :source "lineages/arc_260516a__team_h__sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ecbdef37" :type "atom"
+  :subj "lin:arc_260516a__team_h__sizing"
+  :pred "has_section_与其它_lineage_的关系"
+  :obj "- **依赖**: 全 lineage 共用 [[arc_260516a__team_c__C8.4__top3_no_open3min_bypass]] 作 trade selector。Team C 的 selector 突破让 Team H 的 sizing 才有用武之地。\n- **对比**: [[arc_260516a__team_b__blacklist_evolution]] 是同 arc 的另一条 challenger 路线（blacklist axis），但 hold-out shrinkage 严重；sizing 路线更稳。\n- **被反衬**: [[lineages/arc_260516a__team_d__blacklist_default_admit]] 的 default-admit + N-stack blacklist 在 test 上崩，更凸显 sizing 路线在 robust。"
+  :source "lineages/arc_260516a__team_h__sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9bfb7cda" :type "atom"
+  :subj "lin:arc_260516a__team_h__sizing"
+  :pred "has_section_为未来_arc_留的_lessons"
+  :obj "1. **trade selector 与 sizing 分层** —— sizing axis 在 fixed selector 上 sweep, 不要试图同时 sweep 两个 axis（搜索空间爆炸 + 难归因）。\n2. **Kelly λ ∈ [0, 1.5] 在 ratio/30d-median 上是 monotone** —— λ 再大没意义除非放宽 clip bound，但放宽 bound 会引入单笔爆仓风险。\n3. **30d 是 rolling window 长度的\"未探\"维度** —— sweep 7d / 14d / 60d 可能给 sub-agent 留下空间。\n4. **sizing axis 在 hold-out 上 robust 于 selector axis** —— train→test edge shrinkage 较小（arc 260516a 数据：sizing test NAV 1.49 vs train 3.70 = 0.40x retention; blacklist test 1.27 vs train 2.80 = 0.45x retention 看似接近但 anchor-relative edge sizing +19% vs blacklist +2%）。"
+  :source "lineages/arc_260516a__team_h__sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c87f5c61" :type "atom"
+  :subj "lin:arc_260516a__team_h__sizing"
+  :pred "has_section_champion_current"
+  :obj "[[arc_260516a__team_h__H-R3b-4__c84_kelly_lambda_1.5]] — train 3.70 / test 1.49 / Sharpe 7.37 / Win 80.6%"
+  :source "lineages/arc_260516a__team_h__sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")

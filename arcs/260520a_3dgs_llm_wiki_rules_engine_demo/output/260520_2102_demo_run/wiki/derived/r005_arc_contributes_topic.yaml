@@ -1,0 +1,108 @@
+- iteration: 1
+  binding:
+    ?A: arc:260508b
+    ?D: doc:notes/lidar_merge_quality_metric.md
+    ?T: topic:lidar
+  parents:
+  - a_a26feb5c
+  - a_42fba56e
+  atom:
+    id: a_38d20b54
+    subj: arc:260508b
+    pred: contributes_to
+    obj: topic:lidar
+    source: ''
+    derived_from: r005_arc_contributes_topic
+    parents:
+    - a_a26feb5c
+    - a_42fba56e
+- iteration: 1
+  binding:
+    ?A: arc:260508b
+    ?D: doc:notes/lidar_merge_quality_metric.md
+    ?T: topic:merge
+  parents:
+  - a_a26feb5c
+  - a_b048e698
+  atom:
+    id: a_d19fcda2
+    subj: arc:260508b
+    pred: contributes_to
+    obj: topic:merge
+    source: ''
+    derived_from: r005_arc_contributes_topic
+    parents:
+    - a_a26feb5c
+    - a_b048e698
+- iteration: 1
+  binding:
+    ?A: arc:260508b
+    ?D: doc:notes/lidar_merge_quality_metric.md
+    ?T: topic:evaluation
+  parents:
+  - a_a26feb5c
+  - a_d62080a4
+  atom:
+    id: a_869e3670
+    subj: arc:260508b
+    pred: contributes_to
+    obj: topic:evaluation
+    source: ''
+    derived_from: r005_arc_contributes_topic
+    parents:
+    - a_a26feb5c
+    - a_d62080a4
+- iteration: 1
+  binding:
+    ?A: arc:260508b
+    ?D: doc:notes/lidar_merge_quality_metric.md
+    ?T: topic:fabu
+  parents:
+  - a_a26feb5c
+  - a_da98091d
+  atom:
+    id: a_0d07f63a
+    subj: arc:260508b
+    pred: contributes_to
+    obj: topic:fabu
+    source: ''
+    derived_from: r005_arc_contributes_topic
+    parents:
+    - a_a26feb5c
+    - a_da98091d
+- iteration: 1
+  binding:
+    ?A: arc:260508b
+    ?D: doc:notes/lidar_merge_quality_metric.md
+    ?T: topic:drivestudio
+  parents:
+  - a_a26feb5c
+  - a_99b88b29
+  atom:
+    id: a_a1b2cb3d
+    subj: arc:260508b
+    pred: contributes_to
+    obj: topic:drivestudio
+    source: ''
+    derived_from: r005_arc_contributes_topic
+    parents:
+    - a_a26feb5c
+    - a_99b88b29
+- iteration: 1
+  binding:
+    ?A: arc:260508b
+    ?D: doc:notes/fabu_pose_floor.md
+    ?T: topic:localization
+  parents:
+  - a_6eff8628
+  - a_2799fe30
+  atom:
+    id: a_817d5857
+    subj: arc:260508b
+    pred: contributes_to
+    obj: topic:localization
+    source: ''
+    derived_from: r005_arc_contributes_topic
+    parents:
+    - a_6eff8628
+    - a_2799fe30

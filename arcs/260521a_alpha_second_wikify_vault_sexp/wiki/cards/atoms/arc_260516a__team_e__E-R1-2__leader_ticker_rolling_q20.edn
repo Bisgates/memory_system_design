@@ -1,0 +1,391 @@
+(card "exp:E-R1-2_leader_ticker_rolling_q20" :type "experiment"
+  :subj "exp:E-R1-2_leader_ticker_rolling_q20"
+  :body "---\nnav: 35\ntype: experiment\nid: E-R1-2_leader_ticker_rolling_q20\nshort_name: leader_ticker_rolling_q20\ntitle: \"E-R1-2 — Anchor + drop ticker past 30d winrate ≤ rolling q20 (paused)\"\narc: 260516a\nteam: e\nround: r1\nparent_arc: \"[[arcs/260516a]]\"\nparent_lineage: \"[[lineages/arc_260516a__team_e__leader_profile_paused]]\"\ntrain_nav: 2.1882\ntrain_trade_count: 140\ntrain_win_rate: 0.8571\ntrain_sharpe: 7.698\ntrain_max_drawdown: -0.0101\nval_nav_mean: 1.0601\nval_nav_sigma: 0.0675\nval_window_count: 13\ntest_nav: null\ntest_trade_count: null\ntest_sharpe: null\ntest_win_rate: null\ntest_max_drawdown: null\nanchor_train_nav: 2.1882\nanchor_test_nav: 1.2486\nstatus: paused\noutcome: no_test_run\nchampion: false\noverfit_score: 0\nleak_audit: clean\naxis: [leader_profile, blacklist]\npast_only_window_days: 30\nwarmup_required: 5\ncreated: 2026-05-17T01:30:00\nlast_updated: 2026-05-17T05:09:00\ntags: [arc/260516a, team/e, round/r1, axis/leader_profile, axis/blacklist, status/paused, outcome/no_test_run, leak/clean, size/medium]\n---\n\n# E-R1-2 — drop ticker past-30d winrate ≤ rolling q20\n\n> **TL;DR** —— Team E paused 候选 2: ticker-level past-30d winrate ≤ rolling q20 (bottom 20%) drop. **NO-OP** (NAV bit-for-bit anchor).\n\n## 假设 (Hypothesis)\n- 假设：ticker 30d winrate bottom 20% = \"结构性烂 ticker\" → drop.\n- 实测：mechanism NO-OP, anchor pool 上不 trigger.\n\n## 实现 (Implementation)\n- `team_e/scripts/round_1_runner.py`; same pipeline as E-R1-1, signal changed to ticker rolling winrate q20.\n\n## Past-only window 处理\n- past 30d, min_trades 5. `#leak/clean`.\n\n## 结果 (Results)\n| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 2.1882 | 140 | 7.70 | 85.7% | -1.01% |\n| Val | 1.0601 ± 0.068 | - | - | - | - |\n| Test | NOT RUN | - | - | - | - |\n\n## 风险 & overfit 嫌疑\n- overfit_score = 0; NO-OP.\n\n## Lineage（双链网）\n- **same_lineage**: [[arc_260516a__team_e__E-R1-1__leader_ratio_bucket]], [[arc_260516a__team_e__E-R1-3__leader_ticker_mean_ret_pos]]\n- **derived_from**: [[arc_260516a__team_anchor__anchor_g2__baseline]]\n- **builds against**: [[arc_260516a__team_anchor__anchor_g2__baseline]]\n\n## Reports\n- `team_e/output/cross_round_leaderboard_nav.csv` (E-R1-2)\n- [[arc_260516a__reporter_20260517_0547]]\n\n## Notes / 下次迭代\n- 同 E-R1-1 notes. ticker-level rolling-quantile threshold 在 trade pool 140 笔上几乎 trigger 不了.\n"
+  :path "experiments/arc_260516a__team_e__E-R1-2__leader_ticker_rolling_q20.md"
+  :source_mtime "2026-05-17T10:32:20+08:00"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_fec16145" :type "atom"
+  :subj "exp:E-R1-2_leader_ticker_rolling_q20"
+  :pred "has_nav"
+  :obj 35
+  :source "experiments/arc_260516a__team_e__E-R1-2__leader_ticker_rolling_q20.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_89daa048" :type "atom"
+  :subj "exp:E-R1-2_leader_ticker_rolling_q20"
+  :pred "has_type"
+  :obj "experiment"
+  :source "experiments/arc_260516a__team_e__E-R1-2__leader_ticker_rolling_q20.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_290883da" :type "atom"
+  :subj "exp:E-R1-2_leader_ticker_rolling_q20"
+  :pred "has_id"
+  :obj "E-R1-2_leader_ticker_rolling_q20"
+  :source "experiments/arc_260516a__team_e__E-R1-2__leader_ticker_rolling_q20.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_fc02e891" :type "atom"
+  :subj "exp:E-R1-2_leader_ticker_rolling_q20"
+  :pred "has_short_name"
+  :obj "leader_ticker_rolling_q20"
+  :source "experiments/arc_260516a__team_e__E-R1-2__leader_ticker_rolling_q20.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_7b26b76a" :type "atom"
+  :subj "exp:E-R1-2_leader_ticker_rolling_q20"
+  :pred "has_title"
+  :obj "E-R1-2 — Anchor + drop ticker past 30d winrate ≤ rolling q20 (paused)"
+  :source "experiments/arc_260516a__team_e__E-R1-2__leader_ticker_rolling_q20.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_18be418b" :type "atom"
+  :subj "exp:E-R1-2_leader_ticker_rolling_q20"
+  :pred "has_arc"
+  :obj "260516a"
+  :source "experiments/arc_260516a__team_e__E-R1-2__leader_ticker_rolling_q20.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c9dae03b" :type "atom"
+  :subj "exp:E-R1-2_leader_ticker_rolling_q20"
+  :pred "has_team"
+  :obj "e"
+  :source "experiments/arc_260516a__team_e__E-R1-2__leader_ticker_rolling_q20.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_08818c57" :type "atom"
+  :subj "exp:E-R1-2_leader_ticker_rolling_q20"
+  :pred "has_round"
+  :obj "r1"
+  :source "experiments/arc_260516a__team_e__E-R1-2__leader_ticker_rolling_q20.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_25bacfc0" :type "atom"
+  :subj "exp:E-R1-2_leader_ticker_rolling_q20"
+  :pred "parent_arc"
+  :obj "arc:260516a"
+  :source "experiments/arc_260516a__team_e__E-R1-2__leader_ticker_rolling_q20.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_4238068c" :type "atom"
+  :subj "exp:E-R1-2_leader_ticker_rolling_q20"
+  :pred "parent_lineage"
+  :obj "lin:arc_260516a__team_e__leader_profile_paused"
+  :source "experiments/arc_260516a__team_e__E-R1-2__leader_ticker_rolling_q20.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_3e30daab" :type "atom"
+  :subj "exp:E-R1-2_leader_ticker_rolling_q20"
+  :pred "has_train_nav"
+  :obj 2.1882
+  :source "experiments/arc_260516a__team_e__E-R1-2__leader_ticker_rolling_q20.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_06429b8f" :type "atom"
+  :subj "exp:E-R1-2_leader_ticker_rolling_q20"
+  :pred "has_train_trade_count"
+  :obj 140
+  :source "experiments/arc_260516a__team_e__E-R1-2__leader_ticker_rolling_q20.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ab8810e9" :type "atom"
+  :subj "exp:E-R1-2_leader_ticker_rolling_q20"
+  :pred "has_train_win_rate"
+  :obj 0.8571
+  :source "experiments/arc_260516a__team_e__E-R1-2__leader_ticker_rolling_q20.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_048b00b8" :type "atom"
+  :subj "exp:E-R1-2_leader_ticker_rolling_q20"
+  :pred "has_train_sharpe"
+  :obj 7.698
+  :source "experiments/arc_260516a__team_e__E-R1-2__leader_ticker_rolling_q20.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_953fe7cc" :type "atom"
+  :subj "exp:E-R1-2_leader_ticker_rolling_q20"
+  :pred "has_train_max_drawdown"
+  :obj -0.0101
+  :source "experiments/arc_260516a__team_e__E-R1-2__leader_ticker_rolling_q20.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_4d33f93f" :type "atom"
+  :subj "exp:E-R1-2_leader_ticker_rolling_q20"
+  :pred "has_val_nav_mean"
+  :obj 1.0601
+  :source "experiments/arc_260516a__team_e__E-R1-2__leader_ticker_rolling_q20.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e3fef2ae" :type "atom"
+  :subj "exp:E-R1-2_leader_ticker_rolling_q20"
+  :pred "has_val_nav_sigma"
+  :obj 0.0675
+  :source "experiments/arc_260516a__team_e__E-R1-2__leader_ticker_rolling_q20.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_19bd2e83" :type "atom"
+  :subj "exp:E-R1-2_leader_ticker_rolling_q20"
+  :pred "has_val_window_count"
+  :obj 13
+  :source "experiments/arc_260516a__team_e__E-R1-2__leader_ticker_rolling_q20.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_10462f18" :type "atom"
+  :subj "exp:E-R1-2_leader_ticker_rolling_q20"
+  :pred "has_anchor_train_nav"
+  :obj 2.1882
+  :source "experiments/arc_260516a__team_e__E-R1-2__leader_ticker_rolling_q20.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_45cf6f71" :type "atom"
+  :subj "exp:E-R1-2_leader_ticker_rolling_q20"
+  :pred "has_anchor_test_nav"
+  :obj 1.2486
+  :source "experiments/arc_260516a__team_e__E-R1-2__leader_ticker_rolling_q20.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_caa98b45" :type "atom"
+  :subj "exp:E-R1-2_leader_ticker_rolling_q20"
+  :pred "has_status"
+  :obj "paused"
+  :source "experiments/arc_260516a__team_e__E-R1-2__leader_ticker_rolling_q20.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f6f0deeb" :type "atom"
+  :subj "exp:E-R1-2_leader_ticker_rolling_q20"
+  :pred "has_outcome"
+  :obj "no_test_run"
+  :source "experiments/arc_260516a__team_e__E-R1-2__leader_ticker_rolling_q20.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_050d0b00" :type "atom"
+  :subj "exp:E-R1-2_leader_ticker_rolling_q20"
+  :pred "has_champion"
+  :obj false
+  :source "experiments/arc_260516a__team_e__E-R1-2__leader_ticker_rolling_q20.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ce944a20" :type "atom"
+  :subj "exp:E-R1-2_leader_ticker_rolling_q20"
+  :pred "has_overfit_score"
+  :obj 0
+  :source "experiments/arc_260516a__team_e__E-R1-2__leader_ticker_rolling_q20.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d58500aa" :type "atom"
+  :subj "exp:E-R1-2_leader_ticker_rolling_q20"
+  :pred "has_leak_audit"
+  :obj "clean"
+  :source "experiments/arc_260516a__team_e__E-R1-2__leader_ticker_rolling_q20.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_58442ed0" :type "atom"
+  :subj "exp:E-R1-2_leader_ticker_rolling_q20"
+  :pred "has_axis"
+  :obj "axis:leader_profile"
+  :source "experiments/arc_260516a__team_e__E-R1-2__leader_ticker_rolling_q20.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_cdccd43a" :type "atom"
+  :subj "exp:E-R1-2_leader_ticker_rolling_q20"
+  :pred "has_axis"
+  :obj "axis:blacklist"
+  :source "experiments/arc_260516a__team_e__E-R1-2__leader_ticker_rolling_q20.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_efd8c548" :type "atom"
+  :subj "exp:E-R1-2_leader_ticker_rolling_q20"
+  :pred "has_axis_list"
+  :obj ("leader_profile" "blacklist")
+  :source "experiments/arc_260516a__team_e__E-R1-2__leader_ticker_rolling_q20.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_05d639be" :type "atom"
+  :subj "exp:E-R1-2_leader_ticker_rolling_q20"
+  :pred "has_past_only_window_days"
+  :obj 30
+  :source "experiments/arc_260516a__team_e__E-R1-2__leader_ticker_rolling_q20.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_eccdccc4" :type "atom"
+  :subj "exp:E-R1-2_leader_ticker_rolling_q20"
+  :pred "has_warmup_required"
+  :obj 5
+  :source "experiments/arc_260516a__team_e__E-R1-2__leader_ticker_rolling_q20.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_296f98fa" :type "atom"
+  :subj "exp:E-R1-2_leader_ticker_rolling_q20"
+  :pred "has_created"
+  :obj "2026-05-17 01:30:00"
+  :source "experiments/arc_260516a__team_e__E-R1-2__leader_ticker_rolling_q20.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_6d615613" :type "atom"
+  :subj "exp:E-R1-2_leader_ticker_rolling_q20"
+  :pred "has_last_updated"
+  :obj "2026-05-17 05:09:00"
+  :source "experiments/arc_260516a__team_e__E-R1-2__leader_ticker_rolling_q20.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_77499cf3" :type "atom"
+  :subj "exp:E-R1-2_leader_ticker_rolling_q20"
+  :pred "has_tag"
+  :obj "tag:arc/260516a"
+  :source "experiments/arc_260516a__team_e__E-R1-2__leader_ticker_rolling_q20.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f0a4afb1" :type "atom"
+  :subj "exp:E-R1-2_leader_ticker_rolling_q20"
+  :pred "has_tag"
+  :obj "tag:team/e"
+  :source "experiments/arc_260516a__team_e__E-R1-2__leader_ticker_rolling_q20.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_6ad916b1" :type "atom"
+  :subj "exp:E-R1-2_leader_ticker_rolling_q20"
+  :pred "has_tag"
+  :obj "tag:round/r1"
+  :source "experiments/arc_260516a__team_e__E-R1-2__leader_ticker_rolling_q20.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_4c81d5e2" :type "atom"
+  :subj "exp:E-R1-2_leader_ticker_rolling_q20"
+  :pred "has_tag"
+  :obj "tag:axis/leader_profile"
+  :source "experiments/arc_260516a__team_e__E-R1-2__leader_ticker_rolling_q20.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_3f251bfd" :type "atom"
+  :subj "exp:E-R1-2_leader_ticker_rolling_q20"
+  :pred "has_tag"
+  :obj "tag:axis/blacklist"
+  :source "experiments/arc_260516a__team_e__E-R1-2__leader_ticker_rolling_q20.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d39f27b4" :type "atom"
+  :subj "exp:E-R1-2_leader_ticker_rolling_q20"
+  :pred "has_tag"
+  :obj "tag:status/paused"
+  :source "experiments/arc_260516a__team_e__E-R1-2__leader_ticker_rolling_q20.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_bebcf7d5" :type "atom"
+  :subj "exp:E-R1-2_leader_ticker_rolling_q20"
+  :pred "has_tag"
+  :obj "tag:outcome/no_test_run"
+  :source "experiments/arc_260516a__team_e__E-R1-2__leader_ticker_rolling_q20.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ec39e590" :type "atom"
+  :subj "exp:E-R1-2_leader_ticker_rolling_q20"
+  :pred "has_tag"
+  :obj "tag:leak/clean"
+  :source "experiments/arc_260516a__team_e__E-R1-2__leader_ticker_rolling_q20.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e181c10c" :type "atom"
+  :subj "exp:E-R1-2_leader_ticker_rolling_q20"
+  :pred "has_tag"
+  :obj "tag:size/medium"
+  :source "experiments/arc_260516a__team_e__E-R1-2__leader_ticker_rolling_q20.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_6ffe6d42" :type "atom"
+  :subj "exp:E-R1-2_leader_ticker_rolling_q20"
+  :pred "has_tl_dr"
+  :obj "Team E paused 候选 2: ticker-level past-30d winrate ≤ rolling q20 (bottom 20%) drop. **NO-OP** (NAV bit-for-bit anchor)."
+  :source "experiments/arc_260516a__team_e__E-R1-2__leader_ticker_rolling_q20.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_6977bfdd" :type "atom"
+  :subj "exp:E-R1-2_leader_ticker_rolling_q20"
+  :pred "has_section_intro"
+  :obj "# E-R1-2 — drop ticker past-30d winrate ≤ rolling q20\n\n> **TL;DR** —— Team E paused 候选 2: ticker-level past-30d winrate ≤ rolling q20 (bottom 20%) drop. **NO-OP** (NAV bit-for-bit anchor)."
+  :source "experiments/arc_260516a__team_e__E-R1-2__leader_ticker_rolling_q20.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_7baa48b0" :type "atom"
+  :subj "exp:E-R1-2_leader_ticker_rolling_q20"
+  :pred "has_section_hypothesis"
+  :obj "- 假设：ticker 30d winrate bottom 20% = \"结构性烂 ticker\" → drop.\n- 实测：mechanism NO-OP, anchor pool 上不 trigger."
+  :source "experiments/arc_260516a__team_e__E-R1-2__leader_ticker_rolling_q20.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d112058d" :type "atom"
+  :subj "exp:E-R1-2_leader_ticker_rolling_q20"
+  :pred "has_section_implementation"
+  :obj "- `team_e/scripts/round_1_runner.py`; same pipeline as E-R1-1, signal changed to ticker rolling winrate q20."
+  :source "experiments/arc_260516a__team_e__E-R1-2__leader_ticker_rolling_q20.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_4aeea638" :type "atom"
+  :subj "exp:E-R1-2_leader_ticker_rolling_q20"
+  :pred "has_section_past_only_window"
+  :obj "- past 30d, min_trades 5. `#leak/clean`."
+  :source "experiments/arc_260516a__team_e__E-R1-2__leader_ticker_rolling_q20.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d42a2c99" :type "atom"
+  :subj "exp:E-R1-2_leader_ticker_rolling_q20"
+  :pred "has_section_results"
+  :obj "| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 2.1882 | 140 | 7.70 | 85.7% | -1.01% |\n| Val | 1.0601 ± 0.068 | - | - | - | - |\n| Test | NOT RUN | - | - | - | - |"
+  :source "experiments/arc_260516a__team_e__E-R1-2__leader_ticker_rolling_q20.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5090e5b2" :type "atom"
+  :subj "exp:E-R1-2_leader_ticker_rolling_q20"
+  :pred "has_section_risk_overfit"
+  :obj "- overfit_score = 0; NO-OP."
+  :source "experiments/arc_260516a__team_e__E-R1-2__leader_ticker_rolling_q20.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_45d5abf8" :type "atom"
+  :subj "exp:E-R1-2_leader_ticker_rolling_q20"
+  :pred "same_lineage"
+  :obj "exp:E-R1-1_leader_ratio_bucket"
+  :source "experiments/arc_260516a__team_e__E-R1-2__leader_ticker_rolling_q20.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_faeea56b" :type "atom"
+  :subj "exp:E-R1-2_leader_ticker_rolling_q20"
+  :pred "same_lineage"
+  :obj "exp:E-R1-3_leader_ticker_mean_ret_pos"
+  :source "experiments/arc_260516a__team_e__E-R1-2__leader_ticker_rolling_q20.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_64f6c6c8" :type "atom"
+  :subj "exp:E-R1-2_leader_ticker_rolling_q20"
+  :pred "derived_from"
+  :obj "exp:anchor_g2_baseline"
+  :source "experiments/arc_260516a__team_e__E-R1-2__leader_ticker_rolling_q20.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_604354e2" :type "atom"
+  :subj "exp:E-R1-2_leader_ticker_rolling_q20"
+  :pred "builds_against"
+  :obj "exp:anchor_g2_baseline"
+  :source "experiments/arc_260516a__team_e__E-R1-2__leader_ticker_rolling_q20.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_aa855fae" :type "atom"
+  :subj "exp:E-R1-2_leader_ticker_rolling_q20"
+  :pred "has_section_lineage_links"
+  :obj "- **same_lineage**: [[arc_260516a__team_e__E-R1-1__leader_ratio_bucket]], [[arc_260516a__team_e__E-R1-3__leader_ticker_mean_ret_pos]]\n- **derived_from**: [[arc_260516a__team_anchor__anchor_g2__baseline]]\n- **builds against**: [[arc_260516a__team_anchor__anchor_g2__baseline]]"
+  :source "experiments/arc_260516a__team_e__E-R1-2__leader_ticker_rolling_q20.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f5eb9759" :type "atom"
+  :subj "exp:E-R1-2_leader_ticker_rolling_q20"
+  :pred "has_section_reports"
+  :obj "- `team_e/output/cross_round_leaderboard_nav.csv` (E-R1-2)\n- [[arc_260516a__reporter_20260517_0547]]"
+  :source "experiments/arc_260516a__team_e__E-R1-2__leader_ticker_rolling_q20.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c561e44b" :type "atom"
+  :subj "exp:E-R1-2_leader_ticker_rolling_q20"
+  :pred "has_section_notes"
+  :obj "- 同 E-R1-1 notes. ticker-level rolling-quantile threshold 在 trade pool 140 笔上几乎 trigger 不了."
+  :source "experiments/arc_260516a__team_e__E-R1-2__leader_ticker_rolling_q20.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")

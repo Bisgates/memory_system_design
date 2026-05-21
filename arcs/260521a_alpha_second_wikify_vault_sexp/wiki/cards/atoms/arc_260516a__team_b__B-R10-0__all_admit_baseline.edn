@@ -1,0 +1,398 @@
+(card "exp:B-R10-0_all_admit_baseline" :type "experiment"
+  :subj "exp:B-R10-0_all_admit_baseline"
+  :body "---\nnav: 16\ntype: experiment\nid: B-R10-0_all_admit_baseline\nshort_name: all_admit_baseline\ntitle: \"B-R10-0 — default-admit all-pool baseline (R10 reference)\"\narc: 260516a\nteam: b\nround: r10\nparent_arc: \"[[arcs/260516a]]\"\nparent_lineage: \"[[lineages/arc_260516a__team_b__blacklist_evolution]]\"\ntrain_nav: 2.8566\ntrain_trade_count: 214\ntrain_win_rate: 0.8178\ntrain_sharpe: 6.6089\ntrain_max_drawdown: -0.0121\nval_nav_mean: 1.0782\nval_nav_sigma: 0.0763\nval_window_count: 13\ntest_nav: 1.2798\ntest_trade_count: 28\ntest_sharpe: 6.2655\ntest_win_rate: 0.6786\ntest_max_drawdown: -0.0075\nanchor_train_nav: 2.1882\nanchor_test_nav: 1.2486\nstatus: baseline\noutcome: test_marginal\nchampion: false\noverfit_score: 0\nleak_audit: clean\naxis: [baseline]\npast_only_window_days: null\nwarmup_required: null\ncreated: 2026-05-17T01:50:00\nlast_updated: 2026-05-17T05:09:00\ntags: [arc/260516a, team/b, round/r10, axis/baseline, status/baseline, outcome/test_marginal, leak/clean, size/large]\n---\n\n# B-R10-0 — default-admit all-pool baseline\n\n> **TL;DR** —— Team B R10 系列的 **default-admit reference baseline**：所有 leg 全收（无 ratio gate / volume cap / open_3min），与 [[arc_260516a__team_d__D-R2-1__default_admit_baseline]] 同源（214 笔）。train NAV 2.86 / test 1.28 —— train 漂亮但 test 仅 marginal 胜 anchor +0.03。**作为 R10/R11 blacklist 实验的 reference**，所有后续 R10-x 必须 strict beat 这个 baseline。\n\n## 假设 (Hypothesis)\n- 不是 hypothesis，是 **default-admit reference**：让 R10/R11 的 blacklist 系列可以直接读 \"本 blacklist add 了多少 / 损失了多少 NAV\"。\n- Team B 在 R10 之前已用 default-drop + blacklist 路线 (R7/R8/R9)；R10 改用 default-admit + blacklist 路线，需要新 baseline。\n\n## 实现 (Implementation)\n- 主脚本：`/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_b/scripts/round_10_runner.py`\n- 步骤：\n  1. 全 drop anchor 的 ratio_gate / volume_cap / open_3min\n  2. 不加任何 blacklist\n- 输出 214 笔（与 D-R2-1 同 trade pool，bit-for-bit）。\n\n## Past-only window 处理\n- 不用 rolling stat。无 lookahead。`#leak/clean`。\n\n## 结果 (Results)\n| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 2.8566 | 214 | 6.61 | 81.8% | -1.21% |\n| Val (rolling 13w) | 1.0782 ± 0.076 | - | - | - | - |\n| Test | 1.2798 | 28 | 6.27 | 67.9% | -0.75% |\n| **Δ test NAV vs anchor** | +0.031 | +8 | -0.88 | -7.1pp | -0.22pp |\n\ntrain 显著高 anchor (+31%) 但 test 仅 +2.5%，**sharpe / win / dd 三项都劣** —— default-admit 把 67.9% win 的弱 leg 全收进来抬了 NAV 表面值。\n\n## 风险 & overfit 嫌疑\n- overfit_score = 0（baseline 无 overfit 概念）。\n- **重要 risk flag**：win_rate 67.9% （anchor 75%）说明默认收的 8 笔多数 win 率低。这是 R10/R11 blacklist 路线的\"待砍 leg 池\"——但实测 blacklist 越叠效果越差（见 R10-2/4 / R11-x）。\n\n## Lineage（双链网）\n- **same_pool_as**: [[arc_260516a__team_d__D-R2-1__default_admit_baseline]] (bit-for-bit)\n- **base_for**:\n  - [[arc_260516a__team_b__B-R10-2__blacklist_low_amt]]\n  - [[arc_260516a__team_b__B-R10-4__blacklist_stack_3]]\n  - [[arc_260516a__team_b__B-R11-2__blacklist_vol_regime_low]]\n  - 其它 R10/R11 blacklist 实验\n- **competes_with**: [[arc_260516a__team_b__B-R8-1__no_open3min_bypass03]] (default-drop 路线的 B 队顶点)\n- **builds against**: [[arc_260516a__team_anchor__anchor_g2__baseline]]\n\n## Reports\n- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_b/output/cross_round_leaderboard_nav.csv` (R10-0 row)\n- [[arc_260516a__reporter_20260517_0547]]\n\n## Notes / 下次迭代\n- R10-0 留作 vault 不是给 SOTA 排队，是给 sub-agent 看 **\"default-admit baseline 自身 train NAV 已经 +31% 但 test 上 marginal\"** 的 reproducible example。\n- 在 default-admit baseline 上加 blacklist 是 Team B/D 共同探索的路线 —— R10-0 给所有后续候选提供\"开始位置 / 砍 leg 后 NAV 应当至少守住 1.28\"的 threshold。R10-2/4 都没守住。\n"
+  :path "experiments/arc_260516a__team_b__B-R10-0__all_admit_baseline.md"
+  :source_mtime "2026-05-17T10:20:48+08:00"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_3f0db9cd" :type "atom"
+  :subj "exp:B-R10-0_all_admit_baseline"
+  :pred "has_nav"
+  :obj 16
+  :source "experiments/arc_260516a__team_b__B-R10-0__all_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c6567923" :type "atom"
+  :subj "exp:B-R10-0_all_admit_baseline"
+  :pred "has_type"
+  :obj "experiment"
+  :source "experiments/arc_260516a__team_b__B-R10-0__all_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b56c910e" :type "atom"
+  :subj "exp:B-R10-0_all_admit_baseline"
+  :pred "has_id"
+  :obj "B-R10-0_all_admit_baseline"
+  :source "experiments/arc_260516a__team_b__B-R10-0__all_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_dd94cd48" :type "atom"
+  :subj "exp:B-R10-0_all_admit_baseline"
+  :pred "has_short_name"
+  :obj "all_admit_baseline"
+  :source "experiments/arc_260516a__team_b__B-R10-0__all_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_13eadbf3" :type "atom"
+  :subj "exp:B-R10-0_all_admit_baseline"
+  :pred "has_title"
+  :obj "B-R10-0 — default-admit all-pool baseline (R10 reference)"
+  :source "experiments/arc_260516a__team_b__B-R10-0__all_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b5f5f11e" :type "atom"
+  :subj "exp:B-R10-0_all_admit_baseline"
+  :pred "has_arc"
+  :obj "260516a"
+  :source "experiments/arc_260516a__team_b__B-R10-0__all_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_fcd4052b" :type "atom"
+  :subj "exp:B-R10-0_all_admit_baseline"
+  :pred "has_team"
+  :obj "b"
+  :source "experiments/arc_260516a__team_b__B-R10-0__all_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_febafcda" :type "atom"
+  :subj "exp:B-R10-0_all_admit_baseline"
+  :pred "has_round"
+  :obj "r10"
+  :source "experiments/arc_260516a__team_b__B-R10-0__all_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_bce04d5a" :type "atom"
+  :subj "exp:B-R10-0_all_admit_baseline"
+  :pred "parent_arc"
+  :obj "arc:260516a"
+  :source "experiments/arc_260516a__team_b__B-R10-0__all_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_6cb30961" :type "atom"
+  :subj "exp:B-R10-0_all_admit_baseline"
+  :pred "parent_lineage"
+  :obj "lin:arc_260516a__team_b__blacklist_evolution"
+  :source "experiments/arc_260516a__team_b__B-R10-0__all_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ebf32fb1" :type "atom"
+  :subj "exp:B-R10-0_all_admit_baseline"
+  :pred "has_train_nav"
+  :obj 2.8566
+  :source "experiments/arc_260516a__team_b__B-R10-0__all_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d7fad341" :type "atom"
+  :subj "exp:B-R10-0_all_admit_baseline"
+  :pred "has_train_trade_count"
+  :obj 214
+  :source "experiments/arc_260516a__team_b__B-R10-0__all_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_59f1c564" :type "atom"
+  :subj "exp:B-R10-0_all_admit_baseline"
+  :pred "has_train_win_rate"
+  :obj 0.8178
+  :source "experiments/arc_260516a__team_b__B-R10-0__all_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_7cc91eec" :type "atom"
+  :subj "exp:B-R10-0_all_admit_baseline"
+  :pred "has_train_sharpe"
+  :obj 6.6089
+  :source "experiments/arc_260516a__team_b__B-R10-0__all_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_dab95e0f" :type "atom"
+  :subj "exp:B-R10-0_all_admit_baseline"
+  :pred "has_train_max_drawdown"
+  :obj -0.0121
+  :source "experiments/arc_260516a__team_b__B-R10-0__all_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e8560d28" :type "atom"
+  :subj "exp:B-R10-0_all_admit_baseline"
+  :pred "has_val_nav_mean"
+  :obj 1.0782
+  :source "experiments/arc_260516a__team_b__B-R10-0__all_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c6513cfd" :type "atom"
+  :subj "exp:B-R10-0_all_admit_baseline"
+  :pred "has_val_nav_sigma"
+  :obj 0.0763
+  :source "experiments/arc_260516a__team_b__B-R10-0__all_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a9e85720" :type "atom"
+  :subj "exp:B-R10-0_all_admit_baseline"
+  :pred "has_val_window_count"
+  :obj 13
+  :source "experiments/arc_260516a__team_b__B-R10-0__all_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_4c4bacbc" :type "atom"
+  :subj "exp:B-R10-0_all_admit_baseline"
+  :pred "has_test_nav"
+  :obj 1.2798
+  :source "experiments/arc_260516a__team_b__B-R10-0__all_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_be24c594" :type "atom"
+  :subj "exp:B-R10-0_all_admit_baseline"
+  :pred "has_test_trade_count"
+  :obj 28
+  :source "experiments/arc_260516a__team_b__B-R10-0__all_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_2e960531" :type "atom"
+  :subj "exp:B-R10-0_all_admit_baseline"
+  :pred "has_test_sharpe"
+  :obj 6.2655
+  :source "experiments/arc_260516a__team_b__B-R10-0__all_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f8308790" :type "atom"
+  :subj "exp:B-R10-0_all_admit_baseline"
+  :pred "has_test_win_rate"
+  :obj 0.6786
+  :source "experiments/arc_260516a__team_b__B-R10-0__all_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_06466a79" :type "atom"
+  :subj "exp:B-R10-0_all_admit_baseline"
+  :pred "has_test_max_drawdown"
+  :obj -0.0075
+  :source "experiments/arc_260516a__team_b__B-R10-0__all_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_71d3beae" :type "atom"
+  :subj "exp:B-R10-0_all_admit_baseline"
+  :pred "has_anchor_train_nav"
+  :obj 2.1882
+  :source "experiments/arc_260516a__team_b__B-R10-0__all_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a35c5009" :type "atom"
+  :subj "exp:B-R10-0_all_admit_baseline"
+  :pred "has_anchor_test_nav"
+  :obj 1.2486
+  :source "experiments/arc_260516a__team_b__B-R10-0__all_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b99b548a" :type "atom"
+  :subj "exp:B-R10-0_all_admit_baseline"
+  :pred "has_status"
+  :obj "baseline"
+  :source "experiments/arc_260516a__team_b__B-R10-0__all_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_08fc78e4" :type "atom"
+  :subj "exp:B-R10-0_all_admit_baseline"
+  :pred "has_outcome"
+  :obj "test_marginal"
+  :source "experiments/arc_260516a__team_b__B-R10-0__all_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_71502cd2" :type "atom"
+  :subj "exp:B-R10-0_all_admit_baseline"
+  :pred "has_champion"
+  :obj false
+  :source "experiments/arc_260516a__team_b__B-R10-0__all_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_3813f08f" :type "atom"
+  :subj "exp:B-R10-0_all_admit_baseline"
+  :pred "has_overfit_score"
+  :obj 0
+  :source "experiments/arc_260516a__team_b__B-R10-0__all_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_8beec458" :type "atom"
+  :subj "exp:B-R10-0_all_admit_baseline"
+  :pred "has_leak_audit"
+  :obj "clean"
+  :source "experiments/arc_260516a__team_b__B-R10-0__all_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c7904cc3" :type "atom"
+  :subj "exp:B-R10-0_all_admit_baseline"
+  :pred "has_axis"
+  :obj "axis:baseline"
+  :source "experiments/arc_260516a__team_b__B-R10-0__all_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e10b74d5" :type "atom"
+  :subj "exp:B-R10-0_all_admit_baseline"
+  :pred "has_axis_list"
+  :obj ("baseline")
+  :source "experiments/arc_260516a__team_b__B-R10-0__all_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_6e3ea7a1" :type "atom"
+  :subj "exp:B-R10-0_all_admit_baseline"
+  :pred "has_created"
+  :obj "2026-05-17 01:50:00"
+  :source "experiments/arc_260516a__team_b__B-R10-0__all_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_40c90f7b" :type "atom"
+  :subj "exp:B-R10-0_all_admit_baseline"
+  :pred "has_last_updated"
+  :obj "2026-05-17 05:09:00"
+  :source "experiments/arc_260516a__team_b__B-R10-0__all_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_bcf97fe5" :type "atom"
+  :subj "exp:B-R10-0_all_admit_baseline"
+  :pred "has_tag"
+  :obj "tag:arc/260516a"
+  :source "experiments/arc_260516a__team_b__B-R10-0__all_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d2ddaec9" :type "atom"
+  :subj "exp:B-R10-0_all_admit_baseline"
+  :pred "has_tag"
+  :obj "tag:team/b"
+  :source "experiments/arc_260516a__team_b__B-R10-0__all_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c88de7c6" :type "atom"
+  :subj "exp:B-R10-0_all_admit_baseline"
+  :pred "has_tag"
+  :obj "tag:round/r10"
+  :source "experiments/arc_260516a__team_b__B-R10-0__all_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d279d0ac" :type "atom"
+  :subj "exp:B-R10-0_all_admit_baseline"
+  :pred "has_tag"
+  :obj "tag:axis/baseline"
+  :source "experiments/arc_260516a__team_b__B-R10-0__all_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f24a9f15" :type "atom"
+  :subj "exp:B-R10-0_all_admit_baseline"
+  :pred "has_tag"
+  :obj "tag:status/baseline"
+  :source "experiments/arc_260516a__team_b__B-R10-0__all_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_4c8b4078" :type "atom"
+  :subj "exp:B-R10-0_all_admit_baseline"
+  :pred "has_tag"
+  :obj "tag:outcome/test_marginal"
+  :source "experiments/arc_260516a__team_b__B-R10-0__all_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_949de88d" :type "atom"
+  :subj "exp:B-R10-0_all_admit_baseline"
+  :pred "has_tag"
+  :obj "tag:leak/clean"
+  :source "experiments/arc_260516a__team_b__B-R10-0__all_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_7c8888d0" :type "atom"
+  :subj "exp:B-R10-0_all_admit_baseline"
+  :pred "has_tag"
+  :obj "tag:size/large"
+  :source "experiments/arc_260516a__team_b__B-R10-0__all_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_6675443b" :type "atom"
+  :subj "exp:B-R10-0_all_admit_baseline"
+  :pred "has_tl_dr"
+  :obj "Team B R10 系列的 **default-admit reference baseline**：所有 leg 全收（无 ratio gate / volume cap / open_3min），与 [[arc_260516a__team_d__D-R2-1__default_admit_baseline]] 同源（214 笔）。train NAV 2.86 / test 1.28 —— train 漂亮但 test 仅 marginal 胜 anchor +0.03。**作为 R10/R11 blacklist 实验的 reference**，所有后续 R10-x 必须 strict beat 这个 baseline。"
+  :source "experiments/arc_260516a__team_b__B-R10-0__all_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_01f896e0" :type "atom"
+  :subj "exp:B-R10-0_all_admit_baseline"
+  :pred "has_section_intro"
+  :obj "# B-R10-0 — default-admit all-pool baseline\n\n> **TL;DR** —— Team B R10 系列的 **default-admit reference baseline**：所有 leg 全收（无 ratio gate / volume cap / open_3min），与 [[arc_260516a__team_d__D-R2-1__default_admit_baseline]] 同源（214 笔）。train NAV 2.86 / test 1.28 —— train 漂亮但 test 仅 marginal 胜 anchor +0.03。**作为 R10/R11 blacklist 实验的 reference**，所有后续 R10-x 必须 strict beat 这个 baseline。"
+  :source "experiments/arc_260516a__team_b__B-R10-0__all_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_3d5d6d68" :type "atom"
+  :subj "exp:B-R10-0_all_admit_baseline"
+  :pred "has_section_hypothesis"
+  :obj "- 不是 hypothesis，是 **default-admit reference**：让 R10/R11 的 blacklist 系列可以直接读 \"本 blacklist add 了多少 / 损失了多少 NAV\"。\n- Team B 在 R10 之前已用 default-drop + blacklist 路线 (R7/R8/R9)；R10 改用 default-admit + blacklist 路线，需要新 baseline。"
+  :source "experiments/arc_260516a__team_b__B-R10-0__all_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d29a8d58" :type "atom"
+  :subj "exp:B-R10-0_all_admit_baseline"
+  :pred "has_section_implementation"
+  :obj "- 主脚本：`/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_b/scripts/round_10_runner.py`\n- 步骤：\n  1. 全 drop anchor 的 ratio_gate / volume_cap / open_3min\n  2. 不加任何 blacklist\n- 输出 214 笔（与 D-R2-1 同 trade pool，bit-for-bit）。"
+  :source "experiments/arc_260516a__team_b__B-R10-0__all_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9e3d7ee8" :type "atom"
+  :subj "exp:B-R10-0_all_admit_baseline"
+  :pred "has_section_past_only_window"
+  :obj "- 不用 rolling stat。无 lookahead。`#leak/clean`。"
+  :source "experiments/arc_260516a__team_b__B-R10-0__all_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f5a8af1f" :type "atom"
+  :subj "exp:B-R10-0_all_admit_baseline"
+  :pred "has_section_results"
+  :obj "| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 2.8566 | 214 | 6.61 | 81.8% | -1.21% |\n| Val (rolling 13w) | 1.0782 ± 0.076 | - | - | - | - |\n| Test | 1.2798 | 28 | 6.27 | 67.9% | -0.75% |\n| **Δ test NAV vs anchor** | +0.031 | +8 | -0.88 | -7.1pp | -0.22pp |\n\ntrain 显著高 anchor (+31%) 但 test 仅 +2.5%，**sharpe / win / dd 三项都劣** —— default-admit 把 67.9% win 的弱 leg 全收进来抬了 NAV 表面值。"
+  :source "experiments/arc_260516a__team_b__B-R10-0__all_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_188391f9" :type "atom"
+  :subj "exp:B-R10-0_all_admit_baseline"
+  :pred "has_section_risk_overfit"
+  :obj "- overfit_score = 0（baseline 无 overfit 概念）。\n- **重要 risk flag**：win_rate 67.9% （anchor 75%）说明默认收的 8 笔多数 win 率低。这是 R10/R11 blacklist 路线的\"待砍 leg 池\"——但实测 blacklist 越叠效果越差（见 R10-2/4 / R11-x）。"
+  :source "experiments/arc_260516a__team_b__B-R10-0__all_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_3229f7d0" :type "atom"
+  :subj "exp:B-R10-0_all_admit_baseline"
+  :pred "same_pool_as"
+  :obj "exp:D-R2-1_default_admit_baseline"
+  :source "experiments/arc_260516a__team_b__B-R10-0__all_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_93c6df64" :type "atom"
+  :subj "exp:B-R10-0_all_admit_baseline"
+  :pred "base_for"
+  :obj "exp:B-R10-2_blacklist_low_amt"
+  :source "experiments/arc_260516a__team_b__B-R10-0__all_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e4d620ba" :type "atom"
+  :subj "exp:B-R10-0_all_admit_baseline"
+  :pred "competes_with"
+  :obj "exp:B-R8-1_no_open3min_bypass03"
+  :source "experiments/arc_260516a__team_b__B-R10-0__all_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_031641e0" :type "atom"
+  :subj "exp:B-R10-0_all_admit_baseline"
+  :pred "builds_against"
+  :obj "exp:anchor_g2_baseline"
+  :source "experiments/arc_260516a__team_b__B-R10-0__all_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_cdba59ed" :type "atom"
+  :subj "exp:B-R10-0_all_admit_baseline"
+  :pred "has_section_lineage_links"
+  :obj "- **same_pool_as**: [[arc_260516a__team_d__D-R2-1__default_admit_baseline]] (bit-for-bit)\n- **base_for**:\n  - [[arc_260516a__team_b__B-R10-2__blacklist_low_amt]]\n  - [[arc_260516a__team_b__B-R10-4__blacklist_stack_3]]\n  - [[arc_260516a__team_b__B-R11-2__blacklist_vol_regime_low]]\n  - 其它 R10/R11 blacklist 实验\n- **competes_with**: [[arc_260516a__team_b__B-R8-1__no_open3min_bypass03]] (default-drop 路线的 B 队顶点)\n- **builds against**: [[arc_260516a__team_anchor__anchor_g2__baseline]]"
+  :source "experiments/arc_260516a__team_b__B-R10-0__all_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c3e1deda" :type "atom"
+  :subj "exp:B-R10-0_all_admit_baseline"
+  :pred "has_section_reports"
+  :obj "- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_b/output/cross_round_leaderboard_nav.csv` (R10-0 row)\n- [[arc_260516a__reporter_20260517_0547]]"
+  :source "experiments/arc_260516a__team_b__B-R10-0__all_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_45e1b497" :type "atom"
+  :subj "exp:B-R10-0_all_admit_baseline"
+  :pred "has_section_notes"
+  :obj "- R10-0 留作 vault 不是给 SOTA 排队，是给 sub-agent 看 **\"default-admit baseline 自身 train NAV 已经 +31% 但 test 上 marginal\"** 的 reproducible example。\n- 在 default-admit baseline 上加 blacklist 是 Team B/D 共同探索的路线 —— R10-0 给所有后续候选提供\"开始位置 / 砍 leg 后 NAV 应当至少守住 1.28\"的 threshold。R10-2/4 都没守住。"
+  :source "experiments/arc_260516a__team_b__B-R10-0__all_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")

@@ -1,0 +1,153 @@
+(card "lin:arc_260516a__team_a__multi_axis_singleaxis_discipline" :type "lineage"
+  :subj "lin:arc_260516a__team_a__multi_axis_singleaxis_discipline"
+  :body "---\ntype: lineage_overview\nteam: a\narc: 260516a\nstatus: final\npeak_train_nav: 2.1882\npeak_test_nav: null\nrounds_done: 6\ncandidates_total: 17\nchampions: 0\ntags: [vault/lineage, team/a, arc/260516a, status/final, axis/multi_axis, discipline/single_axis]\n---\n\n# Team A — multi-axis single-axis-discipline lineage (arc 260516a)\n\n> Team A 在 6 轮里跑了 17 candidate（C1–C22, 不含 C16/C17/C18/C22 因 lock-contention 未执行），**0 champion**。整条 lineage 是 \"anchor G2 + 单维 sweep\" 的系统化反证：(ranker functional form / baseline threshold / pre_amt estimator / batch-skip filter / horizon / pick arity / vol regime gate / flow staleness / batch direction agreement) 9 类轴 sweep 完，**anchor 仍站在局部最优**。\n\n## Round 演进时间线\n\n| Round | best candidate (val mean)          | n      | val mean    | val σ  | verdict                                                                       |\n| ----- | ---------------------------------- | ------ | ----------- | ------ | ----------------------------------------------------------------------------- |\n| R1    | C3 impact_min_strict               | 134    | 0.6280%     | —      | FAIL (best 3 < gate 0.807%)                                                   |\n| R2    | C6 anchor_plus_impact_cap          | 140    | 0.6416%     | —      | FAIL (C6 IMPACT_CAP=0.05 never bit → bit-identical to anchor; overfit_post=2) |\n| R3    | C7 same_minute_pre_amt             | 140    | 0.6718%     | —      | FAIL (single-outlier UUUU 01-20 +3.108% dominated; overfit_post=2)            |\n| R4    | C12 batch_count_skip_ge4           | 138    | 0.6402%     | 0.246% | FAIL (~2 trades dropped, inert; +0.005pp inside σ)                            |\n| R5    | C15 top2_per_batch                 | 193    | 0.5800%     | 0.188% | FAIL (count>180; 2nd-leg avg_ret 0.444% dilutes mean)                         |\n| R6    | **C21 mixed_direction_batch_skip** | **30** | **0.7447%** | 0.522% | FAIL (count_fail 30<100, **largest val lift +0.110pp in entire run**)         |\n\n支线（R6 第二选手）：\n- **C20 recent_signal_flow_skip** n=131 val 0.6552% — 唯一 \"n 过 + 方向真正向\" 候选，+0.020pp lift, 仍 gap 0.151pp 到 gate。\n\n## 决策点 / 反思\n\n- **R1→R3 单维 ranker / threshold / pre_amt 全证伪**：linear / log / √ 三种 functional form 都不能 beat anchor。Maitrier 2025 √-law 在 copy-follower regime 是 wrong frame —— 我们是 impact taker 不是 impact provider。\n- **R4 horizon / pick arity 死路**：ratio-dependent horizon (C14) bit-identical (no leg ratio≥0.10 in pool)；top-2 picker (C15) 稀释 mean，n>180 还失 count gate。\n- **R5→R6 pivot 到 microstructure axes (VPIN-style / flow-staleness / batch direction)**：方向上对，magnitude 不够。**C21 是整条 lineage 唯一一次过 gate (0.7447% > 0.807%？不，仍 < gate)** —— 实际 C20+0.020pp 是唯一 \"n 过 + 方向正\" 的实绩。\n- **R5/R6 lock-contention 折损**：C16/C17/C18/C22 4 个 candidate 没跑成 —— 不是 mechanism 问题，是与 team_b/team_c 共享 `runner_lock` 的 200-500s 排队成本把 wall-clock 打满。\n\n## 跨 lineage 关系\n\n- **competes_with** [[arc_260516a__team_b__blacklist_axis]] —— 同属 single-axis sweep 派，但 B 走 admission set / NAV ranking，A 走 mean ranking。NAV pivot 后 A 没再 rerank（已被 plateau, retry 无意义）。\n- **falsifies** OFI/VPIN axis (与 [[arc_260516a__team_f__microstructure_vpin_ofi]] 同诊断)：C19 VPIN proxy 实际上对此 anchor pool 是 over-cull，与 Team F 结论同向。\n- **anchor 共享** [[arc_260516a__team_anchor__anchor_g2__baseline]]，所有 17 candidate 以此 0.6349% val + 0.243% σ 为参考点。\n- **未与 Team C 复合**：C20+C21 的组合是最自然 next step，但是 cross-axis composition，**Team A 主动保留 single-axis discipline 不擅自打破**。\n\n## 终态判定理由（final，6 rounds 全死）\n\n- 6 轮 × 17 candidate 全部 FAIL gate（最好的 C21 是 n=30 count_fail，最好的 n-pass 是 C20 lift 不够）。\n- 9 类轴系统覆盖 (ranker functional / baseline threshold / pre_amt / batch-skip / horizon / arity / vol regime / flow staleness / direction agreement)，**单维空间 empirically 穷尽**。\n- \"Anchor 站在 (ranker, threshold, pick rule, open-skip, horizon) 家族的紧致局部最优\" 这一结论被 R1–R6 反证集合证明。\n- final test slice 2026-05 **完全未碰** —— 1 shot 仍在手，但已无 candidate 值得 burn。\n- R6 触发 final_summary，team_a/final_summary.md 关账。\n\n## For future sub-agent\n\n**不要重蹈：**\n\n1. **不要在单一 functional form 上继续 sweep ranker**（linear / log / √ / √-law / power 系全死）—— `c1/c3/c4/c5/c10/c14` 五种已盖。\n2. **不要再 sweep baseline_max_avg threshold 紧/松**（C2 loose / C3 strict 已对偶反证：紧 → 少 trade，松 → bad trade）。\n3. **不要再做 single-leg horizon 调参** —— ratio-dependent horizon (C14) bit-identical, batch-count skip (C12) inert, Almgren-Chriss 类 (B 系 R4-1) 也证明 horizon 轴在此 anchor pool 饱和。\n4. **不要 top-K arity uncond expand**（C15 top-2 unconditional 稀释 mean） —— 想做必须像 Team C 那样 conditional on confluence。\n5. **不要 mixed-direction batch skip 上界过严**（C21 +0.110pp lift 但 n=30 太低）—— refinement 可试 C23 minority-direction-only 或 C24 size≥4 only。\n6. **不要在 lock-contention 高峰期 dispatch synchronous batch** —— team_a 5+ candidates 在 R5/R6 因 lock 排队 wall-clock 爆顶；要么改 async fire-and-forget + done-marker，要么 budget 单独时段。\n\n**可以继承：**\n\n1. **C20 recent_signal_flow_staleness (30 min same-direction lookback)** 是唯一 \"n 过 + 方向正确\" 的实绩 —— Di Mascio 2015 alpha-decay-under-crowding 在 copy-follower 上 marginal but real。可作为下次 arc 的 entry hint 之一。\n2. **C21 mixed_direction_batch_skip** 方向上 directionally consistent with information-aggregation literature on noisy disagreement —— refinement (minority-only / size≥4-only) 仍 open。\n3. **Team A 的 `set_safe_runtime() before numpy import` + `runner_lock.py` + `bash run_safe.sh` (nice15 + single-thread BLAS + ulimit -v)** 是机器不挂的关键 infra，跨 arc 复用。\n4. **本 lineage 的 \"外部文献 transfer 选择性\" 结论值得记账**：VPIN/OFI 方向 transfer，magnitude 不 transfer；Maitrier √-law 在 follower regime wrong frame；Barardehi-Bernhardt Kyle's λ at open 不适用。下次 arc 引文献必须先问 \"我们是 maker 还是 taker\"。\n\n## 备注\n\n- 终极 verdict 写在 `team_a/final_summary.md` 第 7-12 行（\"17 candidates / 6 rounds / 0 champions; anchor unchallenged\"）。\n- final test slice 2026-05 untouched，1 shot reserved（但已无 candidate 值得 burn）。\n- A 在 NAV pivot (han R6→R7 directive) 后 **没有 retry** —— A 的 candidates 几乎全 ≤ anchor mean，NAV 下也不会翻盘。\n"
+  :path "lineages/arc_260516a__team_a__multi_axis_singleaxis_discipline.md"
+  :source_mtime "2026-05-17T11:50:05+08:00"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_4fd09cc8" :type "atom"
+  :subj "lin:arc_260516a__team_a__multi_axis_singleaxis_discipline"
+  :pred "has_type"
+  :obj "lineage_overview"
+  :source "lineages/arc_260516a__team_a__multi_axis_singleaxis_discipline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a62826a4" :type "atom"
+  :subj "lin:arc_260516a__team_a__multi_axis_singleaxis_discipline"
+  :pred "has_team"
+  :obj "a"
+  :source "lineages/arc_260516a__team_a__multi_axis_singleaxis_discipline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_0beb3feb" :type "atom"
+  :subj "lin:arc_260516a__team_a__multi_axis_singleaxis_discipline"
+  :pred "has_arc"
+  :obj "260516a"
+  :source "lineages/arc_260516a__team_a__multi_axis_singleaxis_discipline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_959d0e85" :type "atom"
+  :subj "lin:arc_260516a__team_a__multi_axis_singleaxis_discipline"
+  :pred "has_status"
+  :obj "final"
+  :source "lineages/arc_260516a__team_a__multi_axis_singleaxis_discipline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_48aabd97" :type "atom"
+  :subj "lin:arc_260516a__team_a__multi_axis_singleaxis_discipline"
+  :pred "has_peak_train_nav"
+  :obj 2.1882
+  :source "lineages/arc_260516a__team_a__multi_axis_singleaxis_discipline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1614cd47" :type "atom"
+  :subj "lin:arc_260516a__team_a__multi_axis_singleaxis_discipline"
+  :pred "has_rounds_done"
+  :obj 6
+  :source "lineages/arc_260516a__team_a__multi_axis_singleaxis_discipline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_8ab27cc1" :type "atom"
+  :subj "lin:arc_260516a__team_a__multi_axis_singleaxis_discipline"
+  :pred "has_candidates_total"
+  :obj 17
+  :source "lineages/arc_260516a__team_a__multi_axis_singleaxis_discipline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_4e4b34eb" :type "atom"
+  :subj "lin:arc_260516a__team_a__multi_axis_singleaxis_discipline"
+  :pred "has_champions"
+  :obj 0
+  :source "lineages/arc_260516a__team_a__multi_axis_singleaxis_discipline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_349a3c8f" :type "atom"
+  :subj "lin:arc_260516a__team_a__multi_axis_singleaxis_discipline"
+  :pred "has_tag"
+  :obj "tag:vault/lineage"
+  :source "lineages/arc_260516a__team_a__multi_axis_singleaxis_discipline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f7e826c6" :type "atom"
+  :subj "lin:arc_260516a__team_a__multi_axis_singleaxis_discipline"
+  :pred "has_tag"
+  :obj "tag:team/a"
+  :source "lineages/arc_260516a__team_a__multi_axis_singleaxis_discipline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d567052f" :type "atom"
+  :subj "lin:arc_260516a__team_a__multi_axis_singleaxis_discipline"
+  :pred "has_tag"
+  :obj "tag:arc/260516a"
+  :source "lineages/arc_260516a__team_a__multi_axis_singleaxis_discipline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c78395a4" :type "atom"
+  :subj "lin:arc_260516a__team_a__multi_axis_singleaxis_discipline"
+  :pred "has_tag"
+  :obj "tag:status/final"
+  :source "lineages/arc_260516a__team_a__multi_axis_singleaxis_discipline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_eafd9eed" :type "atom"
+  :subj "lin:arc_260516a__team_a__multi_axis_singleaxis_discipline"
+  :pred "has_tag"
+  :obj "tag:axis/multi_axis"
+  :source "lineages/arc_260516a__team_a__multi_axis_singleaxis_discipline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5011fd57" :type "atom"
+  :subj "lin:arc_260516a__team_a__multi_axis_singleaxis_discipline"
+  :pred "has_tag"
+  :obj "tag:discipline/single_axis"
+  :source "lineages/arc_260516a__team_a__multi_axis_singleaxis_discipline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_78c907c9" :type "atom"
+  :subj "lin:arc_260516a__team_a__multi_axis_singleaxis_discipline"
+  :pred "has_section_intro"
+  :obj "# Team A — multi-axis single-axis-discipline lineage (arc 260516a)\n\n> Team A 在 6 轮里跑了 17 candidate（C1–C22, 不含 C16/C17/C18/C22 因 lock-contention 未执行），**0 champion**。整条 lineage 是 \"anchor G2 + 单维 sweep\" 的系统化反证：(ranker functional form / baseline threshold / pre_amt estimator / batch-skip filter / horizon / pick arity / vol regime gate / flow staleness / batch direction agreement) 9 类轴 sweep 完，**anchor 仍站在局部最优**。"
+  :source "lineages/arc_260516a__team_a__multi_axis_singleaxis_discipline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_25ac9bec" :type "atom"
+  :subj "lin:arc_260516a__team_a__multi_axis_singleaxis_discipline"
+  :pred "has_section_round_table"
+  :obj "| Round | best candidate (val mean)          | n      | val mean    | val σ  | verdict                                                                       |\n| ----- | ---------------------------------- | ------ | ----------- | ------ | ----------------------------------------------------------------------------- |\n| R1    | C3 impact_min_strict               | 134    | 0.6280%     | —      | FAIL (best 3 < gate 0.807%)                                                   |\n| R2    | C6 anchor_plus_impact_cap          | 140    | 0.6416%     | —      | FAIL (C6 IMPACT_CAP=0.05 never bit → bit-identical to anchor; overfit_post=2) |\n| R3    | C7 same_minute_pre_amt             | 140    | 0.6718%     | —      | FAIL (single-outlier UUUU 01-20 +3.108% dominated; overfit_post=2)            |\n| R4    | C12 batch_count_skip_ge4           | 138    | 0.6402%     | 0.246% | FAIL (~2 trades dropped, inert; +0.005pp inside σ)                            |\n| R5    | C15 top2_per_batch                 | 193    | 0.5800%     | 0.188% | FAIL (count>180; 2nd-leg avg_ret 0.444% dilutes mean)                         |\n| R6    | **C21 mixed_direction_batch_skip** | **30** | **0.7447%** | 0.522% | FAIL (count_fail 30<100, **largest val lift +0.110pp in entire run**)         |\n\n支线（R6 第二选手）：\n- **C20 recent_signal_flow_skip** n=131 val 0.6552% — 唯一 \"n 过 + 方向真正向\" 候选，+0.020pp lift, 仍 gap 0.151pp 到 gate。"
+  :source "lineages/arc_260516a__team_a__multi_axis_singleaxis_discipline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_2a4d702e" :type "atom"
+  :subj "lin:arc_260516a__team_a__multi_axis_singleaxis_discipline"
+  :pred "has_section_decisions_reflections"
+  :obj "- **R1→R3 单维 ranker / threshold / pre_amt 全证伪**：linear / log / √ 三种 functional form 都不能 beat anchor。Maitrier 2025 √-law 在 copy-follower regime 是 wrong frame —— 我们是 impact taker 不是 impact provider。\n- **R4 horizon / pick arity 死路**：ratio-dependent horizon (C14) bit-identical (no leg ratio≥0.10 in pool)；top-2 picker (C15) 稀释 mean，n>180 还失 count gate。\n- **R5→R6 pivot 到 microstructure axes (VPIN-style / flow-staleness / batch direction)**：方向上对，magnitude 不够。**C21 是整条 lineage 唯一一次过 gate (0.7447% > 0.807%？不，仍 < gate)** —— 实际 C20+0.020pp 是唯一 \"n 过 + 方向正\" 的实绩。\n- **R5/R6 lock-contention 折损**：C16/C17/C18/C22 4 个 candidate 没跑成 —— 不是 mechanism 问题，是与 team_b/team_c 共享 `runner_lock` 的 200-500s 排队成本把 wall-clock 打满。"
+  :source "lineages/arc_260516a__team_a__multi_axis_singleaxis_discipline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1363a314" :type "atom"
+  :subj "lin:arc_260516a__team_a__multi_axis_singleaxis_discipline"
+  :pred "has_section_cross_lineage_relations"
+  :obj "- **competes_with** [[arc_260516a__team_b__blacklist_axis]] —— 同属 single-axis sweep 派，但 B 走 admission set / NAV ranking，A 走 mean ranking。NAV pivot 后 A 没再 rerank（已被 plateau, retry 无意义）。\n- **falsifies** OFI/VPIN axis (与 [[arc_260516a__team_f__microstructure_vpin_ofi]] 同诊断)：C19 VPIN proxy 实际上对此 anchor pool 是 over-cull，与 Team F 结论同向。\n- **anchor 共享** [[arc_260516a__team_anchor__anchor_g2__baseline]]，所有 17 candidate 以此 0.6349% val + 0.243% σ 为参考点。\n- **未与 Team C 复合**：C20+C21 的组合是最自然 next step，但是 cross-axis composition，**Team A 主动保留 single-axis discipline 不擅自打破**。"
+  :source "lineages/arc_260516a__team_a__multi_axis_singleaxis_discipline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a519c2c1" :type "atom"
+  :subj "lin:arc_260516a__team_a__multi_axis_singleaxis_discipline"
+  :pred "has_section_终态判定理由_final_6_rounds_全死"
+  :obj "- 6 轮 × 17 candidate 全部 FAIL gate（最好的 C21 是 n=30 count_fail，最好的 n-pass 是 C20 lift 不够）。\n- 9 类轴系统覆盖 (ranker functional / baseline threshold / pre_amt / batch-skip / horizon / arity / vol regime / flow staleness / direction agreement)，**单维空间 empirically 穷尽**。\n- \"Anchor 站在 (ranker, threshold, pick rule, open-skip, horizon) 家族的紧致局部最优\" 这一结论被 R1–R6 反证集合证明。\n- final test slice 2026-05 **完全未碰** —— 1 shot 仍在手，但已无 candidate 值得 burn。\n- R6 触发 final_summary，team_a/final_summary.md 关账。"
+  :source "lineages/arc_260516a__team_a__multi_axis_singleaxis_discipline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_0b669304" :type "atom"
+  :subj "lin:arc_260516a__team_a__multi_axis_singleaxis_discipline"
+  :pred "has_section_for_future_sub_agent"
+  :obj "**不要重蹈：**\n\n1. **不要在单一 functional form 上继续 sweep ranker**（linear / log / √ / √-law / power 系全死）—— `c1/c3/c4/c5/c10/c14` 五种已盖。\n2. **不要再 sweep baseline_max_avg threshold 紧/松**（C2 loose / C3 strict 已对偶反证：紧 → 少 trade，松 → bad trade）。\n3. **不要再做 single-leg horizon 调参** —— ratio-dependent horizon (C14) bit-identical, batch-count skip (C12) inert, Almgren-Chriss 类 (B 系 R4-1) 也证明 horizon 轴在此 anchor pool 饱和。\n4. **不要 top-K arity uncond expand**（C15 top-2 unconditional 稀释 mean） —— 想做必须像 Team C 那样 conditional on confluence。\n5. **不要 mixed-direction batch skip 上界过严**（C21 +0.110pp lift 但 n=30 太低）—— refinement 可试 C23 minority-direction-only 或 C24 size≥4 only。\n6. **不要在 lock-contention 高峰期 dispatch synchronous batch** —— team_a 5+ candidates 在 R5/R6 因 lock 排队 wall-clock 爆顶；要么改 async fire-and-forget + done-marker，要么 budget 单独时段。\n\n**可以继承：**\n\n1. **C20 recent_signal_flow_staleness (30 min same-direction lookback)** 是唯一 \"n 过 + 方向正确\" 的实绩 —— Di Mascio 2015 alpha-decay-under-crowding 在 copy-follower 上 marginal but real。可作为下次 arc 的 entry hint 之一。\n2. **C21 mixed_direction_batch_skip** 方向上 directionally consistent with information-aggregation literature on noisy disagreement —— refinement (minority-only / size≥4-only) 仍 open。\n3. **Team A 的 `set_safe_runtime() before numpy import` + `runner_lock.py` + `bash run_safe.sh` (nice15 + single-thread BLAS + ulimit -v)** 是机器不挂的关键 infra，跨 arc 复用。\n4. **本 lineage 的 \"外部文献 transfer 选择性\" 结论值得记账**：VPIN/OFI 方向 transfer，magnitude 不 transfer；Maitrier √-law 在 follower regime wrong frame；Barardehi-Bernhardt Kyle's λ at open 不适用。下次 arc 引文献必须先问 \"我们是 maker 还是 taker\"。"
+  :source "lineages/arc_260516a__team_a__multi_axis_singleaxis_discipline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_3b8c49b2" :type "atom"
+  :subj "lin:arc_260516a__team_a__multi_axis_singleaxis_discipline"
+  :pred "has_section_remarks"
+  :obj "- 终极 verdict 写在 `team_a/final_summary.md` 第 7-12 行（\"17 candidates / 6 rounds / 0 champions; anchor unchallenged\"）。\n- final test slice 2026-05 untouched，1 shot reserved（但已无 candidate 值得 burn）。\n- A 在 NAV pivot (han R6→R7 directive) 后 **没有 retry** —— A 的 candidates 几乎全 ≤ anchor mean，NAV 下也不会翻盘。"
+  :source "lineages/arc_260516a__team_a__multi_axis_singleaxis_discipline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")

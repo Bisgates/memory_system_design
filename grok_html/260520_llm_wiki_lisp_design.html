@@ -1,0 +1,638 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>如果 LLM-Wiki 是一个 Lisp 程序 · 一份设计稿</title>
+
+<style>
+:root {
+  --paper:        #fbf6e9;
+  --paper-2:      #f3ebd6;
+  --ink:          #1f1a14;
+  --ink-soft:     #3b332a;
+  --ink-faint:    #6b6052;
+  --rule:         #b8a583;
+  --rule-soft:    #d8c9a2;
+  --accent:       #8c2f1c;
+  --accent-2:     #2c5340;
+  --gold:         #a37c2a;
+  --quote-bg:     #f0e6cd;
+  --code-bg:      #efe6ce;
+  --code-fg:      #1a140d;
+}
+* { box-sizing: border-box; }
+html, body {
+  margin: 0; padding: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: -apple-system, "Iowan Old Style", "Charter", "Cormorant Garamond", "Playfair Display", Georgia, "Times New Roman", serif;
+  font-size: 18px; line-height: 1.7;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+body { padding-bottom: 6em; }
+.mono, code, pre {
+  font-family: ui-monospace, "SF Mono", Menlo, Monaco, "Cascadia Mono", Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+main { max-width: 820px; margin: 0 auto; padding: 56px 32px 0; }
+
+.masthead {
+  text-align: center;
+  border-top: 4px double var(--rule);
+  border-bottom: 1px solid var(--rule);
+  padding: 32px 0 22px;
+  margin-bottom: 36px;
+}
+.masthead .kicker {
+  font-variant: small-caps;
+  letter-spacing: 0.28em;
+  font-size: 12px;
+  color: var(--accent);
+}
+.masthead h1 {
+  font-size: 44px; line-height: 1.18; margin: 14px 0 8px;
+  font-weight: 500;
+}
+.masthead .deck {
+  font-style: italic; color: var(--ink-soft);
+  font-size: 18px; max-width: 620px; margin: 0 auto;
+}
+.masthead .byline {
+  margin-top: 14px;
+  font-size: 12px; letter-spacing: 0.18em;
+  text-transform: uppercase; color: var(--ink-faint);
+}
+
+.chapter-rule {
+  text-align: center;
+  margin: 64px 0 26px;
+  color: var(--accent);
+  font-variant: small-caps;
+  letter-spacing: 0.3em;
+}
+.chapter-rule .roman {
+  display: inline-block;
+  font-size: 22px;
+  font-style: italic;
+  padding: 0 18px;
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  line-height: 2;
+}
+.chapter-title {
+  text-align: center;
+  font-size: 26px;
+  font-style: italic;
+  font-weight: 500;
+  margin: 0 0 28px;
+  color: var(--ink);
+}
+
+p { margin: 0 0 1.05em; }
+.lede::first-letter {
+  font-size: 4.4em; line-height: 0.86;
+  float: left; padding: 6px 12px 0 0;
+  color: var(--accent);
+  font-family: "Iowan Old Style", "Cormorant Garamond", "Playfair Display", Georgia, serif;
+  font-weight: 500;
+}
+h3 {
+  font-size: 19px; font-weight: 500;
+  font-variant: small-caps; letter-spacing: 0.08em;
+  margin: 32px 0 12px;
+  color: var(--ink-soft);
+  border-bottom: 1px solid var(--rule-soft);
+  padding-bottom: 4px;
+}
+
+.callout {
+  border-left: 3px solid var(--accent);
+  background: rgba(140,47,28,0.05);
+  padding: 14px 18px;
+  margin: 22px 0;
+  font-size: 16.5px;
+}
+.callout .ctitle {
+  font-variant: small-caps; letter-spacing: 0.12em;
+  font-size: 12px; color: var(--accent); margin-bottom: 4px;
+}
+.callout.calm {
+  border-left-color: var(--accent-2);
+  background: rgba(44,83,64,0.05);
+}
+.callout.calm .ctitle { color: var(--accent-2); }
+.pull {
+  margin: 28px 0;
+  text-align: center;
+  font-style: italic;
+  font-size: 22px;
+  color: var(--accent-2);
+  line-height: 1.4;
+  border-top: 1px solid var(--rule-soft);
+  border-bottom: 1px solid var(--rule-soft);
+  padding: 14px 0;
+}
+.pull .who {
+  display: block; margin-top: 8px;
+  font-size: 12px; letter-spacing: 0.12em;
+  font-style: normal; color: var(--ink-faint);
+  text-transform: uppercase;
+}
+.matrix {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin: 22px 0;
+}
+.matrix .cell {
+  border: 1px solid var(--rule);
+  background: var(--paper-2);
+  padding: 14px 16px;
+  font-size: 15.5px;
+}
+.matrix .cell .h {
+  font-variant: small-caps; letter-spacing: 0.1em;
+  font-size: 12px; color: var(--accent); margin-bottom: 6px;
+}
+
+code {
+  background: var(--code-bg);
+  color: var(--code-fg);
+  padding: 1px 5px; border-radius: 2px;
+  font-size: 0.88em;
+}
+pre {
+  background: var(--code-bg);
+  border-left: 3px solid var(--gold);
+  padding: 14px 18px;
+  overflow-x: auto;
+  font-size: 13.5px; line-height: 1.55;
+  margin: 22px 0;
+}
+pre code { background: transparent; padding: 0; }
+pre .cmt { color: #6b6052; font-style: italic; }
+pre .kw  { color: var(--accent); }
+pre .sym { color: var(--accent-2); }
+pre .str { color: var(--gold); }
+
+table {
+  width: 100%; border-collapse: collapse;
+  margin: 22px 0; font-size: 15.5px;
+}
+th, td {
+  border-top: 1px solid var(--rule-soft);
+  border-bottom: 1px solid var(--rule-soft);
+  padding: 8px 10px; text-align: left;
+  vertical-align: top;
+}
+th {
+  font-variant: small-caps;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  border-bottom: 1px solid var(--rule);
+}
+
+.afterword {
+  margin: 56px 0 28px;
+  border: 1px solid var(--ink-soft);
+  background: var(--paper-2);
+  padding: 22px 24px;
+}
+.afterword .label {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 11px; letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+.afterword h4 {
+  font-style: italic; font-weight: 500;
+  font-size: 22px; margin: 6px 0 12px;
+  color: var(--ink);
+}
+
+.uncertain {
+  border-left: 3px dashed var(--accent);
+  background: rgba(140,47,28,0.04);
+  padding: 10px 14px; margin: 18px 0;
+  font-style: italic; color: var(--ink-soft);
+}
+
+.divider {
+  text-align: center;
+  color: var(--accent);
+  letter-spacing: 0.5em;
+  opacity: 0.6;
+  margin: 32px 0;
+}
+
+.tree {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  background: var(--paper-2);
+  border: 1px solid var(--rule-soft);
+  padding: 16px 20px;
+  font-size: 13.5px;
+  line-height: 1.7;
+  white-space: pre;
+  overflow-x: auto;
+  margin: 22px 0;
+}
+
+@media (max-width: 720px) {
+  main { padding: 28px 14px 0; max-width: 100%; }
+  body { font-size: 16px; line-height: 1.6; }
+  .masthead { padding: 22px 0 16px; margin-bottom: 24px; }
+  .masthead h1 { font-size: 28px; line-height: 1.22; }
+  .masthead .deck { font-size: 16px; }
+  .chapter-rule { margin: 44px 0 18px; }
+  .chapter-rule .roman { font-size: 18px; }
+  .chapter-title { font-size: 22px; margin-bottom: 20px; }
+  h3 { font-size: 17px; }
+  .lede::first-letter { font-size: 3.2em; padding: 4px 8px 0 0; }
+  .callout { padding: 12px 14px; margin: 18px 0; font-size: 15.5px; }
+  .pull { font-size: 18px; padding: 12px 0; margin: 22px 0; }
+  .matrix { grid-template-columns: 1fr; gap: 12px; }
+  .matrix .cell { padding: 12px 14px; font-size: 15px; }
+  pre, .tree {
+    padding: 10px 12px;
+    font-size: 12.5px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  pre code { white-space: pre; }
+  table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    font-size: 14px;
+  }
+  th, td { padding: 6px 8px; }
+  .afterword { padding: 18px 18px; margin: 36px 0 22px; }
+  .afterword h4 { font-size: 18px; }
+}
+
+@media (max-width: 480px) {
+  main { padding: 22px 12px 0; }
+  body { font-size: 15px; }
+  .masthead h1 { font-size: 24px; }
+  .chapter-title { font-size: 19px; }
+  .lede::first-letter { font-size: 2.8em; }
+  .pull { font-size: 17px; }
+  pre, .tree { padding: 8px 10px; font-size: 11.5px; }
+}
+</style>
+</head>
+<body>
+
+<main>
+
+<!-- ============ MASTHEAD ============ -->
+<header class="masthead">
+  <div class="kicker">Peter Norvig × 一份设计稿</div>
+  <h1>如果 LLM-Wiki 是一个 Lisp 程序</h1>
+  <div class="deck">1958 年，McCarthy 写下了 <code>eval</code>。1945 年，Bush 想要 Memex。中间一直缺的，是一台能理解符号含义的解释器。</div>
+  <div class="byline">Peter Norvig · 风格仿写 · 2026 年 5 月</div>
+</header>
+
+<!-- ============ CHAPTER I ============ -->
+<div class="chapter-rule"><span class="roman">I · 提问</span></div>
+<h2 class="chapter-title" id="bird-question">我们到底在做什么？</h2>
+
+<p class="lede">先把那篇 markdown 提出的主张写成一句话：让 LLM 增量地建造一份持久的、互相链接的知识仓库，所有跨页引用、矛盾标注、综述更新都由它代劳，而你只负责选材料、问问题。读完之后我想问的第一个问题，不是"怎么实现"，而是"这是一种什么形状的程序？"</p>
+
+<p>顺手就能想到的答案，是把它写成一坨 Python 脚本：读 markdown，调 OpenAI API，写文件，重复。这能跑起来，能 demo，能发推。但请允许我直接说出我的判断：这个写法没有捕捉到问题真正的形状。它把一个本质上是<em>符号系统的增量演化</em>问题，写成了<em>文本批处理</em>问题。这两件事在表面上长得很像，但你写第一千行代码的时候它们会分道扬镳。</p>
+
+<div class="callout">
+  <div class="ctitle">三种读法 · 同一份 markdown</div>
+  <p style="margin:0;"><strong>(a) RAG 读法：</strong>把 markdown 看作语料，每次提问时检索 chunk，拼接，回答。知识不积累，每次重头来。<br>
+  <strong>(b) 文本批处理读法：</strong>每次 ingest 就跑一遍脚本，更新一些文件。能积累，但更新逻辑散落在脚本里，无法自描述、无法自修改。<br>
+  <strong>(c) 符号环境读法：</strong>把整个 wiki 看作一个解释器的全局环境，page 是绑定，link 是符号引用，schema 是元解释规则。LLM 是 eval。</p>
+</div>
+
+<p>这三种读法的差别，不是工程实现的差别，是<strong>抽象层次</strong>的差别。markdown 那篇文章本身停在了 (b)：它给出了三层架构（raw / wiki / schema），给出了三种操作（ingest / query / lint），把这些当成"模式"来描述。但它没有给这个模式一个名字。我想说的是：这个模式有名字，它叫 Lisp。</p>
+
+<p>所以我们要问的真正问题是：<em>什么样的编程范式天然就是"增量维护一个一致的、可自描述的符号系统"</em>？这个问题的答案早就有了，只是答的人是 1958 年的 John McCarthy。</p>
+
+<!-- ============ CHAPTER II ============ -->
+<div class="chapter-rule"><span class="roman">II · 同构</span></div>
+<h2 class="chapter-title" id="bird-isomorphism">Wiki 即 Lisp 环境</h2>
+
+<p>让我把对应关系直接画出来。这不是比喻，是同构——给两边一个明确的映射函数，每一项都能拎出去单独验证。</p>
+
+<table>
+  <thead>
+    <tr><th>LLM-Wiki 概念</th><th>Lisp 对应物</th><th>它们共享的性质</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>raw source</td><td>quoted form &nbsp;<code>'(...)</code></td><td>不被求值；只读；是事实而非主张</td></tr>
+    <tr><td>wiki page</td><td>binding &nbsp;<code>(define name expr)</code></td><td>命名 + 可被引用 + 可被更新</td></tr>
+    <tr><td><code>[[wikilink]]</code></td><td>symbol reference</td><td>引用按名解析；允许悬空（forward ref）</td></tr>
+    <tr><td>index.md</td><td>global environment</td><td>名字到内容的查找表</td></tr>
+    <tr><td>log.md</td><td>evaluation trace</td><td>按时间顺序的 read-eval 记录</td></tr>
+    <tr><td>CLAUDE.md / schema</td><td>read/eval 规则 + macro 定义</td><td>告诉解释器怎么读、怎么求值、怎么扩展</td></tr>
+    <tr><td>LLM agent</td><td><code>eval</code></td><td>把表达式解释成更新后的环境</td></tr>
+    <tr><td>ingest</td><td><code>(eval (read source) env)</code></td><td>读 → 求值 → 副作用作用于 env</td></tr>
+    <tr><td>query</td><td><code>(apply LLM (lookup env q))</code></td><td>从 env 查相关绑定，组合，回答</td></tr>
+    <tr><td>lint</td><td>environment consistency check</td><td>扫描所有绑定找出矛盾</td></tr>
+  </tbody>
+</table>
+
+<p>我列这张表，目的不是炫耀类比。类比谁都会做。我想说的是：<strong>每一行的"共享性质"都是可以决定设计的</strong>。"raw source 是 quoted form"不只是好听，它告诉你：raw 目录里的文件应该是只读的，LLM 不能写它，git diff 应该总是空的——这是一条工程纪律，是同构带来的真约束。</p>
+
+<h3>worked example · 一页 wiki 看成一段 Scheme</h3>
+
+<p>取 markdown 里那个 Tolkien Gateway 的例子。设想你正在为一本小说做 wiki。读完第 3 章后，wiki 里有这三个文件：</p>
+
+<pre><code><span class="cmt">; entity/Frodo.md</span>
+(<span class="kw">define-entity</span> <span class="sym">Frodo</span>
+  (kind  hobbit)
+  (from  Shire)
+  (mentions <span class="sym">Bilbo</span> <span class="sym">Gandalf</span>)
+  (claims (carries <span class="sym">The-Ring</span>) (chapter 1))
+  (sources <span class="str">"chapter-1.md"</span> <span class="str">"chapter-3.md"</span>))
+
+<span class="cmt">; concept/The-Ring.md</span>
+(<span class="kw">define-concept</span> <span class="sym">The-Ring</span>
+  (created-by <span class="sym">Sauron</span>)
+  (related (entity <span class="sym">Frodo</span>) (entity <span class="sym">Bilbo</span>))
+  (sources <span class="str">"chapter-1.md"</span>))
+
+<span class="cmt">; index.md</span>
+(<span class="kw">catalog</span>
+  (entities  <span class="sym">Frodo</span> <span class="sym">Bilbo</span> <span class="sym">Gandalf</span> <span class="sym">Sauron</span>)
+  (concepts  <span class="sym">The-Ring</span> <span class="sym">Shire</span>))</code></pre>
+
+<p>这当然不是真的 markdown——但等一下，<em>markdown 几乎已经是这个东西了</em>。Frontmatter 是属性列表，<code>[[link]]</code> 是符号引用，标题层级是嵌套。markdown 的语法是 S-expression 套了一层皮。这就是为什么 LLM 写 markdown 写得这么舒服：它是带语法糖的 Lisp。</p>
+
+<p>现在第 4 章来了，里面写到 Frodo 在 Bree 遇见 Strider。ingest 这件事，在符号环境读法下，就是这样一段计算：</p>
+
+<pre><code>(<span class="kw">ingest!</span> <span class="str">"chapter-4.md"</span>)
+  ↓ <span class="cmt">; read-extract</span>
+'((<span class="sym">Frodo</span> meets <span class="sym">Strider</span> at <span class="sym">Bree</span>)
+  (<span class="sym">Strider</span> identity-is <span class="sym">Aragorn</span>))
+  ↓ <span class="cmt">; eval — apply to env</span>
+(<span class="kw">update!</span> <span class="sym">Frodo</span> (mentions+ <span class="sym">Strider</span>) (sources+ <span class="str">"ch-4.md"</span>))
+(<span class="kw">define-entity</span> <span class="sym">Strider</span> (alias-of <span class="sym">Aragorn</span>) (sources <span class="str">"ch-4.md"</span>))
+(<span class="kw">define-entity</span> <span class="sym">Aragorn</span> (introduced-as <span class="sym">Strider</span>) (sources <span class="str">"ch-4.md"</span>))
+(<span class="kw">define-place</span>  <span class="sym">Bree</span>    (sources <span class="str">"ch-4.md"</span>))
+(<span class="kw">log!</span> <span class="str">"[2026-05-20] ingest | ch-4 | +4 entities, +1 alias"</span>)</code></pre>
+
+<p>注意一件事：<strong>ingest 的结果本身又是一段 Lisp 形式</strong>。LLM 不是在改文本，它在生成<em>一段对环境的修改程序</em>。这段程序是可读的、可审计的、可回滚的（git）、可重放的（log）。这就是 homoiconicity 在做事——代码是数据，所以 LLM 写出来的"修改"和被修改的"知识"用同一种符号系统表达。</p>
+
+<div class="pull">
+  程序是数据，数据是程序。<br>同样一句话，写于 1960 年，今天读起来像是为 LLM 准备的。
+  <span class="who">McCarthy · Recursive Functions of Symbolic Expressions · 1960</span>
+</div>
+
+<p>顺便：那个 schema 文件（CLAUDE.md / AGENTS.md）放在这个映射里是什么？它是 <em>read/eval 规则的元描述</em>。它告诉 LLM："看到一个人名就 define-entity，看到一个地名就 define-place，看到 X mentions Y 就更新 Y 的 mentions 字段"。这些规则<strong>本身</strong>是 wiki 的一页——它和别的页同形式、同语法、同语义。schema 改 schema 这件事，在 Lisp 里有个名字：宏。</p>
+
+<!-- ============ CHAPTER III ============ -->
+<div class="chapter-rule"><span class="roman">III · 50 行</span></div>
+<h2 class="chapter-title" id="bird-fifty-lines">把契约写成可运行的草图</h2>
+
+<p>我有一个习惯：判断一个想法是否清楚，就看能不能在 50 行以内把它写完。我以前写过一个 Scheme 解释器，叫 lispy，连同测试一共 117 行；那次的收获是，<em>当你能把一件事压到 50 行，你才真正理解了它</em>。多余的复杂度全部是没想清楚的产物。</p>
+
+<p>所以我们试一下。把 LLM-Wiki 的全部契约——三层结构、三种操作、增量演化——压到一段 Scheme，看看剩下的核心是什么。</p>
+
+<pre><code><span class="cmt">;; ============================================================</span>
+<span class="cmt">;; llm-wiki.scm — 把 markdown 那篇文章压到能编译的形状</span>
+<span class="cmt">;; LLM 在这里是一个外部 oracle，签名是 (LLM prompt context) → form</span>
+<span class="cmt">;; ============================================================</span>
+
+(<span class="kw">define</span> raw   '())        <span class="cmt">; quoted forms, 只读</span>
+(<span class="kw">define</span> wiki  '())        <span class="cmt">; mutable env, LLM 写, 你读</span>
+(<span class="kw">define</span> log   '())        <span class="cmt">; append-only trace</span>
+(<span class="kw">define</span> schema (load <span class="str">"CLAUDE.md"</span>))   <span class="cmt">; read/eval 规则</span>
+
+(<span class="kw">define</span> (<span class="kw">ingest!</span> src)
+  (<span class="kw">let*</span> ((forms   (LLM <span class="str">'extract</span>  (cons src schema)))
+         (touches (LLM <span class="str">'integrate</span> (list forms wiki schema))))
+    (<span class="kw">for-each</span> apply-edit! touches)
+    (<span class="kw">log!</span> <span class="str">'ingest</span> src (length touches))))
+
+(<span class="kw">define</span> (<span class="kw">query</span> q)
+  (<span class="kw">let*</span> ((relevant (LLM <span class="str">'find</span>      (list q (index wiki))))
+         (pages    (<span class="kw">map</span> resolve relevant))
+         (answer   (LLM <span class="str">'synthesize</span> (list q pages schema))))
+    (<span class="kw">log!</span> <span class="str">'query</span> q (length pages))
+    answer))                          <span class="cmt">; 你可以把答案再 ingest! 回去</span>
+
+(<span class="kw">define</span> (<span class="kw">lint!</span>)
+  (<span class="kw">let</span> ((issues (LLM <span class="str">'audit</span> (list wiki schema))))
+    (<span class="kw">log!</span> <span class="str">'lint</span> (length issues))
+    issues))                          <span class="cmt">; 返回，由你决定改不改</span>
+
+(<span class="kw">define</span> (<span class="kw">repl</span>)
+  (<span class="kw">display</span> <span class="str">"&gt; "</span>)
+  (<span class="kw">let</span> ((u (read)))
+    (<span class="kw">cond</span> ((source? u)   (ingest! u))
+          ((question? u) (display (query u)))
+          ((command? u)  (apply-meta u))         <span class="cmt">; 改 schema</span>
+          (<span class="kw">else</span>           (display (query u)))))
+  (repl))</code></pre>
+
+<p>26 行，把那篇 markdown 的全部主张写完了。注意没出现的东西：embedding、向量库、检索框架、chunk 大小、prompt 模板字符串。它们都<em>能</em>有，但都<em>不在契约里</em>。契约里只有 read / eval / log / repl 和一个名叫 LLM 的外部 oracle。剩下都是工程化的选择。</p>
+
+<p>这段代码里值得停下来看的地方有三个：</p>
+
+<div class="callout calm">
+  <div class="ctitle">观察一 · ingest 返回的是一段程序</div>
+  <p style="margin:0;"><code>touches</code> 不是文本，是一份"对 wiki 的修改操作清单"。每一条都是一个 <code>apply-edit!</code> 可以执行的 form。这就是为什么 git 能记住每一次 ingest 改了什么——你提交的不是一个 LLM 输出，是一段<strong>由 LLM 生成、对环境的明确修改程序</strong>。</p>
+</div>
+
+<div class="callout calm">
+  <div class="ctitle">观察二 · query 的结果可以再 ingest</div>
+  <p style="margin:0;">你问的问题、得到的答案，是一份新的 form。它和源材料同形式，所以可以走回 <code>ingest!</code>。markdown 那篇说"good answers can be filed back into the wiki"——那是一句正确但散漫的话；在这里它变成了类型签名：<code>query → form</code>，<code>ingest!: form → unit</code>，组合是合法的。</p>
+</div>
+
+<div class="callout calm">
+  <div class="ctitle">观察三 · repl 即 dev loop</div>
+  <p style="margin:0;">你和 LLM 的对话<em>就是</em> REPL。每一条输入要么是源材料（quoted form），要么是问题，要么是元命令（改 schema）。没有"我先写程序、再跑程序"这一步。Lisp 程序员理解这是什么——image-based、live-coded、不区分写和跑。这是 wiki 该有的工作模式，而不是"我先训练好一个系统、再使用它"。</p>
+</div>
+
+<h3>worked example · 一次完整的 ingest，按 form 展开</h3>
+
+<p>用前面那段 Lord of the Rings 的小宇宙跑一次。输入：第 4 章的 markdown，里面有 "Frodo arrived at Bree and met a ranger called Strider"。计算过程：</p>
+
+<pre><code>&gt; (ingest! <span class="str">"raw/ch-4.md"</span>)
+
+<span class="cmt">; step 1 · LLM 'extract  →  返回一段 quoted form</span>
+'((meet <span class="sym">Frodo</span> <span class="sym">Strider</span> (at <span class="sym">Bree</span>))
+  (alias <span class="sym">Strider</span> <span class="sym">Aragorn</span>))
+
+<span class="cmt">; step 2 · LLM 'integrate  →  返回一组 edits，引用现有 env</span>
+(<span class="kw">update-entity</span> <span class="sym">Frodo</span>   (mentions+ <span class="sym">Strider</span>) (sources+ <span class="str">"ch-4"</span>))
+(<span class="kw">create-entity</span> <span class="sym">Strider</span> (alias-of <span class="sym">Aragorn</span>)  (sources <span class="str">"ch-4"</span>))
+(<span class="kw">create-entity</span> <span class="sym">Aragorn</span> (intro-as <span class="sym">Strider</span>)   (sources <span class="str">"ch-4"</span>))
+(<span class="kw">create-place</span>  <span class="sym">Bree</span>    (sources <span class="str">"ch-4"</span>))
+
+<span class="cmt">; step 3 · apply-edit! 逐条改 env，git 看到 4 个文件被改</span>
+<span class="cmt">; step 4 · log! 追加一行</span>
+"## [2026-05-20] ingest | ch-4.md | +3 entities +1 place"</code></pre>
+
+<p>这里的关键不是 LLM 多聪明，是<em>每一步的中间产物都是 S-expression</em>。你可以 print 它，可以 diff 它，可以拒绝它（"step 2 第三行错了，Aragorn 在第 5 章才正式登场，不要现在创建"），可以重放它。它不是黑盒的"AI 在写文件"，是一段你能审计的小程序。</p>
+
+<!-- ============ CHAPTER IV ============ -->
+<div class="chapter-rule"><span class="roman">IV · 设计稿</span></div>
+<h2 class="chapter-title" id="bird-design">那么，具体怎么搭？</h2>
+
+<p>同构是设计的地图。把同构当真，下面这份草图几乎是写出来的，不是设计出来的。</p>
+
+<h3>directory · 三层映射到三个目录</h3>
+
+<div class="tree">project/
+├── raw/                       <span style="color:#6b6052;"># quoted forms · 只读 · git ignored 的是大文件，markdown 入库</span>
+│   ├── ch-1.md
+│   ├── ch-4.md
+│   └── assets/                <span style="color:#6b6052;"># 图片 · 由 web clipper 下载</span>
+├── wiki/                      <span style="color:#6b6052;"># env · LLM 写 · 你读 · git 追踪每次 ingest</span>
+│   ├── index.md               <span style="color:#6b6052;"># catalog · 入口环境</span>
+│   ├── log.md                 <span style="color:#6b6052;"># trace · append-only</span>
+│   ├── entity/
+│   │   ├── Frodo.md
+│   │   └── Aragorn.md
+│   ├── concept/
+│   │   └── The-Ring.md
+│   ├── place/
+│   │   └── Bree.md
+│   └── answer/                <span style="color:#6b6052;"># query 答案归档 · 也是 page</span>
+│       └── 2026-05-20--who-is-strider.md
+├── CLAUDE.md                  <span style="color:#6b6052;"># schema · read/eval 规则 · 等同 .emacs 或 init.lisp</span>
+└── .git/                      <span style="color:#6b6052;"># 版本即历史快照 · 不需要单独的撤销机制</span></div>
+
+<p>没有 <code>vectors/</code>，没有 <code>chunks/</code>，没有 <code>embeddings.faiss</code>。在初期一律不要。索引就是 <code>index.md</code> 文件，符号查找就是 grep。这是 Lisp 信念的应用：能用列表搜索的，就不要建哈希表；能用文件名查找的，就不要建数据库。等到 wiki 真的长到 grep 不够用了——可能在 1000+ 页的时候——再上 qmd 这类 BM25 + 向量混合搜索。不要提前一秒。</p>
+
+<h3>schema · 把 CLAUDE.md 写成宏定义集</h3>
+
+<p>markdown 那篇说"schema is the key configuration file"，但没给形式。我给一个：把 schema 看作 <strong>read 规则 + eval 规则 + 一组宏</strong>。每条规则形如"当看到 X，做 Y"——也就是<em>模式 → 重写规则</em>，这是 Lisp 宏的本质。</p>
+
+<pre><code><span class="cmt">; CLAUDE.md  —— 用人类语言写，但每段都对应一个 macro</span>
+
+## read 规则
+1. raw/ 下的文件是 quoted——你可以读，不可以改。
+2. wiki/ 下每个 .md 是一个 binding；文件名是符号名。
+3. [[X]] 是符号引用；解析时去 wiki/ 全局环境查找。
+
+## eval 规则 (ingest 钩子)
+- 看到一个新人名 → define-entity，建 entity/&lt;Name&gt;.md
+- 看到 X mentions Y → 在 X 和 Y 的 mentions 字段互相 +1
+- 看到 "X is also called Y" → 建 alias 关系，不建新 entity
+- 看到与现有 claim 冲突 → 不要静默改写；在两边各加 contradiction 标记
+
+## eval 规则 (query 钩子)
+- 先读 index.md 找候选 page
+- 每个候选展开成 page + 它的 [[link]] 邻居（深度 1）
+- 引用必须带 (source ch-N) 后缀，否则 reject 自己
+
+## meta 规则
+- 你可以提议修改本文件。修改必须显式：先 propose，再 apply。
+- 修改后立即把 schema 自身的 history 写一行到 log.md。</code></pre>
+
+<p>这看起来像散文，但每一条都能机械地翻译成一个 <code>(pattern → action)</code>。等到你写了几个月、对自己的领域积累了独特的规则，CLAUDE.md 会从十几行长到几百行——而它仍然是 wiki 里的一个 page，被 git 追踪，被 lint 扫描。<strong>schema 即数据，数据即 schema</strong>。这是 Lisp 派 30 年来一直坚持的同一个论点。</p>
+
+<h3>operations · 四个动词，仅此而已</h3>
+
+<table>
+  <thead>
+    <tr><th>动词</th><th>类型签名</th><th>实现要点</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>ingest!</code></td>
+      <td><code>source → unit (env mutated)</code></td>
+      <td>两步 LLM 调用：extract 拿 forms，integrate 拿 edits。edits 必须是显式 form，不能是自由文本。每条 edit 落到一个 file write，逐条做，逐条 git stage。</td>
+    </tr>
+    <tr>
+      <td><code>query</code></td>
+      <td><code>question → form (可再 ingest)</code></td>
+      <td>三步：find candidates（看 index.md）→ resolve（读 candidate 的 page）→ synthesize（产生答案）。答案是 markdown，归档到 <code>wiki/answer/&lt;date&gt;--&lt;slug&gt;.md</code>。</td>
+    </tr>
+    <tr>
+      <td><code>lint!</code></td>
+      <td><code>unit → list of issue</code></td>
+      <td>扫四种东西：orphan page、stale claim、缺失链接、待补 source。每个 issue 是一份 form，你决定 apply 还是 ignore。</td>
+    </tr>
+    <tr>
+      <td><code>amend-schema!</code></td>
+      <td><code>proposal → unit</code></td>
+      <td>显式的元命令。propose 阶段 LLM 写出一份 diff；apply 之前你确认。改完 log 一行——这是元解释器在自我修改。</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>四个动词，外加 git。没有 admin 面板，没有 web UI，没有数据库 schema 迁移工具——你不需要。Lisp 的 image-based 哲学在这里复活：整个项目就是一个目录，关掉电脑明天打开，状态在那里。Obsidian 是个 viewer，可有可无；真要做也只是给 wiki/ 加一个图形渲染层。</p>
+
+<!-- ============ CHAPTER V ============ -->
+<div class="chapter-rule"><span class="roman">V · 杠杆</span></div>
+<h2 class="chapter-title" id="bird-leverage">推一推参数，看它退化成什么</h2>
+
+<p>Hamming 有个习惯：拿一个方法，把参数推到 0 或 ∞，看它退化成什么。极限的形状揭示一般情形的结构。这里也试一下。</p>
+
+<div class="matrix">
+  <div class="cell">
+    <div class="h">极限 → 0 · wiki 为空</div>
+    <p style="margin:0;">所有内容都还在 raw/。env 是空环境。这时 query 退化成 RAG——LLM 临时把 raw 当语料检索。<strong>这正是市面上大部分系统的常态</strong>：它们停在 wiki-size = 0 的边界条件上，永远不离开。LLM-Wiki 的全部价值在这个变量的<em>动力学</em>上——它把状态从 0 推走、并保持推走。</p>
+  </div>
+  <div class="cell">
+    <div class="h">极限 → ∞ · wiki 比 raw 大</div>
+    <p style="margin:0;">每个事实在 wiki 都有自己的页面，schema 里每条规则都演化成几十个具体绑定。这时 raw 几乎可以归档不读——所有的"知识"已经在 wiki/ 里被消化为符号了。<strong>这是 Memex 的极限态</strong>，Bush 1945 想的就是这个。让人在十年里读了 5000 篇文章后，仍然不丢失对这 5000 篇之间联系的把握。</p>
+  </div>
+</div>
+
+<p>动力学的两端都告诉我们：这个系统的本质参数不是 page 数、不是 token 数，是 <strong>wiki 的"自包含度"</strong>——能不再回头读 raw 而独立回答多少问题。Lisp 程序员管这个叫 <em>environment closure</em>。设计的全部目标，就是让闭包越长越紧。</p>
+
+<h3>cross-domain · 这把刀以前砍过什么</h3>
+
+<p>"增量维护一个可自描述的符号系统"这个形状，不是 LLM-Wiki 的发明。它出现过至少三次：</p>
+
+<ul>
+  <li><strong>Emacs / Org-mode。</strong>一个 org 文件既是数据（待办、笔记、链接）又是代码（Babel block 可执行）。<code>C-x C-e</code> 把光标处的表达式求值——同一个 buffer 里既是编辑器又是解释器。</li>
+  <li><strong>Mathematica notebook。</strong>每个 cell 是 S-expression，notebook 自己就是 expression。整个系统是一个可保存的 image。</li>
+  <li><strong>Smalltalk 镜像。</strong>没有"源代码"和"运行时"的分别。所有 object 都活在 image 里，包括开发工具自身。改了立即生效，关闭电脑保存全部状态。</li>
+</ul>
+
+<p>这三件事，加上 Lisp 的 image-based REPL，是同一个隐含设计的四个化身。LLM-Wiki 是第五个，区别只在于：前面四个的 eval 是确定性的语义函数，这里的 eval 是一个理解自然语言的概率函数。LLM 不是新东西，它<em>是一个长得不一样的 eval</em>。</p>
+
+<div class="pull">
+  AI programming has been Lisp-shaped since 1958.<br>The LLM didn't change that. It just gave us an eval finally smart enough to deserve the contract.
+  <span class="who">Norvig · PAIP · 1992（精神改写）</span>
+</div>
+
+<!-- ============ CHAPTER VI · meta-reflection close ============ -->
+<div class="chapter-rule"><span class="roman">VI · 尾声</span></div>
+<h2 class="chapter-title" id="bird-coda">抽掉细节之后剩下什么</h2>
+
+<p>如果你把这篇全部忘掉，只留一句话，那句话是：<em>当一个问题的形状是"增量维护一个一致的、可自描述的符号系统"，你已经站在 Lisp 的主场上，无论你写不写括号</em>。</p>
+
+<p>Bush 在 1945 年描述了 Memex，但他没有 eval。McCarthy 在 1958 年给了 eval，但没有人能写出足以解释自然语言的求值规则。中间 80 年，所有"个人知识库"的尝试都卡在同一个地方——bookkeeping 是 Lisp-shaped 的，而人不愿意做 Lisp 的解释器。维护跨页引用、保持综述同步、标注矛盾、回滚错误结论——这些事在结构上属于 <code>eval</code>，但执行起来需要一个又懂语义、又愿意逐字检查的劳力。</p>
+
+<p>LLM 是那个劳力。它不是新的概念，它是 1958 年起就等在那里的 eval 的实现。markdown 那篇文章描述的所有"操作"——ingest 写 10 个文件、query 走链接图、lint 找矛盾——在 Lisp 派的语汇里都是同一个动作：<strong>解释器在维护它的环境</strong>。</p>
+
+<p>能不能用 LISP 的逻辑来构建？我的答案是：你<em>必须</em>用 Lisp 的逻辑来构建。表面上写不写括号、用不用 Scheme、跑不跑 SBCL，这些都是表层选择——markdown 完全可以是你的语法糖，Python 完全可以是你的宿主语言。但<em>背后的设计模型必须是 read/eval/print 加上一个会演化的环境</em>，否则你会写出一个不积累的系统，或者一个积累但不一致的系统，或者一个一致但你无法审计的系统。三种失败已经发生过几千次了。</p>
+
+<p>所以最后那条建议很短：<strong>在你写下第一行代码之前，先把 wiki 想象成一段 Scheme 程序</strong>。每页是 binding，每个 link 是符号，CLAUDE.md 是 read 规则，LLM 是 eval。你写下的工程实现，应该是这段想象中程序的一个保真投影。这样你既得到 markdown 的可读性、又得到 Lisp 的可组合性、还得到了 LLM 这个迟到了 70 年的 eval 实现。</p>
+
+<p>剩下的事情，按 Alan Perlis 的话办：</p>
+
+<div class="pull">
+  Within a computer natural language is unnatural.
+  <span class="who">Alan Perlis · Epigrams in Programming · 1982 · #29</span>
+</div>
+
+<p>但反过来也成立：在一个被 LLM 求值的系统里，自然语言是合法的 S-expression。这两句话第一次同时为真，是 2024 年前后的某个春天。我们正好赶上了。</p>
+
+<div class="divider">·  ·  ·</div>
+
+<aside class="afterword">
+  <div class="label">Editor's note · 这份设计稿留了什么 / 砍了什么</div>
+  <h4>关于这份稿子的边界</h4>
+  <p><strong>留了：</strong>同构（chapter II 那张表）、可运行的最小骨架（chapter III 的 26 行）、目录草图、四动词清单、动力学的两个极限。这五样合起来就是"如果今晚开工，怎么开"的全部信息。</p>
+  <p><strong>砍了：</strong>具体的 prompt 模板、embedding/搜索的工程选型（qmd 等只在合适时刻才加）、Obsidian 插件配置、CI/CD、多人协作语义、安全模型。这些都是要做的，但每一项都不该在<em>同构</em>这一步出现——它们是工程选择，不是结构主张。markdown 那篇原文也这样做了，那是它对的地方。</p>
+  <p><strong>没说但应当补的：</strong>当 wiki 长到 5000+ 页时的 cache 策略；query 答案归档后的"二次蒸馏"（把多个 answer 合并成 concept 页）；schema 自我修改的安全栅栏。这些是下一稿的事。</p>
+</aside>
+
+</main>
+
+</body>
+</html>

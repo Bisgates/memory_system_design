@@ -1,0 +1,21 @@
+- id: a_a9628267
+  subj: doc:specs/street_gaussians_bev.md
+  pred: has_type
+  obj: type:spec
+  source: SPECS/street_gaussians_bev.md
+  derived_from: null
+  parents: []
+- id: a_da0fbfe8
+  subj: doc:specs/street_gaussians_bev.md
+  pred: has_title
+  obj: Street Gaussians × BEV Data — 动态街景重建
+  source: SPECS/street_gaussians_bev.md
+  derived_from: null
+  parents: []
+- id: a_fa34fb7d
+  subj: doc:specs/street_gaussians_bev.md
+  pred: mentions_doc
+  obj: doc:specs/sam3_bev.md
+  source: SPECS/street_gaussians_bev.md
+  derived_from: null
+  parents: []

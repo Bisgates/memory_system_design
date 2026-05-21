@@ -1,0 +1,419 @@
+(card "exp:B-R9-3_sigma_regime_exit" :type "experiment"
+  :subj "exp:B-R9-3_sigma_regime_exit"
+  :body "---\nnav: 18\ntype: experiment\nid: B-R9-3_sigma_regime_exit\nshort_name: sigma_regime_exit\ntitle: \"B-R9-3 — R8-1 + σ-regime exit (high σ → 45s, low σ → 85s)\"\narc: 260516a\nteam: b\nround: r9\nparent_arc: \"[[arcs/260516a]]\"\nparent_lineage: \"[[lineages/arc_260516a__team_b__blacklist_evolution]]\"\ntrain_nav: 2.8006\ntrain_trade_count: 169\ntrain_win_rate: 0.8580\ntrain_sharpe: 8.0209\ntrain_max_drawdown: -0.0090\nval_nav_mean: 1.0784\nval_nav_sigma: 0.0832\nval_window_count: 13\ntest_nav: 1.2602\ntest_trade_count: 23\ntest_sharpe: 7.4813\ntest_win_rate: 0.7826\ntest_max_drawdown: -0.0091\nanchor_train_nav: 2.1882\nanchor_test_nav: 1.2486\nstatus: challenger\noutcome: test_marginal\nchampion: false\noverfit_score: 0\nleak_audit: clean\naxis: [timing_filter, horizon]\npast_only_window_days: 30\nwarmup_required: 10\ncreated: 2026-05-17T01:50:00\nlast_updated: 2026-05-17T05:09:00\ntags: [arc/260516a, team/b, round/r9, axis/timing_filter, axis/horizon, status/challenger, outcome/test_marginal, leak/clean, size/large]\n---\n\n# B-R9-3 — R8-1 + σ-regime exit (high σ → 45s, low σ → 85s)\n\n> **TL;DR** —— B-R9 系列在 R8-1 base 上加 **vol-regime-dependent horizon**：高 σ 期 hold 短 (45s)，低 σ 期 hold 长 (85s)。train NAV 2.80 与 R8-1 几乎 tie；test NAV 1.26 vs anchor 1.25, **+0.011 marginal**。σ-regime 信号在 hold-out 上 essentially noise。\n\n## 假设 (Hypothesis)\n- 假设：σ regime 影响 reversion 时间窗 —— 高 σ 期 mean-reversion 快，应缩短 horizon 防 over-hold；低 σ 期慢，延长。\n- 期待：sharpe 显著升，NAV 至少不降。\n- 实测：sharpe 8.02 略升（R8-1 = 7.78），NAV 几乎 tie；test 上 win_rate 78% 略好，但 NAV 几乎相同。\n\n## 实现 (Implementation)\n- 主脚本：`/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_b/scripts/round_9_runner.py`\n- 步骤：\n  1. R8-1 base（no open_3min + bypass 0.30）\n  2. 计算 entry 时刻的 SPY 30min realized σ\n  3. 若 σ ≥ rolling-30d q66 → horizon = 45s；σ ≤ q33 → horizon = 85s；中间 → 65s (default)\n\n## Past-only window 处理\n- σ regime 用 rolling 30d 半开窗口的 q33/q66 threshold（strict past-only）。\n- entry 时刻 σ 也是 past-only (30min before entry)。\n- warmup=10，sub-window 不足回退到 default 65s.\n- `#leak/clean`。\n\n## 结果 (Results)\n| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 2.8006 | 169 | 8.02 | 85.8% | -0.90% |\n| Val (rolling 13w) | 1.0784 ± 0.083 | - | - | - | - |\n| Test | 1.2602 | 23 | 7.48 | 78.3% | -0.91% |\n| **Δ test NAV vs anchor** | +0.011 | +3 | +0.33 | +3.3pp | -0.39pp |\n| **Δ vs R8-1 base** | -0.012 | 0 | +0.37 | +4.4pp | -0.24pp |\n\n## 风险 & overfit 嫌疑\n- overfit_score = 0。\n- 真正 lesson：**σ-regime horizon adjustment 在 trade pool ~150 笔上提供不了 meaningful NAV gain**。sharpe 升 +0.37 是数据 noise。\n\n## Lineage（双链网）\n- **derived_from**: [[arc_260516a__team_b__B-R8-1__no_open3min_bypass03]]\n- **same_round_as**: [[arc_260516a__team_b__B-R9-4__confluence_horizon]]\n- **builds against**: [[arc_260516a__team_anchor__anchor_g2__baseline]]\n\n## Reports\n- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_b/output/cross_round_leaderboard_nav.csv` (R9-3)\n- [[arc_260516a__reporter_20260517_0547]]\n\n## Notes / 下次迭代\n- σ-regime 是另一条 \"**train 看不出贡献的 micro-axis**\"。下次再做类似 horizon adjustment 实验，应：\n  1. 直接 paired-sample test（同一 leg 在 default horizon 65s vs adaptive horizon 的 PnL diff），不是 cross-pool NAV 比较。\n  2. 若 paired diff 的 p-value 不显著，停掉本 axis。\n- σ-regime 与 confluence-horizon (R9-4) 一同证明 \"**horizon micro-adjustment 在 alpha_second_v1 的 trade pool 尺度上没有 statistical power**\"。\n"
+  :path "experiments/arc_260516a__team_b__B-R9-3__sigma_regime_exit.md"
+  :source_mtime "2026-05-17T10:22:46+08:00"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e1e82505" :type "atom"
+  :subj "exp:B-R9-3_sigma_regime_exit"
+  :pred "has_nav"
+  :obj 18
+  :source "experiments/arc_260516a__team_b__B-R9-3__sigma_regime_exit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a717c93a" :type "atom"
+  :subj "exp:B-R9-3_sigma_regime_exit"
+  :pred "has_type"
+  :obj "experiment"
+  :source "experiments/arc_260516a__team_b__B-R9-3__sigma_regime_exit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ee7c2acf" :type "atom"
+  :subj "exp:B-R9-3_sigma_regime_exit"
+  :pred "has_id"
+  :obj "B-R9-3_sigma_regime_exit"
+  :source "experiments/arc_260516a__team_b__B-R9-3__sigma_regime_exit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_296e6e12" :type "atom"
+  :subj "exp:B-R9-3_sigma_regime_exit"
+  :pred "has_short_name"
+  :obj "sigma_regime_exit"
+  :source "experiments/arc_260516a__team_b__B-R9-3__sigma_regime_exit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_6ba32766" :type "atom"
+  :subj "exp:B-R9-3_sigma_regime_exit"
+  :pred "has_title"
+  :obj "B-R9-3 — R8-1 + σ-regime exit (high σ → 45s, low σ → 85s)"
+  :source "experiments/arc_260516a__team_b__B-R9-3__sigma_regime_exit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f84d47bd" :type "atom"
+  :subj "exp:B-R9-3_sigma_regime_exit"
+  :pred "has_arc"
+  :obj "260516a"
+  :source "experiments/arc_260516a__team_b__B-R9-3__sigma_regime_exit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_034b13a2" :type "atom"
+  :subj "exp:B-R9-3_sigma_regime_exit"
+  :pred "has_team"
+  :obj "b"
+  :source "experiments/arc_260516a__team_b__B-R9-3__sigma_regime_exit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_6ecd2770" :type "atom"
+  :subj "exp:B-R9-3_sigma_regime_exit"
+  :pred "has_round"
+  :obj "r9"
+  :source "experiments/arc_260516a__team_b__B-R9-3__sigma_regime_exit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d852f98d" :type "atom"
+  :subj "exp:B-R9-3_sigma_regime_exit"
+  :pred "parent_arc"
+  :obj "arc:260516a"
+  :source "experiments/arc_260516a__team_b__B-R9-3__sigma_regime_exit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9d328e85" :type "atom"
+  :subj "exp:B-R9-3_sigma_regime_exit"
+  :pred "parent_lineage"
+  :obj "lin:arc_260516a__team_b__blacklist_evolution"
+  :source "experiments/arc_260516a__team_b__B-R9-3__sigma_regime_exit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ea7d5304" :type "atom"
+  :subj "exp:B-R9-3_sigma_regime_exit"
+  :pred "has_train_nav"
+  :obj 2.8006
+  :source "experiments/arc_260516a__team_b__B-R9-3__sigma_regime_exit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b99e5c5f" :type "atom"
+  :subj "exp:B-R9-3_sigma_regime_exit"
+  :pred "has_train_trade_count"
+  :obj 169
+  :source "experiments/arc_260516a__team_b__B-R9-3__sigma_regime_exit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b787ae1b" :type "atom"
+  :subj "exp:B-R9-3_sigma_regime_exit"
+  :pred "has_train_win_rate"
+  :obj 0.858
+  :source "experiments/arc_260516a__team_b__B-R9-3__sigma_regime_exit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_7c1c9ea0" :type "atom"
+  :subj "exp:B-R9-3_sigma_regime_exit"
+  :pred "has_train_sharpe"
+  :obj 8.0209
+  :source "experiments/arc_260516a__team_b__B-R9-3__sigma_regime_exit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_7b0d9438" :type "atom"
+  :subj "exp:B-R9-3_sigma_regime_exit"
+  :pred "has_train_max_drawdown"
+  :obj -0.009
+  :source "experiments/arc_260516a__team_b__B-R9-3__sigma_regime_exit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_595f80c4" :type "atom"
+  :subj "exp:B-R9-3_sigma_regime_exit"
+  :pred "has_val_nav_mean"
+  :obj 1.0784
+  :source "experiments/arc_260516a__team_b__B-R9-3__sigma_regime_exit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e77432c4" :type "atom"
+  :subj "exp:B-R9-3_sigma_regime_exit"
+  :pred "has_val_nav_sigma"
+  :obj 0.0832
+  :source "experiments/arc_260516a__team_b__B-R9-3__sigma_regime_exit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_3321e620" :type "atom"
+  :subj "exp:B-R9-3_sigma_regime_exit"
+  :pred "has_val_window_count"
+  :obj 13
+  :source "experiments/arc_260516a__team_b__B-R9-3__sigma_regime_exit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9ed94dc8" :type "atom"
+  :subj "exp:B-R9-3_sigma_regime_exit"
+  :pred "has_test_nav"
+  :obj 1.2602
+  :source "experiments/arc_260516a__team_b__B-R9-3__sigma_regime_exit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e33af4b4" :type "atom"
+  :subj "exp:B-R9-3_sigma_regime_exit"
+  :pred "has_test_trade_count"
+  :obj 23
+  :source "experiments/arc_260516a__team_b__B-R9-3__sigma_regime_exit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_442e5b52" :type "atom"
+  :subj "exp:B-R9-3_sigma_regime_exit"
+  :pred "has_test_sharpe"
+  :obj 7.4813
+  :source "experiments/arc_260516a__team_b__B-R9-3__sigma_regime_exit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9683064a" :type "atom"
+  :subj "exp:B-R9-3_sigma_regime_exit"
+  :pred "has_test_win_rate"
+  :obj 0.7826
+  :source "experiments/arc_260516a__team_b__B-R9-3__sigma_regime_exit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b8aec07c" :type "atom"
+  :subj "exp:B-R9-3_sigma_regime_exit"
+  :pred "has_test_max_drawdown"
+  :obj -0.0091
+  :source "experiments/arc_260516a__team_b__B-R9-3__sigma_regime_exit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c6fdb164" :type "atom"
+  :subj "exp:B-R9-3_sigma_regime_exit"
+  :pred "has_anchor_train_nav"
+  :obj 2.1882
+  :source "experiments/arc_260516a__team_b__B-R9-3__sigma_regime_exit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_24778559" :type "atom"
+  :subj "exp:B-R9-3_sigma_regime_exit"
+  :pred "has_anchor_test_nav"
+  :obj 1.2486
+  :source "experiments/arc_260516a__team_b__B-R9-3__sigma_regime_exit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_8401aa81" :type "atom"
+  :subj "exp:B-R9-3_sigma_regime_exit"
+  :pred "has_status"
+  :obj "challenger"
+  :source "experiments/arc_260516a__team_b__B-R9-3__sigma_regime_exit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_71b54670" :type "atom"
+  :subj "exp:B-R9-3_sigma_regime_exit"
+  :pred "has_outcome"
+  :obj "test_marginal"
+  :source "experiments/arc_260516a__team_b__B-R9-3__sigma_regime_exit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_bf775b91" :type "atom"
+  :subj "exp:B-R9-3_sigma_regime_exit"
+  :pred "has_champion"
+  :obj false
+  :source "experiments/arc_260516a__team_b__B-R9-3__sigma_regime_exit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1fa13d75" :type "atom"
+  :subj "exp:B-R9-3_sigma_regime_exit"
+  :pred "has_overfit_score"
+  :obj 0
+  :source "experiments/arc_260516a__team_b__B-R9-3__sigma_regime_exit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_fa9a9823" :type "atom"
+  :subj "exp:B-R9-3_sigma_regime_exit"
+  :pred "has_leak_audit"
+  :obj "clean"
+  :source "experiments/arc_260516a__team_b__B-R9-3__sigma_regime_exit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_97c2b53b" :type "atom"
+  :subj "exp:B-R9-3_sigma_regime_exit"
+  :pred "has_axis"
+  :obj "axis:timing_filter"
+  :source "experiments/arc_260516a__team_b__B-R9-3__sigma_regime_exit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a3bc2e23" :type "atom"
+  :subj "exp:B-R9-3_sigma_regime_exit"
+  :pred "has_axis"
+  :obj "axis:horizon"
+  :source "experiments/arc_260516a__team_b__B-R9-3__sigma_regime_exit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d555ce47" :type "atom"
+  :subj "exp:B-R9-3_sigma_regime_exit"
+  :pred "has_axis_list"
+  :obj ("timing_filter" "horizon")
+  :source "experiments/arc_260516a__team_b__B-R9-3__sigma_regime_exit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d065814c" :type "atom"
+  :subj "exp:B-R9-3_sigma_regime_exit"
+  :pred "has_past_only_window_days"
+  :obj 30
+  :source "experiments/arc_260516a__team_b__B-R9-3__sigma_regime_exit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_3a9e5566" :type "atom"
+  :subj "exp:B-R9-3_sigma_regime_exit"
+  :pred "has_warmup_required"
+  :obj 10
+  :source "experiments/arc_260516a__team_b__B-R9-3__sigma_regime_exit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_032283d8" :type "atom"
+  :subj "exp:B-R9-3_sigma_regime_exit"
+  :pred "has_created"
+  :obj "2026-05-17 01:50:00"
+  :source "experiments/arc_260516a__team_b__B-R9-3__sigma_regime_exit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_67e6802c" :type "atom"
+  :subj "exp:B-R9-3_sigma_regime_exit"
+  :pred "has_last_updated"
+  :obj "2026-05-17 05:09:00"
+  :source "experiments/arc_260516a__team_b__B-R9-3__sigma_regime_exit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_76365af7" :type "atom"
+  :subj "exp:B-R9-3_sigma_regime_exit"
+  :pred "has_tag"
+  :obj "tag:arc/260516a"
+  :source "experiments/arc_260516a__team_b__B-R9-3__sigma_regime_exit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ad444744" :type "atom"
+  :subj "exp:B-R9-3_sigma_regime_exit"
+  :pred "has_tag"
+  :obj "tag:team/b"
+  :source "experiments/arc_260516a__team_b__B-R9-3__sigma_regime_exit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a82eab03" :type "atom"
+  :subj "exp:B-R9-3_sigma_regime_exit"
+  :pred "has_tag"
+  :obj "tag:round/r9"
+  :source "experiments/arc_260516a__team_b__B-R9-3__sigma_regime_exit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_42dd799f" :type "atom"
+  :subj "exp:B-R9-3_sigma_regime_exit"
+  :pred "has_tag"
+  :obj "tag:axis/timing_filter"
+  :source "experiments/arc_260516a__team_b__B-R9-3__sigma_regime_exit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c003d636" :type "atom"
+  :subj "exp:B-R9-3_sigma_regime_exit"
+  :pred "has_tag"
+  :obj "tag:axis/horizon"
+  :source "experiments/arc_260516a__team_b__B-R9-3__sigma_regime_exit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b672c690" :type "atom"
+  :subj "exp:B-R9-3_sigma_regime_exit"
+  :pred "has_tag"
+  :obj "tag:status/challenger"
+  :source "experiments/arc_260516a__team_b__B-R9-3__sigma_regime_exit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_aafda05e" :type "atom"
+  :subj "exp:B-R9-3_sigma_regime_exit"
+  :pred "has_tag"
+  :obj "tag:outcome/test_marginal"
+  :source "experiments/arc_260516a__team_b__B-R9-3__sigma_regime_exit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_741dbc6f" :type "atom"
+  :subj "exp:B-R9-3_sigma_regime_exit"
+  :pred "has_tag"
+  :obj "tag:leak/clean"
+  :source "experiments/arc_260516a__team_b__B-R9-3__sigma_regime_exit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b88e7c77" :type "atom"
+  :subj "exp:B-R9-3_sigma_regime_exit"
+  :pred "has_tag"
+  :obj "tag:size/large"
+  :source "experiments/arc_260516a__team_b__B-R9-3__sigma_regime_exit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_fd93f5fd" :type "atom"
+  :subj "exp:B-R9-3_sigma_regime_exit"
+  :pred "has_tl_dr"
+  :obj "B-R9 系列在 R8-1 base 上加 **vol-regime-dependent horizon**：高 σ 期 hold 短 (45s)，低 σ 期 hold 长 (85s)。train NAV 2.80 与 R8-1 几乎 tie；test NAV 1.26 vs anchor 1.25, **+0.011 marginal**。σ-regime 信号在 hold-out 上 essentially noise。"
+  :source "experiments/arc_260516a__team_b__B-R9-3__sigma_regime_exit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5ce83aa0" :type "atom"
+  :subj "exp:B-R9-3_sigma_regime_exit"
+  :pred "has_section_intro"
+  :obj "# B-R9-3 — R8-1 + σ-regime exit (high σ → 45s, low σ → 85s)\n\n> **TL;DR** —— B-R9 系列在 R8-1 base 上加 **vol-regime-dependent horizon**：高 σ 期 hold 短 (45s)，低 σ 期 hold 长 (85s)。train NAV 2.80 与 R8-1 几乎 tie；test NAV 1.26 vs anchor 1.25, **+0.011 marginal**。σ-regime 信号在 hold-out 上 essentially noise。"
+  :source "experiments/arc_260516a__team_b__B-R9-3__sigma_regime_exit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_67e26ae3" :type "atom"
+  :subj "exp:B-R9-3_sigma_regime_exit"
+  :pred "has_section_hypothesis"
+  :obj "- 假设：σ regime 影响 reversion 时间窗 —— 高 σ 期 mean-reversion 快，应缩短 horizon 防 over-hold；低 σ 期慢，延长。\n- 期待：sharpe 显著升，NAV 至少不降。\n- 实测：sharpe 8.02 略升（R8-1 = 7.78），NAV 几乎 tie；test 上 win_rate 78% 略好，但 NAV 几乎相同。"
+  :source "experiments/arc_260516a__team_b__B-R9-3__sigma_regime_exit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_df5db905" :type "atom"
+  :subj "exp:B-R9-3_sigma_regime_exit"
+  :pred "has_section_implementation"
+  :obj "- 主脚本：`/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_b/scripts/round_9_runner.py`\n- 步骤：\n  1. R8-1 base（no open_3min + bypass 0.30）\n  2. 计算 entry 时刻的 SPY 30min realized σ\n  3. 若 σ ≥ rolling-30d q66 → horizon = 45s；σ ≤ q33 → horizon = 85s；中间 → 65s (default)"
+  :source "experiments/arc_260516a__team_b__B-R9-3__sigma_regime_exit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_542bbc25" :type "atom"
+  :subj "exp:B-R9-3_sigma_regime_exit"
+  :pred "has_section_past_only_window"
+  :obj "- σ regime 用 rolling 30d 半开窗口的 q33/q66 threshold（strict past-only）。\n- entry 时刻 σ 也是 past-only (30min before entry)。\n- warmup=10，sub-window 不足回退到 default 65s.\n- `#leak/clean`。"
+  :source "experiments/arc_260516a__team_b__B-R9-3__sigma_regime_exit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a1b3899c" :type "atom"
+  :subj "exp:B-R9-3_sigma_regime_exit"
+  :pred "has_section_results"
+  :obj "| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 2.8006 | 169 | 8.02 | 85.8% | -0.90% |\n| Val (rolling 13w) | 1.0784 ± 0.083 | - | - | - | - |\n| Test | 1.2602 | 23 | 7.48 | 78.3% | -0.91% |\n| **Δ test NAV vs anchor** | +0.011 | +3 | +0.33 | +3.3pp | -0.39pp |\n| **Δ vs R8-1 base** | -0.012 | 0 | +0.37 | +4.4pp | -0.24pp |"
+  :source "experiments/arc_260516a__team_b__B-R9-3__sigma_regime_exit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5a320f89" :type "atom"
+  :subj "exp:B-R9-3_sigma_regime_exit"
+  :pred "has_section_risk_overfit"
+  :obj "- overfit_score = 0。\n- 真正 lesson：**σ-regime horizon adjustment 在 trade pool ~150 笔上提供不了 meaningful NAV gain**。sharpe 升 +0.37 是数据 noise。"
+  :source "experiments/arc_260516a__team_b__B-R9-3__sigma_regime_exit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_da416780" :type "atom"
+  :subj "exp:B-R9-3_sigma_regime_exit"
+  :pred "derived_from"
+  :obj "exp:B-R8-1_no_open3min_bypass03"
+  :source "experiments/arc_260516a__team_b__B-R9-3__sigma_regime_exit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_81950e50" :type "atom"
+  :subj "exp:B-R9-3_sigma_regime_exit"
+  :pred "same_round_as"
+  :obj "exp:B-R9-4_confluence_horizon"
+  :source "experiments/arc_260516a__team_b__B-R9-3__sigma_regime_exit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_180a2522" :type "atom"
+  :subj "exp:B-R9-3_sigma_regime_exit"
+  :pred "builds_against"
+  :obj "exp:anchor_g2_baseline"
+  :source "experiments/arc_260516a__team_b__B-R9-3__sigma_regime_exit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_df452796" :type "atom"
+  :subj "exp:B-R9-3_sigma_regime_exit"
+  :pred "has_section_lineage_links"
+  :obj "- **derived_from**: [[arc_260516a__team_b__B-R8-1__no_open3min_bypass03]]\n- **same_round_as**: [[arc_260516a__team_b__B-R9-4__confluence_horizon]]\n- **builds against**: [[arc_260516a__team_anchor__anchor_g2__baseline]]"
+  :source "experiments/arc_260516a__team_b__B-R9-3__sigma_regime_exit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ff5ee853" :type "atom"
+  :subj "exp:B-R9-3_sigma_regime_exit"
+  :pred "has_section_reports"
+  :obj "- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_b/output/cross_round_leaderboard_nav.csv` (R9-3)\n- [[arc_260516a__reporter_20260517_0547]]"
+  :source "experiments/arc_260516a__team_b__B-R9-3__sigma_regime_exit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5063e58f" :type "atom"
+  :subj "exp:B-R9-3_sigma_regime_exit"
+  :pred "has_section_notes"
+  :obj "- σ-regime 是另一条 \"**train 看不出贡献的 micro-axis**\"。下次再做类似 horizon adjustment 实验，应：\n  1. 直接 paired-sample test（同一 leg 在 default horizon 65s vs adaptive horizon 的 PnL diff），不是 cross-pool NAV 比较。\n  2. 若 paired diff 的 p-value 不显著，停掉本 axis。\n- σ-regime 与 confluence-horizon (R9-4) 一同证明 \"**horizon micro-adjustment 在 alpha_second_v1 的 trade pool 尺度上没有 statistical power**\"。"
+  :source "experiments/arc_260516a__team_b__B-R9-3__sigma_regime_exit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")

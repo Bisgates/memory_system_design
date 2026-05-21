@@ -1,0 +1,377 @@
+(card "exp:D-R1-2_isolated_keep" :type "experiment"
+  :subj "exp:D-R1-2_isolated_keep"
+  :body "---\nnav: 26\ntype: experiment\nid: D-R1-2_isolated_keep\nshort_name: isolated_keep\ntitle: \"D-R1-2 — anchor + post-filter keep lc_24h == 0 (anchor-only / cold-source alpha)\"\narc: 260516a\nteam: d\nround: r1\nparent_arc: \"[[arcs/260516a]]\"\nparent_lineage: \"[[lineages/arc_260516a__team_d__blacklist_default_admit]]\"\ntrain_nav: 2.0927\ntrain_trade_count: 124\ntrain_win_rate: 0.8710\ntrain_sharpe: 8.1992\ntrain_max_drawdown: -0.0101\nval_nav_mean: 1.0571\nval_nav_sigma: 0.0694\nval_window_count: 13\ntest_nav: null\ntest_trade_count: null\ntest_sharpe: null\ntest_win_rate: null\ntest_max_drawdown: null\nanchor_train_nav: 2.1882\nanchor_test_nav: 1.2486\nstatus: falsified\noutcome: no_test_run\nchampion: false\noverfit_score: 0\nleak_audit: clean\naxis: [whitelist, cross_source]\npast_only_window_days: null\nwarmup_required: null\ncreated: 2026-05-17T02:00:00\nlast_updated: 2026-05-17T05:09:00\ntags: [arc/260516a, team/d, round/r1, axis/whitelist, axis/cross_source, status/falsified, outcome/no_test_run, leak/clean, size/medium]\n---\n\n# D-R1-2 — anchor + keep lc_24h == 0 (isolated leg only)\n\n> **TL;DR** —— D-R1-2 = \"**反向 R1-1**\"：只保留 anchor-source 独占的 leg (lc_24h == 0，过去 24h 无 cross-source echo)，假设 cold-source alpha 没被别人吃过。**train NAV 2.09 < anchor 2.19**，砍 16 笔后未带来 NAV 提升，未上 test。\n\n## 假设 (Hypothesis)\n- 假设：anchor-source 独占的 leg = cold alpha 没被 cross-source confirm 过 → 反而**没被前人吃** → 更新鲜。\n- 实测：train NAV 2.09 < anchor 2.19, 砍 16 笔后 NAV 跌 -4%。\n\n## 实现 (Implementation)\n- 主脚本：`/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_d/scripts/round_1_runner.py`\n- 步骤：anchor G2 → post-filter keep leg if `lc_24h == 0`.\n- 124 笔。\n\n## Past-only window 处理\n- `lc_24h` past-only (events `event_time < t`).\n- `#leak/clean`.\n\n## 结果 (Results)\n| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 2.0927 | 124 | 8.20 | 87.1% | -1.01% |\n| Val (rolling 13w) | 1.0571 ± 0.069 | - | - | - | - |\n| Test | NOT RUN (train fail) | - | - | - | - |\n| **Δ train NAV vs anchor** | -0.096 | -16 | +0.50 | +1.4pp | 0 |\n\n## 风险 & overfit 嫌疑\n- overfit_score = 0.\n- mechanism 正方向（win/sharpe 略升），但砍 leg 太多 → NAV 净降。\n\n## Lineage（双链网）\n- **derived_from**: [[arc_260516a__team_anchor__anchor_g2__baseline]]\n- **antithesis_of**: [[arc_260516a__team_d__D-R1-1__consensus_gte1]] (R1-1 keep ≥1，R1-2 keep ==0)\n- **competes_with**: [[arc_260516a__team_d__D-R1-3__drop_full_consensus]]\n- **builds against**: [[arc_260516a__team_anchor__anchor_g2__baseline]]\n\n## Reports\n- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_d/output/cross_round_leaderboard_nav.csv` (D-R1-2)\n- [[arc_260516a__reporter_20260517_0547]]\n\n## Notes / 下次迭代\n- R1-1 / R1-2 / R1-3 三种 cross-source 切片在 anchor pool 上**都不能 strict beat anchor**。说明 cross-source signal 在 anchor pipeline 自身的 ratio_gate / volume_cap 上**已经被吃掉**，post-filter 没法再榨出 alpha。\n- 替代设计：cross-source 信号应该接进 **sizing layer**（同 ratio_norm 一样作 size factor），而不是作 admit/drop binary gate。这是 H 系列还未探的方向 —— 下次 arc 可补。\n"
+  :path "experiments/arc_260516a__team_d__D-R1-2__isolated_keep.md"
+  :source_mtime "2026-05-17T10:27:17+08:00"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_67faf375" :type "atom"
+  :subj "exp:D-R1-2_isolated_keep"
+  :pred "has_nav"
+  :obj 26
+  :source "experiments/arc_260516a__team_d__D-R1-2__isolated_keep.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e324bccd" :type "atom"
+  :subj "exp:D-R1-2_isolated_keep"
+  :pred "has_type"
+  :obj "experiment"
+  :source "experiments/arc_260516a__team_d__D-R1-2__isolated_keep.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5c5003f0" :type "atom"
+  :subj "exp:D-R1-2_isolated_keep"
+  :pred "has_id"
+  :obj "D-R1-2_isolated_keep"
+  :source "experiments/arc_260516a__team_d__D-R1-2__isolated_keep.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_2e9a191b" :type "atom"
+  :subj "exp:D-R1-2_isolated_keep"
+  :pred "has_short_name"
+  :obj "isolated_keep"
+  :source "experiments/arc_260516a__team_d__D-R1-2__isolated_keep.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_de3a9ad7" :type "atom"
+  :subj "exp:D-R1-2_isolated_keep"
+  :pred "has_title"
+  :obj "D-R1-2 — anchor + post-filter keep lc_24h == 0 (anchor-only / cold-source alpha)"
+  :source "experiments/arc_260516a__team_d__D-R1-2__isolated_keep.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_3221d348" :type "atom"
+  :subj "exp:D-R1-2_isolated_keep"
+  :pred "has_arc"
+  :obj "260516a"
+  :source "experiments/arc_260516a__team_d__D-R1-2__isolated_keep.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_bd569351" :type "atom"
+  :subj "exp:D-R1-2_isolated_keep"
+  :pred "has_team"
+  :obj "d"
+  :source "experiments/arc_260516a__team_d__D-R1-2__isolated_keep.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1fd74af2" :type "atom"
+  :subj "exp:D-R1-2_isolated_keep"
+  :pred "has_round"
+  :obj "r1"
+  :source "experiments/arc_260516a__team_d__D-R1-2__isolated_keep.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e35161c7" :type "atom"
+  :subj "exp:D-R1-2_isolated_keep"
+  :pred "parent_arc"
+  :obj "arc:260516a"
+  :source "experiments/arc_260516a__team_d__D-R1-2__isolated_keep.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_15f77aec" :type "atom"
+  :subj "exp:D-R1-2_isolated_keep"
+  :pred "parent_lineage"
+  :obj "lin:arc_260516a__team_d__blacklist_default_admit"
+  :source "experiments/arc_260516a__team_d__D-R1-2__isolated_keep.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_57e1bb91" :type "atom"
+  :subj "exp:D-R1-2_isolated_keep"
+  :pred "has_train_nav"
+  :obj 2.0927
+  :source "experiments/arc_260516a__team_d__D-R1-2__isolated_keep.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a3495f1e" :type "atom"
+  :subj "exp:D-R1-2_isolated_keep"
+  :pred "has_train_trade_count"
+  :obj 124
+  :source "experiments/arc_260516a__team_d__D-R1-2__isolated_keep.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f53f1751" :type "atom"
+  :subj "exp:D-R1-2_isolated_keep"
+  :pred "has_train_win_rate"
+  :obj 0.871
+  :source "experiments/arc_260516a__team_d__D-R1-2__isolated_keep.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d3bbc59e" :type "atom"
+  :subj "exp:D-R1-2_isolated_keep"
+  :pred "has_train_sharpe"
+  :obj 8.1992
+  :source "experiments/arc_260516a__team_d__D-R1-2__isolated_keep.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_eb8c88f8" :type "atom"
+  :subj "exp:D-R1-2_isolated_keep"
+  :pred "has_train_max_drawdown"
+  :obj -0.0101
+  :source "experiments/arc_260516a__team_d__D-R1-2__isolated_keep.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_792fafed" :type "atom"
+  :subj "exp:D-R1-2_isolated_keep"
+  :pred "has_val_nav_mean"
+  :obj 1.0571
+  :source "experiments/arc_260516a__team_d__D-R1-2__isolated_keep.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_10f5c26e" :type "atom"
+  :subj "exp:D-R1-2_isolated_keep"
+  :pred "has_val_nav_sigma"
+  :obj 0.0694
+  :source "experiments/arc_260516a__team_d__D-R1-2__isolated_keep.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_41210646" :type "atom"
+  :subj "exp:D-R1-2_isolated_keep"
+  :pred "has_val_window_count"
+  :obj 13
+  :source "experiments/arc_260516a__team_d__D-R1-2__isolated_keep.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ce88c3c5" :type "atom"
+  :subj "exp:D-R1-2_isolated_keep"
+  :pred "has_anchor_train_nav"
+  :obj 2.1882
+  :source "experiments/arc_260516a__team_d__D-R1-2__isolated_keep.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a5562a4d" :type "atom"
+  :subj "exp:D-R1-2_isolated_keep"
+  :pred "has_anchor_test_nav"
+  :obj 1.2486
+  :source "experiments/arc_260516a__team_d__D-R1-2__isolated_keep.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_427c88be" :type "atom"
+  :subj "exp:D-R1-2_isolated_keep"
+  :pred "has_status"
+  :obj "falsified"
+  :source "experiments/arc_260516a__team_d__D-R1-2__isolated_keep.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_77ff115e" :type "atom"
+  :subj "exp:D-R1-2_isolated_keep"
+  :pred "has_outcome"
+  :obj "no_test_run"
+  :source "experiments/arc_260516a__team_d__D-R1-2__isolated_keep.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_2602a750" :type "atom"
+  :subj "exp:D-R1-2_isolated_keep"
+  :pred "has_champion"
+  :obj false
+  :source "experiments/arc_260516a__team_d__D-R1-2__isolated_keep.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e75e52b4" :type "atom"
+  :subj "exp:D-R1-2_isolated_keep"
+  :pred "has_overfit_score"
+  :obj 0
+  :source "experiments/arc_260516a__team_d__D-R1-2__isolated_keep.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9b490723" :type "atom"
+  :subj "exp:D-R1-2_isolated_keep"
+  :pred "has_leak_audit"
+  :obj "clean"
+  :source "experiments/arc_260516a__team_d__D-R1-2__isolated_keep.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_abd3c7e0" :type "atom"
+  :subj "exp:D-R1-2_isolated_keep"
+  :pred "has_axis"
+  :obj "axis:whitelist"
+  :source "experiments/arc_260516a__team_d__D-R1-2__isolated_keep.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_46bf5402" :type "atom"
+  :subj "exp:D-R1-2_isolated_keep"
+  :pred "has_axis"
+  :obj "axis:cross_source"
+  :source "experiments/arc_260516a__team_d__D-R1-2__isolated_keep.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_df93dce1" :type "atom"
+  :subj "exp:D-R1-2_isolated_keep"
+  :pred "has_axis_list"
+  :obj ("whitelist" "cross_source")
+  :source "experiments/arc_260516a__team_d__D-R1-2__isolated_keep.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_47b7a859" :type "atom"
+  :subj "exp:D-R1-2_isolated_keep"
+  :pred "has_created"
+  :obj "2026-05-17 02:00:00"
+  :source "experiments/arc_260516a__team_d__D-R1-2__isolated_keep.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_62a5ab8b" :type "atom"
+  :subj "exp:D-R1-2_isolated_keep"
+  :pred "has_last_updated"
+  :obj "2026-05-17 05:09:00"
+  :source "experiments/arc_260516a__team_d__D-R1-2__isolated_keep.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f8cdae23" :type "atom"
+  :subj "exp:D-R1-2_isolated_keep"
+  :pred "has_tag"
+  :obj "tag:arc/260516a"
+  :source "experiments/arc_260516a__team_d__D-R1-2__isolated_keep.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_33de8732" :type "atom"
+  :subj "exp:D-R1-2_isolated_keep"
+  :pred "has_tag"
+  :obj "tag:team/d"
+  :source "experiments/arc_260516a__team_d__D-R1-2__isolated_keep.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_6b253f84" :type "atom"
+  :subj "exp:D-R1-2_isolated_keep"
+  :pred "has_tag"
+  :obj "tag:round/r1"
+  :source "experiments/arc_260516a__team_d__D-R1-2__isolated_keep.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1eadff35" :type "atom"
+  :subj "exp:D-R1-2_isolated_keep"
+  :pred "has_tag"
+  :obj "tag:axis/whitelist"
+  :source "experiments/arc_260516a__team_d__D-R1-2__isolated_keep.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_18f15517" :type "atom"
+  :subj "exp:D-R1-2_isolated_keep"
+  :pred "has_tag"
+  :obj "tag:axis/cross_source"
+  :source "experiments/arc_260516a__team_d__D-R1-2__isolated_keep.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d4261b98" :type "atom"
+  :subj "exp:D-R1-2_isolated_keep"
+  :pred "has_tag"
+  :obj "tag:status/falsified"
+  :source "experiments/arc_260516a__team_d__D-R1-2__isolated_keep.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_fef44054" :type "atom"
+  :subj "exp:D-R1-2_isolated_keep"
+  :pred "has_tag"
+  :obj "tag:outcome/no_test_run"
+  :source "experiments/arc_260516a__team_d__D-R1-2__isolated_keep.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_345354de" :type "atom"
+  :subj "exp:D-R1-2_isolated_keep"
+  :pred "has_tag"
+  :obj "tag:leak/clean"
+  :source "experiments/arc_260516a__team_d__D-R1-2__isolated_keep.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_7d50dc3d" :type "atom"
+  :subj "exp:D-R1-2_isolated_keep"
+  :pred "has_tag"
+  :obj "tag:size/medium"
+  :source "experiments/arc_260516a__team_d__D-R1-2__isolated_keep.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_0d94b5bd" :type "atom"
+  :subj "exp:D-R1-2_isolated_keep"
+  :pred "has_tl_dr"
+  :obj "D-R1-2 = \"**反向 R1-1**\"：只保留 anchor-source 独占的 leg (lc_24h == 0，过去 24h 无 cross-source echo)，假设 cold-source alpha 没被别人吃过。**train NAV 2.09 < anchor 2.19**，砍 16 笔后未带来 NAV 提升，未上 test。"
+  :source "experiments/arc_260516a__team_d__D-R1-2__isolated_keep.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_289dbbbf" :type "atom"
+  :subj "exp:D-R1-2_isolated_keep"
+  :pred "has_section_intro"
+  :obj "# D-R1-2 — anchor + keep lc_24h == 0 (isolated leg only)\n\n> **TL;DR** —— D-R1-2 = \"**反向 R1-1**\"：只保留 anchor-source 独占的 leg (lc_24h == 0，过去 24h 无 cross-source echo)，假设 cold-source alpha 没被别人吃过。**train NAV 2.09 < anchor 2.19**，砍 16 笔后未带来 NAV 提升，未上 test。"
+  :source "experiments/arc_260516a__team_d__D-R1-2__isolated_keep.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_390ef727" :type "atom"
+  :subj "exp:D-R1-2_isolated_keep"
+  :pred "has_section_hypothesis"
+  :obj "- 假设：anchor-source 独占的 leg = cold alpha 没被 cross-source confirm 过 → 反而**没被前人吃** → 更新鲜。\n- 实测：train NAV 2.09 < anchor 2.19, 砍 16 笔后 NAV 跌 -4%。"
+  :source "experiments/arc_260516a__team_d__D-R1-2__isolated_keep.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_99918d3f" :type "atom"
+  :subj "exp:D-R1-2_isolated_keep"
+  :pred "has_section_implementation"
+  :obj "- 主脚本：`/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_d/scripts/round_1_runner.py`\n- 步骤：anchor G2 → post-filter keep leg if `lc_24h == 0`.\n- 124 笔。"
+  :source "experiments/arc_260516a__team_d__D-R1-2__isolated_keep.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_56c6a45d" :type "atom"
+  :subj "exp:D-R1-2_isolated_keep"
+  :pred "has_section_past_only_window"
+  :obj "- `lc_24h` past-only (events `event_time < t`).\n- `#leak/clean`."
+  :source "experiments/arc_260516a__team_d__D-R1-2__isolated_keep.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_8a82ef35" :type "atom"
+  :subj "exp:D-R1-2_isolated_keep"
+  :pred "has_section_results"
+  :obj "| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 2.0927 | 124 | 8.20 | 87.1% | -1.01% |\n| Val (rolling 13w) | 1.0571 ± 0.069 | - | - | - | - |\n| Test | NOT RUN (train fail) | - | - | - | - |\n| **Δ train NAV vs anchor** | -0.096 | -16 | +0.50 | +1.4pp | 0 |"
+  :source "experiments/arc_260516a__team_d__D-R1-2__isolated_keep.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f7f98753" :type "atom"
+  :subj "exp:D-R1-2_isolated_keep"
+  :pred "has_section_risk_overfit"
+  :obj "- overfit_score = 0.\n- mechanism 正方向（win/sharpe 略升），但砍 leg 太多 → NAV 净降。"
+  :source "experiments/arc_260516a__team_d__D-R1-2__isolated_keep.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f627b39c" :type "atom"
+  :subj "exp:D-R1-2_isolated_keep"
+  :pred "derived_from"
+  :obj "exp:anchor_g2_baseline"
+  :source "experiments/arc_260516a__team_d__D-R1-2__isolated_keep.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_fc123334" :type "atom"
+  :subj "exp:D-R1-2_isolated_keep"
+  :pred "antithesis_of"
+  :obj "exp:D-R1-1_consensus_gte1"
+  :source "experiments/arc_260516a__team_d__D-R1-2__isolated_keep.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_590f6f6a" :type "atom"
+  :subj "exp:D-R1-2_isolated_keep"
+  :pred "competes_with"
+  :obj "exp:D-R1-3_drop_full_consensus"
+  :source "experiments/arc_260516a__team_d__D-R1-2__isolated_keep.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b59b1533" :type "atom"
+  :subj "exp:D-R1-2_isolated_keep"
+  :pred "builds_against"
+  :obj "exp:anchor_g2_baseline"
+  :source "experiments/arc_260516a__team_d__D-R1-2__isolated_keep.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c3e54d3c" :type "atom"
+  :subj "exp:D-R1-2_isolated_keep"
+  :pred "has_section_lineage_links"
+  :obj "- **derived_from**: [[arc_260516a__team_anchor__anchor_g2__baseline]]\n- **antithesis_of**: [[arc_260516a__team_d__D-R1-1__consensus_gte1]] (R1-1 keep ≥1，R1-2 keep ==0)\n- **competes_with**: [[arc_260516a__team_d__D-R1-3__drop_full_consensus]]\n- **builds against**: [[arc_260516a__team_anchor__anchor_g2__baseline]]"
+  :source "experiments/arc_260516a__team_d__D-R1-2__isolated_keep.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_136c89fe" :type "atom"
+  :subj "exp:D-R1-2_isolated_keep"
+  :pred "has_section_reports"
+  :obj "- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_d/output/cross_round_leaderboard_nav.csv` (D-R1-2)\n- [[arc_260516a__reporter_20260517_0547]]"
+  :source "experiments/arc_260516a__team_d__D-R1-2__isolated_keep.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1260a737" :type "atom"
+  :subj "exp:D-R1-2_isolated_keep"
+  :pred "has_section_notes"
+  :obj "- R1-1 / R1-2 / R1-3 三种 cross-source 切片在 anchor pool 上**都不能 strict beat anchor**。说明 cross-source signal 在 anchor pipeline 自身的 ratio_gate / volume_cap 上**已经被吃掉**，post-filter 没法再榨出 alpha。\n- 替代设计：cross-source 信号应该接进 **sizing layer**（同 ratio_norm 一样作 size factor），而不是作 admit/drop binary gate。这是 H 系列还未探的方向 —— 下次 arc 可补。"
+  :source "experiments/arc_260516a__team_d__D-R1-2__isolated_keep.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")

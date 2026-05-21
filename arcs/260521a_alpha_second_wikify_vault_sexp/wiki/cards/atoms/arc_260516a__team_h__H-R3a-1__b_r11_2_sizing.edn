@@ -1,0 +1,440 @@
+(card "exp:H-R3a-1_b_r11_2_sizing" :type "experiment"
+  :subj "exp:H-R3a-1_b_r11_2_sizing"
+  :body "---\nnav: 11\ntype: experiment\nid: H-R3a-1\nshort_name: b_r11_2_sizing\ntitle: \"H-R3a-1 — B-R11-2 × clip(ratio/median, 0.5, 1.5)\"\narc: 260516a\nteam: h\nround: r3a\nparent_arc: \"[[arcs/260516a]]\"\nparent_lineage: \"[[lineages/arc_260516a__team_h__sizing]]\"\ntrain_nav: 2.5475\ntrain_trade_count: 146\ntrain_win_rate: 0.8562\ntrain_sharpe: 6.8841\ntrain_max_drawdown: -0.0076\nval_nav_mean: 1.0685\nval_nav_sigma: 0.0801\nval_window_count: 13\ntest_nav: 1.0521\ntest_trade_count: 13\ntest_sharpe: 6.8324\ntest_win_rate: 0.6923\ntest_max_drawdown: -0.0070\nanchor_train_nav: 2.1882\nanchor_test_nav: 1.2486\nstatus: falsified\noutcome: test_fail\nchampion: false\noverfit_score: 0\nleak_audit: clean\naxis: [sizing, blacklist]\npast_only_window_days: 30\nwarmup_required: 10\ncreated: 2026-05-17T03:00:00\nlast_updated: 2026-05-17T05:09:00\ntags: [arc/260516a, team/h, round/r3a, axis/sizing, axis/blacklist, status/falsified, outcome/test_fail, leak/clean, size/medium]\n---\n\n# H-R3a-1 — B-R11-2 base × ratio/median sizing\n\n> **TL;DR** —— R3a 另一档：用 [[arc_260516a__team_b__B-R11-2__blacklist_vol_regime_low]] (B 队 R11 vol-regime blacklist) 作 base，叠 sizing。train 2.55 (落后 R2-2 1.10)，**test 1.05 < anchor 1.25**，更失败。再次证明 H base 不应离开 C8.4。\n\n## 假设 (Hypothesis)\n- B-R11-2 是 B 队 R11 vol-regime blacklist 顶点，理论上\"砍掉低 σ 历史 30min trade\"应当留出更干净 pool。\n- 假设：sizing 能放大 B-R11-2 的 edge → 至少与 C8.4 base 同档。\n- 实测：B-R11-2 train pool 仅 146 笔（C8.4 179），样本损失 → test 上 alpha 衰减更剧。\n\n## 实现 (Implementation)\n- 主脚本：`/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_h/scripts/round_3a_runner.py`\n- trade selector = B-R11-2: R10-4 stack ∪ ticker 30-min realized vol < TRAIN q25 blacklist\n- sizing 公式同 H-R2-2.\n- mean_size = 1.054.\n\n## Past-only window 处理\n- `rolling_30d_ratio_median` strict past-only.\n- ticker 30min vol 是 trigger 前 30min 窗口 → past-only。\n- `#leak/clean`.\n\n## 结果 (Results)\n| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 2.5475 | 146 | 6.88 | 85.6% | -0.76% |\n| Val (rolling 13w) | 1.0685 ± 0.080 | - | - | - | - |\n| Test | **1.0521** | 13 | 6.83 | 69.2% | -0.70% |\n| **Δ test NAV vs anchor** | **-0.196 (FAIL)** | -7 | -0.32 | -5.8pp | -0.17pp |\n\n注意 test trade_count 13 已落到 gate 边缘 (anchor 20)，统计置信度大幅下降。\n\n## 风险 & overfit 嫌疑\n- overfit_score = 0 nominal, 但 test count_pass 实际边缘失败。\n- vol-regime blacklist 是历史 train-fit threshold，hold-out 上分布漂移直接打穿。\n\n## Lineage（双链网）\n- **derived_from**: [[arc_260516a__team_h__H-R1-1__rolling_30d_median_solo]]\n- **builds on**: [[arc_260516a__team_b__B-R11-2__blacklist_vol_regime_low]]\n- **inherits_failure_mode_from**: [[arc_260516a__team_b__B-R11-2__blacklist_vol_regime_low]]\n- **dominated_by**: [[arc_260516a__team_h__H-R2-2__c84_linear_sizing]]\n- **competes_with**: [[arc_260516a__team_h__H-R3a-2__d_r2_3_sizing]] (R3a 同 round)\n- **builds against**: [[arc_260516a__team_anchor__anchor_g2__baseline]]\n\n## Reports\n- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_h/output/cross_round_leaderboard_nav.csv` (R3a-1)\n- [[arc_260516a__reporter_20260517_0547]]\n\n## Notes / 下次迭代\n- R3a-1 + R3a-2 共同证明 **\"H 系列 sizing 不要再换 base\"**。下次 H 系列继任者直接 lock C8.4 base 上做 sizing functional form sweep。\n- B-R11-2 base 加 sizing 的失败也间接说明 B-R11 整条 lineage 在 test 上不稳，不应作为 production 候选。\n"
+  :path "experiments/arc_260516a__team_h__H-R3a-1__b_r11_2_sizing.md"
+  :source_mtime "2026-05-17T10:20:11+08:00"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_76909808" :type "atom"
+  :subj "exp:H-R3a-1_b_r11_2_sizing"
+  :pred "has_nav"
+  :obj 11
+  :source "experiments/arc_260516a__team_h__H-R3a-1__b_r11_2_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b20cdc4c" :type "atom"
+  :subj "exp:H-R3a-1_b_r11_2_sizing"
+  :pred "has_type"
+  :obj "experiment"
+  :source "experiments/arc_260516a__team_h__H-R3a-1__b_r11_2_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_fcbd2cc1" :type "atom"
+  :subj "exp:H-R3a-1_b_r11_2_sizing"
+  :pred "has_id"
+  :obj "H-R3a-1"
+  :source "experiments/arc_260516a__team_h__H-R3a-1__b_r11_2_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_0ac4ac36" :type "atom"
+  :subj "exp:H-R3a-1_b_r11_2_sizing"
+  :pred "has_short_name"
+  :obj "b_r11_2_sizing"
+  :source "experiments/arc_260516a__team_h__H-R3a-1__b_r11_2_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_cefe8d7c" :type "atom"
+  :subj "exp:H-R3a-1_b_r11_2_sizing"
+  :pred "has_title"
+  :obj "H-R3a-1 — B-R11-2 × clip(ratio/median, 0.5, 1.5)"
+  :source "experiments/arc_260516a__team_h__H-R3a-1__b_r11_2_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9abd8794" :type "atom"
+  :subj "exp:H-R3a-1_b_r11_2_sizing"
+  :pred "has_arc"
+  :obj "260516a"
+  :source "experiments/arc_260516a__team_h__H-R3a-1__b_r11_2_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d6aed498" :type "atom"
+  :subj "exp:H-R3a-1_b_r11_2_sizing"
+  :pred "has_team"
+  :obj "h"
+  :source "experiments/arc_260516a__team_h__H-R3a-1__b_r11_2_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f45b6ce8" :type "atom"
+  :subj "exp:H-R3a-1_b_r11_2_sizing"
+  :pred "has_round"
+  :obj "r3a"
+  :source "experiments/arc_260516a__team_h__H-R3a-1__b_r11_2_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_556fc307" :type "atom"
+  :subj "exp:H-R3a-1_b_r11_2_sizing"
+  :pred "parent_arc"
+  :obj "arc:260516a"
+  :source "experiments/arc_260516a__team_h__H-R3a-1__b_r11_2_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9a573684" :type "atom"
+  :subj "exp:H-R3a-1_b_r11_2_sizing"
+  :pred "parent_lineage"
+  :obj "lin:arc_260516a__team_h__sizing"
+  :source "experiments/arc_260516a__team_h__H-R3a-1__b_r11_2_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_33a03483" :type "atom"
+  :subj "exp:H-R3a-1_b_r11_2_sizing"
+  :pred "has_train_nav"
+  :obj 2.5475
+  :source "experiments/arc_260516a__team_h__H-R3a-1__b_r11_2_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_331681af" :type "atom"
+  :subj "exp:H-R3a-1_b_r11_2_sizing"
+  :pred "has_train_trade_count"
+  :obj 146
+  :source "experiments/arc_260516a__team_h__H-R3a-1__b_r11_2_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c57bb9bb" :type "atom"
+  :subj "exp:H-R3a-1_b_r11_2_sizing"
+  :pred "has_train_win_rate"
+  :obj 0.8562
+  :source "experiments/arc_260516a__team_h__H-R3a-1__b_r11_2_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_8faa34cb" :type "atom"
+  :subj "exp:H-R3a-1_b_r11_2_sizing"
+  :pred "has_train_sharpe"
+  :obj 6.8841
+  :source "experiments/arc_260516a__team_h__H-R3a-1__b_r11_2_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_bf0a48c6" :type "atom"
+  :subj "exp:H-R3a-1_b_r11_2_sizing"
+  :pred "has_train_max_drawdown"
+  :obj -0.0076
+  :source "experiments/arc_260516a__team_h__H-R3a-1__b_r11_2_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_992f7350" :type "atom"
+  :subj "exp:H-R3a-1_b_r11_2_sizing"
+  :pred "has_val_nav_mean"
+  :obj 1.0685
+  :source "experiments/arc_260516a__team_h__H-R3a-1__b_r11_2_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1d03f786" :type "atom"
+  :subj "exp:H-R3a-1_b_r11_2_sizing"
+  :pred "has_val_nav_sigma"
+  :obj 0.0801
+  :source "experiments/arc_260516a__team_h__H-R3a-1__b_r11_2_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_93ee1e76" :type "atom"
+  :subj "exp:H-R3a-1_b_r11_2_sizing"
+  :pred "has_val_window_count"
+  :obj 13
+  :source "experiments/arc_260516a__team_h__H-R3a-1__b_r11_2_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_25837e7c" :type "atom"
+  :subj "exp:H-R3a-1_b_r11_2_sizing"
+  :pred "has_test_nav"
+  :obj 1.0521
+  :source "experiments/arc_260516a__team_h__H-R3a-1__b_r11_2_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_2b3cacf9" :type "atom"
+  :subj "exp:H-R3a-1_b_r11_2_sizing"
+  :pred "has_test_trade_count"
+  :obj 13
+  :source "experiments/arc_260516a__team_h__H-R3a-1__b_r11_2_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c52a2b05" :type "atom"
+  :subj "exp:H-R3a-1_b_r11_2_sizing"
+  :pred "has_test_sharpe"
+  :obj 6.8324
+  :source "experiments/arc_260516a__team_h__H-R3a-1__b_r11_2_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b73d75e3" :type "atom"
+  :subj "exp:H-R3a-1_b_r11_2_sizing"
+  :pred "has_test_win_rate"
+  :obj 0.6923
+  :source "experiments/arc_260516a__team_h__H-R3a-1__b_r11_2_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_153e6617" :type "atom"
+  :subj "exp:H-R3a-1_b_r11_2_sizing"
+  :pred "has_test_max_drawdown"
+  :obj -0.007
+  :source "experiments/arc_260516a__team_h__H-R3a-1__b_r11_2_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c11e8fad" :type "atom"
+  :subj "exp:H-R3a-1_b_r11_2_sizing"
+  :pred "has_anchor_train_nav"
+  :obj 2.1882
+  :source "experiments/arc_260516a__team_h__H-R3a-1__b_r11_2_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5986f009" :type "atom"
+  :subj "exp:H-R3a-1_b_r11_2_sizing"
+  :pred "has_anchor_test_nav"
+  :obj 1.2486
+  :source "experiments/arc_260516a__team_h__H-R3a-1__b_r11_2_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d130709a" :type "atom"
+  :subj "exp:H-R3a-1_b_r11_2_sizing"
+  :pred "has_status"
+  :obj "falsified"
+  :source "experiments/arc_260516a__team_h__H-R3a-1__b_r11_2_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_fe229a08" :type "atom"
+  :subj "exp:H-R3a-1_b_r11_2_sizing"
+  :pred "has_outcome"
+  :obj "test_fail"
+  :source "experiments/arc_260516a__team_h__H-R3a-1__b_r11_2_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ebf88f54" :type "atom"
+  :subj "exp:H-R3a-1_b_r11_2_sizing"
+  :pred "has_champion"
+  :obj false
+  :source "experiments/arc_260516a__team_h__H-R3a-1__b_r11_2_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_19ea2dfb" :type "atom"
+  :subj "exp:H-R3a-1_b_r11_2_sizing"
+  :pred "has_overfit_score"
+  :obj 0
+  :source "experiments/arc_260516a__team_h__H-R3a-1__b_r11_2_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1cdb3d68" :type "atom"
+  :subj "exp:H-R3a-1_b_r11_2_sizing"
+  :pred "has_leak_audit"
+  :obj "clean"
+  :source "experiments/arc_260516a__team_h__H-R3a-1__b_r11_2_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_92ffb7ea" :type "atom"
+  :subj "exp:H-R3a-1_b_r11_2_sizing"
+  :pred "has_axis"
+  :obj "axis:sizing"
+  :source "experiments/arc_260516a__team_h__H-R3a-1__b_r11_2_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_fbeba331" :type "atom"
+  :subj "exp:H-R3a-1_b_r11_2_sizing"
+  :pred "has_axis"
+  :obj "axis:blacklist"
+  :source "experiments/arc_260516a__team_h__H-R3a-1__b_r11_2_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5fbfea34" :type "atom"
+  :subj "exp:H-R3a-1_b_r11_2_sizing"
+  :pred "has_axis_list"
+  :obj ("sizing" "blacklist")
+  :source "experiments/arc_260516a__team_h__H-R3a-1__b_r11_2_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_8dd80529" :type "atom"
+  :subj "exp:H-R3a-1_b_r11_2_sizing"
+  :pred "has_past_only_window_days"
+  :obj 30
+  :source "experiments/arc_260516a__team_h__H-R3a-1__b_r11_2_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_feffa1f1" :type "atom"
+  :subj "exp:H-R3a-1_b_r11_2_sizing"
+  :pred "has_warmup_required"
+  :obj 10
+  :source "experiments/arc_260516a__team_h__H-R3a-1__b_r11_2_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_405fc15d" :type "atom"
+  :subj "exp:H-R3a-1_b_r11_2_sizing"
+  :pred "has_created"
+  :obj "2026-05-17 03:00:00"
+  :source "experiments/arc_260516a__team_h__H-R3a-1__b_r11_2_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d9ec920d" :type "atom"
+  :subj "exp:H-R3a-1_b_r11_2_sizing"
+  :pred "has_last_updated"
+  :obj "2026-05-17 05:09:00"
+  :source "experiments/arc_260516a__team_h__H-R3a-1__b_r11_2_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9e7114d2" :type "atom"
+  :subj "exp:H-R3a-1_b_r11_2_sizing"
+  :pred "has_tag"
+  :obj "tag:arc/260516a"
+  :source "experiments/arc_260516a__team_h__H-R3a-1__b_r11_2_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d79770f1" :type "atom"
+  :subj "exp:H-R3a-1_b_r11_2_sizing"
+  :pred "has_tag"
+  :obj "tag:team/h"
+  :source "experiments/arc_260516a__team_h__H-R3a-1__b_r11_2_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_58c52720" :type "atom"
+  :subj "exp:H-R3a-1_b_r11_2_sizing"
+  :pred "has_tag"
+  :obj "tag:round/r3a"
+  :source "experiments/arc_260516a__team_h__H-R3a-1__b_r11_2_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_208eff8d" :type "atom"
+  :subj "exp:H-R3a-1_b_r11_2_sizing"
+  :pred "has_tag"
+  :obj "tag:axis/sizing"
+  :source "experiments/arc_260516a__team_h__H-R3a-1__b_r11_2_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_4ed51350" :type "atom"
+  :subj "exp:H-R3a-1_b_r11_2_sizing"
+  :pred "has_tag"
+  :obj "tag:axis/blacklist"
+  :source "experiments/arc_260516a__team_h__H-R3a-1__b_r11_2_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1e9fe418" :type "atom"
+  :subj "exp:H-R3a-1_b_r11_2_sizing"
+  :pred "has_tag"
+  :obj "tag:status/falsified"
+  :source "experiments/arc_260516a__team_h__H-R3a-1__b_r11_2_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_845a412a" :type "atom"
+  :subj "exp:H-R3a-1_b_r11_2_sizing"
+  :pred "has_tag"
+  :obj "tag:outcome/test_fail"
+  :source "experiments/arc_260516a__team_h__H-R3a-1__b_r11_2_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_6e2253eb" :type "atom"
+  :subj "exp:H-R3a-1_b_r11_2_sizing"
+  :pred "has_tag"
+  :obj "tag:leak/clean"
+  :source "experiments/arc_260516a__team_h__H-R3a-1__b_r11_2_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_08770152" :type "atom"
+  :subj "exp:H-R3a-1_b_r11_2_sizing"
+  :pred "has_tag"
+  :obj "tag:size/medium"
+  :source "experiments/arc_260516a__team_h__H-R3a-1__b_r11_2_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_60b8a7a9" :type "atom"
+  :subj "exp:H-R3a-1_b_r11_2_sizing"
+  :pred "has_tl_dr"
+  :obj "R3a 另一档：用 [[arc_260516a__team_b__B-R11-2__blacklist_vol_regime_low]] (B 队 R11 vol-regime blacklist) 作 base，叠 sizing。train 2.55 (落后 R2-2 1.10)，**test 1.05 < anchor 1.25**，更失败。再次证明 H base 不应离开 C8.4。"
+  :source "experiments/arc_260516a__team_h__H-R3a-1__b_r11_2_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_608e155a" :type "atom"
+  :subj "exp:H-R3a-1_b_r11_2_sizing"
+  :pred "has_section_intro"
+  :obj "# H-R3a-1 — B-R11-2 base × ratio/median sizing\n\n> **TL;DR** —— R3a 另一档：用 [[arc_260516a__team_b__B-R11-2__blacklist_vol_regime_low]] (B 队 R11 vol-regime blacklist) 作 base，叠 sizing。train 2.55 (落后 R2-2 1.10)，**test 1.05 < anchor 1.25**，更失败。再次证明 H base 不应离开 C8.4。"
+  :source "experiments/arc_260516a__team_h__H-R3a-1__b_r11_2_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_52bbee33" :type "atom"
+  :subj "exp:H-R3a-1_b_r11_2_sizing"
+  :pred "has_section_hypothesis"
+  :obj "- B-R11-2 是 B 队 R11 vol-regime blacklist 顶点，理论上\"砍掉低 σ 历史 30min trade\"应当留出更干净 pool。\n- 假设：sizing 能放大 B-R11-2 的 edge → 至少与 C8.4 base 同档。\n- 实测：B-R11-2 train pool 仅 146 笔（C8.4 179），样本损失 → test 上 alpha 衰减更剧。"
+  :source "experiments/arc_260516a__team_h__H-R3a-1__b_r11_2_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_6ac3a4b0" :type "atom"
+  :subj "exp:H-R3a-1_b_r11_2_sizing"
+  :pred "has_section_implementation"
+  :obj "- 主脚本：`/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_h/scripts/round_3a_runner.py`\n- trade selector = B-R11-2: R10-4 stack ∪ ticker 30-min realized vol < TRAIN q25 blacklist\n- sizing 公式同 H-R2-2.\n- mean_size = 1.054."
+  :source "experiments/arc_260516a__team_h__H-R3a-1__b_r11_2_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_185ab6e7" :type "atom"
+  :subj "exp:H-R3a-1_b_r11_2_sizing"
+  :pred "has_section_past_only_window"
+  :obj "- `rolling_30d_ratio_median` strict past-only.\n- ticker 30min vol 是 trigger 前 30min 窗口 → past-only。\n- `#leak/clean`."
+  :source "experiments/arc_260516a__team_h__H-R3a-1__b_r11_2_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_6899ea00" :type "atom"
+  :subj "exp:H-R3a-1_b_r11_2_sizing"
+  :pred "has_section_results"
+  :obj "| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 2.5475 | 146 | 6.88 | 85.6% | -0.76% |\n| Val (rolling 13w) | 1.0685 ± 0.080 | - | - | - | - |\n| Test | **1.0521** | 13 | 6.83 | 69.2% | -0.70% |\n| **Δ test NAV vs anchor** | **-0.196 (FAIL)** | -7 | -0.32 | -5.8pp | -0.17pp |\n\n注意 test trade_count 13 已落到 gate 边缘 (anchor 20)，统计置信度大幅下降。"
+  :source "experiments/arc_260516a__team_h__H-R3a-1__b_r11_2_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ef985e74" :type "atom"
+  :subj "exp:H-R3a-1_b_r11_2_sizing"
+  :pred "has_section_risk_overfit"
+  :obj "- overfit_score = 0 nominal, 但 test count_pass 实际边缘失败。\n- vol-regime blacklist 是历史 train-fit threshold，hold-out 上分布漂移直接打穿。"
+  :source "experiments/arc_260516a__team_h__H-R3a-1__b_r11_2_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1d052dd3" :type "atom"
+  :subj "exp:H-R3a-1_b_r11_2_sizing"
+  :pred "derived_from"
+  :obj "exp:H-R1-1_rolling_30d_median_solo"
+  :source "experiments/arc_260516a__team_h__H-R3a-1__b_r11_2_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e4f7916e" :type "atom"
+  :subj "exp:H-R3a-1_b_r11_2_sizing"
+  :pred "builds_on"
+  :obj "exp:B-R11-2_blacklist_vol_regime_low"
+  :source "experiments/arc_260516a__team_h__H-R3a-1__b_r11_2_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_53ff7e27" :type "atom"
+  :subj "exp:H-R3a-1_b_r11_2_sizing"
+  :pred "inherits_failure_mode_from"
+  :obj "exp:B-R11-2_blacklist_vol_regime_low"
+  :source "experiments/arc_260516a__team_h__H-R3a-1__b_r11_2_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_143d3559" :type "atom"
+  :subj "exp:H-R3a-1_b_r11_2_sizing"
+  :pred "dominated_by"
+  :obj "exp:H-R2-2_c84_linear_sizing"
+  :source "experiments/arc_260516a__team_h__H-R3a-1__b_r11_2_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_78bb9930" :type "atom"
+  :subj "exp:H-R3a-1_b_r11_2_sizing"
+  :pred "competes_with"
+  :obj "exp:H-R3a-2_d_r2_3_sizing"
+  :source "experiments/arc_260516a__team_h__H-R3a-1__b_r11_2_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_fc7fcbf6" :type "atom"
+  :subj "exp:H-R3a-1_b_r11_2_sizing"
+  :pred "builds_against"
+  :obj "exp:anchor_g2_baseline"
+  :source "experiments/arc_260516a__team_h__H-R3a-1__b_r11_2_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_17e15048" :type "atom"
+  :subj "exp:H-R3a-1_b_r11_2_sizing"
+  :pred "has_section_lineage_links"
+  :obj "- **derived_from**: [[arc_260516a__team_h__H-R1-1__rolling_30d_median_solo]]\n- **builds on**: [[arc_260516a__team_b__B-R11-2__blacklist_vol_regime_low]]\n- **inherits_failure_mode_from**: [[arc_260516a__team_b__B-R11-2__blacklist_vol_regime_low]]\n- **dominated_by**: [[arc_260516a__team_h__H-R2-2__c84_linear_sizing]]\n- **competes_with**: [[arc_260516a__team_h__H-R3a-2__d_r2_3_sizing]] (R3a 同 round)\n- **builds against**: [[arc_260516a__team_anchor__anchor_g2__baseline]]"
+  :source "experiments/arc_260516a__team_h__H-R3a-1__b_r11_2_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_335376cf" :type "atom"
+  :subj "exp:H-R3a-1_b_r11_2_sizing"
+  :pred "has_section_reports"
+  :obj "- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_h/output/cross_round_leaderboard_nav.csv` (R3a-1)\n- [[arc_260516a__reporter_20260517_0547]]"
+  :source "experiments/arc_260516a__team_h__H-R3a-1__b_r11_2_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_74104225" :type "atom"
+  :subj "exp:H-R3a-1_b_r11_2_sizing"
+  :pred "has_section_notes"
+  :obj "- R3a-1 + R3a-2 共同证明 **\"H 系列 sizing 不要再换 base\"**。下次 H 系列继任者直接 lock C8.4 base 上做 sizing functional form sweep。\n- B-R11-2 base 加 sizing 的失败也间接说明 B-R11 整条 lineage 在 test 上不稳，不应作为 production 候选。"
+  :source "experiments/arc_260516a__team_h__H-R3a-1__b_r11_2_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")

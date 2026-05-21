@@ -1,0 +1,377 @@
+(card "exp:F-R2-2_vpin_drop_q70_300s" :type "experiment"
+  :subj "exp:F-R2-2_vpin_drop_q70_300s"
+  :body "---\nnav: 28\ntype: experiment\nid: F-R2-2_vpin_drop_q70_300s\nshort_name: vpin_drop_q70_300s\ntitle: \"F-R2-2 — anchor + drop VPIN@300s trailing-cum q70+ (more aggressive)\"\narc: 260516a\nteam: f\nround: r2\nparent_arc: \"[[arcs/260516a]]\"\nparent_lineage: \"[[lineages/arc_260516a__team_f__microstructure]]\"\ntrain_nav: 1.7290\ntrain_trade_count: 92\ntrain_win_rate: 0.8478\ntrain_sharpe: 7.5685\ntrain_max_drawdown: -0.0101\nval_nav_mean: 1.0446\nval_nav_sigma: 0.0597\nval_window_count: 12\ntest_nav: null\ntest_trade_count: null\ntest_sharpe: null\ntest_win_rate: null\ntest_max_drawdown: null\nanchor_train_nav: 2.1882\nanchor_test_nav: 1.2486\nstatus: falsified\noutcome: no_test_run\nchampion: false\noverfit_score: 0\nleak_audit: clean\naxis: [microstructure, blacklist]\npast_only_window_days: null\nwarmup_required: 10\ncreated: 2026-05-17T01:30:00\nlast_updated: 2026-05-17T05:09:00\ntags: [arc/260516a, team/f, round/r2, axis/microstructure, axis/blacklist, status/falsified, outcome/no_test_run, leak/clean, size/small]\n---\n\n# F-R2-2 — anchor + drop VPIN@300s q70+\n\n> **TL;DR** —— F-R2 sweep 中更激进 cutoff 档：drop q70+ vs F-R2-1 的 q80+。train 砍到 92 笔, NAV 1.73 远低 anchor —— 越激进越败。未上 test。\n\n## 假设 (Hypothesis)\n- 假设：q80+ cutoff 太宽松 (10% drop), 改 q70+ (30% drop) 应当更强力 drop bad leg。\n- 实测：drop 太多 → sample 崩。\n\n## 实现 (Implementation)\n- 同 F-R2-1, cutoff q70 instead of q80. 92 笔.\n\n## Past-only window 处理\n- trailing-cum past-only. `#leak/clean`.\n\n## 结果 (Results)\n| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 1.7290 | 92 | 7.57 | 84.8% | -1.01% |\n| Val (12w only) | 1.0446 ± 0.060 | - | - | - | - |\n| Test | NOT RUN | - | - | - | - |\n| **Δ train NAV vs anchor** | -0.46 | -48 | -0.13 | -0.9pp | 0 |\n\n## 风险 & overfit 嫌疑\n- overfit_score = 0; count_pass=False (val 12w not 13).\n\n## Lineage（双链网）\n- **derived_from**: [[arc_260516a__team_f__F-R2-1__vpin_drop_q80_300s]]\n- **competes_with**: [[arc_260516a__team_f__F-R2-3__vpin_drop_q80_600s]]\n- **builds against**: [[arc_260516a__team_anchor__anchor_g2__baseline]]\n\n## Reports\n- `team_f/output/cross_round_leaderboard_nav.csv` (F-R2-2)\n- [[arc_260516a__reporter_20260517_0547]]\n\n## Notes / 下次迭代\n- cutoff sensitivity: q70 → q80 是 monotone NAV 改善但都败。说明不是 cutoff 调节问题，是 VPIN 信号本身 unproductive。\n"
+  :path "experiments/arc_260516a__team_f__F-R2-2__vpin_drop_q70_300s.md"
+  :source_mtime "2026-05-17T10:28:44+08:00"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_81d5311c" :type "atom"
+  :subj "exp:F-R2-2_vpin_drop_q70_300s"
+  :pred "has_nav"
+  :obj 28
+  :source "experiments/arc_260516a__team_f__F-R2-2__vpin_drop_q70_300s.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b4338ab3" :type "atom"
+  :subj "exp:F-R2-2_vpin_drop_q70_300s"
+  :pred "has_type"
+  :obj "experiment"
+  :source "experiments/arc_260516a__team_f__F-R2-2__vpin_drop_q70_300s.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_789751f4" :type "atom"
+  :subj "exp:F-R2-2_vpin_drop_q70_300s"
+  :pred "has_id"
+  :obj "F-R2-2_vpin_drop_q70_300s"
+  :source "experiments/arc_260516a__team_f__F-R2-2__vpin_drop_q70_300s.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_57c580c3" :type "atom"
+  :subj "exp:F-R2-2_vpin_drop_q70_300s"
+  :pred "has_short_name"
+  :obj "vpin_drop_q70_300s"
+  :source "experiments/arc_260516a__team_f__F-R2-2__vpin_drop_q70_300s.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a3817e7f" :type "atom"
+  :subj "exp:F-R2-2_vpin_drop_q70_300s"
+  :pred "has_title"
+  :obj "F-R2-2 — anchor + drop VPIN@300s trailing-cum q70+ (more aggressive)"
+  :source "experiments/arc_260516a__team_f__F-R2-2__vpin_drop_q70_300s.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5b038a4d" :type "atom"
+  :subj "exp:F-R2-2_vpin_drop_q70_300s"
+  :pred "has_arc"
+  :obj "260516a"
+  :source "experiments/arc_260516a__team_f__F-R2-2__vpin_drop_q70_300s.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_86ca8b9f" :type "atom"
+  :subj "exp:F-R2-2_vpin_drop_q70_300s"
+  :pred "has_team"
+  :obj "f"
+  :source "experiments/arc_260516a__team_f__F-R2-2__vpin_drop_q70_300s.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b1887295" :type "atom"
+  :subj "exp:F-R2-2_vpin_drop_q70_300s"
+  :pred "has_round"
+  :obj "r2"
+  :source "experiments/arc_260516a__team_f__F-R2-2__vpin_drop_q70_300s.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d16d7c0a" :type "atom"
+  :subj "exp:F-R2-2_vpin_drop_q70_300s"
+  :pred "parent_arc"
+  :obj "arc:260516a"
+  :source "experiments/arc_260516a__team_f__F-R2-2__vpin_drop_q70_300s.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5b376071" :type "atom"
+  :subj "exp:F-R2-2_vpin_drop_q70_300s"
+  :pred "parent_lineage"
+  :obj "lin:arc_260516a__team_f__microstructure"
+  :source "experiments/arc_260516a__team_f__F-R2-2__vpin_drop_q70_300s.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_452519f4" :type "atom"
+  :subj "exp:F-R2-2_vpin_drop_q70_300s"
+  :pred "has_train_nav"
+  :obj 1.729
+  :source "experiments/arc_260516a__team_f__F-R2-2__vpin_drop_q70_300s.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_6c9b61e9" :type "atom"
+  :subj "exp:F-R2-2_vpin_drop_q70_300s"
+  :pred "has_train_trade_count"
+  :obj 92
+  :source "experiments/arc_260516a__team_f__F-R2-2__vpin_drop_q70_300s.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_260841e6" :type "atom"
+  :subj "exp:F-R2-2_vpin_drop_q70_300s"
+  :pred "has_train_win_rate"
+  :obj 0.8478
+  :source "experiments/arc_260516a__team_f__F-R2-2__vpin_drop_q70_300s.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_cf68d4e1" :type "atom"
+  :subj "exp:F-R2-2_vpin_drop_q70_300s"
+  :pred "has_train_sharpe"
+  :obj 7.5685
+  :source "experiments/arc_260516a__team_f__F-R2-2__vpin_drop_q70_300s.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_628980cc" :type "atom"
+  :subj "exp:F-R2-2_vpin_drop_q70_300s"
+  :pred "has_train_max_drawdown"
+  :obj -0.0101
+  :source "experiments/arc_260516a__team_f__F-R2-2__vpin_drop_q70_300s.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_74b4a5b1" :type "atom"
+  :subj "exp:F-R2-2_vpin_drop_q70_300s"
+  :pred "has_val_nav_mean"
+  :obj 1.0446
+  :source "experiments/arc_260516a__team_f__F-R2-2__vpin_drop_q70_300s.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_8156817f" :type "atom"
+  :subj "exp:F-R2-2_vpin_drop_q70_300s"
+  :pred "has_val_nav_sigma"
+  :obj 0.0597
+  :source "experiments/arc_260516a__team_f__F-R2-2__vpin_drop_q70_300s.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_293caa35" :type "atom"
+  :subj "exp:F-R2-2_vpin_drop_q70_300s"
+  :pred "has_val_window_count"
+  :obj 12
+  :source "experiments/arc_260516a__team_f__F-R2-2__vpin_drop_q70_300s.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_7f38430e" :type "atom"
+  :subj "exp:F-R2-2_vpin_drop_q70_300s"
+  :pred "has_anchor_train_nav"
+  :obj 2.1882
+  :source "experiments/arc_260516a__team_f__F-R2-2__vpin_drop_q70_300s.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c5ad146f" :type "atom"
+  :subj "exp:F-R2-2_vpin_drop_q70_300s"
+  :pred "has_anchor_test_nav"
+  :obj 1.2486
+  :source "experiments/arc_260516a__team_f__F-R2-2__vpin_drop_q70_300s.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_7447f4f1" :type "atom"
+  :subj "exp:F-R2-2_vpin_drop_q70_300s"
+  :pred "has_status"
+  :obj "falsified"
+  :source "experiments/arc_260516a__team_f__F-R2-2__vpin_drop_q70_300s.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e21e620f" :type "atom"
+  :subj "exp:F-R2-2_vpin_drop_q70_300s"
+  :pred "has_outcome"
+  :obj "no_test_run"
+  :source "experiments/arc_260516a__team_f__F-R2-2__vpin_drop_q70_300s.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_32f7b262" :type "atom"
+  :subj "exp:F-R2-2_vpin_drop_q70_300s"
+  :pred "has_champion"
+  :obj false
+  :source "experiments/arc_260516a__team_f__F-R2-2__vpin_drop_q70_300s.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a929a291" :type "atom"
+  :subj "exp:F-R2-2_vpin_drop_q70_300s"
+  :pred "has_overfit_score"
+  :obj 0
+  :source "experiments/arc_260516a__team_f__F-R2-2__vpin_drop_q70_300s.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_7953438c" :type "atom"
+  :subj "exp:F-R2-2_vpin_drop_q70_300s"
+  :pred "has_leak_audit"
+  :obj "clean"
+  :source "experiments/arc_260516a__team_f__F-R2-2__vpin_drop_q70_300s.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_3fe4194b" :type "atom"
+  :subj "exp:F-R2-2_vpin_drop_q70_300s"
+  :pred "has_axis"
+  :obj "axis:microstructure"
+  :source "experiments/arc_260516a__team_f__F-R2-2__vpin_drop_q70_300s.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c1e5b561" :type "atom"
+  :subj "exp:F-R2-2_vpin_drop_q70_300s"
+  :pred "has_axis"
+  :obj "axis:blacklist"
+  :source "experiments/arc_260516a__team_f__F-R2-2__vpin_drop_q70_300s.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c8e86d08" :type "atom"
+  :subj "exp:F-R2-2_vpin_drop_q70_300s"
+  :pred "has_axis_list"
+  :obj ("microstructure" "blacklist")
+  :source "experiments/arc_260516a__team_f__F-R2-2__vpin_drop_q70_300s.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a9f06eee" :type "atom"
+  :subj "exp:F-R2-2_vpin_drop_q70_300s"
+  :pred "has_warmup_required"
+  :obj 10
+  :source "experiments/arc_260516a__team_f__F-R2-2__vpin_drop_q70_300s.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_8c39b8e6" :type "atom"
+  :subj "exp:F-R2-2_vpin_drop_q70_300s"
+  :pred "has_created"
+  :obj "2026-05-17 01:30:00"
+  :source "experiments/arc_260516a__team_f__F-R2-2__vpin_drop_q70_300s.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_2c506db1" :type "atom"
+  :subj "exp:F-R2-2_vpin_drop_q70_300s"
+  :pred "has_last_updated"
+  :obj "2026-05-17 05:09:00"
+  :source "experiments/arc_260516a__team_f__F-R2-2__vpin_drop_q70_300s.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_4903141c" :type "atom"
+  :subj "exp:F-R2-2_vpin_drop_q70_300s"
+  :pred "has_tag"
+  :obj "tag:arc/260516a"
+  :source "experiments/arc_260516a__team_f__F-R2-2__vpin_drop_q70_300s.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_33e732ae" :type "atom"
+  :subj "exp:F-R2-2_vpin_drop_q70_300s"
+  :pred "has_tag"
+  :obj "tag:team/f"
+  :source "experiments/arc_260516a__team_f__F-R2-2__vpin_drop_q70_300s.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_7c88cd50" :type "atom"
+  :subj "exp:F-R2-2_vpin_drop_q70_300s"
+  :pred "has_tag"
+  :obj "tag:round/r2"
+  :source "experiments/arc_260516a__team_f__F-R2-2__vpin_drop_q70_300s.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_8bda1ab1" :type "atom"
+  :subj "exp:F-R2-2_vpin_drop_q70_300s"
+  :pred "has_tag"
+  :obj "tag:axis/microstructure"
+  :source "experiments/arc_260516a__team_f__F-R2-2__vpin_drop_q70_300s.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9e229335" :type "atom"
+  :subj "exp:F-R2-2_vpin_drop_q70_300s"
+  :pred "has_tag"
+  :obj "tag:axis/blacklist"
+  :source "experiments/arc_260516a__team_f__F-R2-2__vpin_drop_q70_300s.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_bdbcece2" :type "atom"
+  :subj "exp:F-R2-2_vpin_drop_q70_300s"
+  :pred "has_tag"
+  :obj "tag:status/falsified"
+  :source "experiments/arc_260516a__team_f__F-R2-2__vpin_drop_q70_300s.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_3285f014" :type "atom"
+  :subj "exp:F-R2-2_vpin_drop_q70_300s"
+  :pred "has_tag"
+  :obj "tag:outcome/no_test_run"
+  :source "experiments/arc_260516a__team_f__F-R2-2__vpin_drop_q70_300s.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a1a9e75c" :type "atom"
+  :subj "exp:F-R2-2_vpin_drop_q70_300s"
+  :pred "has_tag"
+  :obj "tag:leak/clean"
+  :source "experiments/arc_260516a__team_f__F-R2-2__vpin_drop_q70_300s.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_26a54bc6" :type "atom"
+  :subj "exp:F-R2-2_vpin_drop_q70_300s"
+  :pred "has_tag"
+  :obj "tag:size/small"
+  :source "experiments/arc_260516a__team_f__F-R2-2__vpin_drop_q70_300s.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_18d2a1a5" :type "atom"
+  :subj "exp:F-R2-2_vpin_drop_q70_300s"
+  :pred "has_tl_dr"
+  :obj "F-R2 sweep 中更激进 cutoff 档：drop q70+ vs F-R2-1 的 q80+。train 砍到 92 笔, NAV 1.73 远低 anchor —— 越激进越败。未上 test。"
+  :source "experiments/arc_260516a__team_f__F-R2-2__vpin_drop_q70_300s.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_8f2d6c27" :type "atom"
+  :subj "exp:F-R2-2_vpin_drop_q70_300s"
+  :pred "has_section_intro"
+  :obj "# F-R2-2 — anchor + drop VPIN@300s q70+\n\n> **TL;DR** —— F-R2 sweep 中更激进 cutoff 档：drop q70+ vs F-R2-1 的 q80+。train 砍到 92 笔, NAV 1.73 远低 anchor —— 越激进越败。未上 test。"
+  :source "experiments/arc_260516a__team_f__F-R2-2__vpin_drop_q70_300s.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_8b25e647" :type "atom"
+  :subj "exp:F-R2-2_vpin_drop_q70_300s"
+  :pred "has_section_hypothesis"
+  :obj "- 假设：q80+ cutoff 太宽松 (10% drop), 改 q70+ (30% drop) 应当更强力 drop bad leg。\n- 实测：drop 太多 → sample 崩。"
+  :source "experiments/arc_260516a__team_f__F-R2-2__vpin_drop_q70_300s.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9620213f" :type "atom"
+  :subj "exp:F-R2-2_vpin_drop_q70_300s"
+  :pred "has_section_implementation"
+  :obj "- 同 F-R2-1, cutoff q70 instead of q80. 92 笔."
+  :source "experiments/arc_260516a__team_f__F-R2-2__vpin_drop_q70_300s.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_7cce29da" :type "atom"
+  :subj "exp:F-R2-2_vpin_drop_q70_300s"
+  :pred "has_section_past_only_window"
+  :obj "- trailing-cum past-only. `#leak/clean`."
+  :source "experiments/arc_260516a__team_f__F-R2-2__vpin_drop_q70_300s.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1bcb70d6" :type "atom"
+  :subj "exp:F-R2-2_vpin_drop_q70_300s"
+  :pred "has_section_results"
+  :obj "| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 1.7290 | 92 | 7.57 | 84.8% | -1.01% |\n| Val (12w only) | 1.0446 ± 0.060 | - | - | - | - |\n| Test | NOT RUN | - | - | - | - |\n| **Δ train NAV vs anchor** | -0.46 | -48 | -0.13 | -0.9pp | 0 |"
+  :source "experiments/arc_260516a__team_f__F-R2-2__vpin_drop_q70_300s.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_7d41a790" :type "atom"
+  :subj "exp:F-R2-2_vpin_drop_q70_300s"
+  :pred "has_section_risk_overfit"
+  :obj "- overfit_score = 0; count_pass=False (val 12w not 13)."
+  :source "experiments/arc_260516a__team_f__F-R2-2__vpin_drop_q70_300s.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a794a99c" :type "atom"
+  :subj "exp:F-R2-2_vpin_drop_q70_300s"
+  :pred "derived_from"
+  :obj "exp:F-R2-1_vpin_drop_q80_300s"
+  :source "experiments/arc_260516a__team_f__F-R2-2__vpin_drop_q70_300s.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c838a10d" :type "atom"
+  :subj "exp:F-R2-2_vpin_drop_q70_300s"
+  :pred "competes_with"
+  :obj "exp:F-R2-3_vpin_drop_q80_600s"
+  :source "experiments/arc_260516a__team_f__F-R2-2__vpin_drop_q70_300s.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_dbaa9c38" :type "atom"
+  :subj "exp:F-R2-2_vpin_drop_q70_300s"
+  :pred "builds_against"
+  :obj "exp:anchor_g2_baseline"
+  :source "experiments/arc_260516a__team_f__F-R2-2__vpin_drop_q70_300s.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_02d24eb6" :type "atom"
+  :subj "exp:F-R2-2_vpin_drop_q70_300s"
+  :pred "has_section_lineage_links"
+  :obj "- **derived_from**: [[arc_260516a__team_f__F-R2-1__vpin_drop_q80_300s]]\n- **competes_with**: [[arc_260516a__team_f__F-R2-3__vpin_drop_q80_600s]]\n- **builds against**: [[arc_260516a__team_anchor__anchor_g2__baseline]]"
+  :source "experiments/arc_260516a__team_f__F-R2-2__vpin_drop_q70_300s.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_50a61d3a" :type "atom"
+  :subj "exp:F-R2-2_vpin_drop_q70_300s"
+  :pred "has_section_reports"
+  :obj "- `team_f/output/cross_round_leaderboard_nav.csv` (F-R2-2)\n- [[arc_260516a__reporter_20260517_0547]]"
+  :source "experiments/arc_260516a__team_f__F-R2-2__vpin_drop_q70_300s.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_bac44894" :type "atom"
+  :subj "exp:F-R2-2_vpin_drop_q70_300s"
+  :pred "has_section_notes"
+  :obj "- cutoff sensitivity: q70 → q80 是 monotone NAV 改善但都败。说明不是 cutoff 调节问题，是 VPIN 信号本身 unproductive。"
+  :source "experiments/arc_260516a__team_f__F-R2-2__vpin_drop_q70_300s.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")

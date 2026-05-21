@@ -1,0 +1,377 @@
+(card "exp:G-R1-3_cross_source_consensus_strict" :type "experiment"
+  :subj "exp:G-R1-3_cross_source_consensus_strict"
+  :body "---\nnav: 30\ntype: experiment\nid: G-R1-3_cross_source_consensus_strict\nshort_name: cross_source_consensus_strict\ntitle: \"G-R1-3 — cross-source consensus, strict past-60min half-open\"\narc: 260516a\nteam: g\nround: r1\nparent_arc: \"[[arcs/260516a]]\"\nparent_lineage: \"[[lineages/arc_260516a__team_g__source_swap]]\"\ntrain_nav: 1.0350\ntrain_trade_count: 27\ntrain_win_rate: 0.6667\ntrain_sharpe: 2.8498\ntrain_max_drawdown: -0.0096\nval_nav_mean: 1.0020\nval_nav_sigma: 0.0056\nval_window_count: 8\ntest_nav: null\ntest_trade_count: null\ntest_sharpe: null\ntest_win_rate: null\ntest_max_drawdown: null\nanchor_train_nav: 2.1882\nanchor_test_nav: 1.2486\nstatus: demoted\noutcome: no_test_run\nchampion: false\noverfit_score: 1\nleak_audit: clean\naxis: [cross_source, source_swap]\npast_only_window_days: null\nwarmup_required: null\ncreated: 2026-05-17T01:30:00\nlast_updated: 2026-05-17T05:09:00\ntags: [arc/260516a, team/g, round/r1, axis/cross_source, axis/source_swap, status/demoted, outcome/no_test_run, leak/clean, size/small]\n---\n\n# G-R1-3 — cross-source consensus (strict past-60min)\n\n> **TL;DR** —— G-R1-3 尝试用 **cross-source consensus**: 只在 confirming (2nd) leader 时刻 emit，past 60min half-open window。train 27 trade / NAV 1.04 / sharpe 2.85 —— sample 太稀。但**这是 Team G 真正的设计方向** —— G-R1-1/G-R1-2 单 source swap 都 fail，consensus 是替代。\n\n## 假设 (Hypothesis)\n- 假设：cross-source confirmation = 多个 leader 在 past 60min 同方向 signal → 真正高置信度 trade。\n- 实测：confirming signal 在 anchor pool 上太稀, 27 trade 太少, statistical noise dominate。\n\n## 实现 (Implementation)\n- 主脚本：`team_g/scripts/round_1_runner.py`\n- 使用 `output/round_1/consensus_strict.csv` 作 signal source。\n- strict past-only [t-60min, t) window for confirming-leader detection.\n\n## Past-only window 处理\n- past-60min 半开窗口 strict past-only. `#leak/clean`.\n\n## 结果 (Results)\n| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 1.0350 | 27 | 2.85 | 66.7% | -0.96% |\n| Val (8w only) | 1.0020 ± 0.006 | - | - | - | - |\n| Test | NOT RUN | - | - | - | - |\n\n## 风险 & overfit 嫌疑\n- overfit_score = 1; sample 稀。\n\n## Lineage（双链网）\n- **derived_from**: [[arc_260516a__team_anchor__anchor_g2__baseline]]\n- **alt_to**: [[arc_260516a__team_g__G-R1-1__luoyangchan_solo]], [[arc_260516a__team_g__G-R1-2__yingli_solo]]\n- **builds against**: [[arc_260516a__team_anchor__anchor_g2__baseline]]\n\n## Reports\n- `team_g/output/cross_round_leaderboard_nav.csv` (G-R1-3)\n- [[arc_260516a__reporter_20260517_0547]]\n\n## Notes / 下次迭代\n- **真正值得继续探的 lineage**: cross-source consensus 在数据多的环境（≥1000 trade/月）大概率 productive，但 arc 260516a 的 trade pool 太小。\n- 下次 arc 应：(1) 用 90d+ train window 累计 raw consensus signal，(2) 设计 anchor + consensus blend（不是完全替换 source），保证 trade_count ≥ 100。\n"
+  :path "experiments/arc_260516a__team_g__G-R1-3__cross_source_consensus_strict.md"
+  :source_mtime "2026-05-17T10:29:56+08:00"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_eaac3018" :type "atom"
+  :subj "exp:G-R1-3_cross_source_consensus_strict"
+  :pred "has_nav"
+  :obj 30
+  :source "experiments/arc_260516a__team_g__G-R1-3__cross_source_consensus_strict.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_17011fbf" :type "atom"
+  :subj "exp:G-R1-3_cross_source_consensus_strict"
+  :pred "has_type"
+  :obj "experiment"
+  :source "experiments/arc_260516a__team_g__G-R1-3__cross_source_consensus_strict.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_772dc042" :type "atom"
+  :subj "exp:G-R1-3_cross_source_consensus_strict"
+  :pred "has_id"
+  :obj "G-R1-3_cross_source_consensus_strict"
+  :source "experiments/arc_260516a__team_g__G-R1-3__cross_source_consensus_strict.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_2535bb9c" :type "atom"
+  :subj "exp:G-R1-3_cross_source_consensus_strict"
+  :pred "has_short_name"
+  :obj "cross_source_consensus_strict"
+  :source "experiments/arc_260516a__team_g__G-R1-3__cross_source_consensus_strict.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_63a44856" :type "atom"
+  :subj "exp:G-R1-3_cross_source_consensus_strict"
+  :pred "has_title"
+  :obj "G-R1-3 — cross-source consensus, strict past-60min half-open"
+  :source "experiments/arc_260516a__team_g__G-R1-3__cross_source_consensus_strict.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9d980540" :type "atom"
+  :subj "exp:G-R1-3_cross_source_consensus_strict"
+  :pred "has_arc"
+  :obj "260516a"
+  :source "experiments/arc_260516a__team_g__G-R1-3__cross_source_consensus_strict.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a02f7cf5" :type "atom"
+  :subj "exp:G-R1-3_cross_source_consensus_strict"
+  :pred "has_team"
+  :obj "g"
+  :source "experiments/arc_260516a__team_g__G-R1-3__cross_source_consensus_strict.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_2940f5ca" :type "atom"
+  :subj "exp:G-R1-3_cross_source_consensus_strict"
+  :pred "has_round"
+  :obj "r1"
+  :source "experiments/arc_260516a__team_g__G-R1-3__cross_source_consensus_strict.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e3ed49cb" :type "atom"
+  :subj "exp:G-R1-3_cross_source_consensus_strict"
+  :pred "parent_arc"
+  :obj "arc:260516a"
+  :source "experiments/arc_260516a__team_g__G-R1-3__cross_source_consensus_strict.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e8178f48" :type "atom"
+  :subj "exp:G-R1-3_cross_source_consensus_strict"
+  :pred "parent_lineage"
+  :obj "lin:arc_260516a__team_g__source_swap"
+  :source "experiments/arc_260516a__team_g__G-R1-3__cross_source_consensus_strict.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_94cf8229" :type "atom"
+  :subj "exp:G-R1-3_cross_source_consensus_strict"
+  :pred "has_train_nav"
+  :obj 1.035
+  :source "experiments/arc_260516a__team_g__G-R1-3__cross_source_consensus_strict.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c26a851d" :type "atom"
+  :subj "exp:G-R1-3_cross_source_consensus_strict"
+  :pred "has_train_trade_count"
+  :obj 27
+  :source "experiments/arc_260516a__team_g__G-R1-3__cross_source_consensus_strict.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a7360633" :type "atom"
+  :subj "exp:G-R1-3_cross_source_consensus_strict"
+  :pred "has_train_win_rate"
+  :obj 0.6667
+  :source "experiments/arc_260516a__team_g__G-R1-3__cross_source_consensus_strict.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_72b80682" :type "atom"
+  :subj "exp:G-R1-3_cross_source_consensus_strict"
+  :pred "has_train_sharpe"
+  :obj 2.8498
+  :source "experiments/arc_260516a__team_g__G-R1-3__cross_source_consensus_strict.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_6e92e630" :type "atom"
+  :subj "exp:G-R1-3_cross_source_consensus_strict"
+  :pred "has_train_max_drawdown"
+  :obj -0.0096
+  :source "experiments/arc_260516a__team_g__G-R1-3__cross_source_consensus_strict.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_dc6a21da" :type "atom"
+  :subj "exp:G-R1-3_cross_source_consensus_strict"
+  :pred "has_val_nav_mean"
+  :obj 1.002
+  :source "experiments/arc_260516a__team_g__G-R1-3__cross_source_consensus_strict.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a6778b3a" :type "atom"
+  :subj "exp:G-R1-3_cross_source_consensus_strict"
+  :pred "has_val_nav_sigma"
+  :obj 0.0056
+  :source "experiments/arc_260516a__team_g__G-R1-3__cross_source_consensus_strict.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f90966d0" :type "atom"
+  :subj "exp:G-R1-3_cross_source_consensus_strict"
+  :pred "has_val_window_count"
+  :obj 8
+  :source "experiments/arc_260516a__team_g__G-R1-3__cross_source_consensus_strict.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_54ddbd95" :type "atom"
+  :subj "exp:G-R1-3_cross_source_consensus_strict"
+  :pred "has_anchor_train_nav"
+  :obj 2.1882
+  :source "experiments/arc_260516a__team_g__G-R1-3__cross_source_consensus_strict.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_8b0bac89" :type "atom"
+  :subj "exp:G-R1-3_cross_source_consensus_strict"
+  :pred "has_anchor_test_nav"
+  :obj 1.2486
+  :source "experiments/arc_260516a__team_g__G-R1-3__cross_source_consensus_strict.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_949f7ae1" :type "atom"
+  :subj "exp:G-R1-3_cross_source_consensus_strict"
+  :pred "has_status"
+  :obj "demoted"
+  :source "experiments/arc_260516a__team_g__G-R1-3__cross_source_consensus_strict.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_55b816a3" :type "atom"
+  :subj "exp:G-R1-3_cross_source_consensus_strict"
+  :pred "has_outcome"
+  :obj "no_test_run"
+  :source "experiments/arc_260516a__team_g__G-R1-3__cross_source_consensus_strict.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_857f484e" :type "atom"
+  :subj "exp:G-R1-3_cross_source_consensus_strict"
+  :pred "has_champion"
+  :obj false
+  :source "experiments/arc_260516a__team_g__G-R1-3__cross_source_consensus_strict.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_22ef745b" :type "atom"
+  :subj "exp:G-R1-3_cross_source_consensus_strict"
+  :pred "has_overfit_score"
+  :obj 1
+  :source "experiments/arc_260516a__team_g__G-R1-3__cross_source_consensus_strict.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c5c7ff76" :type "atom"
+  :subj "exp:G-R1-3_cross_source_consensus_strict"
+  :pred "has_leak_audit"
+  :obj "clean"
+  :source "experiments/arc_260516a__team_g__G-R1-3__cross_source_consensus_strict.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_83e4d95e" :type "atom"
+  :subj "exp:G-R1-3_cross_source_consensus_strict"
+  :pred "has_axis"
+  :obj "axis:cross_source"
+  :source "experiments/arc_260516a__team_g__G-R1-3__cross_source_consensus_strict.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f26c4a36" :type "atom"
+  :subj "exp:G-R1-3_cross_source_consensus_strict"
+  :pred "has_axis"
+  :obj "axis:source_swap"
+  :source "experiments/arc_260516a__team_g__G-R1-3__cross_source_consensus_strict.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_03c68e8f" :type "atom"
+  :subj "exp:G-R1-3_cross_source_consensus_strict"
+  :pred "has_axis_list"
+  :obj ("cross_source" "source_swap")
+  :source "experiments/arc_260516a__team_g__G-R1-3__cross_source_consensus_strict.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e6a74892" :type "atom"
+  :subj "exp:G-R1-3_cross_source_consensus_strict"
+  :pred "has_created"
+  :obj "2026-05-17 01:30:00"
+  :source "experiments/arc_260516a__team_g__G-R1-3__cross_source_consensus_strict.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_dcad7432" :type "atom"
+  :subj "exp:G-R1-3_cross_source_consensus_strict"
+  :pred "has_last_updated"
+  :obj "2026-05-17 05:09:00"
+  :source "experiments/arc_260516a__team_g__G-R1-3__cross_source_consensus_strict.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_3029f703" :type "atom"
+  :subj "exp:G-R1-3_cross_source_consensus_strict"
+  :pred "has_tag"
+  :obj "tag:arc/260516a"
+  :source "experiments/arc_260516a__team_g__G-R1-3__cross_source_consensus_strict.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_83474c4b" :type "atom"
+  :subj "exp:G-R1-3_cross_source_consensus_strict"
+  :pred "has_tag"
+  :obj "tag:team/g"
+  :source "experiments/arc_260516a__team_g__G-R1-3__cross_source_consensus_strict.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d1d5982b" :type "atom"
+  :subj "exp:G-R1-3_cross_source_consensus_strict"
+  :pred "has_tag"
+  :obj "tag:round/r1"
+  :source "experiments/arc_260516a__team_g__G-R1-3__cross_source_consensus_strict.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_dc2dbd7c" :type "atom"
+  :subj "exp:G-R1-3_cross_source_consensus_strict"
+  :pred "has_tag"
+  :obj "tag:axis/cross_source"
+  :source "experiments/arc_260516a__team_g__G-R1-3__cross_source_consensus_strict.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_91d91dab" :type "atom"
+  :subj "exp:G-R1-3_cross_source_consensus_strict"
+  :pred "has_tag"
+  :obj "tag:axis/source_swap"
+  :source "experiments/arc_260516a__team_g__G-R1-3__cross_source_consensus_strict.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_54c7edf5" :type "atom"
+  :subj "exp:G-R1-3_cross_source_consensus_strict"
+  :pred "has_tag"
+  :obj "tag:status/demoted"
+  :source "experiments/arc_260516a__team_g__G-R1-3__cross_source_consensus_strict.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_19b6cf3e" :type "atom"
+  :subj "exp:G-R1-3_cross_source_consensus_strict"
+  :pred "has_tag"
+  :obj "tag:outcome/no_test_run"
+  :source "experiments/arc_260516a__team_g__G-R1-3__cross_source_consensus_strict.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d7787d6e" :type "atom"
+  :subj "exp:G-R1-3_cross_source_consensus_strict"
+  :pred "has_tag"
+  :obj "tag:leak/clean"
+  :source "experiments/arc_260516a__team_g__G-R1-3__cross_source_consensus_strict.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_7fc34bb2" :type "atom"
+  :subj "exp:G-R1-3_cross_source_consensus_strict"
+  :pred "has_tag"
+  :obj "tag:size/small"
+  :source "experiments/arc_260516a__team_g__G-R1-3__cross_source_consensus_strict.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d6831a11" :type "atom"
+  :subj "exp:G-R1-3_cross_source_consensus_strict"
+  :pred "has_tl_dr"
+  :obj "G-R1-3 尝试用 **cross-source consensus**: 只在 confirming (2nd) leader 时刻 emit，past 60min half-open window。train 27 trade / NAV 1.04 / sharpe 2.85 —— sample 太稀。但**这是 Team G 真正的设计方向** —— G-R1-1/G-R1-2 单 source swap 都 fail，consensus 是替代。"
+  :source "experiments/arc_260516a__team_g__G-R1-3__cross_source_consensus_strict.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_caa88de6" :type "atom"
+  :subj "exp:G-R1-3_cross_source_consensus_strict"
+  :pred "has_section_intro"
+  :obj "# G-R1-3 — cross-source consensus (strict past-60min)\n\n> **TL;DR** —— G-R1-3 尝试用 **cross-source consensus**: 只在 confirming (2nd) leader 时刻 emit，past 60min half-open window。train 27 trade / NAV 1.04 / sharpe 2.85 —— sample 太稀。但**这是 Team G 真正的设计方向** —— G-R1-1/G-R1-2 单 source swap 都 fail，consensus 是替代。"
+  :source "experiments/arc_260516a__team_g__G-R1-3__cross_source_consensus_strict.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d614d00c" :type "atom"
+  :subj "exp:G-R1-3_cross_source_consensus_strict"
+  :pred "has_section_hypothesis"
+  :obj "- 假设：cross-source confirmation = 多个 leader 在 past 60min 同方向 signal → 真正高置信度 trade。\n- 实测：confirming signal 在 anchor pool 上太稀, 27 trade 太少, statistical noise dominate。"
+  :source "experiments/arc_260516a__team_g__G-R1-3__cross_source_consensus_strict.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_70bd69ae" :type "atom"
+  :subj "exp:G-R1-3_cross_source_consensus_strict"
+  :pred "has_section_implementation"
+  :obj "- 主脚本：`team_g/scripts/round_1_runner.py`\n- 使用 `output/round_1/consensus_strict.csv` 作 signal source。\n- strict past-only [t-60min, t) window for confirming-leader detection."
+  :source "experiments/arc_260516a__team_g__G-R1-3__cross_source_consensus_strict.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_bb1a0c9e" :type "atom"
+  :subj "exp:G-R1-3_cross_source_consensus_strict"
+  :pred "has_section_past_only_window"
+  :obj "- past-60min 半开窗口 strict past-only. `#leak/clean`."
+  :source "experiments/arc_260516a__team_g__G-R1-3__cross_source_consensus_strict.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_dff7e015" :type "atom"
+  :subj "exp:G-R1-3_cross_source_consensus_strict"
+  :pred "has_section_results"
+  :obj "| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 1.0350 | 27 | 2.85 | 66.7% | -0.96% |\n| Val (8w only) | 1.0020 ± 0.006 | - | - | - | - |\n| Test | NOT RUN | - | - | - | - |"
+  :source "experiments/arc_260516a__team_g__G-R1-3__cross_source_consensus_strict.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_487773a1" :type "atom"
+  :subj "exp:G-R1-3_cross_source_consensus_strict"
+  :pred "has_section_risk_overfit"
+  :obj "- overfit_score = 1; sample 稀。"
+  :source "experiments/arc_260516a__team_g__G-R1-3__cross_source_consensus_strict.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_05b04f55" :type "atom"
+  :subj "exp:G-R1-3_cross_source_consensus_strict"
+  :pred "derived_from"
+  :obj "exp:anchor_g2_baseline"
+  :source "experiments/arc_260516a__team_g__G-R1-3__cross_source_consensus_strict.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_67f7f86c" :type "atom"
+  :subj "exp:G-R1-3_cross_source_consensus_strict"
+  :pred "alt_to"
+  :obj "exp:G-R1-1_luoyangchan_solo"
+  :source "experiments/arc_260516a__team_g__G-R1-3__cross_source_consensus_strict.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_cb424ebf" :type "atom"
+  :subj "exp:G-R1-3_cross_source_consensus_strict"
+  :pred "alt_to"
+  :obj "exp:G-R1-2_yingli_solo"
+  :source "experiments/arc_260516a__team_g__G-R1-3__cross_source_consensus_strict.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f71cbb39" :type "atom"
+  :subj "exp:G-R1-3_cross_source_consensus_strict"
+  :pred "builds_against"
+  :obj "exp:anchor_g2_baseline"
+  :source "experiments/arc_260516a__team_g__G-R1-3__cross_source_consensus_strict.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e4d77c3d" :type "atom"
+  :subj "exp:G-R1-3_cross_source_consensus_strict"
+  :pred "has_section_lineage_links"
+  :obj "- **derived_from**: [[arc_260516a__team_anchor__anchor_g2__baseline]]\n- **alt_to**: [[arc_260516a__team_g__G-R1-1__luoyangchan_solo]], [[arc_260516a__team_g__G-R1-2__yingli_solo]]\n- **builds against**: [[arc_260516a__team_anchor__anchor_g2__baseline]]"
+  :source "experiments/arc_260516a__team_g__G-R1-3__cross_source_consensus_strict.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_32c3381e" :type "atom"
+  :subj "exp:G-R1-3_cross_source_consensus_strict"
+  :pred "has_section_reports"
+  :obj "- `team_g/output/cross_round_leaderboard_nav.csv` (G-R1-3)\n- [[arc_260516a__reporter_20260517_0547]]"
+  :source "experiments/arc_260516a__team_g__G-R1-3__cross_source_consensus_strict.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_56a1c589" :type "atom"
+  :subj "exp:G-R1-3_cross_source_consensus_strict"
+  :pred "has_section_notes"
+  :obj "- **真正值得继续探的 lineage**: cross-source consensus 在数据多的环境（≥1000 trade/月）大概率 productive，但 arc 260516a 的 trade pool 太小。\n- 下次 arc 应：(1) 用 90d+ train window 累计 raw consensus signal，(2) 设计 anchor + consensus blend（不是完全替换 source），保证 trade_count ≥ 100。"
+  :source "experiments/arc_260516a__team_g__G-R1-3__cross_source_consensus_strict.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")

@@ -1,0 +1,22 @@
+;; m002 — lineage → comparison view card.
+;;
+;; Given a lineage card, expand into one view card whose :query materializes
+;; all atoms that link an experiment to that lineage via parent_lineage. The
+;; view is lazy: View.materialize evaluates the query against the current
+;; store at read time, so newly-added experiments under the lineage show up
+;; without re-running the macro.
+;;
+;; Query shape uses the kernel's filter DSL (see wiki/lib/view.py):
+;;   :filter_pred "parent_lineage"
+;;   :filter_obj  "<lineage-id>"
+;; The view body is documentation only; the lookup logic lives in :query.
+
+(card "m002_lineage_to_comparison_view" :type "macro"
+  :name "lineage-to-comparison-view"
+  :params ("?lineage")
+  :body (
+    (:type "view"
+     :name "view_?lineage_all_candidates"
+     :body "All experiments registered under lineage ?lineage. Re-evaluated at read time so newly-ingested candidates surface without macro re-run."
+     :query (:filter_pred "parent_lineage" :filter_obj "?lineage")))
+  :status "active")

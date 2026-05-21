@@ -1,0 +1,139 @@
+# Capability 2 — lazy reference  (2026-05-20T17:55:31+00:00)
+----------------------------------------------------------------------
+  store loaded — 3417 cards (3331 atoms, 53 experiments, 8 lineages, 11 rules, 2 macros)
+
+before resolve_lazy:
+  view_card.body (raw):
+    Latest SOTA snapshot:
+      champion body excerpt → <eval>latest-of exp:H-R3b-4_c84_kelly_lambda_1.5</eval>
+      inbound link count for champion → <eval>count-links-to exp:H-R3b-4_c84_kelly_lambda_1.5</eval>
+      inbound link count for parent (H-R2-2) → <eval>count-links-to exp:H-R2-2_c84_linear_sizing</eval>
+
+  atom_card.body (raw):
+    Atom-level lazy ref: <eval>latest-of exp:C8.4_top3_no_open3min_bypass</eval>
+
+after resolve_lazy (view):
+    Latest SOTA snapshot:
+    champion body excerpt → ---
+    nav: 1
+    type: experiment
+    id: H-R3b-4
+    short_name: c84_kelly_lambda_1.5
+    title: "H-R3b-4 — C8.4 × Kelly-fraction sizing λ=1.5 (SOTA champion)"
+    arc: 260516a
+    team: h
+    round: r3b
+    parent_arc: "[[arcs/260516a]]"
+    parent_lineage: "[[lineages/arc_260516a__team_h__sizing]]"
+    train_nav: 3.6981
+    train_trade_count: 179
+    train_win_rate: 0.8771
+    train_sharpe: 7.5409
+    train_max_drawdown: -0.0067
+    val_nav_mean: 1.1020
+    val_nav_sigma: 0.1170
+    val_window_count: 13
+    test_nav: 1.4905
+    test_trade_count: 31
+    test_sharpe: 7.3691
+    test_win_rate: 0.8065
+    test_max_drawdown: -0.0043
+    anchor_train_nav: 2.1882
+    anchor_test_nav: 1.2486
+    status: champion
+    outcome: test_pass
+    champion: true
+    overfit_score: 0
+    leak_audit: clean
+    axis: [sizing]
+    past_only_window_days: 30
+    warmup_required: 10
+    created: 2026-05-17T03:30:00
+    last_updated: 2026-05-17T05:09:00
+    tags: [arc/260516a, team/h, round/r3b, axis/sizing, status/champion, outcome/test_pass, leak/clean, size/large]
+    ---
+    
+    # H-R3b-4 — C8.4 × Kelly-fraction sizing λ=1.5
+    
+    > **TL;DR** —— 把 [[arc_260516a__team_c__C8.4__top3_no_open3min_bypass]] 选出的 179 笔 trade 用 **Kelly-fraction 风格 sizing**（按 ratio 相对 30 天历史中位数偏离度，放大 λ=1.5 倍后 clip 到 [0.5, 1.5]）。**train NAV 3.70 / test NA …
+    
+    ## 假设 (Hypothesis)
+    - 在固定 trade-selector (C8.4) 的前提下，**size 应当与信号强度成正比** —— 即当 `ratio` 显著高于其过去 30 天的中位数时，加注；显著低时，减注。
+    - 实现 = 标准 Kelly 心智模型的简化版：不直接估 expected return / variance（数据量不够），而是用 `ratio` 作为 strength proxy。
+    - λ=1.5 是 R3b sweep [0.25, 0.5, 1.0, 1.5] 里的"最激进 clip-飞顶"档：bound 不变（仍 0.5–1.5），但偏离 1.0 时更快撞到 bound，相当于"信号强弱 → size 二极化"。
+    - 预期收益 vs λ=1.0 ([[arc_260516a__team_h__H-R2-2__c84_linear_sizing]])：略高 mean / 略高 std，依旧 monotone 增长 NAV（如果 ratio 确实 informative）。
+    
+    ## 实现 (Implementation)
+    - 主脚本：`/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_h/scripts/round_3b_runner.py`
+    - trade selector 来自 base = C8.4：`top-3 + no_open_3min + B-R8-2 high-ratio bypass (ratio>0.40)`，输出 179 笔。
+    - sizing 公式：
+    
+    $$
+    \	ext{size}(t) = \\mathrm{clip}\\!\\left(\\lambda \\cdot \\left(\\frac{r_t}{\\widetilde{r}^{\\;\	ext{past-30d}}_{\\,t}} - 1\\right) + 1,\\; 0.5,\\; 1.5\\right), \\quad \\lambda = 1.5
+    $$
+    
+    - $r_t$ = 当前 trade 时刻 t 上 leg 的 `ratio`
+    - $\\widetilde{r}^{\\;\	ext{past-30d}}_{\\,t}$ = `events[event_time < t & event_time >= t - 30d]` 上 `ratio` 列的中位数
+    - λ=1 时退化为 [[arc_260516a__team_h__H-R2-2__c84_linear_sizing]] 的线性公式
+    - clip 上下界保留与 R2 一致，确保单笔不爆仓
+    
+    - 关键函数：`rolling_30d_ratio_median()` 和 `size_kelly()`（同一文件）。
+    - mean_size 实测 = 1.191, std_size = 0.387 ⇒ 大量 trade 已撞到 1.5 上界。
+    
+    ## Past-only window 处理
+    - **严格 past-only**：`rolling_30d_ratio_median` 对每个 trade 时刻 t 取 `events[event_time < t]` 的 [t-30d, t) 半开窗口中位数。
+    - **Warmup**：sub-window 内 event 数 < 10 时回退 `size = 1.0`（即不放大），避免冷启动撞 clip 上界。
+    - critic future-data audit 2026-05-17 pass：grep 过 `>=` / `<=` 边界、确认无 lookahead；events 流加载范围 2025-01-01 → 2026-04-30 (训练上限) 显式截断在 trade t 之前。
+    - 边缘 leak / structural leak 均无 (`#leak/clean`)。
+    
+    ## 结果 (Results)
+    | | NAV | Trades | Sharpe | Win | MaxDD |
+    |---|---|---|---|---|---|
+    | Train (seg1+seg2) | **3.6981** | 179 | 7.54 | 87.7% | -0.67% |
+    | Val (rolling 13w mean ± σ) | 1.1020 ± 0.117 | - | - | - | - |
+    | Test (hold-out) | **1.4905** | 31 | 7.37 | 80.6% | -0.43% |
+    | Anchor train | 2.1882 | 140 | 7.70 | 85.7% | -1.01% |
+    | Anchor test | 1.2486 | 20 | 7.15 | 75.0% | -0.53% |
+    | **Δ test NAV vs anchor** | **+0.242** | +11 | +0.22 | +5.6pp | +0.10pp |
+    
+    - train: NAV +1.51 vs anchor（+69%）；笔数 179 落在 anchor ±30% 上沿（gate pass）。
+    - val rolling 13 windows: mean 1.102，全部 13 个 window NAV 严格 > anchor val NAV mean 1.060。
+    - **test**: NAV 1.49 vs anchor 1.25, **+19.4% cumulative**；笔数 31 > anchor 20（test data 在该 arc 内被扩展过，N 改变是预期）。
+    
+    ## 风险 & overfit 嫌疑
+    - engineer / critic overfit_score = **0**（最干净档）
+    - 理由：
+    - λ sweep [0.25, 0.5, 1.0, 1.5] 在 R3b 一次性提交，**不是 test 上反向调** —— 单一 grid，按 train+val 排名。
+    - val rolling 13 windows 全部 strict beat anchor，单 window 依赖低。
+    - test NAV / sharpe / win / dd 四项**全部严格优于 anchor**，不存在"靠 trade_count 灌水抬 NAV"嫌疑。
+    - 剩余 risk flag：mean_size 1.19 已接近 clip 上界 1.5，说明 30d median 显著低于近期 ratio 中枢；如果 ratio 分布漂移，size 容易长期顶满 bound，**效果退化为 fixed 1.5x leverage** —— 下次 arc 应监控 mean_size 漂移。
+    
+    ## Lineage（双链网）
+    - **derived_from**: [[arc_260516a__team_h__H-R2-2__c84_linear_sizing]] —— λ=1 特例的 amplified 版
+    - **builds on**: [[arc_260516a__team_c__C8.4__top3_no_open3min_bypass]] —— trade selector，H 系列 sizing 全部以 C8.4 为 base
+    - **competes_with**: [[arc_260516a__team_b__B-R8-1__no_open3min_bypass03]]（不同 axis 的并行 challenger，blacklist 路线）
+    - **falsifies / dominates**: [[arc_260516a__team_h__H-R2-2__c84_linear_sizing]] (同 base 不同 λ，train NAV 略胜 0.05; test 持平; 取最高)
+    - **builds against (anchor)**: [[arc_260516a__team_anchor__anchor_g2__baseline]]
+    
+    ## Reports
+    - `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/output/reporter_20260517_0547.html`
+    - `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/output/comprehensive_evaluation_20260517T0124.html`
+    - `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/output/cross_team_test_nav_ranking_v2.csv` (row 1)
+    - [[arc_260516a__reporter_20260517_0547]]
+    
+    ## Notes / 下次迭代
+    - **下一代 sizing**：
+    1. λ > 1.5 已无意义（mean_size 1.19 已接近上界 1.5）。要继续放大必须先放宽 clip 上界 ([0.5, 2.0] / [0.3, 1.7])，但这会引入"单笔爆仓"风险，需 max_drawdown 配合做 stop。
+    2. 把 ratio 之外的强度信号 (e.g. 5min OFI sign aligned) 接进 size 公式，做 **multi-factor Kelly** —— 但要警惕 [[arc_260516a__team_f__F-R1-1__ofi_drop_extreme]] 撞过的 microstructure 笔数崩坑。
+    - **sizing axis 通用 lesson**：rolling median window 长度 (30d) 是过往 arc 没探过的维度 —— 下次可 sweep 7d / 14d / 60d，看 mean_size 漂移幅度。
+    - 任何继任 SOTA 候选请记得 anchor cross-comparison 用 cumulative_nav 终值，不是 mean_return per trade（已 deprecated 为辅助指标）。
+    
+    inbound link count for champion → 14
+    inbound link count for parent (H-R2-2) → 11
+
+after resolve_lazy (atom):
+    Atom-level lazy ref: --- nav: 8 type: experiment id: C8.4 short_name: top3_no_open3min_bypass title: "C8.4 — top-3 + no_open_3min + high-ratio bypass (Team H sizing base)" arc: 260516a team: c round:  …
+
+  cards carrying <eval> markers (incl. the two we just added): 2
+    cap2:view-latest-top-experiments                         type=view
+    cap2:atom-with-lazy-ref                                  type=atom

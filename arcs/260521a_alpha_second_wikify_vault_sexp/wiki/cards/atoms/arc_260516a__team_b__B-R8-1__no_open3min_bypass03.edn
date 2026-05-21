@@ -1,0 +1,433 @@
+(card "exp:B-R8-1_no_open3min_bypass03" :type "experiment"
+  :subj "exp:B-R8-1_no_open3min_bypass03"
+  :body "---\nnav: 17\ntype: experiment\nid: B-R8-1_no_open3min_bypass03\nshort_name: no_open3min_bypass03\ntitle: \"B-R8-1 — no open_3min ∪ bypass(0.30) — Team B blacklist peak\"\narc: 260516a\nteam: b\nround: r8\nparent_arc: \"[[arcs/260516a]]\"\nparent_lineage: \"[[lineages/arc_260516a__team_b__blacklist_evolution]]\"\ntrain_nav: 2.8015\ntrain_trade_count: 169\ntrain_win_rate: 0.8580\ntrain_sharpe: 7.7760\ntrain_max_drawdown: -0.0101\nval_nav_mean: 1.0796\nval_nav_sigma: 0.0809\nval_window_count: 13\ntest_nav: 1.2722\ntest_trade_count: 23\ntest_sharpe: 7.1151\ntest_win_rate: 0.7391\ntest_max_drawdown: -0.0067\nanchor_train_nav: 2.1882\nanchor_test_nav: 1.2486\nstatus: challenger\noutcome: test_marginal\nchampion: false\noverfit_score: 0\nleak_audit: clean\naxis: [timing_filter, bypass, blacklist]\npast_only_window_days: null\nwarmup_required: null\ncreated: 2026-05-17T01:50:00\nlast_updated: 2026-05-17T05:09:00\ntags: [arc/260516a, team/b, round/r8, axis/timing_filter, axis/bypass, axis/blacklist, status/challenger, outcome/test_marginal, leak/clean, size/large]\n---\n\n# B-R8-1 — no open_3min ∪ bypass(0.30) (Team B blacklist peak)\n\n> **TL;DR** —— Team B 在 R8 把两个独立 mechanism 叠起来：**砍开盘 3min 全部 + 高 ratio (>0.30) 绕过 volume cap**。train NAV 2.80, test NAV 1.27（vs anchor 1.25, 仅 +0.024 —— **marginal**）。Team B 的 NAV 顶点；后面的 R9/R10/R11 都没能超过它。**它的两个 mechanism 直接被 Team C 借走拼出 SOTA-base C8.4**。\n\n## 假设 (Hypothesis)\n- **Hypothesis A**: 开盘前 3min 是 alpha 杀手（volatile + 流动性差），把这段全 drop 应当**提高 win_rate 和 sharpe**，即使笔数会少。\n- **Hypothesis B**: baseline_max_avg (1.3M) 的 volume cap 把高 ratio (>0.30) 的 leg 也屏蔽了，但这些 leg 信号 strong 应当放进来 —— 绕过 cap = \"high-ratio bypass\"。\n- 叠加后预期：trade_count 不掉太多（甚至略升，因 bypass 接进新 leg），win_rate 上升，NAV 上一台阶。\n\n## 实现 (Implementation)\n- 主脚本：`/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_b/scripts/round_8_runner.py`\n- 实现逻辑：\n  1. baseline G2 config\n  2. drop trade if `t_et` 的 minute_of_day 在开盘后 3min (timing blacklist)\n  3. 当 `leg.ratio > 0.30` 时跳过 `baseline_max_avg` 检查（bypass）\n- 输出 169 笔（vs anchor 140）。\n\n## Past-only window 处理\n- 全部 filter / bypass 都是 within-trade 决策，没有 rolling stat。**无 lookahead 风险**。\n\n## 结果 (Results)\n| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 2.8015 | 169 | 7.78 | 85.8% | -1.01% |\n| Val (rolling 13w) | 1.0796 ± 0.081 | - | - | - | - |\n| Test | 1.2722 | 23 | 7.12 | 73.9% | -0.67% |\n| Anchor train | 2.1882 | 140 | 7.70 | 85.7% | -1.01% |\n| Anchor test | 1.2486 | 20 | 7.15 | 75.0% | -0.53% |\n| **Δ test NAV vs anchor** | **+0.024** | +3 | -0.04 | -1.1pp | -0.14pp |\n\n- train +28% vs anchor，看起来强；**test 只赢了 +1.9%，win/dd 还略劣** —— 这是 marginal 胜出，置信度低。\n- 对照同 axis 的 [[arc_260516a__team_h__H-R3b-4__c84_kelly_lambda_1.5]] (test +19.4%)，B 路线在 hold-out 上明显输出不如 sizing 路线。\n\n## 风险 & overfit 嫌疑\n- overfit_score = 0（gate 都过；val 13 windows 严格 strict beat）\n- 但**实际表现说明 train→test shrinkage 比 sizing 路线严重**：train edge +28% → test edge +2%。\n- risk flag：bypass 阈值 0.30 是 R7-3 sweep 出来的 train 最优；test 上未单独验过。\n\n## Lineage（双链网）\n- **derived_from**:\n  - [[arc_260516a__team_b__B-R7-4__no_open_3min]] (no_open_3min 独立验证)\n  - [[arc_260516a__team_b__B-R7-3__bypass_03]] (bypass=0.30 独立验证)\n- **synthesizes**: 把 R7-3 + R7-4 两个机制 stack（这是 Team B 的核心创新——分头验证再合并）\n- **descendants_in_team_b**:\n  - [[arc_260516a__team_b__B-R9-3__sigma_regime_exit]] (R8-1 + σ-regime exit — 几乎 tie)\n  - [[arc_260516a__team_b__B-R9-4__confluence_horizon]] (R8-1 + confluence horizon — 几乎 tie)\n  - 后续 R10/R11 blacklist 实验全部以 R8-1 为内层 stack base\n- **borrowed_by**: [[arc_260516a__team_c__C8.4__top3_no_open3min_bypass]] (Team C 把 R8-1 的 no_open_3min + bypass 直接拿走，叠 top-3 expand 拼出 SOTA-base)\n- **competes_with**: [[arc_260516a__team_h__H-R3b-4__c84_kelly_lambda_1.5]] (不同 axis 的 SOTA challenger)\n- **builds against**: [[arc_260516a__team_anchor__anchor_g2__baseline]]\n\n## Reports\n- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_b/output/cross_round_leaderboard_nav.csv` (row 1, nav_champion=True)\n- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/output/R7_champions_explainer_20260517_0049.html`\n- [[arc_260516a__reporter_20260517_0547]]\n\n## Notes / 下次迭代\n- **Team B 的元 lesson**：blacklist + bypass 是 productive 的两条 lever，但单独叠加在 default-drop 框架内**会被 train→test shrinkage 啃掉大半 edge**。\n- 如果只能保留一个 mechanism，**no_open_3min 比 bypass 重要** —— 它在 Team C 的 top-3 expand 上下文里被复用，并贡献了大部分 NAV gain。\n- 下次类似 arc：先用 default-admit (Team D 路线) 跑 baseline，再叠 blacklist —— **不要重蹈\"default-drop 上叠 bypass\" 的口子**，因为这样 mechanism 之间会互相 mask（whitelist gate 砍掉的 trade 即使你 bypass 也找不回来）。\n"
+  :path "experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03.md"
+  :source_mtime "2026-05-17T10:01:35+08:00"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ddf6ddca" :type "atom"
+  :subj "exp:B-R8-1_no_open3min_bypass03"
+  :pred "has_nav"
+  :obj 17
+  :source "experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_0f105437" :type "atom"
+  :subj "exp:B-R8-1_no_open3min_bypass03"
+  :pred "has_type"
+  :obj "experiment"
+  :source "experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_51d42411" :type "atom"
+  :subj "exp:B-R8-1_no_open3min_bypass03"
+  :pred "has_id"
+  :obj "B-R8-1_no_open3min_bypass03"
+  :source "experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_544d58e7" :type "atom"
+  :subj "exp:B-R8-1_no_open3min_bypass03"
+  :pred "has_short_name"
+  :obj "no_open3min_bypass03"
+  :source "experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_850438ac" :type "atom"
+  :subj "exp:B-R8-1_no_open3min_bypass03"
+  :pred "has_title"
+  :obj "B-R8-1 — no open_3min ∪ bypass(0.30) — Team B blacklist peak"
+  :source "experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_fe0d5f86" :type "atom"
+  :subj "exp:B-R8-1_no_open3min_bypass03"
+  :pred "has_arc"
+  :obj "260516a"
+  :source "experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_33bd31cd" :type "atom"
+  :subj "exp:B-R8-1_no_open3min_bypass03"
+  :pred "has_team"
+  :obj "b"
+  :source "experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_2436f7cd" :type "atom"
+  :subj "exp:B-R8-1_no_open3min_bypass03"
+  :pred "has_round"
+  :obj "r8"
+  :source "experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c6777eca" :type "atom"
+  :subj "exp:B-R8-1_no_open3min_bypass03"
+  :pred "parent_arc"
+  :obj "arc:260516a"
+  :source "experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_71759061" :type "atom"
+  :subj "exp:B-R8-1_no_open3min_bypass03"
+  :pred "parent_lineage"
+  :obj "lin:arc_260516a__team_b__blacklist_evolution"
+  :source "experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9810d251" :type "atom"
+  :subj "exp:B-R8-1_no_open3min_bypass03"
+  :pred "has_train_nav"
+  :obj 2.8015
+  :source "experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_4999f722" :type "atom"
+  :subj "exp:B-R8-1_no_open3min_bypass03"
+  :pred "has_train_trade_count"
+  :obj 169
+  :source "experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_2fd4af10" :type "atom"
+  :subj "exp:B-R8-1_no_open3min_bypass03"
+  :pred "has_train_win_rate"
+  :obj 0.858
+  :source "experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_af33f92a" :type "atom"
+  :subj "exp:B-R8-1_no_open3min_bypass03"
+  :pred "has_train_sharpe"
+  :obj 7.776
+  :source "experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a15f2b99" :type "atom"
+  :subj "exp:B-R8-1_no_open3min_bypass03"
+  :pred "has_train_max_drawdown"
+  :obj -0.0101
+  :source "experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_001d6bb8" :type "atom"
+  :subj "exp:B-R8-1_no_open3min_bypass03"
+  :pred "has_val_nav_mean"
+  :obj 1.0796
+  :source "experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_7ca7b6e5" :type "atom"
+  :subj "exp:B-R8-1_no_open3min_bypass03"
+  :pred "has_val_nav_sigma"
+  :obj 0.0809
+  :source "experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e2d58d53" :type "atom"
+  :subj "exp:B-R8-1_no_open3min_bypass03"
+  :pred "has_val_window_count"
+  :obj 13
+  :source "experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_482b5964" :type "atom"
+  :subj "exp:B-R8-1_no_open3min_bypass03"
+  :pred "has_test_nav"
+  :obj 1.2722
+  :source "experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a8b8260f" :type "atom"
+  :subj "exp:B-R8-1_no_open3min_bypass03"
+  :pred "has_test_trade_count"
+  :obj 23
+  :source "experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e90470fb" :type "atom"
+  :subj "exp:B-R8-1_no_open3min_bypass03"
+  :pred "has_test_sharpe"
+  :obj 7.1151
+  :source "experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5caa9180" :type "atom"
+  :subj "exp:B-R8-1_no_open3min_bypass03"
+  :pred "has_test_win_rate"
+  :obj 0.7391
+  :source "experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_602ed40a" :type "atom"
+  :subj "exp:B-R8-1_no_open3min_bypass03"
+  :pred "has_test_max_drawdown"
+  :obj -0.0067
+  :source "experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b849dd97" :type "atom"
+  :subj "exp:B-R8-1_no_open3min_bypass03"
+  :pred "has_anchor_train_nav"
+  :obj 2.1882
+  :source "experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_211a913d" :type "atom"
+  :subj "exp:B-R8-1_no_open3min_bypass03"
+  :pred "has_anchor_test_nav"
+  :obj 1.2486
+  :source "experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a15c80e5" :type "atom"
+  :subj "exp:B-R8-1_no_open3min_bypass03"
+  :pred "has_status"
+  :obj "challenger"
+  :source "experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_3ec459d2" :type "atom"
+  :subj "exp:B-R8-1_no_open3min_bypass03"
+  :pred "has_outcome"
+  :obj "test_marginal"
+  :source "experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f86198c6" :type "atom"
+  :subj "exp:B-R8-1_no_open3min_bypass03"
+  :pred "has_champion"
+  :obj false
+  :source "experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_be9d68ee" :type "atom"
+  :subj "exp:B-R8-1_no_open3min_bypass03"
+  :pred "has_overfit_score"
+  :obj 0
+  :source "experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_150dd119" :type "atom"
+  :subj "exp:B-R8-1_no_open3min_bypass03"
+  :pred "has_leak_audit"
+  :obj "clean"
+  :source "experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_37ff9f08" :type "atom"
+  :subj "exp:B-R8-1_no_open3min_bypass03"
+  :pred "has_axis"
+  :obj "axis:timing_filter"
+  :source "experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_96dfb140" :type "atom"
+  :subj "exp:B-R8-1_no_open3min_bypass03"
+  :pred "has_axis"
+  :obj "axis:bypass"
+  :source "experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ca578eb1" :type "atom"
+  :subj "exp:B-R8-1_no_open3min_bypass03"
+  :pred "has_axis"
+  :obj "axis:blacklist"
+  :source "experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5f5ac3bb" :type "atom"
+  :subj "exp:B-R8-1_no_open3min_bypass03"
+  :pred "has_axis_list"
+  :obj ("timing_filter" "bypass" "blacklist")
+  :source "experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_24971da3" :type "atom"
+  :subj "exp:B-R8-1_no_open3min_bypass03"
+  :pred "has_created"
+  :obj "2026-05-17 01:50:00"
+  :source "experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a8aa7227" :type "atom"
+  :subj "exp:B-R8-1_no_open3min_bypass03"
+  :pred "has_last_updated"
+  :obj "2026-05-17 05:09:00"
+  :source "experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_3cc4cf57" :type "atom"
+  :subj "exp:B-R8-1_no_open3min_bypass03"
+  :pred "has_tag"
+  :obj "tag:arc/260516a"
+  :source "experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_7810503d" :type "atom"
+  :subj "exp:B-R8-1_no_open3min_bypass03"
+  :pred "has_tag"
+  :obj "tag:team/b"
+  :source "experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ff371077" :type "atom"
+  :subj "exp:B-R8-1_no_open3min_bypass03"
+  :pred "has_tag"
+  :obj "tag:round/r8"
+  :source "experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_33057565" :type "atom"
+  :subj "exp:B-R8-1_no_open3min_bypass03"
+  :pred "has_tag"
+  :obj "tag:axis/timing_filter"
+  :source "experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_28bfe81d" :type "atom"
+  :subj "exp:B-R8-1_no_open3min_bypass03"
+  :pred "has_tag"
+  :obj "tag:axis/bypass"
+  :source "experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_6a1622c6" :type "atom"
+  :subj "exp:B-R8-1_no_open3min_bypass03"
+  :pred "has_tag"
+  :obj "tag:axis/blacklist"
+  :source "experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_125954d0" :type "atom"
+  :subj "exp:B-R8-1_no_open3min_bypass03"
+  :pred "has_tag"
+  :obj "tag:status/challenger"
+  :source "experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c7f3c4b1" :type "atom"
+  :subj "exp:B-R8-1_no_open3min_bypass03"
+  :pred "has_tag"
+  :obj "tag:outcome/test_marginal"
+  :source "experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_2569e840" :type "atom"
+  :subj "exp:B-R8-1_no_open3min_bypass03"
+  :pred "has_tag"
+  :obj "tag:leak/clean"
+  :source "experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f1f0d3ed" :type "atom"
+  :subj "exp:B-R8-1_no_open3min_bypass03"
+  :pred "has_tag"
+  :obj "tag:size/large"
+  :source "experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1bb25a4f" :type "atom"
+  :subj "exp:B-R8-1_no_open3min_bypass03"
+  :pred "has_tl_dr"
+  :obj "Team B 在 R8 把两个独立 mechanism 叠起来：**砍开盘 3min 全部 + 高 ratio (>0.30) 绕过 volume cap**。train NAV 2.80, test NAV 1.27（vs anchor 1.25, 仅 +0.024 —— **marginal**）。Team B 的 NAV 顶点；后面的 R9/R10/R11 都没能超过它。**它的两个 mechanism 直接被 Team C 借走拼出 SOTA-base C8.4**。"
+  :source "experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_cd3156cf" :type "atom"
+  :subj "exp:B-R8-1_no_open3min_bypass03"
+  :pred "has_section_intro"
+  :obj "# B-R8-1 — no open_3min ∪ bypass(0.30) (Team B blacklist peak)\n\n> **TL;DR** —— Team B 在 R8 把两个独立 mechanism 叠起来：**砍开盘 3min 全部 + 高 ratio (>0.30) 绕过 volume cap**。train NAV 2.80, test NAV 1.27（vs anchor 1.25, 仅 +0.024 —— **marginal**）。Team B 的 NAV 顶点；后面的 R9/R10/R11 都没能超过它。**它的两个 mechanism 直接被 Team C 借走拼出 SOTA-base C8.4**。"
+  :source "experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_4bcb4f55" :type "atom"
+  :subj "exp:B-R8-1_no_open3min_bypass03"
+  :pred "has_section_hypothesis"
+  :obj "- **Hypothesis A**: 开盘前 3min 是 alpha 杀手（volatile + 流动性差），把这段全 drop 应当**提高 win_rate 和 sharpe**，即使笔数会少。\n- **Hypothesis B**: baseline_max_avg (1.3M) 的 volume cap 把高 ratio (>0.30) 的 leg 也屏蔽了，但这些 leg 信号 strong 应当放进来 —— 绕过 cap = \"high-ratio bypass\"。\n- 叠加后预期：trade_count 不掉太多（甚至略升，因 bypass 接进新 leg），win_rate 上升，NAV 上一台阶。"
+  :source "experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a5b2e5f7" :type "atom"
+  :subj "exp:B-R8-1_no_open3min_bypass03"
+  :pred "has_section_implementation"
+  :obj "- 主脚本：`/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_b/scripts/round_8_runner.py`\n- 实现逻辑：\n  1. baseline G2 config\n  2. drop trade if `t_et` 的 minute_of_day 在开盘后 3min (timing blacklist)\n  3. 当 `leg.ratio > 0.30` 时跳过 `baseline_max_avg` 检查（bypass）\n- 输出 169 笔（vs anchor 140）。"
+  :source "experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_48fcbb94" :type "atom"
+  :subj "exp:B-R8-1_no_open3min_bypass03"
+  :pred "has_section_past_only_window"
+  :obj "- 全部 filter / bypass 都是 within-trade 决策，没有 rolling stat。**无 lookahead 风险**。"
+  :source "experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c1b54c41" :type "atom"
+  :subj "exp:B-R8-1_no_open3min_bypass03"
+  :pred "has_section_results"
+  :obj "| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 2.8015 | 169 | 7.78 | 85.8% | -1.01% |\n| Val (rolling 13w) | 1.0796 ± 0.081 | - | - | - | - |\n| Test | 1.2722 | 23 | 7.12 | 73.9% | -0.67% |\n| Anchor train | 2.1882 | 140 | 7.70 | 85.7% | -1.01% |\n| Anchor test | 1.2486 | 20 | 7.15 | 75.0% | -0.53% |\n| **Δ test NAV vs anchor** | **+0.024** | +3 | -0.04 | -1.1pp | -0.14pp |\n\n- train +28% vs anchor，看起来强；**test 只赢了 +1.9%，win/dd 还略劣** —— 这是 marginal 胜出，置信度低。\n- 对照同 axis 的 [[arc_260516a__team_h__H-R3b-4__c84_kelly_lambda_1.5]] (test +19.4%)，B 路线在 hold-out 上明显输出不如 sizing 路线。"
+  :source "experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_7bd314ca" :type "atom"
+  :subj "exp:B-R8-1_no_open3min_bypass03"
+  :pred "has_section_risk_overfit"
+  :obj "- overfit_score = 0（gate 都过；val 13 windows 严格 strict beat）\n- 但**实际表现说明 train→test shrinkage 比 sizing 路线严重**：train edge +28% → test edge +2%。\n- risk flag：bypass 阈值 0.30 是 R7-3 sweep 出来的 train 最优；test 上未单独验过。"
+  :source "experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f835a693" :type "atom"
+  :subj "exp:B-R8-1_no_open3min_bypass03"
+  :pred "derived_from"
+  :obj "exp:B-R7-4_no_open_3min"
+  :source "experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_47c1919a" :type "atom"
+  :subj "exp:B-R8-1_no_open3min_bypass03"
+  :pred "descendants_in_team_b"
+  :obj "exp:B-R9-3_sigma_regime_exit"
+  :source "experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1909a2c8" :type "atom"
+  :subj "exp:B-R8-1_no_open3min_bypass03"
+  :pred "borrowed_by"
+  :obj "exp:C8.4_top3_no_open3min_bypass"
+  :source "experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_89e7b71d" :type "atom"
+  :subj "exp:B-R8-1_no_open3min_bypass03"
+  :pred "competes_with"
+  :obj "exp:H-R3b-4_c84_kelly_lambda_1.5"
+  :source "experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_265715cc" :type "atom"
+  :subj "exp:B-R8-1_no_open3min_bypass03"
+  :pred "builds_against"
+  :obj "exp:anchor_g2_baseline"
+  :source "experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_cdd5ad37" :type "atom"
+  :subj "exp:B-R8-1_no_open3min_bypass03"
+  :pred "has_section_lineage_links"
+  :obj "- **derived_from**:\n  - [[arc_260516a__team_b__B-R7-4__no_open_3min]] (no_open_3min 独立验证)\n  - [[arc_260516a__team_b__B-R7-3__bypass_03]] (bypass=0.30 独立验证)\n- **synthesizes**: 把 R7-3 + R7-4 两个机制 stack（这是 Team B 的核心创新——分头验证再合并）\n- **descendants_in_team_b**:\n  - [[arc_260516a__team_b__B-R9-3__sigma_regime_exit]] (R8-1 + σ-regime exit — 几乎 tie)\n  - [[arc_260516a__team_b__B-R9-4__confluence_horizon]] (R8-1 + confluence horizon — 几乎 tie)\n  - 后续 R10/R11 blacklist 实验全部以 R8-1 为内层 stack base\n- **borrowed_by**: [[arc_260516a__team_c__C8.4__top3_no_open3min_bypass]] (Team C 把 R8-1 的 no_open_3min + bypass 直接拿走，叠 top-3 expand 拼出 SOTA-base)\n- **competes_with**: [[arc_260516a__team_h__H-R3b-4__c84_kelly_lambda_1.5]] (不同 axis 的 SOTA challenger)\n- **builds against**: [[arc_260516a__team_anchor__anchor_g2__baseline]]"
+  :source "experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_974aa61e" :type "atom"
+  :subj "exp:B-R8-1_no_open3min_bypass03"
+  :pred "has_section_reports"
+  :obj "- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_b/output/cross_round_leaderboard_nav.csv` (row 1, nav_champion=True)\n- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/output/R7_champions_explainer_20260517_0049.html`\n- [[arc_260516a__reporter_20260517_0547]]"
+  :source "experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_8fd4a201" :type "atom"
+  :subj "exp:B-R8-1_no_open3min_bypass03"
+  :pred "has_section_notes"
+  :obj "- **Team B 的元 lesson**：blacklist + bypass 是 productive 的两条 lever，但单独叠加在 default-drop 框架内**会被 train→test shrinkage 啃掉大半 edge**。\n- 如果只能保留一个 mechanism，**no_open_3min 比 bypass 重要** —— 它在 Team C 的 top-3 expand 上下文里被复用，并贡献了大部分 NAV gain。\n- 下次类似 arc：先用 default-admit (Team D 路线) 跑 baseline，再叠 blacklist —— **不要重蹈\"default-drop 上叠 bypass\" 的口子**，因为这样 mechanism 之间会互相 mask（whitelist gate 砍掉的 trade 即使你 bypass 也找不回来）。"
+  :source "experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")

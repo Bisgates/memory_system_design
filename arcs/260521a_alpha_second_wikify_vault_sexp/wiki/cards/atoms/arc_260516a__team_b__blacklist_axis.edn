@@ -1,0 +1,188 @@
+(card "lin:arc_260516a__team_b__blacklist_axis" :type "lineage"
+  :subj "lin:arc_260516a__team_b__blacklist_axis"
+  :body "---\ntype: lineage_overview\nteam: b\narc: 260516a\nstatus: plateau\npeak_train_nav: 2.8015\npeak_test_nav: 1.1334\nrounds_done: 11\ncandidates_total: 30\nchampions: 13\ntags: [vault/lineage, team/b, arc/260516a, status/plateau, axis/blacklist, axis/timing_filter, axis/bypass]\n---\n\n# Team B — blacklist axis lineage (arc 260516a)\n\n> Team B 走 admission-set axis（\"add/remove single legs from anchor pool\"），跨 R1→R11，11 轮 30 candidate / 13 NAV champion。**plateau 在 R8-1 (train_nav 2.8015 = anchor +28.0%) 被 R9 四轴正交一齐反证、R10/R11 再做交叉/低 vol/正交 stack 全部低于 R8-1**。test 上 R8-1 与 anchor 在 n=9 上 tie (1.1334)，hold-out 没 confirm train edge。\n\n## Round 演进时间线（NAV 排序，每轮选 top）\n\n| Round | best candidate | n | train_nav | val_nav | sharpe | NAV champion |\n|---|---|---|---|---|---|---|\n| R1 | B-A1 impact_estimator_coarse | 138 | ≈2.18 | ≈1.060 | — | 0/3 (tie/worse than anchor) |\n| R2 | **B-B2** ratio_bucketed_horizon 65/80/100s | 140 | **2.2248** | **1.0607** | 7.82 | ✓ (first train-mean beater +2.1%) |\n| R3 | **B-B4** high_ratio>0.40 bypass cap | 143 | **2.2909** | **1.0640** | 7.77 | ✓ (admits 3 high-ratio cap-breachers) |\n| R4 | **R4-3** decrowd | 114 | 2.1882* | 1.0651 | — | first admission-set winner via val gate |\n| R5 | **R5-4** decrowd × side-aware C2.1 cross-team stack | 89 | 1.9-ish | **1.0821** | — | first val-gate crossing (0.821%); count_fail 89<100 |\n| R6 | R6-4 decrowd-high-ratio-2nd + side-aware 0.08/0.20 | 91 | — | 1.0810 | — | second val-crossing; count_fail (loosening dilutes) |\n| **RANK_SWITCH** | mean → NAV (han directive 23:55) | — | — | — | — | B-B4 + B-B2 promote to champions w/o re-runs |\n| R7 | **B-R7-4** `no_open_3min` (drop anchor's 09:30-09:33 skip) | 164 | **2.5740** | **1.0722** | 7.58 | ✓ +17.6% — **single biggest unlock of whole arc** |\n| R8 | **B-R8-1** no_open3min ∪ bypass(0.30) | 169 | **2.8015** | **1.0796** | 7.78 | ✓ **PEAK train +28.0%; plateau warning** |\n| R9 | B-R9-3 σ-regime exit 45s/85s | 169 | 2.8006 | 1.0784 | 8.02 | ✓ but **within ±0.7% of R8-1 → plateau confirmed** |\n| R10 | (intermediate stacks) | — | — | — | — | (omit; R10-4 became R11 base) |\n| R11 | **B-R11-2** blacklist_vol_regime_low q25 | 146 | 2.2664 | 1.0595 | — | 0/4 champions, all below R8-1 roof |\n\n\\* R4-3 val=0.6851%, train_nav≈anchor — admission-set side win, NAV 不突出。\n\n## 决策点 / 反思\n\n- **R1–R3 全 mean ranking**: B-B2/B-B4 在 mean-gate 下被定性\"无 champion\"，但 R7 mean→NAV pivot 后**追溯 reclassify 为 champions** —— rerank_by_nav.py 跑了几分钟把 6 轮重排，没有任何 re-run。**这是整条 lineage 的关键 lesson：救命的是 R1 就保存了 per-candidate train_trades.csv。**\n- **R4 admission-set 转向**: R4-3 decrowd 是第一个 admission-set winner（不是 estimator / horizon / picker 调参），从此 B 的设计重心从 \"改 ranker\" 转到 \"改进 admission set\"。\n- **R7-4 unlock**: 去掉 anchor 的 \"skip first 3 minutes\" filter，发现 9:30-9:33 ET 窗口里有 NAV-positive LONG follower legs，**单一步骤 +17.6% NAV** —— 整 arc 最大单次跃迁。\n- **R8 plateau warning**: R6→R7 +11.9%, R7→R8 +8.8%, R8→R9 ≤+0%。stack-mode (filter ∪ filter) 边际递减明显。\n- **R9 一次 dispatch 4 个正交轴 (post-filter / entry +1s / σ-regime exit / confluence horizon)**, 全 ≤ R8-1 ±0.7%, plateau 一轮确认 —— 不需要 R10 narrow retest。\n- **R11 多轴正交 stack (SPY-contra / vol-regime / mixed-direction / quadruple) 全部 < R8-1 2.8015** —— 罩定。\n- **R9-2 entry +1s -12% NAV** 重新确认 R1 B-B1 的发现：\"秒 1-2 是 alpha 最密集窗口\"。\n- **`mask_agree=1.0` for orthogonal-axis (entry/exit/post-filter) modifications** 是设计内 expected, 不是 structural leak（R9 leak-fix protocol 见 audit/round_9_leak_fix.md）。\n\n## 跨 lineage 关系\n\n- **derived_from**: [[arc_260516a__team_anchor__anchor_g2__baseline]] —— 所有 B candidate 都 build on anchor 之上做加减。\n- **competes_with**: [[arc_260516a__team_c__top_k_no_open3min]] —— Team C 反向 import B-R8-1 的 `no_open_3min` 机制（C-R7.5 / C-R8.4），证明该 mechanism cross-team transferable 且与 top-K expansion 复合。\n- **shared_axis**: [[arc_260516a__team_d__cross_source_consensus]] R2-3 用 cross-source × open_3min × low_amt q10 三栈，**架构与 B-R8-x 相似但 cross-source 替换 crowding** —— 同 admission-set 派的并行实验。\n- **co-champion at peak**: [[experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03]] 是 B 队 peak；同 axis 多兄弟 R9-1/R9-3/R9-4 都在 ±0.7% 范围内 NAV champion。\n- **anti-pattern shared**: 与 [[arc_260516a__team_h__sizing]] 对比 —— sizing axis test retention 0.40x, blacklist axis test retention 0.45x 看似接近，但 sizing 的 anchor-relative edge +19% vs blacklist +2%（hold-out 上 sizing 更 robust）。\n- **R5-4 cross-team compose**: 用了 Team C 的 C2.1 side-aware ratio gate，是首个 cross-team composition 成功落地的 candidate（val 过 gate，count 不过）。\n\n## 终态判定理由（plateau）\n\n1. **R9 一轮 4 个正交轴（post-filter rolling base-rate / entry shift / σ-regime exit / confluence horizon）一齐 ≤ R8-1 ±0.7%**：单轮 4 axis 同时收敛是 plateau 最强 evidence，narrow retest 不会改变 inference。\n2. **R11 4 个 stack/regime candidate 全部 < R8-1 2.8015**（top 是 R11-2 2.2664）：R10-4 作 base 再 stack 不能 break ceiling。\n3. **stack mode 边际递减 R6→R7 +11.9% → R7→R8 +8.8% → R8→R9 ≤0%**：edge 已被信息论上界压住。\n4. **R8-1 test_nav 1.1334 = anchor test_nav bit-identical**（n=9 hold-out）：train+28% edge 在 hold-out 蒸发 —— 不能区分 sample-size noise 还是 train-overfit, 但 production 上不能宣称 alpha lift 通过验证。\n5. final_summary.md 已写并 freeze。\n\n## For future sub-agent\n\n**不要重蹈：**\n\n1. **不要再单 axis sweep horizon / entry-time / estimator** —— B 一队 9 轮已经把 (Almgren-Chriss / 2σ trailing / ratio-bucketed horizon / σ-regime exit / entry +1s/+5s) 全跑死，且 horizon-axis literature transfer rate 已验证 ≈ 0。\n2. **不要再 stack 第 4/5 个 admission filter on R8-1** —— 边际信息论上界已饱和（每加一层 ≤+1% NAV）；R11 quadruple stack 直接退到 1.21 NAV。\n3. **不要相信 train_nav 单一 metric** —— R8-1 train +28% 在 n=9 test 上完全消失。任何新 arc 必须 budget 更宽 test slice，或 plan \"test 是 sanity 不是 discriminator\"。\n4. **不要 narrow retest 来 confirm plateau** —— R9 一轮 4 axis 已经是 4 倍信息量, 二次更窄 sweep 不增信息。\n5. **不要 `mask_agree=1.0` 自动 fix** —— orthogonal-axis 修改 by design 100% mask_agree，edge-leak heuristic 会误报，要走 manual review protocol。\n6. **不要在 RANK_SWITCH 之前删 per-candidate trades.csv** —— B 全靠 R1 就开始 dump 才得以无 re-run 拯救 R7。\n\n**可以继承：**\n\n1. **`no_open_3min`（drop anchor's 09:30-09:33 skip）是整 arc 最大单步 unlock (+17.6%)** —— 任何新 arc 都应当 default 测一次 anchor 反向（去掉一个 filter 而不是加 filter）。\n2. **NAV ranking 比 mean ranking 更 productive** —— mean 偏好少而精, NAV 偏好量×质 compound, follower 复利模型更匹配后者。\n3. **`save full per-candidate train_trades.csv from day one`** —— 是 RANK_SWITCH 能逆向 rerank 的唯一前提。强制写进 vault 的设计规范。\n4. **R8-1 / R8-2 / R8-3 已 burn test slot** —— 余下 candidate 已无足 hold-out 区分能力，新一轮 sub-agent 别 burn test on B 系。\n5. **`stack-mode 边际递减 ≈ admit_new / admit_existing` 的经验公式** —— 可用来 prior-judge 一个新 filter 的 expected NAV lift, 提前 prune 设计空间。\n6. **side-aware × decrowd cross-team compose (R5-4) 虽 count_fail 但 val 突破 0.807% gate 第一次** —— 说明 cross-team compose 是 productive axis，未来 arc 可 plan 专门一轮 cross-team compose round。\n\n## 备注\n\n- final_summary.md 完整版（R1–R9 + R11 footnote）已在 team_b/final_summary.md。\n- R10 在 status.md 里没单独行，但 R10-4 是 R11 base。\n- 11 轮 30 candidate 中 4 个未列 top（B-A1/B-A2/B-B1/B-B3 + R4-1/R4-2/R4-4 等 negative result），完整列表在 cross_round_leaderboard_nav.csv。\n"
+  :path "lineages/arc_260516a__team_b__blacklist_axis.md"
+  :source_mtime "2026-05-17T10:16:33+08:00"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e1a66e34" :type "atom"
+  :subj "lin:arc_260516a__team_b__blacklist_axis"
+  :pred "has_type"
+  :obj "lineage_overview"
+  :source "lineages/arc_260516a__team_b__blacklist_axis.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f4c83eac" :type "atom"
+  :subj "lin:arc_260516a__team_b__blacklist_axis"
+  :pred "has_team"
+  :obj "b"
+  :source "lineages/arc_260516a__team_b__blacklist_axis.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_8c5d20b1" :type "atom"
+  :subj "lin:arc_260516a__team_b__blacklist_axis"
+  :pred "has_arc"
+  :obj "260516a"
+  :source "lineages/arc_260516a__team_b__blacklist_axis.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_244a6444" :type "atom"
+  :subj "lin:arc_260516a__team_b__blacklist_axis"
+  :pred "has_status"
+  :obj "plateau"
+  :source "lineages/arc_260516a__team_b__blacklist_axis.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f0074900" :type "atom"
+  :subj "lin:arc_260516a__team_b__blacklist_axis"
+  :pred "has_peak_train_nav"
+  :obj 2.8015
+  :source "lineages/arc_260516a__team_b__blacklist_axis.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e96eab47" :type "atom"
+  :subj "lin:arc_260516a__team_b__blacklist_axis"
+  :pred "has_peak_test_nav"
+  :obj 1.1334
+  :source "lineages/arc_260516a__team_b__blacklist_axis.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_dde02065" :type "atom"
+  :subj "lin:arc_260516a__team_b__blacklist_axis"
+  :pred "has_rounds_done"
+  :obj 11
+  :source "lineages/arc_260516a__team_b__blacklist_axis.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_7d06ffbf" :type "atom"
+  :subj "lin:arc_260516a__team_b__blacklist_axis"
+  :pred "has_candidates_total"
+  :obj 30
+  :source "lineages/arc_260516a__team_b__blacklist_axis.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b48dd1ea" :type "atom"
+  :subj "lin:arc_260516a__team_b__blacklist_axis"
+  :pred "has_champions"
+  :obj 13
+  :source "lineages/arc_260516a__team_b__blacklist_axis.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_07685302" :type "atom"
+  :subj "lin:arc_260516a__team_b__blacklist_axis"
+  :pred "has_tag"
+  :obj "tag:vault/lineage"
+  :source "lineages/arc_260516a__team_b__blacklist_axis.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_2cfcc190" :type "atom"
+  :subj "lin:arc_260516a__team_b__blacklist_axis"
+  :pred "has_tag"
+  :obj "tag:team/b"
+  :source "lineages/arc_260516a__team_b__blacklist_axis.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d460da97" :type "atom"
+  :subj "lin:arc_260516a__team_b__blacklist_axis"
+  :pred "has_tag"
+  :obj "tag:arc/260516a"
+  :source "lineages/arc_260516a__team_b__blacklist_axis.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d01073b5" :type "atom"
+  :subj "lin:arc_260516a__team_b__blacklist_axis"
+  :pred "has_tag"
+  :obj "tag:status/plateau"
+  :source "lineages/arc_260516a__team_b__blacklist_axis.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_eca1628f" :type "atom"
+  :subj "lin:arc_260516a__team_b__blacklist_axis"
+  :pred "has_tag"
+  :obj "tag:axis/blacklist"
+  :source "lineages/arc_260516a__team_b__blacklist_axis.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c7fe31c1" :type "atom"
+  :subj "lin:arc_260516a__team_b__blacklist_axis"
+  :pred "has_tag"
+  :obj "tag:axis/timing_filter"
+  :source "lineages/arc_260516a__team_b__blacklist_axis.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_630753b6" :type "atom"
+  :subj "lin:arc_260516a__team_b__blacklist_axis"
+  :pred "has_tag"
+  :obj "tag:axis/bypass"
+  :source "lineages/arc_260516a__team_b__blacklist_axis.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a8c7078a" :type "atom"
+  :subj "lin:arc_260516a__team_b__blacklist_axis"
+  :pred "has_section_intro"
+  :obj "# Team B — blacklist axis lineage (arc 260516a)\n\n> Team B 走 admission-set axis（\"add/remove single legs from anchor pool\"），跨 R1→R11，11 轮 30 candidate / 13 NAV champion。**plateau 在 R8-1 (train_nav 2.8015 = anchor +28.0%) 被 R9 四轴正交一齐反证、R10/R11 再做交叉/低 vol/正交 stack 全部低于 R8-1**。test 上 R8-1 与 anchor 在 n=9 上 tie (1.1334)，hold-out 没 confirm train edge。"
+  :source "lineages/arc_260516a__team_b__blacklist_axis.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_afcb849a" :type "atom"
+  :subj "lin:arc_260516a__team_b__blacklist_axis"
+  :pred "has_section_round_table"
+  :obj "| Round | best candidate | n | train_nav | val_nav | sharpe | NAV champion |\n|---|---|---|---|---|---|---|\n| R1 | B-A1 impact_estimator_coarse | 138 | ≈2.18 | ≈1.060 | — | 0/3 (tie/worse than anchor) |\n| R2 | **B-B2** ratio_bucketed_horizon 65/80/100s | 140 | **2.2248** | **1.0607** | 7.82 | ✓ (first train-mean beater +2.1%) |\n| R3 | **B-B4** high_ratio>0.40 bypass cap | 143 | **2.2909** | **1.0640** | 7.77 | ✓ (admits 3 high-ratio cap-breachers) |\n| R4 | **R4-3** decrowd | 114 | 2.1882* | 1.0651 | — | first admission-set winner via val gate |\n| R5 | **R5-4** decrowd × side-aware C2.1 cross-team stack | 89 | 1.9-ish | **1.0821** | — | first val-gate crossing (0.821%); count_fail 89<100 |\n| R6 | R6-4 decrowd-high-ratio-2nd + side-aware 0.08/0.20 | 91 | — | 1.0810 | — | second val-crossing; count_fail (loosening dilutes) |\n| **RANK_SWITCH** | mean → NAV (han directive 23:55) | — | — | — | — | B-B4 + B-B2 promote to champions w/o re-runs |\n| R7 | **B-R7-4** `no_open_3min` (drop anchor's 09:30-09:33 skip) | 164 | **2.5740** | **1.0722** | 7.58 | ✓ +17.6% — **single biggest unlock of whole arc** |\n| R8 | **B-R8-1** no_open3min ∪ bypass(0.30) | 169 | **2.8015** | **1.0796** | 7.78 | ✓ **PEAK train +28.0%; plateau warning** |\n| R9 | B-R9-3 σ-regime exit 45s/85s | 169 | 2.8006 | 1.0784 | 8.02 | ✓ but **within ±0.7% of R8-1 → plateau confirmed** |\n| R10 | (intermediate stacks) | — | — | — | — | (omit; R10-4 became R11 base) |\n| R11 | **B-R11-2** blacklist_vol_regime_low q25 | 146 | 2.2664 | 1.0595 | — | 0/4 champions, all below R8-1 roof |\n\n\\* R4-3 val=0.6851%, train_nav≈anchor — admission-set side win, NAV 不突出。"
+  :source "lineages/arc_260516a__team_b__blacklist_axis.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_7f96f684" :type "atom"
+  :subj "lin:arc_260516a__team_b__blacklist_axis"
+  :pred "has_section_decisions_reflections"
+  :obj "- **R1–R3 全 mean ranking**: B-B2/B-B4 在 mean-gate 下被定性\"无 champion\"，但 R7 mean→NAV pivot 后**追溯 reclassify 为 champions** —— rerank_by_nav.py 跑了几分钟把 6 轮重排，没有任何 re-run。**这是整条 lineage 的关键 lesson：救命的是 R1 就保存了 per-candidate train_trades.csv。**\n- **R4 admission-set 转向**: R4-3 decrowd 是第一个 admission-set winner（不是 estimator / horizon / picker 调参），从此 B 的设计重心从 \"改 ranker\" 转到 \"改进 admission set\"。\n- **R7-4 unlock**: 去掉 anchor 的 \"skip first 3 minutes\" filter，发现 9:30-9:33 ET 窗口里有 NAV-positive LONG follower legs，**单一步骤 +17.6% NAV** —— 整 arc 最大单次跃迁。\n- **R8 plateau warning**: R6→R7 +11.9%, R7→R8 +8.8%, R8→R9 ≤+0%。stack-mode (filter ∪ filter) 边际递减明显。\n- **R9 一次 dispatch 4 个正交轴 (post-filter / entry +1s / σ-regime exit / confluence horizon)**, 全 ≤ R8-1 ±0.7%, plateau 一轮确认 —— 不需要 R10 narrow retest。\n- **R11 多轴正交 stack (SPY-contra / vol-regime / mixed-direction / quadruple) 全部 < R8-1 2.8015** —— 罩定。\n- **R9-2 entry +1s -12% NAV** 重新确认 R1 B-B1 的发现：\"秒 1-2 是 alpha 最密集窗口\"。\n- **`mask_agree=1.0` for orthogonal-axis (entry/exit/post-filter) modifications** 是设计内 expected, 不是 structural leak（R9 leak-fix protocol 见 audit/round_9_leak_fix.md）。"
+  :source "lineages/arc_260516a__team_b__blacklist_axis.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_07bd46ec" :type "atom"
+  :subj "lin:arc_260516a__team_b__blacklist_axis"
+  :pred "derived_from"
+  :obj "exp:anchor_g2_baseline"
+  :source "lineages/arc_260516a__team_b__blacklist_axis.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_634ea084" :type "atom"
+  :subj "lin:arc_260516a__team_b__blacklist_axis"
+  :pred "competes_with"
+  :obj "lin:arc_260516a__team_c__top_k_no_open3min"
+  :source "lineages/arc_260516a__team_b__blacklist_axis.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d6f9e779" :type "atom"
+  :subj "lin:arc_260516a__team_b__blacklist_axis"
+  :pred "shared_axis"
+  :obj "lin:arc_260516a__team_d__cross_source_consensus"
+  :source "lineages/arc_260516a__team_b__blacklist_axis.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c546ca77" :type "atom"
+  :subj "lin:arc_260516a__team_b__blacklist_axis"
+  :pred "has_section_cross_lineage_relations"
+  :obj "- **derived_from**: [[arc_260516a__team_anchor__anchor_g2__baseline]] —— 所有 B candidate 都 build on anchor 之上做加减。\n- **competes_with**: [[arc_260516a__team_c__top_k_no_open3min]] —— Team C 反向 import B-R8-1 的 `no_open_3min` 机制（C-R7.5 / C-R8.4），证明该 mechanism cross-team transferable 且与 top-K expansion 复合。\n- **shared_axis**: [[arc_260516a__team_d__cross_source_consensus]] R2-3 用 cross-source × open_3min × low_amt q10 三栈，**架构与 B-R8-x 相似但 cross-source 替换 crowding** —— 同 admission-set 派的并行实验。\n- **co-champion at peak**: [[experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03]] 是 B 队 peak；同 axis 多兄弟 R9-1/R9-3/R9-4 都在 ±0.7% 范围内 NAV champion。\n- **anti-pattern shared**: 与 [[arc_260516a__team_h__sizing]] 对比 —— sizing axis test retention 0.40x, blacklist axis test retention 0.45x 看似接近，但 sizing 的 anchor-relative edge +19% vs blacklist +2%（hold-out 上 sizing 更 robust）。\n- **R5-4 cross-team compose**: 用了 Team C 的 C2.1 side-aware ratio gate，是首个 cross-team composition 成功落地的 candidate（val 过 gate，count 不过）。"
+  :source "lineages/arc_260516a__team_b__blacklist_axis.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_8d83d8c9" :type "atom"
+  :subj "lin:arc_260516a__team_b__blacklist_axis"
+  :pred "has_section_terminal_judgement"
+  :obj "1. **R9 一轮 4 个正交轴（post-filter rolling base-rate / entry shift / σ-regime exit / confluence horizon）一齐 ≤ R8-1 ±0.7%**：单轮 4 axis 同时收敛是 plateau 最强 evidence，narrow retest 不会改变 inference。\n2. **R11 4 个 stack/regime candidate 全部 < R8-1 2.8015**（top 是 R11-2 2.2664）：R10-4 作 base 再 stack 不能 break ceiling。\n3. **stack mode 边际递减 R6→R7 +11.9% → R7→R8 +8.8% → R8→R9 ≤0%**：edge 已被信息论上界压住。\n4. **R8-1 test_nav 1.1334 = anchor test_nav bit-identical**（n=9 hold-out）：train+28% edge 在 hold-out 蒸发 —— 不能区分 sample-size noise 还是 train-overfit, 但 production 上不能宣称 alpha lift 通过验证。\n5. final_summary.md 已写并 freeze。"
+  :source "lineages/arc_260516a__team_b__blacklist_axis.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f6a6023f" :type "atom"
+  :subj "lin:arc_260516a__team_b__blacklist_axis"
+  :pred "has_section_for_future_sub_agent"
+  :obj "**不要重蹈：**\n\n1. **不要再单 axis sweep horizon / entry-time / estimator** —— B 一队 9 轮已经把 (Almgren-Chriss / 2σ trailing / ratio-bucketed horizon / σ-regime exit / entry +1s/+5s) 全跑死，且 horizon-axis literature transfer rate 已验证 ≈ 0。\n2. **不要再 stack 第 4/5 个 admission filter on R8-1** —— 边际信息论上界已饱和（每加一层 ≤+1% NAV）；R11 quadruple stack 直接退到 1.21 NAV。\n3. **不要相信 train_nav 单一 metric** —— R8-1 train +28% 在 n=9 test 上完全消失。任何新 arc 必须 budget 更宽 test slice，或 plan \"test 是 sanity 不是 discriminator\"。\n4. **不要 narrow retest 来 confirm plateau** —— R9 一轮 4 axis 已经是 4 倍信息量, 二次更窄 sweep 不增信息。\n5. **不要 `mask_agree=1.0` 自动 fix** —— orthogonal-axis 修改 by design 100% mask_agree，edge-leak heuristic 会误报，要走 manual review protocol。\n6. **不要在 RANK_SWITCH 之前删 per-candidate trades.csv** —— B 全靠 R1 就开始 dump 才得以无 re-run 拯救 R7。\n\n**可以继承：**\n\n1. **`no_open_3min`（drop anchor's 09:30-09:33 skip）是整 arc 最大单步 unlock (+17.6%)** —— 任何新 arc 都应当 default 测一次 anchor 反向（去掉一个 filter 而不是加 filter）。\n2. **NAV ranking 比 mean ranking 更 productive** —— mean 偏好少而精, NAV 偏好量×质 compound, follower 复利模型更匹配后者。\n3. **`save full per-candidate train_trades.csv from day one`** —— 是 RANK_SWITCH 能逆向 rerank 的唯一前提。强制写进 vault 的设计规范。\n4. **R8-1 / R8-2 / R8-3 已 burn test slot** —— 余下 candidate 已无足 hold-out 区分能力，新一轮 sub-agent 别 burn test on B 系。\n5. **`stack-mode 边际递减 ≈ admit_new / admit_existing` 的经验公式** —— 可用来 prior-judge 一个新 filter 的 expected NAV lift, 提前 prune 设计空间。\n6. **side-aware × decrowd cross-team compose (R5-4) 虽 count_fail 但 val 突破 0.807% gate 第一次** —— 说明 cross-team compose 是 productive axis，未来 arc 可 plan 专门一轮 cross-team compose round。"
+  :source "lineages/arc_260516a__team_b__blacklist_axis.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_4c861712" :type "atom"
+  :subj "lin:arc_260516a__team_b__blacklist_axis"
+  :pred "has_section_remarks"
+  :obj "- final_summary.md 完整版（R1–R9 + R11 footnote）已在 team_b/final_summary.md。\n- R10 在 status.md 里没单独行，但 R10-4 是 R11 base。\n- 11 轮 30 candidate 中 4 个未列 top（B-A1/B-A2/B-B1/B-B3 + R4-1/R4-2/R4-4 等 negative result），完整列表在 cross_round_leaderboard_nav.csv。"
+  :source "lineages/arc_260516a__team_b__blacklist_axis.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")

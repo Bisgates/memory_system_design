@@ -1,0 +1,412 @@
+(card "exp:baseline_C7.5_top3_no_open3min" :type "experiment"
+  :subj "exp:baseline_C7.5_top3_no_open3min"
+  :body "---\nnav: 9\ntype: experiment\nid: baseline_C7.5\nshort_name: baseline_top3_no_open3min\ntitle: \"baseline_C7.5 — top-3 expand + no_open_3min (R8 reproduce)\"\narc: 260516a\nteam: c\nround: r8\nparent_arc: \"[[arcs/260516a]]\"\nparent_lineage: \"[[lineages/arc_260516a__team_c__no_open3min]]\"\ntrain_nav: 3.0291\ntrain_trade_count: 170\ntrain_win_rate: 0.8941\ntrain_sharpe: 8.5918\ntrain_max_drawdown: -0.0047\nval_nav_mean: 1.0887\nval_nav_sigma: 0.0902\nval_window_count: 13\ntest_nav: 1.4058\ntest_trade_count: 31\ntest_sharpe: 7.7042\ntest_win_rate: 0.8065\ntest_max_drawdown: -0.0029\nanchor_train_nav: 2.1882\nanchor_test_nav: 1.2486\nstatus: baseline\noutcome: test_pass\nchampion: false\noverfit_score: 0\nleak_audit: clean\naxis: [whitelist, timing_filter, baseline]\npast_only_window_days: null\nwarmup_required: null\ncreated: 2026-05-17T01:30:00\nlast_updated: 2026-05-17T05:09:00\ntags: [arc/260516a, team/c, round/r8, axis/whitelist, axis/timing_filter, axis/baseline, status/baseline, outcome/test_pass, leak/clean, size/large]\n---\n\n# baseline_C7.5 — top-3 + no_open_3min (R8 reproduce)\n\n> **TL;DR** —— C7.5 的 R8 重跑作为 R8 round 的 reference baseline，保证 R8 系列每个候选都能与 R7 NAV champion 严格对比。**数字与 [[arc_260516a__team_c__C7.5__top3_no_open3min]] bit-for-bit 相同**。\n\n## 假设 (Hypothesis)\n- 不是 hypothesis，是 R8 round 的 reference reproduce。\n- C8.x 系列在 R8 内的 NAV gain 都应当 reference 本候选，而不是直接跨 round 比 C7.5（避免代码 helper drift）。\n\n## 实现 (Implementation)\n- 主脚本：R8 runner 直接调 R7 logic with same args.\n- trade selector = top-3 expand + drop minute_of_day in 开盘 3min.\n- 输出 170 笔，bit-for-bit 复现 C7.5。\n\n## Past-only window 处理\n- 无 rolling stat。`#leak/clean`。\n\n## 结果 (Results)\n| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 3.0291 | 170 | 8.59 | 89.4% | -0.47% |\n| Val (rolling 13w) | 1.0887 ± 0.090 | - | - | - | - |\n| Test | 1.4058 | 31 | 7.70 | 80.6% | -0.29% |\n\n## 风险 & overfit 嫌疑\n- N/A（reproduce baseline）。\n\n## Lineage（双链网）\n- **same_as**: [[arc_260516a__team_c__C7.5__top3_no_open3min]]\n- **reference_for_round**: 全 R8 C8.x candidates\n- **builds against**: [[arc_260516a__team_anchor__anchor_g2__baseline]]\n\n## Reports\n- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_c/output/cross_round_leaderboard.csv` (baseline_C7.5)\n- [[arc_260516a__reporter_20260517_0547]]\n\n## Notes / 下次迭代\n- **方法论 lesson**：跨 round reproduce baseline 是 C 队的好实践 —— **任何 round 增量必须能 bit-for-bit 复现前 round champion**，否则 helper drift 导致 NAV gain 被错算。下次 sub-agent 启动新 round 必须照搬此约定。\n"
+  :path "experiments/arc_260516a__team_c__baseline_C7.5__top3_no_open3min.md"
+  :source_mtime "2026-05-17T10:24:02+08:00"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f5a03c15" :type "atom"
+  :subj "exp:baseline_C7.5_top3_no_open3min"
+  :pred "has_nav"
+  :obj 9
+  :source "experiments/arc_260516a__team_c__baseline_C7.5__top3_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b3d58c01" :type "atom"
+  :subj "exp:baseline_C7.5_top3_no_open3min"
+  :pred "has_type"
+  :obj "experiment"
+  :source "experiments/arc_260516a__team_c__baseline_C7.5__top3_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_51f0488c" :type "atom"
+  :subj "exp:baseline_C7.5_top3_no_open3min"
+  :pred "has_id"
+  :obj "baseline_C7.5"
+  :source "experiments/arc_260516a__team_c__baseline_C7.5__top3_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_669000f5" :type "atom"
+  :subj "exp:baseline_C7.5_top3_no_open3min"
+  :pred "has_short_name"
+  :obj "baseline_top3_no_open3min"
+  :source "experiments/arc_260516a__team_c__baseline_C7.5__top3_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9c789d67" :type "atom"
+  :subj "exp:baseline_C7.5_top3_no_open3min"
+  :pred "has_title"
+  :obj "baseline_C7.5 — top-3 expand + no_open_3min (R8 reproduce)"
+  :source "experiments/arc_260516a__team_c__baseline_C7.5__top3_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_7d48faf2" :type "atom"
+  :subj "exp:baseline_C7.5_top3_no_open3min"
+  :pred "has_arc"
+  :obj "260516a"
+  :source "experiments/arc_260516a__team_c__baseline_C7.5__top3_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_44940984" :type "atom"
+  :subj "exp:baseline_C7.5_top3_no_open3min"
+  :pred "has_team"
+  :obj "c"
+  :source "experiments/arc_260516a__team_c__baseline_C7.5__top3_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_42889375" :type "atom"
+  :subj "exp:baseline_C7.5_top3_no_open3min"
+  :pred "has_round"
+  :obj "r8"
+  :source "experiments/arc_260516a__team_c__baseline_C7.5__top3_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e0ccd4f6" :type "atom"
+  :subj "exp:baseline_C7.5_top3_no_open3min"
+  :pred "parent_arc"
+  :obj "arc:260516a"
+  :source "experiments/arc_260516a__team_c__baseline_C7.5__top3_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_43a054c9" :type "atom"
+  :subj "exp:baseline_C7.5_top3_no_open3min"
+  :pred "parent_lineage"
+  :obj "lin:arc_260516a__team_c__no_open3min"
+  :source "experiments/arc_260516a__team_c__baseline_C7.5__top3_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b232b1ed" :type "atom"
+  :subj "exp:baseline_C7.5_top3_no_open3min"
+  :pred "has_train_nav"
+  :obj 3.0291
+  :source "experiments/arc_260516a__team_c__baseline_C7.5__top3_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_7b150925" :type "atom"
+  :subj "exp:baseline_C7.5_top3_no_open3min"
+  :pred "has_train_trade_count"
+  :obj 170
+  :source "experiments/arc_260516a__team_c__baseline_C7.5__top3_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_54814dc5" :type "atom"
+  :subj "exp:baseline_C7.5_top3_no_open3min"
+  :pred "has_train_win_rate"
+  :obj 0.8941
+  :source "experiments/arc_260516a__team_c__baseline_C7.5__top3_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9a93fce0" :type "atom"
+  :subj "exp:baseline_C7.5_top3_no_open3min"
+  :pred "has_train_sharpe"
+  :obj 8.5918
+  :source "experiments/arc_260516a__team_c__baseline_C7.5__top3_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_88ede045" :type "atom"
+  :subj "exp:baseline_C7.5_top3_no_open3min"
+  :pred "has_train_max_drawdown"
+  :obj -0.0047
+  :source "experiments/arc_260516a__team_c__baseline_C7.5__top3_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_cc5f03c1" :type "atom"
+  :subj "exp:baseline_C7.5_top3_no_open3min"
+  :pred "has_val_nav_mean"
+  :obj 1.0887
+  :source "experiments/arc_260516a__team_c__baseline_C7.5__top3_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_6854f7ee" :type "atom"
+  :subj "exp:baseline_C7.5_top3_no_open3min"
+  :pred "has_val_nav_sigma"
+  :obj 0.0902
+  :source "experiments/arc_260516a__team_c__baseline_C7.5__top3_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b4f9067c" :type "atom"
+  :subj "exp:baseline_C7.5_top3_no_open3min"
+  :pred "has_val_window_count"
+  :obj 13
+  :source "experiments/arc_260516a__team_c__baseline_C7.5__top3_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_0fbfcc9e" :type "atom"
+  :subj "exp:baseline_C7.5_top3_no_open3min"
+  :pred "has_test_nav"
+  :obj 1.4058
+  :source "experiments/arc_260516a__team_c__baseline_C7.5__top3_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d7f38d90" :type "atom"
+  :subj "exp:baseline_C7.5_top3_no_open3min"
+  :pred "has_test_trade_count"
+  :obj 31
+  :source "experiments/arc_260516a__team_c__baseline_C7.5__top3_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_bd1f68c5" :type "atom"
+  :subj "exp:baseline_C7.5_top3_no_open3min"
+  :pred "has_test_sharpe"
+  :obj 7.7042
+  :source "experiments/arc_260516a__team_c__baseline_C7.5__top3_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_14543078" :type "atom"
+  :subj "exp:baseline_C7.5_top3_no_open3min"
+  :pred "has_test_win_rate"
+  :obj 0.8065
+  :source "experiments/arc_260516a__team_c__baseline_C7.5__top3_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9d1467a5" :type "atom"
+  :subj "exp:baseline_C7.5_top3_no_open3min"
+  :pred "has_test_max_drawdown"
+  :obj -0.0029
+  :source "experiments/arc_260516a__team_c__baseline_C7.5__top3_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_01d665a7" :type "atom"
+  :subj "exp:baseline_C7.5_top3_no_open3min"
+  :pred "has_anchor_train_nav"
+  :obj 2.1882
+  :source "experiments/arc_260516a__team_c__baseline_C7.5__top3_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_4e7eaa9d" :type "atom"
+  :subj "exp:baseline_C7.5_top3_no_open3min"
+  :pred "has_anchor_test_nav"
+  :obj 1.2486
+  :source "experiments/arc_260516a__team_c__baseline_C7.5__top3_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_39ecf928" :type "atom"
+  :subj "exp:baseline_C7.5_top3_no_open3min"
+  :pred "has_status"
+  :obj "baseline"
+  :source "experiments/arc_260516a__team_c__baseline_C7.5__top3_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_3b52e11f" :type "atom"
+  :subj "exp:baseline_C7.5_top3_no_open3min"
+  :pred "has_outcome"
+  :obj "test_pass"
+  :source "experiments/arc_260516a__team_c__baseline_C7.5__top3_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_4cdab96e" :type "atom"
+  :subj "exp:baseline_C7.5_top3_no_open3min"
+  :pred "has_champion"
+  :obj false
+  :source "experiments/arc_260516a__team_c__baseline_C7.5__top3_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_551737ed" :type "atom"
+  :subj "exp:baseline_C7.5_top3_no_open3min"
+  :pred "has_overfit_score"
+  :obj 0
+  :source "experiments/arc_260516a__team_c__baseline_C7.5__top3_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_95129829" :type "atom"
+  :subj "exp:baseline_C7.5_top3_no_open3min"
+  :pred "has_leak_audit"
+  :obj "clean"
+  :source "experiments/arc_260516a__team_c__baseline_C7.5__top3_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_fe93b975" :type "atom"
+  :subj "exp:baseline_C7.5_top3_no_open3min"
+  :pred "has_axis"
+  :obj "axis:whitelist"
+  :source "experiments/arc_260516a__team_c__baseline_C7.5__top3_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5513e00a" :type "atom"
+  :subj "exp:baseline_C7.5_top3_no_open3min"
+  :pred "has_axis"
+  :obj "axis:timing_filter"
+  :source "experiments/arc_260516a__team_c__baseline_C7.5__top3_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_dfdac661" :type "atom"
+  :subj "exp:baseline_C7.5_top3_no_open3min"
+  :pred "has_axis"
+  :obj "axis:baseline"
+  :source "experiments/arc_260516a__team_c__baseline_C7.5__top3_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_be1a0a12" :type "atom"
+  :subj "exp:baseline_C7.5_top3_no_open3min"
+  :pred "has_axis_list"
+  :obj ("whitelist" "timing_filter" "baseline")
+  :source "experiments/arc_260516a__team_c__baseline_C7.5__top3_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_4ba02894" :type "atom"
+  :subj "exp:baseline_C7.5_top3_no_open3min"
+  :pred "has_created"
+  :obj "2026-05-17 01:30:00"
+  :source "experiments/arc_260516a__team_c__baseline_C7.5__top3_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_7757a32b" :type "atom"
+  :subj "exp:baseline_C7.5_top3_no_open3min"
+  :pred "has_last_updated"
+  :obj "2026-05-17 05:09:00"
+  :source "experiments/arc_260516a__team_c__baseline_C7.5__top3_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_0e66c075" :type "atom"
+  :subj "exp:baseline_C7.5_top3_no_open3min"
+  :pred "has_tag"
+  :obj "tag:arc/260516a"
+  :source "experiments/arc_260516a__team_c__baseline_C7.5__top3_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_723dc0b6" :type "atom"
+  :subj "exp:baseline_C7.5_top3_no_open3min"
+  :pred "has_tag"
+  :obj "tag:team/c"
+  :source "experiments/arc_260516a__team_c__baseline_C7.5__top3_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ff48cdc2" :type "atom"
+  :subj "exp:baseline_C7.5_top3_no_open3min"
+  :pred "has_tag"
+  :obj "tag:round/r8"
+  :source "experiments/arc_260516a__team_c__baseline_C7.5__top3_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_72fa2620" :type "atom"
+  :subj "exp:baseline_C7.5_top3_no_open3min"
+  :pred "has_tag"
+  :obj "tag:axis/whitelist"
+  :source "experiments/arc_260516a__team_c__baseline_C7.5__top3_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_aea8fae1" :type "atom"
+  :subj "exp:baseline_C7.5_top3_no_open3min"
+  :pred "has_tag"
+  :obj "tag:axis/timing_filter"
+  :source "experiments/arc_260516a__team_c__baseline_C7.5__top3_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_be463dc6" :type "atom"
+  :subj "exp:baseline_C7.5_top3_no_open3min"
+  :pred "has_tag"
+  :obj "tag:axis/baseline"
+  :source "experiments/arc_260516a__team_c__baseline_C7.5__top3_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_12e99549" :type "atom"
+  :subj "exp:baseline_C7.5_top3_no_open3min"
+  :pred "has_tag"
+  :obj "tag:status/baseline"
+  :source "experiments/arc_260516a__team_c__baseline_C7.5__top3_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_40b27e29" :type "atom"
+  :subj "exp:baseline_C7.5_top3_no_open3min"
+  :pred "has_tag"
+  :obj "tag:outcome/test_pass"
+  :source "experiments/arc_260516a__team_c__baseline_C7.5__top3_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_cc9c5de7" :type "atom"
+  :subj "exp:baseline_C7.5_top3_no_open3min"
+  :pred "has_tag"
+  :obj "tag:leak/clean"
+  :source "experiments/arc_260516a__team_c__baseline_C7.5__top3_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_749d7682" :type "atom"
+  :subj "exp:baseline_C7.5_top3_no_open3min"
+  :pred "has_tag"
+  :obj "tag:size/large"
+  :source "experiments/arc_260516a__team_c__baseline_C7.5__top3_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_01d3e2f9" :type "atom"
+  :subj "exp:baseline_C7.5_top3_no_open3min"
+  :pred "has_tl_dr"
+  :obj "C7.5 的 R8 重跑作为 R8 round 的 reference baseline，保证 R8 系列每个候选都能与 R7 NAV champion 严格对比。**数字与 [[arc_260516a__team_c__C7.5__top3_no_open3min]] bit-for-bit 相同**。"
+  :source "experiments/arc_260516a__team_c__baseline_C7.5__top3_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f0b4772b" :type "atom"
+  :subj "exp:baseline_C7.5_top3_no_open3min"
+  :pred "has_section_intro"
+  :obj "# baseline_C7.5 — top-3 + no_open_3min (R8 reproduce)\n\n> **TL;DR** —— C7.5 的 R8 重跑作为 R8 round 的 reference baseline，保证 R8 系列每个候选都能与 R7 NAV champion 严格对比。**数字与 [[arc_260516a__team_c__C7.5__top3_no_open3min]] bit-for-bit 相同**。"
+  :source "experiments/arc_260516a__team_c__baseline_C7.5__top3_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_6fcb89de" :type "atom"
+  :subj "exp:baseline_C7.5_top3_no_open3min"
+  :pred "has_section_hypothesis"
+  :obj "- 不是 hypothesis，是 R8 round 的 reference reproduce。\n- C8.x 系列在 R8 内的 NAV gain 都应当 reference 本候选，而不是直接跨 round 比 C7.5（避免代码 helper drift）。"
+  :source "experiments/arc_260516a__team_c__baseline_C7.5__top3_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_2e967ddb" :type "atom"
+  :subj "exp:baseline_C7.5_top3_no_open3min"
+  :pred "has_section_implementation"
+  :obj "- 主脚本：R8 runner 直接调 R7 logic with same args.\n- trade selector = top-3 expand + drop minute_of_day in 开盘 3min.\n- 输出 170 笔，bit-for-bit 复现 C7.5。"
+  :source "experiments/arc_260516a__team_c__baseline_C7.5__top3_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_20c8254d" :type "atom"
+  :subj "exp:baseline_C7.5_top3_no_open3min"
+  :pred "has_section_past_only_window"
+  :obj "- 无 rolling stat。`#leak/clean`。"
+  :source "experiments/arc_260516a__team_c__baseline_C7.5__top3_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_4e9da444" :type "atom"
+  :subj "exp:baseline_C7.5_top3_no_open3min"
+  :pred "has_section_results"
+  :obj "| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 3.0291 | 170 | 8.59 | 89.4% | -0.47% |\n| Val (rolling 13w) | 1.0887 ± 0.090 | - | - | - | - |\n| Test | 1.4058 | 31 | 7.70 | 80.6% | -0.29% |"
+  :source "experiments/arc_260516a__team_c__baseline_C7.5__top3_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_715f4d68" :type "atom"
+  :subj "exp:baseline_C7.5_top3_no_open3min"
+  :pred "has_section_risk_overfit"
+  :obj "- N/A（reproduce baseline）。"
+  :source "experiments/arc_260516a__team_c__baseline_C7.5__top3_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_33f231af" :type "atom"
+  :subj "exp:baseline_C7.5_top3_no_open3min"
+  :pred "same_as"
+  :obj "exp:C7.5_top3_no_open3min"
+  :source "experiments/arc_260516a__team_c__baseline_C7.5__top3_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_32c76264" :type "atom"
+  :subj "exp:baseline_C7.5_top3_no_open3min"
+  :pred "builds_against"
+  :obj "exp:anchor_g2_baseline"
+  :source "experiments/arc_260516a__team_c__baseline_C7.5__top3_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_37c5878e" :type "atom"
+  :subj "exp:baseline_C7.5_top3_no_open3min"
+  :pred "has_section_lineage_links"
+  :obj "- **same_as**: [[arc_260516a__team_c__C7.5__top3_no_open3min]]\n- **reference_for_round**: 全 R8 C8.x candidates\n- **builds against**: [[arc_260516a__team_anchor__anchor_g2__baseline]]"
+  :source "experiments/arc_260516a__team_c__baseline_C7.5__top3_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f9fc159d" :type "atom"
+  :subj "exp:baseline_C7.5_top3_no_open3min"
+  :pred "has_section_reports"
+  :obj "- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_c/output/cross_round_leaderboard.csv` (baseline_C7.5)\n- [[arc_260516a__reporter_20260517_0547]]"
+  :source "experiments/arc_260516a__team_c__baseline_C7.5__top3_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_6a586dfb" :type "atom"
+  :subj "exp:baseline_C7.5_top3_no_open3min"
+  :pred "has_section_notes"
+  :obj "- **方法论 lesson**：跨 round reproduce baseline 是 C 队的好实践 —— **任何 round 增量必须能 bit-for-bit 复现前 round champion**，否则 helper drift 导致 NAV gain 被错算。下次 sub-agent 启动新 round 必须照搬此约定。"
+  :source "experiments/arc_260516a__team_c__baseline_C7.5__top3_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")

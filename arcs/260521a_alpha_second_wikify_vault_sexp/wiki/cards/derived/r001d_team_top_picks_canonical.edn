@@ -1,0 +1,47 @@
+(card "d_af707124" :type "derived"
+  :subj "exp:C20_recent_signal_flow_skip"
+  :pred "top_pick_for"
+  :obj "exp:C7_same_minute_pre_amt"
+  :derived_from "rule:r001d_team_top_picks_canonical"
+  :parents ("a_ae34dbb2")
+  :generated_at "2026-05-20T17:40:25.565488+00:00")
+
+(card "d_11ba8dbc" :type "derived"
+  :subj "exp:C20_recent_signal_flow_skip"
+  :pred "top_pick_for"
+  :obj "exp:C6_anchor_plus_impact_cap"
+  :derived_from "rule:r001d_team_top_picks_canonical"
+  :parents ("a_c7d26dc9")
+  :generated_at "2026-05-20T17:40:25.565492+00:00")
+
+(card "d_527de8bc" :type "derived"
+  :subj "exp:C6_anchor_plus_impact_cap"
+  :pred "top_pick_for"
+  :obj "exp:C7_same_minute_pre_amt"
+  :derived_from "rule:r001d_team_top_picks_canonical"
+  :parents ("a_57e5addd")
+  :generated_at "2026-05-20T17:40:25.565495+00:00")
+
+(card "d_33b56676" :type "derived"
+  :subj "exp:C6_anchor_plus_impact_cap"
+  :pred "top_pick_for"
+  :obj "exp:C20_recent_signal_flow_skip"
+  :derived_from "rule:r001d_team_top_picks_canonical"
+  :parents ("a_980ecfa3")
+  :generated_at "2026-05-20T17:40:25.565498+00:00")
+
+(card "d_91179bbf" :type "derived"
+  :subj "exp:C7_same_minute_pre_amt"
+  :pred "top_pick_for"
+  :obj "exp:C20_recent_signal_flow_skip"
+  :derived_from "rule:r001d_team_top_picks_canonical"
+  :parents ("a_1662e38b")
+  :generated_at "2026-05-20T17:40:25.565501+00:00")
+
+(card "d_2c202af8" :type "derived"
+  :subj "exp:C7_same_minute_pre_amt"
+  :pred "top_pick_for"
+  :obj "exp:C6_anchor_plus_impact_cap"
+  :derived_from "rule:r001d_team_top_picks_canonical"
+  :parents ("a_a6fca38a")
+  :generated_at "2026-05-20T17:40:25.565506+00:00")

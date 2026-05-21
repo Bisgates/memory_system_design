@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>arc 260521a — wikify auto_research vault · summary</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  :root {
+    --paper: #f7f1e6;
+    --paper-2: #efe6d3;
+    --ink: #2a2418;
+    --ink-soft: #5b5240;
+    --ink-mute: #8a8169;
+    --rule: #c6b58f;
+    --accent: #8a3a14;
+    --accent-2: #4a6741;
+    --code-bg: #ede2c5;
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Times New Roman", Georgia, serif;
+    --sans: -apple-system, "SF Pro Text", "Helvetica Neue", Helvetica, Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    --mono: "SF Mono", "Menlo", Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--serif);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .page {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 48px 32px 80px;
+  }
+  header {
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 16px;
+    margin-bottom: 28px;
+  }
+  .eyebrow {
+    font-family: var(--sans);
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+  }
+  h1 {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: 28px;
+    margin: 6px 0 4px;
+  }
+  .meta {
+    margin-top: 12px;
+    font-family: var(--sans);
+    font-size: 12.5px;
+    color: var(--ink-soft);
+  }
+  .meta dl {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    gap: 4px 14px;
+    margin: 0;
+  }
+  .meta dt { color: var(--ink-mute); font-weight: 500; }
+  .meta dd { margin: 0; color: var(--ink); }
+  h2 {
+    font-family: var(--serif);
+    font-size: 18px;
+    font-weight: 600;
+    margin: 30px 0 8px;
+    color: var(--ink);
+  }
+  h2 .num {
+    font-family: var(--sans);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+    font-weight: 600;
+    margin-right: 8px;
+    vertical-align: 2px;
+  }
+  p { margin: 8px 0; }
+  ul { padding-left: 20px; margin: 8px 0; }
+  li { margin: 4px 0; }
+  code {
+    font-family: var(--mono);
+    font-size: 13px;
+    background: var(--code-bg);
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+  .pathline {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--accent);
+    word-break: break-all;
+  }
+  .checks {
+    background: var(--paper-2);
+    padding: 16px 22px 18px;
+    border-left: 3px solid var(--accent-2);
+    margin: 12px 0;
+    font-family: var(--sans);
+    font-size: 13.5px;
+    line-height: 1.55;
+  }
+  .checks h3 {
+    margin: 0 0 10px;
+    font-family: var(--serif);
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .checks ul { list-style: none; padding-left: 0; margin: 0; }
+  .checks li { margin: 6px 0; padding-left: 22px; position: relative; }
+  .checks li::before {
+    content: "✓";
+    position: absolute;
+    left: 0;
+    color: var(--accent-2);
+    font-weight: 700;
+  }
+  .checks .evidence {
+    display: block;
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--ink-mute);
+    margin-top: 1px;
+  }
+  .phase {
+    background: var(--paper-2);
+    padding: 12px 18px;
+    margin: 10px 0;
+    border-left: 2px solid var(--rule);
+    font-family: var(--sans);
+    font-size: 13.5px;
+  }
+  .phase h3 {
+    margin: 0 0 6px;
+    font-family: var(--serif);
+    font-size: 14.5px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .phase .when {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-mute);
+    margin-left: 8px;
+  }
+  footer {
+    margin-top: 48px;
+    padding-top: 14px;
+    border-top: 1px solid var(--rule);
+    font-family: var(--sans);
+    font-size: 11.5px;
+    color: var(--ink-mute);
+    line-height: 1.55;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+<header>
+  <div class="eyebrow">arc finalization · done</div>
+  <h1>arc 260521a — wikify auto_research vault to sexp/EDN</h1>
+  <div class="meta">
+    <dl>
+      <dt>arc id</dt>            <dd>260521a_wikify_auto_research_vault_sexp</dd>
+      <dt>created</dt>           <dd>2026-05-21T01:13:07 +08:00</dd>
+      <dt>completed</dt>         <dd>2026-05-21T02:00 +08:00 (approx)</dd>
+      <dt>duration</dt>          <dd>~2h wall · 5 phases</dd>
+      <dt>actor</dt>             <dd>agent (orchestrator) + sub-agents for each phase</dd>
+      <dt>final status</dt>      <dd>done</dd>
+      <dt>predecessor</dt>       <dd>arc 260520a (3dgs Luhmann-Wiki rules engine)</dd>
+    </dl>
+  </div>
+</header>
+
+<h2><span class="num">·</span>Objective in one line</h2>
+<p>Take the alpha_second_v1 <code>auto_research_experiment</code> Obsidian vault, write its content into a single homoiconic s-expression / EDN card store, and demonstrate six computational-relation capabilities: macro derivation, lazy reference, rules-as-cards, dedup restart, view cards, and self-computing fields. Source of truth: <a href="1_objective.md"><code>1_objective.md</code></a>.</p>
+
+<h2><span class="num">·</span>Phases</h2>
+
+<div class="phase">
+  <h3>Phase 1 — kernel <span class="when">2026-05-21 01:22</span></h3>
+  <p>Built 5-component Python kernel: <code>cardstore.py</code> (273 LOC, CRUD + EDN roundtrip), <code>macro.py</code> (103 LOC), <code>rules.py</code> (167 LOC, forward chainer), <code>view.py</code> (84 LOC, materialize + lazy resolve), <code>dedup.py</code> (144 LOC, restart protocol). 1479 LOC total including tests. Smoke test end-to-end passes (8 atoms + 5 derived + 1 rule + 1 macro + 1 view round-trip). 15/15 unit tests green.</p>
+  <p>Sources: <span class="pathline">wiki/lib/{cardstore,macro,rules,view,dedup,smoke_test,test_*}.py</span></p>
+</div>
+
+<div class="phase">
+  <h3>Phase 2 — vault ingest <span class="when">2026-05-21 01:29</span></h3>
+  <p>Wrote <code>ingest_vault.py</code> (~430 LOC): PyYAML frontmatter + regex H2 sections + double-link extractor. Ran on 65 sources (53 experiments + 8 lineages + 1 reporter + 1 ANTI_PATTERN_CATALOG + 1 VAULT_DESIGN + 1 README). Emitted <strong>3404 atoms</strong> in 65 .edn files in <strong>0.13 s</strong>. Verified ID stability across reruns; 5 sample queries all pass. 104 frontmatter typed links + 169 body typed links extracted; 70 unique tag values; 90 unknown-body-label warnings flagged.</p>
+  <p>Sources: <span class="pathline">wiki/scripts/ingest_vault.py</span> · <span class="pathline">wiki/scripts/verify_ingest.py</span> · <span class="pathline">output/phase2_ingest.log</span> · <span class="pathline">output/phase2_ingest_query.log</span></p>
+</div>
+
+<div class="phase">
+  <h3>Phase 3 — rules + macros <span class="when">2026-05-21 01:41</span></h3>
+  <p>Authored 5 rule families (11 micro-rules: r001a–g for body-label canonicalization, r002 derived_from reverse, r003 competes_with symmetry, r004 falsifies cluster, r005 anti_pattern inheritance) and 2 macros (m001 paper-to-experiment-suggestion, m002 lineage-to-comparison-view) as <code>(card …)</code> EDN files. Forward-chained to fixpoint: 99 derived cards in 2 effective iterations (94 + 5 + 0), <strong>0.10 s</strong>. Macro dispatch: m001 × 3 experiments → 9 suggestion cards; m002 × 2 lineages → 2 view cards. Dedup invariant holds (0 dup triples); re-fire idempotent.</p>
+  <p>Sources: <span class="pathline">wiki/cards/rules/r00{1,2,3,4,5}_*.edn</span> · <span class="pathline">wiki/cards/macros/m00{1,2}_*.edn</span> · <span class="pathline">wiki/cards/derived/*.edn</span> · <span class="pathline">wiki/scripts/run_rules.py</span> · <span class="pathline">output/phase3_rules.log</span></p>
+</div>
+
+<div class="phase">
+  <h3>Phase 4 — 6 capability demo + viz <span class="when">2026-05-21 01:50–01:54</span></h3>
+  <p>All six capabilities pass end-to-end on the live store (3417 cards). cap1 produced 9 suggestion cards. cap2 resolved 3 lazy refs at read time. cap3 paused r002 and re-ran fixpoint: total derived dropped 99 → 46 (Δ=53, exactly r002's prior fan-out). cap4 dedup restart on a 0.969-similarity pair fired all three actions (keep-both / merge-prefer-newer / supersede). cap5 view materialized 14 → 15 → 14 with synthetic atom injection. cap6 self-computing confidence traced 0.0 → 1.0 → 0.333 across three link-evidence stages. Viz built: 678 KB single-file vanilla SVG, 215 nodes / 493 edges default, 0 external CDN.</p>
+  <p>Sources: <span class="pathline">output/260521_0145_demo_run/{README.md, summary.json, viz.html}</span> · <span class="pathline">output/260521_0145_demo_run/cap{1..6}_*/{stdout.log, *.json}</span> · <span class="pathline">wiki/scripts/{demo_capabilities,build_viz}.py</span></p>
+</div>
+
+<div class="phase">
+  <h3>Phase 5 — /grok summary + finalize <span class="when">2026-05-21 ~02:00</span></h3>
+  <p>Wrote dual-tab /grok HTML (bird + frog · simple visual variant · no Google Fonts · no KaTeX · no CDN). Pushed to telegram via outbox @attachment. Wrote this 9_summary.html. Set arc status to done. Touched arc to refresh index.</p>
+  <p>Sources: <span class="pathline">/Users/han/project/learn_with_agent/260521/arc_260521a_wikify_alpha_second_vault_summary.html</span> · this file</p>
+</div>
+
+<h2><span class="num">·</span>Acceptance criteria check</h2>
+
+<div class="checks">
+  <h3>From <code>1_objective.md</code> §"接受标准"</h3>
+  <ul>
+    <li><strong>card store.</strong> <code>wiki/cards/*.edn</code> holds atom · rule · macro · derived · view · suggestion cards in unified <code>(card …)</code> sexp form, shared <code>:id</code> namespace.
+      <span class="evidence">wiki/cards/{atoms,rules,macros,derived}/ — 65 + 5 + 2 + 11 = 83 EDN files</span></li>
+
+    <li><strong>parser / serializer.</strong> <code>wiki/lib/cardstore.py</code> reads / writes EDN, runs queries, finds across types.
+      <span class="evidence">wiki/lib/cardstore.py 273 LOC · 6/6 tests pass · full smoke test round-trip</span></li>
+
+    <li><strong>vault ingest.</strong> <code>wiki/scripts/ingest_vault.py</code> processes experiments + lineages + frontmatter + double-links into atom cards.
+      <span class="evidence">65 sources → 3404 atoms in 0.13 s · output/phase2_ingest.log</span></li>
+
+    <li><strong>5 rules + macros.</strong> derived_from reverse (r002), competes_with symmetry (r003), falsifies cluster (r004), paper-to-suggestion (m001), lineage-to-view (m002), plus body-label canonicalization (r001a–g) and anti-pattern inheritance (r005) — 11 micro-rules + 2 macros total.
+      <span class="evidence">wiki/cards/rules/ + wiki/cards/macros/ · 99 rule-derived + 11 macro-derived cards on disk</span></li>
+
+    <li><strong>6 capability demo.</strong> All six capabilities pass; each capability has stdout log + JSON trace.
+      <span class="evidence">cap1: 9 suggestion cards · cap2: 3 lazy refs resolved · cap3: 99→46 on r002 pause · cap4: 3 dedup actions on 0.969 sim · cap5: 14→15→14 view materialize · cap6: 0→1.0→0.333 confidence trajectory</span></li>
+
+    <li><strong>demo run artifact.</strong> <code>output/260521_0145_demo_run/</code> contains cards + rules.log (per cap) + derived + viz.html.
+      <span class="evidence">README.md · summary.json · viz.html (678 KB, 215 nodes / 493 edges, 0 CDN) · cap{1..6}_*/{stdout.log, *.json}</span></li>
+
+    <li><strong>/grok summary HTML.</strong> dual-tab + simple, pushed to telegram via outbox @attachment.
+      <span class="evidence">/Users/han/project/learn_with_agent/260521/arc_260521a_wikify_alpha_second_vault_summary.html · ~80 KB · 0 CDN · macOS system font stack</span></li>
+  </ul>
+</div>
+
+<h2><span class="num">·</span>Key numbers at a glance</h2>
+<ul>
+  <li><strong>1479</strong> Python LOC in the kernel (incl. tests)</li>
+  <li><strong>65</strong> vault sources → <strong>3404</strong> atoms in <strong>0.13 s</strong></li>
+  <li><strong>11</strong> rule cards + <strong>2</strong> macro cards on disk</li>
+  <li><strong>99</strong> rule-derived facts + <strong>11</strong> macro-derived cards in <strong>0.10 s</strong> (fixpoint, 2 effective iterations)</li>
+  <li><strong>6 / 6</strong> capability demos pass · total demo wall <strong>1.33 s</strong></li>
+  <li><strong>678 KB</strong> single-file <code>viz.html</code> — 215 visible nodes, 493 edges, 0 external CDN</li>
+  <li><strong>0</strong> LLM API calls during ingest / rules / macros (structural parser only)</li>
+  <li><strong>$0</strong> token spend on the data layer; small spend only on the grok summary (this report)</li>
+</ul>
+
+<h2><span class="num">·</span>Known limitations (carried forward)</h2>
+<ul>
+  <li>cap6 confidence DSL recognized by structural pattern-match, not full s-expression eval. Pattern matches <code>(compute … count-links-to %self :pred 'supports/'contradicts …)</code>.</li>
+  <li>m002 lineage slug normalization depends on literal-match; doesn't handle separator variants.</li>
+  <li>45 unknown body-link labels (90 warnings) kept verbatim; only the seven highest-frequency canonicalized.</li>
+  <li>53 atoms with list-typed slots hardened in memory (tuple coercion) but not rewritten on disk.</li>
+  <li>No card-revision history — superseded chains only tracked one hop deep.</li>
+  <li>No by-predicate index; rule fixpoint is a hash-of-triples scan. Fine for current scale (0.10 s on 3404 atoms / 11 rules).</li>
+</ul>
+
+<h2><span class="num">·</span>Hand-off pointers</h2>
+<ul>
+  <li><strong>arc root:</strong> <span class="pathline">/Users/han/project/alpha/alpha_second_v1/arcs/all/260521a_wikify_auto_research_vault_sexp/</span></li>
+  <li><strong>grok dual-tab summary:</strong> <span class="pathline">/Users/han/project/learn_with_agent/260521/arc_260521a_wikify_alpha_second_vault_summary.html</span></li>
+  <li><strong>visualization (double-click to open):</strong> <span class="pathline">/Users/han/project/alpha/alpha_second_v1/arcs/all/260521a_wikify_auto_research_vault_sexp/output/260521_0145_demo_run/viz.html</span></li>
+  <li><strong>predecessor arc:</strong> <span class="pathline">/Users/han/project/learn_with_agent/260520/arc_260520a_zettelkasten_lisp_redesign.html</span> · <span class="pathline">/Users/han/project/learn_with_agent/260520/brain_memory_for_agent_wiki.html</span></li>
+</ul>
+
+<footer>
+  Generated <strong>2026-05-21</strong> on arc finalization. This is the arc-protocol <em>9_summary.html</em> — a changelog-style record of what happened, what shipped, and what didn't. For the design report (why we built it this way, what each card looks like, where the trade-offs are) read the grok dual-tab HTML linked above. Source tree is the canonical record; this file is an index.
+</footer>
+
+</div>
+</body>
+</html>

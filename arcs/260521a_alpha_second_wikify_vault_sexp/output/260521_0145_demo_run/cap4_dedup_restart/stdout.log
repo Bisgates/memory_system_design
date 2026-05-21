@@ -1,0 +1,45 @@
+# Capability 4 — dedup restart 协议  (2026-05-20T17:55:32+00:00)
+----------------------------------------------------------------------
+  store loaded — 3417 cards (3331 atoms, 53 experiments, 8 lineages, 11 rules, 2 macros)
+
+  original atom id: a_3a726134
+  subj: exp:H-R3b-4_c84_kelly_lambda_1.5
+  pred: has_section_hypothesis
+  body length: 443 chars
+  similarity(orig, variant) = 0.969  (threshold 0.80)
+
+[case 1] on-dedup-conflict = ['keep-both', ...]
+    store_size_before     : 3404
+    original see-also     : []
+    original status       : None
+    near-dupes found      : 1  (top scores: [('a_3a726134', 0.836)])
+    action taken          : keep-both
+    store_size_after      : 3405
+    original see-also     : ['a_var_4f59c5ba']
+    original status       : None
+
+[case 2] on-dedup-conflict = ['merge-prefer-newer', ...]
+    store_size_before     : 3404
+    original see-also     : []
+    original status       : None
+    near-dupes found      : 1  (top scores: [('a_3a726134', 0.836)])
+    action taken          : merge-prefer-newer
+    store_size_after      : 3405
+    original see-also     : []
+    original status       : superseded
+    original superseded-by: a_var_928d152f
+    new card supersedes   : ['a_3a726134']
+
+[case 3] on-dedup-conflict = ['supersede', ...]
+    store_size_before     : 3404
+    original see-also     : []
+    original status       : None
+    near-dupes found      : 1  (top scores: [('a_3a726134', 0.836)])
+    action taken          : supersede
+    store_size_after      : 3405
+    original see-also     : []
+    original status       : superseded
+    original superseded-by: a_var_2eb9ac55
+    new card supersedes   : ['a_3a726134']
+
+  3 restart cases completed: ['keep-both', 'merge-prefer-newer', 'supersede']

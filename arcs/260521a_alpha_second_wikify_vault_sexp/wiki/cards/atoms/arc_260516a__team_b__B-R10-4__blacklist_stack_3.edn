@@ -1,0 +1,370 @@
+(card "exp:B-R10-4_blacklist_stack_3" :type "experiment"
+  :subj "exp:B-R10-4_blacklist_stack_3"
+  :body "---\nnav: 23\ntype: experiment\nid: B-R10-4_blacklist_stack_3\nshort_name: blacklist_stack_3\ntitle: \"B-R10-4 — default-admit ∖ 3-stack blacklist (B 队 D-R2-3 mirror)\"\narc: 260516a\nteam: b\nround: r10\nparent_arc: \"[[arcs/260516a]]\"\nparent_lineage: \"[[lineages/arc_260516a__team_b__blacklist_evolution]]\"\ntrain_nav: 2.3008\ntrain_trade_count: 166\ntrain_win_rate: null\ntrain_sharpe: null\ntrain_max_drawdown: null\nval_nav_mean: null\nval_nav_sigma: null\nval_window_count: 13\ntest_nav: 1.0328\ntest_trade_count: 14\ntest_sharpe: 3.6833\ntest_win_rate: 0.5714\ntest_max_drawdown: -0.0129\nanchor_train_nav: 2.1882\nanchor_test_nav: 1.2486\nstatus: falsified\noutcome: test_fail\nchampion: false\noverfit_score: 0\nleak_audit: clean\naxis: [blacklist]\npast_only_window_days: null\nwarmup_required: null\ncreated: 2026-05-17T01:50:00\nlast_updated: 2026-05-17T05:09:00\ntags: [arc/260516a, team/b, round/r10, axis/blacklist, status/falsified, outcome/test_fail, leak/clean, size/large]\n---\n\n# B-R10-4 — default-admit ∖ 3-stack blacklist\n\n> **TL;DR** —— R10 stack 顶点：default-admit → 3-stack blacklist（low_amt + crowd>=3 + 另一条）。train NAV 2.30（已经从 R10-0 的 2.86 降 0.56）；**test NAV 1.03，sharpe 3.68，win 57%** —— B 队 R10 系列 **最严重失败 case**。Team B 据此停掉 default-admit 路线。\n\n## 假设 (Hypothesis)\n- 在 R10-0 (default-admit baseline 214 笔) 上叠 3 条独立 blacklist (low pre_amt q10 + crowd≥3 + 另一条 mid-stack)，砍到 166 笔。\n- 假设：3 条 blacklist 各自独立 productive (R10-2 / R5-3 / mid-stack 单独验过 train NAV 提升)，stack 应能叠加。\n- 实测：stack 互相 mask + train→test 漂移，3-stack 在 test 上跟 D-R2-3 同步崩盘。\n\n## 实现 (Implementation)\n- 主脚本：`/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_b/scripts/round_10_runner.py`\n- 步骤：R10-0 default-admit → drop legs 在以下任一集合：\n  1. low pre_amt q10 (来自 R10-2)\n  2. crowd>=3 (来自 R5-3 decrowd)\n  3. mid-stack 第三条 blacklist\n- 输出 166 笔。\n\n## Past-only window 处理\n- 三条 blacklist 均 past-only (pre_amt 5min 窗口、crowd 同源 cross-source count、第三条 trailing quantile)。\n- `#leak/clean`.\n\n## 结果 (Results)\n| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 2.3008 | 166 | - | - | - |\n| Val | (gate 见 CSV R10-4) | - | - | - | - |\n| Test | **1.0328** | 14 | **3.68** | **57.1%** | -1.29% |\n| **Δ test NAV vs anchor** | **-0.216 (FAIL HARD)** | -6 | -3.47 | **-17.9pp** | -0.76pp |\n\ntest win_rate 57% 是全 arc 候选 **最低之一** —— blacklist 把 train-time profitable leg 一同砍掉了。\n\n## 风险 & overfit 嫌疑\n- overfit_score nominal = 0，但 test win 57% 是 vault 里 default-admit blacklist 路线**最有说服力的 falsification 证据**。\n- 真实 risk：每条 blacklist train 上 ~5-10% trade 砍除，3-stack 总砍 ~30 笔 = train pool 14%。在 hold-out 上分布漂移，这 14% blacklist 砍错的概率非线性放大。\n\n## Lineage（双链网）\n- **derived_from**: [[arc_260516a__team_b__B-R10-0__all_admit_baseline]]\n- **synthesizes**: [[arc_260516a__team_b__B-R10-2__blacklist_low_amt]] + R5-3 decrowd + mid-stack\n- **inherits_failure_mode**: [[arc_260516a__team_d__D-R2-3__blacklist_stack_triple]] (D 队同 axis 同 verdict)\n- **falsifies_lineage**: B 队整个 default-admit + N-stack blacklist 路线\n- **base_for**: [[arc_260516a__team_b__B-R11-2__blacklist_vol_regime_low]] (R11 在 R10-4 上叠 vol-regime)\n- **builds against**: [[arc_260516a__team_anchor__anchor_g2__baseline]]\n\n## Reports\n- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_b/output/cross_round_leaderboard_nav.csv` (R10-4)\n- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/output/cross_team_test_nav_ranking_v2.csv` (B-R10-4)\n- [[arc_260516a__reporter_20260517_0547]]\n\n## Notes / 下次迭代\n- **B 队 default-admit 路线 graveyard 候选**。本 + D-R2-3 + D-R2-4 + R11-x 构成 \"default-admit + N-stack blacklist test 翻车\" 集合，**未来 sub-agent 看到这条 axis 应直接绕道**。\n- 真正\"砍坏 leg\"的有效路径在 arc 260516a 实证下来是 **whitelist + sizing**（C8.4 + H sizing），而非 default-admit + blacklist。这是 arc 留给后世最重要 lesson 之一。\n"
+  :path "experiments/arc_260516a__team_b__B-R10-4__blacklist_stack_3.md"
+  :source_mtime "2026-05-17T10:21:47+08:00"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_996ba094" :type "atom"
+  :subj "exp:B-R10-4_blacklist_stack_3"
+  :pred "has_nav"
+  :obj 23
+  :source "experiments/arc_260516a__team_b__B-R10-4__blacklist_stack_3.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_75a7c670" :type "atom"
+  :subj "exp:B-R10-4_blacklist_stack_3"
+  :pred "has_type"
+  :obj "experiment"
+  :source "experiments/arc_260516a__team_b__B-R10-4__blacklist_stack_3.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_65a0bdf8" :type "atom"
+  :subj "exp:B-R10-4_blacklist_stack_3"
+  :pred "has_id"
+  :obj "B-R10-4_blacklist_stack_3"
+  :source "experiments/arc_260516a__team_b__B-R10-4__blacklist_stack_3.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_57b75d68" :type "atom"
+  :subj "exp:B-R10-4_blacklist_stack_3"
+  :pred "has_short_name"
+  :obj "blacklist_stack_3"
+  :source "experiments/arc_260516a__team_b__B-R10-4__blacklist_stack_3.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_7b4d926a" :type "atom"
+  :subj "exp:B-R10-4_blacklist_stack_3"
+  :pred "has_title"
+  :obj "B-R10-4 — default-admit ∖ 3-stack blacklist (B 队 D-R2-3 mirror)"
+  :source "experiments/arc_260516a__team_b__B-R10-4__blacklist_stack_3.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_6923f0b3" :type "atom"
+  :subj "exp:B-R10-4_blacklist_stack_3"
+  :pred "has_arc"
+  :obj "260516a"
+  :source "experiments/arc_260516a__team_b__B-R10-4__blacklist_stack_3.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_2ea5ca31" :type "atom"
+  :subj "exp:B-R10-4_blacklist_stack_3"
+  :pred "has_team"
+  :obj "b"
+  :source "experiments/arc_260516a__team_b__B-R10-4__blacklist_stack_3.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_54986d92" :type "atom"
+  :subj "exp:B-R10-4_blacklist_stack_3"
+  :pred "has_round"
+  :obj "r10"
+  :source "experiments/arc_260516a__team_b__B-R10-4__blacklist_stack_3.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_da1a52b4" :type "atom"
+  :subj "exp:B-R10-4_blacklist_stack_3"
+  :pred "parent_arc"
+  :obj "arc:260516a"
+  :source "experiments/arc_260516a__team_b__B-R10-4__blacklist_stack_3.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_02cc2b75" :type "atom"
+  :subj "exp:B-R10-4_blacklist_stack_3"
+  :pred "parent_lineage"
+  :obj "lin:arc_260516a__team_b__blacklist_evolution"
+  :source "experiments/arc_260516a__team_b__B-R10-4__blacklist_stack_3.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5386ee04" :type "atom"
+  :subj "exp:B-R10-4_blacklist_stack_3"
+  :pred "has_train_nav"
+  :obj 2.3008
+  :source "experiments/arc_260516a__team_b__B-R10-4__blacklist_stack_3.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_bd69324c" :type "atom"
+  :subj "exp:B-R10-4_blacklist_stack_3"
+  :pred "has_train_trade_count"
+  :obj 166
+  :source "experiments/arc_260516a__team_b__B-R10-4__blacklist_stack_3.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_7ae9d969" :type "atom"
+  :subj "exp:B-R10-4_blacklist_stack_3"
+  :pred "has_val_window_count"
+  :obj 13
+  :source "experiments/arc_260516a__team_b__B-R10-4__blacklist_stack_3.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ed6a7d45" :type "atom"
+  :subj "exp:B-R10-4_blacklist_stack_3"
+  :pred "has_test_nav"
+  :obj 1.0328
+  :source "experiments/arc_260516a__team_b__B-R10-4__blacklist_stack_3.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9aa8b6dc" :type "atom"
+  :subj "exp:B-R10-4_blacklist_stack_3"
+  :pred "has_test_trade_count"
+  :obj 14
+  :source "experiments/arc_260516a__team_b__B-R10-4__blacklist_stack_3.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_53611c40" :type "atom"
+  :subj "exp:B-R10-4_blacklist_stack_3"
+  :pred "has_test_sharpe"
+  :obj 3.6833
+  :source "experiments/arc_260516a__team_b__B-R10-4__blacklist_stack_3.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_7103deb1" :type "atom"
+  :subj "exp:B-R10-4_blacklist_stack_3"
+  :pred "has_test_win_rate"
+  :obj 0.5714
+  :source "experiments/arc_260516a__team_b__B-R10-4__blacklist_stack_3.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5958077f" :type "atom"
+  :subj "exp:B-R10-4_blacklist_stack_3"
+  :pred "has_test_max_drawdown"
+  :obj -0.0129
+  :source "experiments/arc_260516a__team_b__B-R10-4__blacklist_stack_3.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_4073905f" :type "atom"
+  :subj "exp:B-R10-4_blacklist_stack_3"
+  :pred "has_anchor_train_nav"
+  :obj 2.1882
+  :source "experiments/arc_260516a__team_b__B-R10-4__blacklist_stack_3.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1a53f77c" :type "atom"
+  :subj "exp:B-R10-4_blacklist_stack_3"
+  :pred "has_anchor_test_nav"
+  :obj 1.2486
+  :source "experiments/arc_260516a__team_b__B-R10-4__blacklist_stack_3.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ecfbda75" :type "atom"
+  :subj "exp:B-R10-4_blacklist_stack_3"
+  :pred "has_status"
+  :obj "falsified"
+  :source "experiments/arc_260516a__team_b__B-R10-4__blacklist_stack_3.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1c3d6e83" :type "atom"
+  :subj "exp:B-R10-4_blacklist_stack_3"
+  :pred "has_outcome"
+  :obj "test_fail"
+  :source "experiments/arc_260516a__team_b__B-R10-4__blacklist_stack_3.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ab23e93b" :type "atom"
+  :subj "exp:B-R10-4_blacklist_stack_3"
+  :pred "has_champion"
+  :obj false
+  :source "experiments/arc_260516a__team_b__B-R10-4__blacklist_stack_3.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_cbf83548" :type "atom"
+  :subj "exp:B-R10-4_blacklist_stack_3"
+  :pred "has_overfit_score"
+  :obj 0
+  :source "experiments/arc_260516a__team_b__B-R10-4__blacklist_stack_3.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_3cc97e13" :type "atom"
+  :subj "exp:B-R10-4_blacklist_stack_3"
+  :pred "has_leak_audit"
+  :obj "clean"
+  :source "experiments/arc_260516a__team_b__B-R10-4__blacklist_stack_3.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_883ae8ea" :type "atom"
+  :subj "exp:B-R10-4_blacklist_stack_3"
+  :pred "has_axis"
+  :obj "axis:blacklist"
+  :source "experiments/arc_260516a__team_b__B-R10-4__blacklist_stack_3.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ab440992" :type "atom"
+  :subj "exp:B-R10-4_blacklist_stack_3"
+  :pred "has_axis_list"
+  :obj ("blacklist")
+  :source "experiments/arc_260516a__team_b__B-R10-4__blacklist_stack_3.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_fe854dac" :type "atom"
+  :subj "exp:B-R10-4_blacklist_stack_3"
+  :pred "has_created"
+  :obj "2026-05-17 01:50:00"
+  :source "experiments/arc_260516a__team_b__B-R10-4__blacklist_stack_3.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f0cb2871" :type "atom"
+  :subj "exp:B-R10-4_blacklist_stack_3"
+  :pred "has_last_updated"
+  :obj "2026-05-17 05:09:00"
+  :source "experiments/arc_260516a__team_b__B-R10-4__blacklist_stack_3.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ec149e05" :type "atom"
+  :subj "exp:B-R10-4_blacklist_stack_3"
+  :pred "has_tag"
+  :obj "tag:arc/260516a"
+  :source "experiments/arc_260516a__team_b__B-R10-4__blacklist_stack_3.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5fe72c4b" :type "atom"
+  :subj "exp:B-R10-4_blacklist_stack_3"
+  :pred "has_tag"
+  :obj "tag:team/b"
+  :source "experiments/arc_260516a__team_b__B-R10-4__blacklist_stack_3.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9e7aad7d" :type "atom"
+  :subj "exp:B-R10-4_blacklist_stack_3"
+  :pred "has_tag"
+  :obj "tag:round/r10"
+  :source "experiments/arc_260516a__team_b__B-R10-4__blacklist_stack_3.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b411ddf3" :type "atom"
+  :subj "exp:B-R10-4_blacklist_stack_3"
+  :pred "has_tag"
+  :obj "tag:axis/blacklist"
+  :source "experiments/arc_260516a__team_b__B-R10-4__blacklist_stack_3.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1a5a232d" :type "atom"
+  :subj "exp:B-R10-4_blacklist_stack_3"
+  :pred "has_tag"
+  :obj "tag:status/falsified"
+  :source "experiments/arc_260516a__team_b__B-R10-4__blacklist_stack_3.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_69a7d692" :type "atom"
+  :subj "exp:B-R10-4_blacklist_stack_3"
+  :pred "has_tag"
+  :obj "tag:outcome/test_fail"
+  :source "experiments/arc_260516a__team_b__B-R10-4__blacklist_stack_3.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b07b506f" :type "atom"
+  :subj "exp:B-R10-4_blacklist_stack_3"
+  :pred "has_tag"
+  :obj "tag:leak/clean"
+  :source "experiments/arc_260516a__team_b__B-R10-4__blacklist_stack_3.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_3c1a7bb1" :type "atom"
+  :subj "exp:B-R10-4_blacklist_stack_3"
+  :pred "has_tag"
+  :obj "tag:size/large"
+  :source "experiments/arc_260516a__team_b__B-R10-4__blacklist_stack_3.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_584c0a3b" :type "atom"
+  :subj "exp:B-R10-4_blacklist_stack_3"
+  :pred "has_tl_dr"
+  :obj "R10 stack 顶点：default-admit → 3-stack blacklist（low_amt + crowd>=3 + 另一条）。train NAV 2.30（已经从 R10-0 的 2.86 降 0.56）；**test NAV 1.03，sharpe 3.68，win 57%** —— B 队 R10 系列 **最严重失败 case**。Team B 据此停掉 default-admit 路线。"
+  :source "experiments/arc_260516a__team_b__B-R10-4__blacklist_stack_3.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_496d378e" :type "atom"
+  :subj "exp:B-R10-4_blacklist_stack_3"
+  :pred "has_section_intro"
+  :obj "# B-R10-4 — default-admit ∖ 3-stack blacklist\n\n> **TL;DR** —— R10 stack 顶点：default-admit → 3-stack blacklist（low_amt + crowd>=3 + 另一条）。train NAV 2.30（已经从 R10-0 的 2.86 降 0.56）；**test NAV 1.03，sharpe 3.68，win 57%** —— B 队 R10 系列 **最严重失败 case**。Team B 据此停掉 default-admit 路线。"
+  :source "experiments/arc_260516a__team_b__B-R10-4__blacklist_stack_3.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b51dea8b" :type "atom"
+  :subj "exp:B-R10-4_blacklist_stack_3"
+  :pred "has_section_hypothesis"
+  :obj "- 在 R10-0 (default-admit baseline 214 笔) 上叠 3 条独立 blacklist (low pre_amt q10 + crowd≥3 + 另一条 mid-stack)，砍到 166 笔。\n- 假设：3 条 blacklist 各自独立 productive (R10-2 / R5-3 / mid-stack 单独验过 train NAV 提升)，stack 应能叠加。\n- 实测：stack 互相 mask + train→test 漂移，3-stack 在 test 上跟 D-R2-3 同步崩盘。"
+  :source "experiments/arc_260516a__team_b__B-R10-4__blacklist_stack_3.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9f09352d" :type "atom"
+  :subj "exp:B-R10-4_blacklist_stack_3"
+  :pred "has_section_implementation"
+  :obj "- 主脚本：`/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_b/scripts/round_10_runner.py`\n- 步骤：R10-0 default-admit → drop legs 在以下任一集合：\n  1. low pre_amt q10 (来自 R10-2)\n  2. crowd>=3 (来自 R5-3 decrowd)\n  3. mid-stack 第三条 blacklist\n- 输出 166 笔。"
+  :source "experiments/arc_260516a__team_b__B-R10-4__blacklist_stack_3.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_cadca3c8" :type "atom"
+  :subj "exp:B-R10-4_blacklist_stack_3"
+  :pred "has_section_past_only_window"
+  :obj "- 三条 blacklist 均 past-only (pre_amt 5min 窗口、crowd 同源 cross-source count、第三条 trailing quantile)。\n- `#leak/clean`."
+  :source "experiments/arc_260516a__team_b__B-R10-4__blacklist_stack_3.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_73300d29" :type "atom"
+  :subj "exp:B-R10-4_blacklist_stack_3"
+  :pred "has_section_results"
+  :obj "| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 2.3008 | 166 | - | - | - |\n| Val | (gate 见 CSV R10-4) | - | - | - | - |\n| Test | **1.0328** | 14 | **3.68** | **57.1%** | -1.29% |\n| **Δ test NAV vs anchor** | **-0.216 (FAIL HARD)** | -6 | -3.47 | **-17.9pp** | -0.76pp |\n\ntest win_rate 57% 是全 arc 候选 **最低之一** —— blacklist 把 train-time profitable leg 一同砍掉了。"
+  :source "experiments/arc_260516a__team_b__B-R10-4__blacklist_stack_3.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d80cece0" :type "atom"
+  :subj "exp:B-R10-4_blacklist_stack_3"
+  :pred "has_section_risk_overfit"
+  :obj "- overfit_score nominal = 0，但 test win 57% 是 vault 里 default-admit blacklist 路线**最有说服力的 falsification 证据**。\n- 真实 risk：每条 blacklist train 上 ~5-10% trade 砍除，3-stack 总砍 ~30 笔 = train pool 14%。在 hold-out 上分布漂移，这 14% blacklist 砍错的概率非线性放大。"
+  :source "experiments/arc_260516a__team_b__B-R10-4__blacklist_stack_3.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_8e92e24a" :type "atom"
+  :subj "exp:B-R10-4_blacklist_stack_3"
+  :pred "derived_from"
+  :obj "exp:B-R10-0_all_admit_baseline"
+  :source "experiments/arc_260516a__team_b__B-R10-4__blacklist_stack_3.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_3271c49a" :type "atom"
+  :subj "exp:B-R10-4_blacklist_stack_3"
+  :pred "synthesizes"
+  :obj "exp:B-R10-2_blacklist_low_amt"
+  :source "experiments/arc_260516a__team_b__B-R10-4__blacklist_stack_3.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_481ce867" :type "atom"
+  :subj "exp:B-R10-4_blacklist_stack_3"
+  :pred "inherits_failure_mode"
+  :obj "exp:D-R2-3_blacklist_stack_triple"
+  :source "experiments/arc_260516a__team_b__B-R10-4__blacklist_stack_3.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_95928fa0" :type "atom"
+  :subj "exp:B-R10-4_blacklist_stack_3"
+  :pred "base_for"
+  :obj "exp:B-R11-2_blacklist_vol_regime_low"
+  :source "experiments/arc_260516a__team_b__B-R10-4__blacklist_stack_3.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_4baa25f3" :type "atom"
+  :subj "exp:B-R10-4_blacklist_stack_3"
+  :pred "builds_against"
+  :obj "exp:anchor_g2_baseline"
+  :source "experiments/arc_260516a__team_b__B-R10-4__blacklist_stack_3.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_8c533282" :type "atom"
+  :subj "exp:B-R10-4_blacklist_stack_3"
+  :pred "has_section_lineage_links"
+  :obj "- **derived_from**: [[arc_260516a__team_b__B-R10-0__all_admit_baseline]]\n- **synthesizes**: [[arc_260516a__team_b__B-R10-2__blacklist_low_amt]] + R5-3 decrowd + mid-stack\n- **inherits_failure_mode**: [[arc_260516a__team_d__D-R2-3__blacklist_stack_triple]] (D 队同 axis 同 verdict)\n- **falsifies_lineage**: B 队整个 default-admit + N-stack blacklist 路线\n- **base_for**: [[arc_260516a__team_b__B-R11-2__blacklist_vol_regime_low]] (R11 在 R10-4 上叠 vol-regime)\n- **builds against**: [[arc_260516a__team_anchor__anchor_g2__baseline]]"
+  :source "experiments/arc_260516a__team_b__B-R10-4__blacklist_stack_3.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ed45e75f" :type "atom"
+  :subj "exp:B-R10-4_blacklist_stack_3"
+  :pred "has_section_reports"
+  :obj "- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_b/output/cross_round_leaderboard_nav.csv` (R10-4)\n- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/output/cross_team_test_nav_ranking_v2.csv` (B-R10-4)\n- [[arc_260516a__reporter_20260517_0547]]"
+  :source "experiments/arc_260516a__team_b__B-R10-4__blacklist_stack_3.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_314704ef" :type "atom"
+  :subj "exp:B-R10-4_blacklist_stack_3"
+  :pred "has_section_notes"
+  :obj "- **B 队 default-admit 路线 graveyard 候选**。本 + D-R2-3 + D-R2-4 + R11-x 构成 \"default-admit + N-stack blacklist test 翻车\" 集合，**未来 sub-agent 看到这条 axis 应直接绕道**。\n- 真正\"砍坏 leg\"的有效路径在 arc 260516a 实证下来是 **whitelist + sizing**（C8.4 + H sizing），而非 default-admit + blacklist。这是 arc 留给后世最重要 lesson 之一。"
+  :source "experiments/arc_260516a__team_b__B-R10-4__blacklist_stack_3.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")

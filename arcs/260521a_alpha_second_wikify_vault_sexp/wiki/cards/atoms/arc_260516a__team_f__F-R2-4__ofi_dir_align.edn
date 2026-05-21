@@ -1,0 +1,370 @@
+(card "exp:F-R2-4_ofi_dir_align" :type "experiment"
+  :subj "exp:F-R2-4_ofi_dir_align"
+  :body "---\nnav: 29\ntype: experiment\nid: F-R2-4_ofi_dir_align\nshort_name: ofi_dir_align\ntitle: \"F-R2-4 — anchor + drop trades where OFI@30s > 0 (sell-side alignment)\"\narc: 260516a\nteam: f\nround: r2\nparent_arc: \"[[arcs/260516a]]\"\nparent_lineage: \"[[lineages/arc_260516a__team_f__microstructure]]\"\ntrain_nav: 1.4698\ntrain_trade_count: 78\ntrain_win_rate: 0.8590\ntrain_sharpe: 6.7817\ntrain_max_drawdown: -0.0101\nval_nav_mean: 1.0296\nval_nav_sigma: 0.0308\nval_window_count: 13\ntest_nav: null\ntest_trade_count: null\ntest_sharpe: null\ntest_win_rate: null\ntest_max_drawdown: null\nanchor_train_nav: 2.1882\nanchor_test_nav: 1.2486\nstatus: falsified\noutcome: no_test_run\nchampion: false\noverfit_score: 0\nleak_audit: clean\naxis: [microstructure, blacklist]\npast_only_window_days: null\nwarmup_required: null\ncreated: 2026-05-17T01:30:00\nlast_updated: 2026-05-17T05:09:00\ntags: [arc/260516a, team/f, round/r2, axis/microstructure, axis/blacklist, status/falsified, outcome/no_test_run, leak/clean, size/small]\n---\n\n# F-R2-4 — anchor + drop trades where OFI@30s > 0\n\n> **TL;DR** —— F-R2 系列最激进 cutoff: 不用 quantile, 直接 drop 所有 OFI@30s > 0 的 trade (~50% drop)。train 78 笔 / NAV 1.47 << anchor 2.19。directional gate 在该 arc 完全不 productive。\n\n## 假设 (Hypothesis)\n- 假设：OFI@30s > 0 = buy-side aggressive flow，与 short setups misaligned。drop 这类应当抬 win/sharpe。\n- 实测：trade_count 砍到 78 (anchor 140 的 56%)，NAV 直接腰斩 1.47。signal 选错方向。\n\n## 实现 (Implementation)\n- 同 F-R2-1, gate = `OFI@30s > 0` instead of quantile cutoff. 78 笔.\n\n## Past-only window 处理\n- OFI@30s past-only (trigger 前 30s 窗口). `#leak/clean`.\n\n## 结果 (Results)\n| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 1.4698 | 78 | 6.78 | 85.9% | -1.01% |\n| Val (rolling 13w) | 1.0296 ± 0.031 | - | - | - | - |\n| Test | NOT RUN (train fail + count_fail) | - | - | - | - |\n| **Δ train NAV vs anchor** | -0.72 | -62 | -0.92 | 0 | 0 |\n\n## 风险 & overfit 嫌疑\n- overfit_score = 0; gate too aggressive, train fail.\n\n## Lineage（双链网）\n- **same_axis**: [[arc_260516a__team_f__F-R1-1__ofi_drop_extreme]] (OFI-based filter)\n- **competes_with**: [[arc_260516a__team_f__F-R2-1__vpin_drop_q80_300s]]\n- **builds against**: [[arc_260516a__team_anchor__anchor_g2__baseline]]\n\n## Reports\n- `team_f/output/cross_round_leaderboard_nav.csv` (F-R2-4)\n- [[arc_260516a__reporter_20260517_0547]]\n\n## Notes / 下次迭代\n- OFI directional gate (binary cut by sign) is too coarse. 改用 OFI magnitude × side alignment 作 size 而不是 binary admit.\n"
+  :path "experiments/arc_260516a__team_f__F-R2-4__ofi_dir_align.md"
+  :source_mtime "2026-05-17T10:29:15+08:00"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c6fd84a9" :type "atom"
+  :subj "exp:F-R2-4_ofi_dir_align"
+  :pred "has_nav"
+  :obj 29
+  :source "experiments/arc_260516a__team_f__F-R2-4__ofi_dir_align.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_2b9de648" :type "atom"
+  :subj "exp:F-R2-4_ofi_dir_align"
+  :pred "has_type"
+  :obj "experiment"
+  :source "experiments/arc_260516a__team_f__F-R2-4__ofi_dir_align.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f61cb47a" :type "atom"
+  :subj "exp:F-R2-4_ofi_dir_align"
+  :pred "has_id"
+  :obj "F-R2-4_ofi_dir_align"
+  :source "experiments/arc_260516a__team_f__F-R2-4__ofi_dir_align.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a19e265f" :type "atom"
+  :subj "exp:F-R2-4_ofi_dir_align"
+  :pred "has_short_name"
+  :obj "ofi_dir_align"
+  :source "experiments/arc_260516a__team_f__F-R2-4__ofi_dir_align.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_0f51cf41" :type "atom"
+  :subj "exp:F-R2-4_ofi_dir_align"
+  :pred "has_title"
+  :obj "F-R2-4 — anchor + drop trades where OFI@30s > 0 (sell-side alignment)"
+  :source "experiments/arc_260516a__team_f__F-R2-4__ofi_dir_align.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_abc4fbed" :type "atom"
+  :subj "exp:F-R2-4_ofi_dir_align"
+  :pred "has_arc"
+  :obj "260516a"
+  :source "experiments/arc_260516a__team_f__F-R2-4__ofi_dir_align.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c4b2db54" :type "atom"
+  :subj "exp:F-R2-4_ofi_dir_align"
+  :pred "has_team"
+  :obj "f"
+  :source "experiments/arc_260516a__team_f__F-R2-4__ofi_dir_align.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c95322a8" :type "atom"
+  :subj "exp:F-R2-4_ofi_dir_align"
+  :pred "has_round"
+  :obj "r2"
+  :source "experiments/arc_260516a__team_f__F-R2-4__ofi_dir_align.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_7c7bdb0b" :type "atom"
+  :subj "exp:F-R2-4_ofi_dir_align"
+  :pred "parent_arc"
+  :obj "arc:260516a"
+  :source "experiments/arc_260516a__team_f__F-R2-4__ofi_dir_align.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_67b14f77" :type "atom"
+  :subj "exp:F-R2-4_ofi_dir_align"
+  :pred "parent_lineage"
+  :obj "lin:arc_260516a__team_f__microstructure"
+  :source "experiments/arc_260516a__team_f__F-R2-4__ofi_dir_align.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_dfefe66a" :type "atom"
+  :subj "exp:F-R2-4_ofi_dir_align"
+  :pred "has_train_nav"
+  :obj 1.4698
+  :source "experiments/arc_260516a__team_f__F-R2-4__ofi_dir_align.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ca86818f" :type "atom"
+  :subj "exp:F-R2-4_ofi_dir_align"
+  :pred "has_train_trade_count"
+  :obj 78
+  :source "experiments/arc_260516a__team_f__F-R2-4__ofi_dir_align.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_0c9759aa" :type "atom"
+  :subj "exp:F-R2-4_ofi_dir_align"
+  :pred "has_train_win_rate"
+  :obj 0.859
+  :source "experiments/arc_260516a__team_f__F-R2-4__ofi_dir_align.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a5500074" :type "atom"
+  :subj "exp:F-R2-4_ofi_dir_align"
+  :pred "has_train_sharpe"
+  :obj 6.7817
+  :source "experiments/arc_260516a__team_f__F-R2-4__ofi_dir_align.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_00460491" :type "atom"
+  :subj "exp:F-R2-4_ofi_dir_align"
+  :pred "has_train_max_drawdown"
+  :obj -0.0101
+  :source "experiments/arc_260516a__team_f__F-R2-4__ofi_dir_align.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1c3b3ea9" :type "atom"
+  :subj "exp:F-R2-4_ofi_dir_align"
+  :pred "has_val_nav_mean"
+  :obj 1.0296
+  :source "experiments/arc_260516a__team_f__F-R2-4__ofi_dir_align.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_028f03e2" :type "atom"
+  :subj "exp:F-R2-4_ofi_dir_align"
+  :pred "has_val_nav_sigma"
+  :obj 0.0308
+  :source "experiments/arc_260516a__team_f__F-R2-4__ofi_dir_align.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_985fe09b" :type "atom"
+  :subj "exp:F-R2-4_ofi_dir_align"
+  :pred "has_val_window_count"
+  :obj 13
+  :source "experiments/arc_260516a__team_f__F-R2-4__ofi_dir_align.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_309b957d" :type "atom"
+  :subj "exp:F-R2-4_ofi_dir_align"
+  :pred "has_anchor_train_nav"
+  :obj 2.1882
+  :source "experiments/arc_260516a__team_f__F-R2-4__ofi_dir_align.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_8813819d" :type "atom"
+  :subj "exp:F-R2-4_ofi_dir_align"
+  :pred "has_anchor_test_nav"
+  :obj 1.2486
+  :source "experiments/arc_260516a__team_f__F-R2-4__ofi_dir_align.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f11543b7" :type "atom"
+  :subj "exp:F-R2-4_ofi_dir_align"
+  :pred "has_status"
+  :obj "falsified"
+  :source "experiments/arc_260516a__team_f__F-R2-4__ofi_dir_align.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_04005ad7" :type "atom"
+  :subj "exp:F-R2-4_ofi_dir_align"
+  :pred "has_outcome"
+  :obj "no_test_run"
+  :source "experiments/arc_260516a__team_f__F-R2-4__ofi_dir_align.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d82d283c" :type "atom"
+  :subj "exp:F-R2-4_ofi_dir_align"
+  :pred "has_champion"
+  :obj false
+  :source "experiments/arc_260516a__team_f__F-R2-4__ofi_dir_align.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_002926be" :type "atom"
+  :subj "exp:F-R2-4_ofi_dir_align"
+  :pred "has_overfit_score"
+  :obj 0
+  :source "experiments/arc_260516a__team_f__F-R2-4__ofi_dir_align.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a7175fb6" :type "atom"
+  :subj "exp:F-R2-4_ofi_dir_align"
+  :pred "has_leak_audit"
+  :obj "clean"
+  :source "experiments/arc_260516a__team_f__F-R2-4__ofi_dir_align.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_89d11ef1" :type "atom"
+  :subj "exp:F-R2-4_ofi_dir_align"
+  :pred "has_axis"
+  :obj "axis:microstructure"
+  :source "experiments/arc_260516a__team_f__F-R2-4__ofi_dir_align.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_cfe5f5c0" :type "atom"
+  :subj "exp:F-R2-4_ofi_dir_align"
+  :pred "has_axis"
+  :obj "axis:blacklist"
+  :source "experiments/arc_260516a__team_f__F-R2-4__ofi_dir_align.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c18a5a52" :type "atom"
+  :subj "exp:F-R2-4_ofi_dir_align"
+  :pred "has_axis_list"
+  :obj ("microstructure" "blacklist")
+  :source "experiments/arc_260516a__team_f__F-R2-4__ofi_dir_align.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ec9281ca" :type "atom"
+  :subj "exp:F-R2-4_ofi_dir_align"
+  :pred "has_created"
+  :obj "2026-05-17 01:30:00"
+  :source "experiments/arc_260516a__team_f__F-R2-4__ofi_dir_align.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_db7e2a0d" :type "atom"
+  :subj "exp:F-R2-4_ofi_dir_align"
+  :pred "has_last_updated"
+  :obj "2026-05-17 05:09:00"
+  :source "experiments/arc_260516a__team_f__F-R2-4__ofi_dir_align.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_3338e8aa" :type "atom"
+  :subj "exp:F-R2-4_ofi_dir_align"
+  :pred "has_tag"
+  :obj "tag:arc/260516a"
+  :source "experiments/arc_260516a__team_f__F-R2-4__ofi_dir_align.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ae7f159d" :type "atom"
+  :subj "exp:F-R2-4_ofi_dir_align"
+  :pred "has_tag"
+  :obj "tag:team/f"
+  :source "experiments/arc_260516a__team_f__F-R2-4__ofi_dir_align.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_2f5f6aa1" :type "atom"
+  :subj "exp:F-R2-4_ofi_dir_align"
+  :pred "has_tag"
+  :obj "tag:round/r2"
+  :source "experiments/arc_260516a__team_f__F-R2-4__ofi_dir_align.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ec1d8bdd" :type "atom"
+  :subj "exp:F-R2-4_ofi_dir_align"
+  :pred "has_tag"
+  :obj "tag:axis/microstructure"
+  :source "experiments/arc_260516a__team_f__F-R2-4__ofi_dir_align.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c9bf0404" :type "atom"
+  :subj "exp:F-R2-4_ofi_dir_align"
+  :pred "has_tag"
+  :obj "tag:axis/blacklist"
+  :source "experiments/arc_260516a__team_f__F-R2-4__ofi_dir_align.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_48f788b5" :type "atom"
+  :subj "exp:F-R2-4_ofi_dir_align"
+  :pred "has_tag"
+  :obj "tag:status/falsified"
+  :source "experiments/arc_260516a__team_f__F-R2-4__ofi_dir_align.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_46b1f0ed" :type "atom"
+  :subj "exp:F-R2-4_ofi_dir_align"
+  :pred "has_tag"
+  :obj "tag:outcome/no_test_run"
+  :source "experiments/arc_260516a__team_f__F-R2-4__ofi_dir_align.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_fd5969a0" :type "atom"
+  :subj "exp:F-R2-4_ofi_dir_align"
+  :pred "has_tag"
+  :obj "tag:leak/clean"
+  :source "experiments/arc_260516a__team_f__F-R2-4__ofi_dir_align.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_133124aa" :type "atom"
+  :subj "exp:F-R2-4_ofi_dir_align"
+  :pred "has_tag"
+  :obj "tag:size/small"
+  :source "experiments/arc_260516a__team_f__F-R2-4__ofi_dir_align.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_bdedfe79" :type "atom"
+  :subj "exp:F-R2-4_ofi_dir_align"
+  :pred "has_tl_dr"
+  :obj "F-R2 系列最激进 cutoff: 不用 quantile, 直接 drop 所有 OFI@30s > 0 的 trade (~50% drop)。train 78 笔 / NAV 1.47 << anchor 2.19。directional gate 在该 arc 完全不 productive。"
+  :source "experiments/arc_260516a__team_f__F-R2-4__ofi_dir_align.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_8b387cf3" :type "atom"
+  :subj "exp:F-R2-4_ofi_dir_align"
+  :pred "has_section_intro"
+  :obj "# F-R2-4 — anchor + drop trades where OFI@30s > 0\n\n> **TL;DR** —— F-R2 系列最激进 cutoff: 不用 quantile, 直接 drop 所有 OFI@30s > 0 的 trade (~50% drop)。train 78 笔 / NAV 1.47 << anchor 2.19。directional gate 在该 arc 完全不 productive。"
+  :source "experiments/arc_260516a__team_f__F-R2-4__ofi_dir_align.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_70367d4f" :type "atom"
+  :subj "exp:F-R2-4_ofi_dir_align"
+  :pred "has_section_hypothesis"
+  :obj "- 假设：OFI@30s > 0 = buy-side aggressive flow，与 short setups misaligned。drop 这类应当抬 win/sharpe。\n- 实测：trade_count 砍到 78 (anchor 140 的 56%)，NAV 直接腰斩 1.47。signal 选错方向。"
+  :source "experiments/arc_260516a__team_f__F-R2-4__ofi_dir_align.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_3d12a028" :type "atom"
+  :subj "exp:F-R2-4_ofi_dir_align"
+  :pred "has_section_implementation"
+  :obj "- 同 F-R2-1, gate = `OFI@30s > 0` instead of quantile cutoff. 78 笔."
+  :source "experiments/arc_260516a__team_f__F-R2-4__ofi_dir_align.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1ba32959" :type "atom"
+  :subj "exp:F-R2-4_ofi_dir_align"
+  :pred "has_section_past_only_window"
+  :obj "- OFI@30s past-only (trigger 前 30s 窗口). `#leak/clean`."
+  :source "experiments/arc_260516a__team_f__F-R2-4__ofi_dir_align.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_591ec913" :type "atom"
+  :subj "exp:F-R2-4_ofi_dir_align"
+  :pred "has_section_results"
+  :obj "| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 1.4698 | 78 | 6.78 | 85.9% | -1.01% |\n| Val (rolling 13w) | 1.0296 ± 0.031 | - | - | - | - |\n| Test | NOT RUN (train fail + count_fail) | - | - | - | - |\n| **Δ train NAV vs anchor** | -0.72 | -62 | -0.92 | 0 | 0 |"
+  :source "experiments/arc_260516a__team_f__F-R2-4__ofi_dir_align.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_8bc003ac" :type "atom"
+  :subj "exp:F-R2-4_ofi_dir_align"
+  :pred "has_section_risk_overfit"
+  :obj "- overfit_score = 0; gate too aggressive, train fail."
+  :source "experiments/arc_260516a__team_f__F-R2-4__ofi_dir_align.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_06af79bb" :type "atom"
+  :subj "exp:F-R2-4_ofi_dir_align"
+  :pred "same_axis"
+  :obj "exp:F-R1-1_ofi_drop_extreme"
+  :source "experiments/arc_260516a__team_f__F-R2-4__ofi_dir_align.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_30bafcd5" :type "atom"
+  :subj "exp:F-R2-4_ofi_dir_align"
+  :pred "competes_with"
+  :obj "exp:F-R2-1_vpin_drop_q80_300s"
+  :source "experiments/arc_260516a__team_f__F-R2-4__ofi_dir_align.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ad549969" :type "atom"
+  :subj "exp:F-R2-4_ofi_dir_align"
+  :pred "builds_against"
+  :obj "exp:anchor_g2_baseline"
+  :source "experiments/arc_260516a__team_f__F-R2-4__ofi_dir_align.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1b1a75fa" :type "atom"
+  :subj "exp:F-R2-4_ofi_dir_align"
+  :pred "has_section_lineage_links"
+  :obj "- **same_axis**: [[arc_260516a__team_f__F-R1-1__ofi_drop_extreme]] (OFI-based filter)\n- **competes_with**: [[arc_260516a__team_f__F-R2-1__vpin_drop_q80_300s]]\n- **builds against**: [[arc_260516a__team_anchor__anchor_g2__baseline]]"
+  :source "experiments/arc_260516a__team_f__F-R2-4__ofi_dir_align.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_790b5cde" :type "atom"
+  :subj "exp:F-R2-4_ofi_dir_align"
+  :pred "has_section_reports"
+  :obj "- `team_f/output/cross_round_leaderboard_nav.csv` (F-R2-4)\n- [[arc_260516a__reporter_20260517_0547]]"
+  :source "experiments/arc_260516a__team_f__F-R2-4__ofi_dir_align.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_0b2f2a66" :type "atom"
+  :subj "exp:F-R2-4_ofi_dir_align"
+  :pred "has_section_notes"
+  :obj "- OFI directional gate (binary cut by sign) is too coarse. 改用 OFI magnitude × side alignment 作 size 而不是 binary admit."
+  :source "experiments/arc_260516a__team_f__F-R2-4__ofi_dir_align.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")

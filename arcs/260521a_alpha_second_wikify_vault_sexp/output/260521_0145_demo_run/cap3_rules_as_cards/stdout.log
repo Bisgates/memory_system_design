@@ -1,0 +1,78 @@
+# Capability 3 — 规则即卡片 (rules-as-cards)  (2026-05-20T17:55:32+00:00)
+----------------------------------------------------------------------
+  store loaded — 3417 cards (3331 atoms, 53 experiments, 8 lineages, 11 rules, 2 macros)
+
+[a] store.find_by_type('rule') → 11 rule cards:
+  rule:r001a_borrowed_by_keep
+      when : [['?a', 'borrowed_by', '?b']]
+      then : [['?a', 'borrowed_by_canonical', '?b']]
+      status: active
+  rule:r001b_descendants_reverse
+      when : [['?a', 'descendants', '?b']]
+      then : [['?b', 'derived_from', '?a']]
+      status: active
+  rule:r001c_base_for_reverse
+      when : [['?a', 'base_for', '?b']]
+      then : [['?b', 'derived_from', '?a']]
+      status: active
+  rule:r001d_team_top_picks_canonical
+      when : [['?a', 'team_a_top_picks', '?b']]
+      then : [['?a', 'top_pick_for', '?b']]
+      status: active
+  rule:r001e_inherits_failure_mode_canonical
+      when : [['?a', 'inherits_failure_mode', '?b']]
+      then : [['?a', 'inherits_anti_pattern', '?b']]
+      status: active
+  rule:r001f_inherits_failure_mode_from_canonical
+      when : [['?a', 'inherits_failure_mode_from', '?b']]
+      then : [['?a', 'inherits_anti_pattern', '?b']]
+      status: active
+  rule:r001g_same_round_as_symmetric
+      when : [['?a', 'same_round_as', '?b']]
+      then : [['?b', 'same_round_as', '?a']]
+      status: active
+  rule:r002_derived_from_reverse
+      when : [['?a', 'derived_from', '?b']]
+      then : [['?b', 'derives_to', '?a']]
+      status: active
+  rule:r003_competes_with_symmetry
+      when : [['?a', 'competes_with', '?b']]
+      then : [['?b', 'competes_with', '?a']]
+      status: active
+  rule:r004_falsifies_cluster
+      when : [['?a', 'falsifies', '?b'], ['?b', 'falsifies', '?c']]
+      then : [['?a', 'inherits_falsification', '?c']]
+      status: active
+  rule:r005_anti_pattern_inheritance
+      when : [['?ap', 'references_in_case_examples', '?exp']]
+      then : [['?exp', 'is_instance_of_anti_pattern', '?ap']]
+      status: active
+
+[b] forward-chain to fixpoint and tally derived-from usage:
+  cards before: 3417   after: 3516   new: 99
+  derived count per rule (via :derived_from):
+    rule:r001a_borrowed_by_keep                                2
+    rule:r001b_descendants_reverse                             2
+    rule:r001c_base_for_reverse                                3
+    rule:r001d_team_top_picks_canonical                        6
+    rule:r001e_inherits_failure_mode_canonical                 2
+    rule:r001f_inherits_failure_mode_from_canonical            1
+    rule:r002_derived_from_reverse                            53
+    rule:r003_competes_with_symmetry                          20
+    rule:r005_anti_pattern_inheritance                        10
+
+[c] string-contains query — rules whose :body mentions 'reverse':
+  rule:r001g_same_round_as_symmetric
+      body: same_round_as is a symmetric relation; emit the reverse edge so consumers can find both directions in a single hop.
+  rule:r002_derived_from_reverse
+      body: A derived_from B implies B derives_to A. Lets a base experiment / paper answer 'who built on me?' without a reverse scan …
+
+[d] pause one rule (r002_derived_from_reverse) and re-run fixpoint:
+  baseline derived-from-rule:r002_derived_from_reverse: 53
+  status flipped → store2.get('rule:r002_derived_from_reverse').kvs['status'] = 'paused'
+  skip paused rule: rule:r002_derived_from_reverse
+  registered 10 rules (out of 11)
+  after re-run with rule:r002_derived_from_reverse paused:
+    derived-from-rule:r002_derived_from_reverse: 0  (was 53)
+    total derived cards : 46  (baseline total: 99)
+  delta on the paused rule's lineage: 53  (>0 ⇒ status='paused' really blocked firing)

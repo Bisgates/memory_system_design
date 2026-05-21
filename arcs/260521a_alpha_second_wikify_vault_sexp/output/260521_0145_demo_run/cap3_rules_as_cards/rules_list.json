@@ -1,0 +1,282 @@
+[
+  {
+    "id": "rule:r001a_borrowed_by_keep",
+    "type": "rule",
+    "kvs": {
+      "body": "borrowed_by is already canonical in the extended typed-link set; emit a parallel canonical atom so downstream consumers can rely on the extended vocabulary without re-checking the unknown-label flag.",
+      "when": [
+        [
+          "?a",
+          "borrowed_by",
+          "?b"
+        ]
+      ],
+      "then": [
+        [
+          "?a",
+          "borrowed_by_canonical",
+          "?b"
+        ]
+      ],
+      "status": "active",
+      "parents": [
+        "r001_canonicalize_body_links"
+      ]
+    }
+  },
+  {
+    "id": "rule:r001b_descendants_reverse",
+    "type": "rule",
+    "kvs": {
+      "body": "A descendants B (read: A has descendant B) implies B derived_from A.",
+      "when": [
+        [
+          "?a",
+          "descendants",
+          "?b"
+        ]
+      ],
+      "then": [
+        [
+          "?b",
+          "derived_from",
+          "?a"
+        ]
+      ],
+      "status": "active",
+      "parents": [
+        "r001_canonicalize_body_links"
+      ]
+    }
+  },
+  {
+    "id": "rule:r001c_base_for_reverse",
+    "type": "rule",
+    "kvs": {
+      "body": "A base_for B (read: A is the base for B) implies B derived_from A.",
+      "when": [
+        [
+          "?a",
+          "base_for",
+          "?b"
+        ]
+      ],
+      "then": [
+        [
+          "?b",
+          "derived_from",
+          "?a"
+        ]
+      ],
+      "status": "active",
+      "parents": [
+        "r001_canonicalize_body_links"
+      ]
+    }
+  },
+  {
+    "id": "rule:r001d_team_top_picks_canonical",
+    "type": "rule",
+    "kvs": {
+      "body": "team_a_top_picks is a team-internal short-list relation; canonicalize to top_pick_for (subj is the pick; obj is the picker).",
+      "when": [
+        [
+          "?a",
+          "team_a_top_picks",
+          "?b"
+        ]
+      ],
+      "then": [
+        [
+          "?a",
+          "top_pick_for",
+          "?b"
+        ]
+      ],
+      "status": "active",
+      "parents": [
+        "r001_canonicalize_body_links"
+      ]
+    }
+  },
+  {
+    "id": "rule:r001e_inherits_failure_mode_canonical",
+    "type": "rule",
+    "kvs": {
+      "body": "inherits_failure_mode is the verbose form of inherits_anti_pattern; canonicalize to the catalog predicate.",
+      "when": [
+        [
+          "?a",
+          "inherits_failure_mode",
+          "?b"
+        ]
+      ],
+      "then": [
+        [
+          "?a",
+          "inherits_anti_pattern",
+          "?b"
+        ]
+      ],
+      "status": "active",
+      "parents": [
+        "r001_canonicalize_body_links"
+      ]
+    }
+  },
+  {
+    "id": "rule:r001f_inherits_failure_mode_from_canonical",
+    "type": "rule",
+    "kvs": {
+      "body": "inherits_failure_mode_from is the directional verbose form; canonicalize to inherits_anti_pattern.",
+      "when": [
+        [
+          "?a",
+          "inherits_failure_mode_from",
+          "?b"
+        ]
+      ],
+      "then": [
+        [
+          "?a",
+          "inherits_anti_pattern",
+          "?b"
+        ]
+      ],
+      "status": "active",
+      "parents": [
+        "r001_canonicalize_body_links"
+      ]
+    }
+  },
+  {
+    "id": "rule:r001g_same_round_as_symmetric",
+    "type": "rule",
+    "kvs": {
+      "body": "same_round_as is a symmetric relation; emit the reverse edge so consumers can find both directions in a single hop.",
+      "when": [
+        [
+          "?a",
+          "same_round_as",
+          "?b"
+        ]
+      ],
+      "then": [
+        [
+          "?b",
+          "same_round_as",
+          "?a"
+        ]
+      ],
+      "status": "active",
+      "parents": [
+        "r001_canonicalize_body_links"
+      ]
+    }
+  },
+  {
+    "id": "rule:r002_derived_from_reverse",
+    "type": "rule",
+    "kvs": {
+      "body": "A derived_from B implies B derives_to A. Lets a base experiment / paper answer 'who built on me?' without a reverse scan.",
+      "when": [
+        [
+          "?a",
+          "derived_from",
+          "?b"
+        ]
+      ],
+      "then": [
+        [
+          "?b",
+          "derives_to",
+          "?a"
+        ]
+      ],
+      "status": "active",
+      "parents": [
+        "r002_derived_from_reverse"
+      ]
+    }
+  },
+  {
+    "id": "rule:r003_competes_with_symmetry",
+    "type": "rule",
+    "kvs": {
+      "body": "competes_with is a symmetric relation; close it under symmetry. RuleEngine triple-dedup prevents infinite ping-pong between A→B and B→A.",
+      "when": [
+        [
+          "?a",
+          "competes_with",
+          "?b"
+        ]
+      ],
+      "then": [
+        [
+          "?b",
+          "competes_with",
+          "?a"
+        ]
+      ],
+      "status": "active",
+      "parents": [
+        "r003_competes_with_symmetry"
+      ]
+    }
+  },
+  {
+    "id": "rule:r004_falsifies_cluster",
+    "type": "rule",
+    "kvs": {
+      "body": "Transitive: A falsifies B and B falsifies C ⇒ A inherits_falsification C. Keeps the rule-inferred transitive claim separate from direct falsifies evidence so provenance is clear.",
+      "when": [
+        [
+          "?a",
+          "falsifies",
+          "?b"
+        ],
+        [
+          "?b",
+          "falsifies",
+          "?c"
+        ]
+      ],
+      "then": [
+        [
+          "?a",
+          "inherits_falsification",
+          "?c"
+        ]
+      ],
+      "status": "active",
+      "parents": [
+        "r004_falsifies_cluster"
+      ]
+    }
+  },
+  {
+    "id": "rule:r005_anti_pattern_inheritance",
+    "type": "rule",
+    "kvs": {
+      "body": "If an anti-pattern catalog entry references an experiment in its case-examples list, the experiment is_instance_of_anti_pattern. Forward index for 'is this a known bad pattern?' queries on the experiment side.",
+      "when": [
+        [
+          "?ap",
+          "references_in_case_examples",
+          "?exp"
+        ]
+      ],
+      "then": [
+        [
+          "?exp",
+          "is_instance_of_anti_pattern",
+          "?ap"
+        ]
+      ],
+      "status": "active",
+      "parents": [
+        "r005_anti_pattern_inheritance"
+      ]
+    }
+  }
+]

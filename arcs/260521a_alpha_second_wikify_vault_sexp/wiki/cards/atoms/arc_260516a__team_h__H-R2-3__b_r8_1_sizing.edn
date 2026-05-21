@@ -1,0 +1,426 @@
+(card "exp:H-R2-3_b_r8_1_sizing" :type "experiment"
+  :subj "exp:H-R2-3_b_r8_1_sizing"
+  :body "---\nnav: 8\ntype: experiment\nid: H-R2-3\nshort_name: b_r8_1_sizing\ntitle: \"H-R2-3 — B-R8-1 × clip(ratio/median, 0.5, 1.5) sizing\"\narc: 260516a\nteam: h\nround: r2\nparent_arc: \"[[arcs/260516a]]\"\nparent_lineage: \"[[lineages/arc_260516a__team_h__sizing]]\"\ntrain_nav: 3.2148\ntrain_trade_count: 169\ntrain_win_rate: 0.8580\ntrain_sharpe: 7.1216\ntrain_max_drawdown: -0.0075\nval_nav_mean: 1.0907\nval_nav_sigma: 0.1029\nval_window_count: 13\ntest_nav: 1.3554\ntest_trade_count: 23\ntest_sharpe: 6.9435\ntest_win_rate: 0.7391\ntest_max_drawdown: -0.0034\nanchor_train_nav: 2.1882\nanchor_test_nav: 1.2486\nstatus: demoted\noutcome: test_pass\nchampion: false\noverfit_score: 0\nleak_audit: clean\naxis: [sizing]\npast_only_window_days: 30\nwarmup_required: 10\ncreated: 2026-05-17T02:30:00\nlast_updated: 2026-05-17T05:09:00\ntags: [arc/260516a, team/h, round/r2, axis/sizing, status/demoted, outcome/test_pass, leak/clean, size/large]\n---\n\n# H-R2-3 — B-R8-1 × clip(ratio/median, 0.5, 1.5)\n\n> **TL;DR** —— H-R2 sweep 的\"B 队 base\"档：用 [[arc_260516a__team_b__B-R8-1__no_open3min_bypass03]] (Team B blacklist 顶点) 作 trade selector，叠同公式 sizing。train NAV 3.21 / test 1.36，明显劣于 C8.4-base 的 H-R2-2 (3.65/1.48)。**证明 base selector 比 sizing 公式更重要** —— 同 sizing 公式 base 一换 NAV 差 0.13 test。\n\n## 假设 (Hypothesis)\n- 检验\"sizing 公式是否在不同 base trade selector 上都有效\"。\n- 假设：sizing 应当 base-agnostic，B-R8-1 base 加 sizing 应能拉到与 C8.4-base 相当水平。\n- 实测：**假设不成立**。B-R8-1 trade 信号质量本身不如 C8.4（top-3 expand 不在 B 里），sizing 没法补回这部分 NAV gap。\n\n## 实现 (Implementation)\n- 主脚本：`/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_h/scripts/round_2_runner.py`\n- trade selector = B-R8-1：anchor + no_open_3min + bypass(0.30)\n- sizing：\n  $$ \\text{size}(t) = \\mathrm{clip}\\!\\left(\\frac{r_t}{\\widetilde{r}^{\\;\\text{past-30d}}_{\\,t}},\\; 0.5,\\; 1.5\\right) $$\n\n## Past-only window 处理\n- 共用 `rolling_30d_ratio_median`，strict past-only，warmup=10。\n- `#leak/clean`。\n\n## 结果 (Results)\n| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 3.2148 | 169 | 7.12 | 85.8% | -0.75% |\n| Val (rolling 13w) | 1.0907 ± 0.103 | - | - | - | - |\n| Test | 1.3554 | 23 | 6.94 | 73.9% | -0.34% |\n| **Δ test NAV vs anchor** | +0.107 | +3 | -0.21 | -1.1pp | +0.19pp |\n| **Δ test NAV vs H-R2-2 (C8.4 base)** | -0.126 | -8 | -0.43 | -6.7pp | +0.09pp |\n\n## 风险 & overfit 嫌疑\n- overfit_score = 0。\n- 关键发现：B-R8-1 base trade pool win 85.8% < C8.4 base 87.7%，sizing 没法弥补 base selection 的劣势。\n\n## Lineage（双链网）\n- **derived_from**: [[arc_260516a__team_h__H-R1-1__rolling_30d_median_solo]] (R1 引入 sizing 公式)\n- **builds on**: [[arc_260516a__team_b__B-R8-1__no_open3min_bypass03]] (B 队 base)\n- **dominated_by**: [[arc_260516a__team_h__H-R2-2__c84_linear_sizing]] (C8.4 base 同公式, +0.13 test NAV)\n- **competes_with**: [[arc_260516a__team_h__H-R2-1__c75_linear_sizing]], [[arc_260516a__team_h__H-R2-4__c75_sqrt_damp]]\n- **builds against**: [[arc_260516a__team_anchor__anchor_g2__baseline]]\n\n## Reports\n- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_h/output/cross_round_leaderboard_nav.csv` (R2-3)\n- [[arc_260516a__reporter_20260517_0547]]\n\n## Notes / 下次迭代\n- **重要 lesson**：在 sizing arc 里**永远要 sweep base selector**，单一 base 上的 sizing winner 不一定 base-agnostic。本候选证明 base 影响 ≥ sizing 系数。\n- B-R8-1 之所以劣，是因为它不含 top-3 expand —— Team B 的卷在\"砍 trade\"，没有\"接 trade\"机制。H 系列继任者应直接用 C8.4 family base，不再试 B base。\n"
+  :path "experiments/arc_260516a__team_h__H-R2-3__b_r8_1_sizing.md"
+  :source_mtime "2026-05-17T10:17:21+08:00"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_7ac3f6cd" :type "atom"
+  :subj "exp:H-R2-3_b_r8_1_sizing"
+  :pred "has_nav"
+  :obj 8
+  :source "experiments/arc_260516a__team_h__H-R2-3__b_r8_1_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_80eb1bbc" :type "atom"
+  :subj "exp:H-R2-3_b_r8_1_sizing"
+  :pred "has_type"
+  :obj "experiment"
+  :source "experiments/arc_260516a__team_h__H-R2-3__b_r8_1_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_8e5e45aa" :type "atom"
+  :subj "exp:H-R2-3_b_r8_1_sizing"
+  :pred "has_id"
+  :obj "H-R2-3"
+  :source "experiments/arc_260516a__team_h__H-R2-3__b_r8_1_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f8232056" :type "atom"
+  :subj "exp:H-R2-3_b_r8_1_sizing"
+  :pred "has_short_name"
+  :obj "b_r8_1_sizing"
+  :source "experiments/arc_260516a__team_h__H-R2-3__b_r8_1_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1c6e7814" :type "atom"
+  :subj "exp:H-R2-3_b_r8_1_sizing"
+  :pred "has_title"
+  :obj "H-R2-3 — B-R8-1 × clip(ratio/median, 0.5, 1.5) sizing"
+  :source "experiments/arc_260516a__team_h__H-R2-3__b_r8_1_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_0b331eb1" :type "atom"
+  :subj "exp:H-R2-3_b_r8_1_sizing"
+  :pred "has_arc"
+  :obj "260516a"
+  :source "experiments/arc_260516a__team_h__H-R2-3__b_r8_1_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c063abb9" :type "atom"
+  :subj "exp:H-R2-3_b_r8_1_sizing"
+  :pred "has_team"
+  :obj "h"
+  :source "experiments/arc_260516a__team_h__H-R2-3__b_r8_1_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b693c46c" :type "atom"
+  :subj "exp:H-R2-3_b_r8_1_sizing"
+  :pred "has_round"
+  :obj "r2"
+  :source "experiments/arc_260516a__team_h__H-R2-3__b_r8_1_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_8371ed2f" :type "atom"
+  :subj "exp:H-R2-3_b_r8_1_sizing"
+  :pred "parent_arc"
+  :obj "arc:260516a"
+  :source "experiments/arc_260516a__team_h__H-R2-3__b_r8_1_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_db959c6e" :type "atom"
+  :subj "exp:H-R2-3_b_r8_1_sizing"
+  :pred "parent_lineage"
+  :obj "lin:arc_260516a__team_h__sizing"
+  :source "experiments/arc_260516a__team_h__H-R2-3__b_r8_1_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1c151f49" :type "atom"
+  :subj "exp:H-R2-3_b_r8_1_sizing"
+  :pred "has_train_nav"
+  :obj 3.2148
+  :source "experiments/arc_260516a__team_h__H-R2-3__b_r8_1_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_276b58fb" :type "atom"
+  :subj "exp:H-R2-3_b_r8_1_sizing"
+  :pred "has_train_trade_count"
+  :obj 169
+  :source "experiments/arc_260516a__team_h__H-R2-3__b_r8_1_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a93aec56" :type "atom"
+  :subj "exp:H-R2-3_b_r8_1_sizing"
+  :pred "has_train_win_rate"
+  :obj 0.858
+  :source "experiments/arc_260516a__team_h__H-R2-3__b_r8_1_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1be50f3f" :type "atom"
+  :subj "exp:H-R2-3_b_r8_1_sizing"
+  :pred "has_train_sharpe"
+  :obj 7.1216
+  :source "experiments/arc_260516a__team_h__H-R2-3__b_r8_1_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_65bdf7d9" :type "atom"
+  :subj "exp:H-R2-3_b_r8_1_sizing"
+  :pred "has_train_max_drawdown"
+  :obj -0.0075
+  :source "experiments/arc_260516a__team_h__H-R2-3__b_r8_1_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e43aba75" :type "atom"
+  :subj "exp:H-R2-3_b_r8_1_sizing"
+  :pred "has_val_nav_mean"
+  :obj 1.0907
+  :source "experiments/arc_260516a__team_h__H-R2-3__b_r8_1_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_13f21a0d" :type "atom"
+  :subj "exp:H-R2-3_b_r8_1_sizing"
+  :pred "has_val_nav_sigma"
+  :obj 0.1029
+  :source "experiments/arc_260516a__team_h__H-R2-3__b_r8_1_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_93d001b8" :type "atom"
+  :subj "exp:H-R2-3_b_r8_1_sizing"
+  :pred "has_val_window_count"
+  :obj 13
+  :source "experiments/arc_260516a__team_h__H-R2-3__b_r8_1_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_551d72b5" :type "atom"
+  :subj "exp:H-R2-3_b_r8_1_sizing"
+  :pred "has_test_nav"
+  :obj 1.3554
+  :source "experiments/arc_260516a__team_h__H-R2-3__b_r8_1_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_964d6be1" :type "atom"
+  :subj "exp:H-R2-3_b_r8_1_sizing"
+  :pred "has_test_trade_count"
+  :obj 23
+  :source "experiments/arc_260516a__team_h__H-R2-3__b_r8_1_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d1ce12ba" :type "atom"
+  :subj "exp:H-R2-3_b_r8_1_sizing"
+  :pred "has_test_sharpe"
+  :obj 6.9435
+  :source "experiments/arc_260516a__team_h__H-R2-3__b_r8_1_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_fb95628e" :type "atom"
+  :subj "exp:H-R2-3_b_r8_1_sizing"
+  :pred "has_test_win_rate"
+  :obj 0.7391
+  :source "experiments/arc_260516a__team_h__H-R2-3__b_r8_1_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5f7d0f4c" :type "atom"
+  :subj "exp:H-R2-3_b_r8_1_sizing"
+  :pred "has_test_max_drawdown"
+  :obj -0.0034
+  :source "experiments/arc_260516a__team_h__H-R2-3__b_r8_1_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a5ae3bd2" :type "atom"
+  :subj "exp:H-R2-3_b_r8_1_sizing"
+  :pred "has_anchor_train_nav"
+  :obj 2.1882
+  :source "experiments/arc_260516a__team_h__H-R2-3__b_r8_1_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d7423118" :type "atom"
+  :subj "exp:H-R2-3_b_r8_1_sizing"
+  :pred "has_anchor_test_nav"
+  :obj 1.2486
+  :source "experiments/arc_260516a__team_h__H-R2-3__b_r8_1_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_54dbca19" :type "atom"
+  :subj "exp:H-R2-3_b_r8_1_sizing"
+  :pred "has_status"
+  :obj "demoted"
+  :source "experiments/arc_260516a__team_h__H-R2-3__b_r8_1_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_0bcc9e17" :type "atom"
+  :subj "exp:H-R2-3_b_r8_1_sizing"
+  :pred "has_outcome"
+  :obj "test_pass"
+  :source "experiments/arc_260516a__team_h__H-R2-3__b_r8_1_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_921459b6" :type "atom"
+  :subj "exp:H-R2-3_b_r8_1_sizing"
+  :pred "has_champion"
+  :obj false
+  :source "experiments/arc_260516a__team_h__H-R2-3__b_r8_1_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d056ad04" :type "atom"
+  :subj "exp:H-R2-3_b_r8_1_sizing"
+  :pred "has_overfit_score"
+  :obj 0
+  :source "experiments/arc_260516a__team_h__H-R2-3__b_r8_1_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_41cd828f" :type "atom"
+  :subj "exp:H-R2-3_b_r8_1_sizing"
+  :pred "has_leak_audit"
+  :obj "clean"
+  :source "experiments/arc_260516a__team_h__H-R2-3__b_r8_1_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1c8a7702" :type "atom"
+  :subj "exp:H-R2-3_b_r8_1_sizing"
+  :pred "has_axis"
+  :obj "axis:sizing"
+  :source "experiments/arc_260516a__team_h__H-R2-3__b_r8_1_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_91971d3c" :type "atom"
+  :subj "exp:H-R2-3_b_r8_1_sizing"
+  :pred "has_axis_list"
+  :obj ("sizing")
+  :source "experiments/arc_260516a__team_h__H-R2-3__b_r8_1_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_76648875" :type "atom"
+  :subj "exp:H-R2-3_b_r8_1_sizing"
+  :pred "has_past_only_window_days"
+  :obj 30
+  :source "experiments/arc_260516a__team_h__H-R2-3__b_r8_1_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f177910a" :type "atom"
+  :subj "exp:H-R2-3_b_r8_1_sizing"
+  :pred "has_warmup_required"
+  :obj 10
+  :source "experiments/arc_260516a__team_h__H-R2-3__b_r8_1_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_498fdba1" :type "atom"
+  :subj "exp:H-R2-3_b_r8_1_sizing"
+  :pred "has_created"
+  :obj "2026-05-17 02:30:00"
+  :source "experiments/arc_260516a__team_h__H-R2-3__b_r8_1_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_52940fc2" :type "atom"
+  :subj "exp:H-R2-3_b_r8_1_sizing"
+  :pred "has_last_updated"
+  :obj "2026-05-17 05:09:00"
+  :source "experiments/arc_260516a__team_h__H-R2-3__b_r8_1_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_df911202" :type "atom"
+  :subj "exp:H-R2-3_b_r8_1_sizing"
+  :pred "has_tag"
+  :obj "tag:arc/260516a"
+  :source "experiments/arc_260516a__team_h__H-R2-3__b_r8_1_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e598722c" :type "atom"
+  :subj "exp:H-R2-3_b_r8_1_sizing"
+  :pred "has_tag"
+  :obj "tag:team/h"
+  :source "experiments/arc_260516a__team_h__H-R2-3__b_r8_1_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_836997c2" :type "atom"
+  :subj "exp:H-R2-3_b_r8_1_sizing"
+  :pred "has_tag"
+  :obj "tag:round/r2"
+  :source "experiments/arc_260516a__team_h__H-R2-3__b_r8_1_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a55c6b30" :type "atom"
+  :subj "exp:H-R2-3_b_r8_1_sizing"
+  :pred "has_tag"
+  :obj "tag:axis/sizing"
+  :source "experiments/arc_260516a__team_h__H-R2-3__b_r8_1_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_2cfcd4a2" :type "atom"
+  :subj "exp:H-R2-3_b_r8_1_sizing"
+  :pred "has_tag"
+  :obj "tag:status/demoted"
+  :source "experiments/arc_260516a__team_h__H-R2-3__b_r8_1_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_cbba30f9" :type "atom"
+  :subj "exp:H-R2-3_b_r8_1_sizing"
+  :pred "has_tag"
+  :obj "tag:outcome/test_pass"
+  :source "experiments/arc_260516a__team_h__H-R2-3__b_r8_1_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_8ac95f30" :type "atom"
+  :subj "exp:H-R2-3_b_r8_1_sizing"
+  :pred "has_tag"
+  :obj "tag:leak/clean"
+  :source "experiments/arc_260516a__team_h__H-R2-3__b_r8_1_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_63aa32ad" :type "atom"
+  :subj "exp:H-R2-3_b_r8_1_sizing"
+  :pred "has_tag"
+  :obj "tag:size/large"
+  :source "experiments/arc_260516a__team_h__H-R2-3__b_r8_1_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a167b0e1" :type "atom"
+  :subj "exp:H-R2-3_b_r8_1_sizing"
+  :pred "has_tl_dr"
+  :obj "H-R2 sweep 的\"B 队 base\"档：用 [[arc_260516a__team_b__B-R8-1__no_open3min_bypass03]] (Team B blacklist 顶点) 作 trade selector，叠同公式 sizing。train NAV 3.21 / test 1.36，明显劣于 C8.4-base 的 H-R2-2 (3.65/1.48)。**证明 base selector 比 sizing 公式更重要** —— 同 sizing 公式 base 一换 NAV 差 0.13 test。"
+  :source "experiments/arc_260516a__team_h__H-R2-3__b_r8_1_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_2ab81ef2" :type "atom"
+  :subj "exp:H-R2-3_b_r8_1_sizing"
+  :pred "has_section_intro"
+  :obj "# H-R2-3 — B-R8-1 × clip(ratio/median, 0.5, 1.5)\n\n> **TL;DR** —— H-R2 sweep 的\"B 队 base\"档：用 [[arc_260516a__team_b__B-R8-1__no_open3min_bypass03]] (Team B blacklist 顶点) 作 trade selector，叠同公式 sizing。train NAV 3.21 / test 1.36，明显劣于 C8.4-base 的 H-R2-2 (3.65/1.48)。**证明 base selector 比 sizing 公式更重要** —— 同 sizing 公式 base 一换 NAV 差 0.13 test。"
+  :source "experiments/arc_260516a__team_h__H-R2-3__b_r8_1_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c361b604" :type "atom"
+  :subj "exp:H-R2-3_b_r8_1_sizing"
+  :pred "has_section_hypothesis"
+  :obj "- 检验\"sizing 公式是否在不同 base trade selector 上都有效\"。\n- 假设：sizing 应当 base-agnostic，B-R8-1 base 加 sizing 应能拉到与 C8.4-base 相当水平。\n- 实测：**假设不成立**。B-R8-1 trade 信号质量本身不如 C8.4（top-3 expand 不在 B 里），sizing 没法补回这部分 NAV gap。"
+  :source "experiments/arc_260516a__team_h__H-R2-3__b_r8_1_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_397ccc11" :type "atom"
+  :subj "exp:H-R2-3_b_r8_1_sizing"
+  :pred "has_section_implementation"
+  :obj "- 主脚本：`/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_h/scripts/round_2_runner.py`\n- trade selector = B-R8-1：anchor + no_open_3min + bypass(0.30)\n- sizing：\n  $$ \\text{size}(t) = \\mathrm{clip}\\!\\left(\\frac{r_t}{\\widetilde{r}^{\\;\\text{past-30d}}_{\\,t}},\\; 0.5,\\; 1.5\\right) $$"
+  :source "experiments/arc_260516a__team_h__H-R2-3__b_r8_1_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b855d439" :type "atom"
+  :subj "exp:H-R2-3_b_r8_1_sizing"
+  :pred "has_section_past_only_window"
+  :obj "- 共用 `rolling_30d_ratio_median`，strict past-only，warmup=10。\n- `#leak/clean`。"
+  :source "experiments/arc_260516a__team_h__H-R2-3__b_r8_1_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_6feb4b3e" :type "atom"
+  :subj "exp:H-R2-3_b_r8_1_sizing"
+  :pred "has_section_results"
+  :obj "| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 3.2148 | 169 | 7.12 | 85.8% | -0.75% |\n| Val (rolling 13w) | 1.0907 ± 0.103 | - | - | - | - |\n| Test | 1.3554 | 23 | 6.94 | 73.9% | -0.34% |\n| **Δ test NAV vs anchor** | +0.107 | +3 | -0.21 | -1.1pp | +0.19pp |\n| **Δ test NAV vs H-R2-2 (C8.4 base)** | -0.126 | -8 | -0.43 | -6.7pp | +0.09pp |"
+  :source "experiments/arc_260516a__team_h__H-R2-3__b_r8_1_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_bf5e671e" :type "atom"
+  :subj "exp:H-R2-3_b_r8_1_sizing"
+  :pred "has_section_risk_overfit"
+  :obj "- overfit_score = 0。\n- 关键发现：B-R8-1 base trade pool win 85.8% < C8.4 base 87.7%，sizing 没法弥补 base selection 的劣势。"
+  :source "experiments/arc_260516a__team_h__H-R2-3__b_r8_1_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_4308a389" :type "atom"
+  :subj "exp:H-R2-3_b_r8_1_sizing"
+  :pred "derived_from"
+  :obj "exp:H-R1-1_rolling_30d_median_solo"
+  :source "experiments/arc_260516a__team_h__H-R2-3__b_r8_1_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_43e64e31" :type "atom"
+  :subj "exp:H-R2-3_b_r8_1_sizing"
+  :pred "builds_on"
+  :obj "exp:B-R8-1_no_open3min_bypass03"
+  :source "experiments/arc_260516a__team_h__H-R2-3__b_r8_1_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b43aa7c9" :type "atom"
+  :subj "exp:H-R2-3_b_r8_1_sizing"
+  :pred "dominated_by"
+  :obj "exp:H-R2-2_c84_linear_sizing"
+  :source "experiments/arc_260516a__team_h__H-R2-3__b_r8_1_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_bd58d22a" :type "atom"
+  :subj "exp:H-R2-3_b_r8_1_sizing"
+  :pred "competes_with"
+  :obj "exp:H-R2-1_c75_linear_sizing"
+  :source "experiments/arc_260516a__team_h__H-R2-3__b_r8_1_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_758d0111" :type "atom"
+  :subj "exp:H-R2-3_b_r8_1_sizing"
+  :pred "competes_with"
+  :obj "exp:H-R2-4_c75_sqrt_damp"
+  :source "experiments/arc_260516a__team_h__H-R2-3__b_r8_1_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1b28ffc0" :type "atom"
+  :subj "exp:H-R2-3_b_r8_1_sizing"
+  :pred "builds_against"
+  :obj "exp:anchor_g2_baseline"
+  :source "experiments/arc_260516a__team_h__H-R2-3__b_r8_1_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_4f448ce9" :type "atom"
+  :subj "exp:H-R2-3_b_r8_1_sizing"
+  :pred "has_section_lineage_links"
+  :obj "- **derived_from**: [[arc_260516a__team_h__H-R1-1__rolling_30d_median_solo]] (R1 引入 sizing 公式)\n- **builds on**: [[arc_260516a__team_b__B-R8-1__no_open3min_bypass03]] (B 队 base)\n- **dominated_by**: [[arc_260516a__team_h__H-R2-2__c84_linear_sizing]] (C8.4 base 同公式, +0.13 test NAV)\n- **competes_with**: [[arc_260516a__team_h__H-R2-1__c75_linear_sizing]], [[arc_260516a__team_h__H-R2-4__c75_sqrt_damp]]\n- **builds against**: [[arc_260516a__team_anchor__anchor_g2__baseline]]"
+  :source "experiments/arc_260516a__team_h__H-R2-3__b_r8_1_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_335e2ba6" :type "atom"
+  :subj "exp:H-R2-3_b_r8_1_sizing"
+  :pred "has_section_reports"
+  :obj "- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_h/output/cross_round_leaderboard_nav.csv` (R2-3)\n- [[arc_260516a__reporter_20260517_0547]]"
+  :source "experiments/arc_260516a__team_h__H-R2-3__b_r8_1_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_8c48908f" :type "atom"
+  :subj "exp:H-R2-3_b_r8_1_sizing"
+  :pred "has_section_notes"
+  :obj "- **重要 lesson**：在 sizing arc 里**永远要 sweep base selector**，单一 base 上的 sizing winner 不一定 base-agnostic。本候选证明 base 影响 ≥ sizing 系数。\n- B-R8-1 之所以劣，是因为它不含 top-3 expand —— Team B 的卷在\"砍 trade\"，没有\"接 trade\"机制。H 系列继任者应直接用 C8.4 family base，不再试 B base。"
+  :source "experiments/arc_260516a__team_h__H-R2-3__b_r8_1_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")

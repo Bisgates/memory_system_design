@@ -1,0 +1,188 @@
+(card "lin:arc_260516a__team_c__top_k_no_open3min" :type "lineage"
+  :subj "lin:arc_260516a__team_c__top_k_no_open3min"
+  :body "---\ntype: lineage_overview\nteam: c\narc: 260516a\nstatus: plateau\npeak_train_nav: 3.1544\npeak_test_nav: null\nrounds_done: 8\ncandidates_total: 36\nchampions: 6\ntags: [vault/lineage, team/c, arc/260516a, status/plateau, axis/top_k, axis/timing_filter, axis/cross_team_compose, caveat/pre_market]\n---\n\n# Team C — top-K expand × admit composition lineage (arc 260516a)\n\n> Team C 在 R6 找到 \"top-K expand on confluence ≥2 signal\" 这条 axis 作 selector，并在 R7 import Team B 的 `no_open_3min` 做 cross-team composition，**R8-4 train_nav 3.1544 (anchor +44%) = 整 arc 历史最高 train NAV**。但 test 因 sample-size + 25/28 PRE-MARKET trades 的 slippage caveat 不可信。production-deployable champion 仍是 RTH-only C8.1 (train 2.7575)。\n\n## Round 演进时间线\n\n| Round | best candidate | n | train_nav | val_nav | mechanism | NAV champion |\n|---|---|---|---|---|---|---|\n| R1 | C1.4 side-aware ratio gate LONG≥0.08, SHORT≥0.18 | 112 | — | 1.05+ | ratio dimension show signal | 0 (gate fail) |\n| R2 | **C2.1** ratio LONG≥0.08, SHORT≥0.20 | 101 | 1.9902 | 1.05091 | first robust frontier candidate (Sharpe 8.93, win 91.1%) | 0 (mean_fail 0.05bp) but proposed champion |\n| R3 | (exit-strategy diversification) | — | — | — | 5 exits 全 worse than baseline_C2.1 | 0; champion unchanged |\n| R4 | **C4.5** top-2 multi-leg | 123 | **2.2663** | **1.06140** | first NAV champion under NAV ranking | ✓ |\n| R5 | (filter-only family fail) | — | — | — | filter+expand mutual cancel, ticker N=10 cold-start no-op | 0; champion still C4.5 |\n| R6 | **C6.4** top-3 expand on confluence ≥2 | 142 | **2.5108** | **1.07011** | K=3 pre-committed, +19 trade mean 0.542% | ✓ |\n| R7 | **C7.5** C6.4 + `no_open_3min` (cross-team B-R8-1 mirror) | 170 | **3.0291** | **1.08519** | +28 trade: 25/28 PRE-MARKET (00:00-09:30 ET, mean 0.76%, win 88%) | ✓ +20.6% but pre-market exposed |\n| R8 | **C8.4** C7.5 ∪ B-R8-2 bypass(0.40) | 179 | **3.1544** | **1.08868** | second cross-team stack | ✓ +4.1% train / +0.35pp val |\n\n支持/控制候选：\n- **C8.1 RTH-only** (forced 09:30 ≤ t ≤ 16:00): n=149, train_nav 2.7575, val_nav 1.07671 — **production-deployable champion**，证明 C7.5 mechanism 在 RTH 内仍 healthy +9.8% train (pre-market 不是唯一 alpha 来源)。\n- **C8.3 10× PM slip stress test**: ret_net 1.3548→0.8002, 跌破 C6.4 net 1.0346 —— 真实 pre-market 5-10× slippage 下 C7.5/C8.4 net 不如 C6.4。\n\n## 决策点 / 反思\n\n- **R1→R2 ratio dimension monotonic**: C1.4 → C2.1 → C2.2 val 0.7364→0.8020→0.8465 mirror n 112→101→78，单一维度 robust。\n- **R3 退出策略空间 (Triple-Barrier / Chandelier / partial / no-progress / volatility trailing) 5 条全部 worse** —— exit axis 在 C2.1 entry 上 saturate。\n- **R4 critic 复审 1-min resample lookahead ≤60s**: mask 100% agree (corr 0.9913)；han 拍 (b) fix+rerun, `round_4_leak_fix_runner.py` 重算 C4.2/4.3/4.4。重要 lesson: future-data audit 必须 pre + post 都跑，第一轮 audit pass 不代表 mechanism clean。\n- **R5 filter-only 路线全失败** (C5.1/2/3/4/5): filter 缩 count, ticker N=10 cold-start 钝化, filter+expand 互抵消 —— 转 R6 \"top-K expand on confluence ≥2\" 是关键 design pivot。\n- **R6 K=3 pre-committed (no data-tuned param)**: overfit 嫌疑分=1，比 K-sweep 更 robust。R7 K=4/5 (C7.1/C7.2) 验证 saturated（K=3 最优）。\n- **R7 cross-team compose 是 productive axis**: import B-R8-1 mechanism 直接 +20.6% NAV，证明 cross-team compose 维度未饱和（contrast: single-team single-axis 在 R5 就已 saturate）。\n- **R8 dispatch 4-panel \"pre-market caveat 验证\"** (RTH-only / PM-only / 10× slip / + B-R8-2 stack): empirically demoted caveat severity 5/5 → 2/5（mechanism healthy in RTH），但同时 confirm production net 在真实 slippage 下劣于 C6.4 net —— production 必须 hour-gate。\n- **C8.2 PM-only n=17, isolation cum_nav 1.10**: 证明 pre-market subset 有正 alpha 但 n 太薄，\"如将来通 pre-market 执行通道\" 值得 dedicated venue。\n\n## 跨 lineage 关系\n\n- **derived_from**: [[arc_260516a__team_anchor__anchor_g2__baseline]] —— C2.1 是 anchor 之上的 ratio gate refinement。\n- **builds on**: [[experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass]] 是 Team H sizing axis 的 base selector（H 系全 lineage 共用 C8.4），所以 C 的 selector 突破直接 enable H 的 sizing 实验。\n- **cross-team compose with**: [[arc_260516a__team_b__blacklist_axis]] —— C7.5 = C6.4 ∪ B-R8-1 no_open_3min；C8.4 = C7.5 ∪ B-R8-2 bypass(0.40)。两者是 arc 内 cross-team compose 的最佳实证。\n- **competes_with**: [[arc_260516a__team_b__blacklist_axis]] 在同 mechanism (no_open_3min) 下，B 走 single-axis NAV +28%，C 加 top-K expand +44%，C 路线更 productive 但 pre-market caveat 严重。\n- **shared anti-pattern with**: [[arc_260516a__team_e__leader_profile]] —— C R6/R7 adversarial-leader (frequency-based) 100% no-op, 与 Team E leader profile 全 no-op 同根因（anchor pipeline pre-removes low-quality signatures）。\n\n## 终态判定理由（plateau，但 test sample-size artefact）\n\n1. **train SOTA 3.1544 (anchor +44%) 已 record**, n=179 / 180 cap 仅差 1 trade —— count gate 接近上界，bypass 再放宽会触发 count_fail。\n2. **R8 4-panel pre-market caveat 验证** 已 dispatch, mechanism 在 RTH 健康，pre-market 子集 isolation 正 alpha 但 n 太薄。\n3. **top-K saturated at K=3** (C7.1 top-4 / C7.2 top-5 退步)，**adversarial-leader 死** (max recurrence=1, filter no-op)，**ticker base-rate marginal** (C5.4/C6.3 几乎 bit-identical to baseline) —— 三条维度不再投资。\n4. **C8.3 10× pm slip stress test**: ret_net 0.8002 < C6.4 net 1.0346，说明 train_nav 3.1544 是 fee-only NAV，**实盘 pre-market 真实 slippage 下不可达**。\n5. **test 上 C-series 未 burn**（only B-R8-x 已 burn），无独立 test 数据；但 sample-size artefact 由 R8-2/R8-3 在 B 系上的表现（也 hold-out tie/输 anchor）旁证 —— C 的 test 大概率也是 sample-size constrained。\n6. R9+ candidate 维度 (cross-team compose 仍 open / PM venue empirical slip modeling) 在 status.md 列出, 等 han greenlight。\n\n## For future sub-agent\n\n**不要重蹈：**\n\n1. **不要在 R3 exit-strategy axis 上继续探** —— Triple-Barrier / Chandelier / partial / volatility trailing / no-progress 5 条全 saturate at C2.1 entry。\n2. **不要 K-sweep top-K 超过 3** —— C7.1/C7.2 (K=4/5) 退步, K=3 是 pre-committed 安全边界。\n3. **不要 adversarial-leader / frequency-based leader-drop** —— C 系 R6/R7 reproducible 100% no-op；mechanism 同 Team E。\n4. **不要 ticker rolling base-rate N=10/20/30** —— C5.4 / C6.3 / C7.3 marginal at best (≤1 trade 差), N≥30 直接 cold-start 钝化掉。\n5. **不要相信 fee-only train_nav 在 pre-market exposed candidate 上的 number** —— C8.3 stress test 证明 5-10× slippage 下 net 直接 < C6.4 net；production 必须 hour-gate 或 empirical-slip model。\n6. **不要把 1-min resample 当 strict past-only** —— R4 critic 复审发现 1-min bucketing 在 trade time 半 bucket 内 lookahead ≤60s，必须 `.shift(1)` 或 `realization_time=t0+65s` 修正。\n\n**可以继承：**\n\n1. **C2.1 side-aware ratio gate (LONG≥0.08, SHORT≥0.20)** 是 robust frontier candidate，跨 6 轮都做 baseline reproduce bit-for-bit —— 适合作下一 arc 的 entry filter default。\n2. **top-K expand on confluence ≥2 (K=3 pre-committed)** = arc 内 selector axis 最大产值 mechanism，可作下次 arc 的 selector template。\n3. **cross-team compose 是 productive axis (C7.5 +20.6%, C8.4 +4.1%)** —— 下次 arc 可专门 plan \"round N = cross-team mechanism import\"。\n4. **C8.1 RTH-only (n=149, train 2.7575, val 1.07671)** = production-deployable champion，肉眼可 deploy。\n5. **R8 4-panel pre-market caveat dispatch protocol** (RTH-only / PM-only / 10×slip / + extra stack) —— 模板：当 candidate 暴露在 non-RTH 时，必须并跑这 4 个 sub-experiment 才能 demote caveat severity。\n6. **per-candidate trade-mix bucket 分析** (pre-market / pre-open / open 3min 各 n + mean_ret + win) —— C7.5 表格示范，应作 candidate Notes 章节 default。\n\n## 备注\n\n- final report `team_c/output/round_8/_R8_report.html`。\n- C8.4 / C7.5 共享 25-28 pre-market trades，slippage 不可信；production 用 C8.1 RTH-only。\n- cross-team compose 维度仍 open：C8.4 ∪ B-R8-3 horizon-by-ratio / + Team D/H 最新 mechanism 是 R9+ candidate。\n"
+  :path "lineages/arc_260516a__team_c__top_k_no_open3min.md"
+  :source_mtime "2026-05-17T10:17:43+08:00"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_18931143" :type "atom"
+  :subj "lin:arc_260516a__team_c__top_k_no_open3min"
+  :pred "has_type"
+  :obj "lineage_overview"
+  :source "lineages/arc_260516a__team_c__top_k_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f8bfc672" :type "atom"
+  :subj "lin:arc_260516a__team_c__top_k_no_open3min"
+  :pred "has_team"
+  :obj "c"
+  :source "lineages/arc_260516a__team_c__top_k_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c44f12dc" :type "atom"
+  :subj "lin:arc_260516a__team_c__top_k_no_open3min"
+  :pred "has_arc"
+  :obj "260516a"
+  :source "lineages/arc_260516a__team_c__top_k_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_3dddcef8" :type "atom"
+  :subj "lin:arc_260516a__team_c__top_k_no_open3min"
+  :pred "has_status"
+  :obj "plateau"
+  :source "lineages/arc_260516a__team_c__top_k_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_da4249c7" :type "atom"
+  :subj "lin:arc_260516a__team_c__top_k_no_open3min"
+  :pred "has_peak_train_nav"
+  :obj 3.1544
+  :source "lineages/arc_260516a__team_c__top_k_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_4ca7557e" :type "atom"
+  :subj "lin:arc_260516a__team_c__top_k_no_open3min"
+  :pred "has_rounds_done"
+  :obj 8
+  :source "lineages/arc_260516a__team_c__top_k_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_288a0ec2" :type "atom"
+  :subj "lin:arc_260516a__team_c__top_k_no_open3min"
+  :pred "has_candidates_total"
+  :obj 36
+  :source "lineages/arc_260516a__team_c__top_k_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_4cf2b570" :type "atom"
+  :subj "lin:arc_260516a__team_c__top_k_no_open3min"
+  :pred "has_champions"
+  :obj 6
+  :source "lineages/arc_260516a__team_c__top_k_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_773fcf26" :type "atom"
+  :subj "lin:arc_260516a__team_c__top_k_no_open3min"
+  :pred "has_tag"
+  :obj "tag:vault/lineage"
+  :source "lineages/arc_260516a__team_c__top_k_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_acce404e" :type "atom"
+  :subj "lin:arc_260516a__team_c__top_k_no_open3min"
+  :pred "has_tag"
+  :obj "tag:team/c"
+  :source "lineages/arc_260516a__team_c__top_k_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a59138e9" :type "atom"
+  :subj "lin:arc_260516a__team_c__top_k_no_open3min"
+  :pred "has_tag"
+  :obj "tag:arc/260516a"
+  :source "lineages/arc_260516a__team_c__top_k_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_007e4935" :type "atom"
+  :subj "lin:arc_260516a__team_c__top_k_no_open3min"
+  :pred "has_tag"
+  :obj "tag:status/plateau"
+  :source "lineages/arc_260516a__team_c__top_k_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_18481b64" :type "atom"
+  :subj "lin:arc_260516a__team_c__top_k_no_open3min"
+  :pred "has_tag"
+  :obj "tag:axis/top_k"
+  :source "lineages/arc_260516a__team_c__top_k_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_387d9432" :type "atom"
+  :subj "lin:arc_260516a__team_c__top_k_no_open3min"
+  :pred "has_tag"
+  :obj "tag:axis/timing_filter"
+  :source "lineages/arc_260516a__team_c__top_k_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c91f80c0" :type "atom"
+  :subj "lin:arc_260516a__team_c__top_k_no_open3min"
+  :pred "has_tag"
+  :obj "tag:axis/cross_team_compose"
+  :source "lineages/arc_260516a__team_c__top_k_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5ad924d7" :type "atom"
+  :subj "lin:arc_260516a__team_c__top_k_no_open3min"
+  :pred "has_tag"
+  :obj "tag:caveat/pre_market"
+  :source "lineages/arc_260516a__team_c__top_k_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_7c025cba" :type "atom"
+  :subj "lin:arc_260516a__team_c__top_k_no_open3min"
+  :pred "has_section_intro"
+  :obj "# Team C — top-K expand × admit composition lineage (arc 260516a)\n\n> Team C 在 R6 找到 \"top-K expand on confluence ≥2 signal\" 这条 axis 作 selector，并在 R7 import Team B 的 `no_open_3min` 做 cross-team composition，**R8-4 train_nav 3.1544 (anchor +44%) = 整 arc 历史最高 train NAV**。但 test 因 sample-size + 25/28 PRE-MARKET trades 的 slippage caveat 不可信。production-deployable champion 仍是 RTH-only C8.1 (train 2.7575)。"
+  :source "lineages/arc_260516a__team_c__top_k_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5ffb029a" :type "atom"
+  :subj "lin:arc_260516a__team_c__top_k_no_open3min"
+  :pred "has_section_round_table"
+  :obj "| Round | best candidate | n | train_nav | val_nav | mechanism | NAV champion |\n|---|---|---|---|---|---|---|\n| R1 | C1.4 side-aware ratio gate LONG≥0.08, SHORT≥0.18 | 112 | — | 1.05+ | ratio dimension show signal | 0 (gate fail) |\n| R2 | **C2.1** ratio LONG≥0.08, SHORT≥0.20 | 101 | 1.9902 | 1.05091 | first robust frontier candidate (Sharpe 8.93, win 91.1%) | 0 (mean_fail 0.05bp) but proposed champion |\n| R3 | (exit-strategy diversification) | — | — | — | 5 exits 全 worse than baseline_C2.1 | 0; champion unchanged |\n| R4 | **C4.5** top-2 multi-leg | 123 | **2.2663** | **1.06140** | first NAV champion under NAV ranking | ✓ |\n| R5 | (filter-only family fail) | — | — | — | filter+expand mutual cancel, ticker N=10 cold-start no-op | 0; champion still C4.5 |\n| R6 | **C6.4** top-3 expand on confluence ≥2 | 142 | **2.5108** | **1.07011** | K=3 pre-committed, +19 trade mean 0.542% | ✓ |\n| R7 | **C7.5** C6.4 + `no_open_3min` (cross-team B-R8-1 mirror) | 170 | **3.0291** | **1.08519** | +28 trade: 25/28 PRE-MARKET (00:00-09:30 ET, mean 0.76%, win 88%) | ✓ +20.6% but pre-market exposed |\n| R8 | **C8.4** C7.5 ∪ B-R8-2 bypass(0.40) | 179 | **3.1544** | **1.08868** | second cross-team stack | ✓ +4.1% train / +0.35pp val |\n\n支持/控制候选：\n- **C8.1 RTH-only** (forced 09:30 ≤ t ≤ 16:00): n=149, train_nav 2.7575, val_nav 1.07671 — **production-deployable champion**，证明 C7.5 mechanism 在 RTH 内仍 healthy +9.8% train (pre-market 不是唯一 alpha 来源)。\n- **C8.3 10× PM slip stress test**: ret_net 1.3548→0.8002, 跌破 C6.4 net 1.0346 —— 真实 pre-market 5-10× slippage 下 C7.5/C8.4 net 不如 C6.4。"
+  :source "lineages/arc_260516a__team_c__top_k_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_dd07a0c8" :type "atom"
+  :subj "lin:arc_260516a__team_c__top_k_no_open3min"
+  :pred "has_section_decisions_reflections"
+  :obj "- **R1→R2 ratio dimension monotonic**: C1.4 → C2.1 → C2.2 val 0.7364→0.8020→0.8465 mirror n 112→101→78，单一维度 robust。\n- **R3 退出策略空间 (Triple-Barrier / Chandelier / partial / no-progress / volatility trailing) 5 条全部 worse** —— exit axis 在 C2.1 entry 上 saturate。\n- **R4 critic 复审 1-min resample lookahead ≤60s**: mask 100% agree (corr 0.9913)；han 拍 (b) fix+rerun, `round_4_leak_fix_runner.py` 重算 C4.2/4.3/4.4。重要 lesson: future-data audit 必须 pre + post 都跑，第一轮 audit pass 不代表 mechanism clean。\n- **R5 filter-only 路线全失败** (C5.1/2/3/4/5): filter 缩 count, ticker N=10 cold-start 钝化, filter+expand 互抵消 —— 转 R6 \"top-K expand on confluence ≥2\" 是关键 design pivot。\n- **R6 K=3 pre-committed (no data-tuned param)**: overfit 嫌疑分=1，比 K-sweep 更 robust。R7 K=4/5 (C7.1/C7.2) 验证 saturated（K=3 最优）。\n- **R7 cross-team compose 是 productive axis**: import B-R8-1 mechanism 直接 +20.6% NAV，证明 cross-team compose 维度未饱和（contrast: single-team single-axis 在 R5 就已 saturate）。\n- **R8 dispatch 4-panel \"pre-market caveat 验证\"** (RTH-only / PM-only / 10× slip / + B-R8-2 stack): empirically demoted caveat severity 5/5 → 2/5（mechanism healthy in RTH），但同时 confirm production net 在真实 slippage 下劣于 C6.4 net —— production 必须 hour-gate。\n- **C8.2 PM-only n=17, isolation cum_nav 1.10**: 证明 pre-market subset 有正 alpha 但 n 太薄，\"如将来通 pre-market 执行通道\" 值得 dedicated venue。"
+  :source "lineages/arc_260516a__team_c__top_k_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_591aedbc" :type "atom"
+  :subj "lin:arc_260516a__team_c__top_k_no_open3min"
+  :pred "derived_from"
+  :obj "exp:anchor_g2_baseline"
+  :source "lineages/arc_260516a__team_c__top_k_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_631e748b" :type "atom"
+  :subj "lin:arc_260516a__team_c__top_k_no_open3min"
+  :pred "builds_on"
+  :obj "exp:C8.4_top3_no_open3min_bypass"
+  :source "lineages/arc_260516a__team_c__top_k_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a4485dd1" :type "atom"
+  :subj "lin:arc_260516a__team_c__top_k_no_open3min"
+  :pred "competes_with"
+  :obj "lin:arc_260516a__team_b__blacklist_axis"
+  :source "lineages/arc_260516a__team_c__top_k_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_79e32173" :type "atom"
+  :subj "lin:arc_260516a__team_c__top_k_no_open3min"
+  :pred "has_section_cross_lineage_relations"
+  :obj "- **derived_from**: [[arc_260516a__team_anchor__anchor_g2__baseline]] —— C2.1 是 anchor 之上的 ratio gate refinement。\n- **builds on**: [[experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass]] 是 Team H sizing axis 的 base selector（H 系全 lineage 共用 C8.4），所以 C 的 selector 突破直接 enable H 的 sizing 实验。\n- **cross-team compose with**: [[arc_260516a__team_b__blacklist_axis]] —— C7.5 = C6.4 ∪ B-R8-1 no_open_3min；C8.4 = C7.5 ∪ B-R8-2 bypass(0.40)。两者是 arc 内 cross-team compose 的最佳实证。\n- **competes_with**: [[arc_260516a__team_b__blacklist_axis]] 在同 mechanism (no_open_3min) 下，B 走 single-axis NAV +28%，C 加 top-K expand +44%，C 路线更 productive 但 pre-market caveat 严重。\n- **shared anti-pattern with**: [[arc_260516a__team_e__leader_profile]] —— C R6/R7 adversarial-leader (frequency-based) 100% no-op, 与 Team E leader profile 全 no-op 同根因（anchor pipeline pre-removes low-quality signatures）。"
+  :source "lineages/arc_260516a__team_c__top_k_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ec44290f" :type "atom"
+  :subj "lin:arc_260516a__team_c__top_k_no_open3min"
+  :pred "has_section_终态判定理由_plateau_但_test_sample_size_artefact"
+  :obj "1. **train SOTA 3.1544 (anchor +44%) 已 record**, n=179 / 180 cap 仅差 1 trade —— count gate 接近上界，bypass 再放宽会触发 count_fail。\n2. **R8 4-panel pre-market caveat 验证** 已 dispatch, mechanism 在 RTH 健康，pre-market 子集 isolation 正 alpha 但 n 太薄。\n3. **top-K saturated at K=3** (C7.1 top-4 / C7.2 top-5 退步)，**adversarial-leader 死** (max recurrence=1, filter no-op)，**ticker base-rate marginal** (C5.4/C6.3 几乎 bit-identical to baseline) —— 三条维度不再投资。\n4. **C8.3 10× pm slip stress test**: ret_net 0.8002 < C6.4 net 1.0346，说明 train_nav 3.1544 是 fee-only NAV，**实盘 pre-market 真实 slippage 下不可达**。\n5. **test 上 C-series 未 burn**（only B-R8-x 已 burn），无独立 test 数据；但 sample-size artefact 由 R8-2/R8-3 在 B 系上的表现（也 hold-out tie/输 anchor）旁证 —— C 的 test 大概率也是 sample-size constrained。\n6. R9+ candidate 维度 (cross-team compose 仍 open / PM venue empirical slip modeling) 在 status.md 列出, 等 han greenlight。"
+  :source "lineages/arc_260516a__team_c__top_k_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_54734771" :type "atom"
+  :subj "lin:arc_260516a__team_c__top_k_no_open3min"
+  :pred "has_section_for_future_sub_agent"
+  :obj "**不要重蹈：**\n\n1. **不要在 R3 exit-strategy axis 上继续探** —— Triple-Barrier / Chandelier / partial / volatility trailing / no-progress 5 条全 saturate at C2.1 entry。\n2. **不要 K-sweep top-K 超过 3** —— C7.1/C7.2 (K=4/5) 退步, K=3 是 pre-committed 安全边界。\n3. **不要 adversarial-leader / frequency-based leader-drop** —— C 系 R6/R7 reproducible 100% no-op；mechanism 同 Team E。\n4. **不要 ticker rolling base-rate N=10/20/30** —— C5.4 / C6.3 / C7.3 marginal at best (≤1 trade 差), N≥30 直接 cold-start 钝化掉。\n5. **不要相信 fee-only train_nav 在 pre-market exposed candidate 上的 number** —— C8.3 stress test 证明 5-10× slippage 下 net 直接 < C6.4 net；production 必须 hour-gate 或 empirical-slip model。\n6. **不要把 1-min resample 当 strict past-only** —— R4 critic 复审发现 1-min bucketing 在 trade time 半 bucket 内 lookahead ≤60s，必须 `.shift(1)` 或 `realization_time=t0+65s` 修正。\n\n**可以继承：**\n\n1. **C2.1 side-aware ratio gate (LONG≥0.08, SHORT≥0.20)** 是 robust frontier candidate，跨 6 轮都做 baseline reproduce bit-for-bit —— 适合作下一 arc 的 entry filter default。\n2. **top-K expand on confluence ≥2 (K=3 pre-committed)** = arc 内 selector axis 最大产值 mechanism，可作下次 arc 的 selector template。\n3. **cross-team compose 是 productive axis (C7.5 +20.6%, C8.4 +4.1%)** —— 下次 arc 可专门 plan \"round N = cross-team mechanism import\"。\n4. **C8.1 RTH-only (n=149, train 2.7575, val 1.07671)** = production-deployable champion，肉眼可 deploy。\n5. **R8 4-panel pre-market caveat dispatch protocol** (RTH-only / PM-only / 10×slip / + extra stack) —— 模板：当 candidate 暴露在 non-RTH 时，必须并跑这 4 个 sub-experiment 才能 demote caveat severity。\n6. **per-candidate trade-mix bucket 分析** (pre-market / pre-open / open 3min 各 n + mean_ret + win) —— C7.5 表格示范，应作 candidate Notes 章节 default。"
+  :source "lineages/arc_260516a__team_c__top_k_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_599f5eb6" :type "atom"
+  :subj "lin:arc_260516a__team_c__top_k_no_open3min"
+  :pred "has_section_remarks"
+  :obj "- final report `team_c/output/round_8/_R8_report.html`。\n- C8.4 / C7.5 共享 25-28 pre-market trades，slippage 不可信；production 用 C8.1 RTH-only。\n- cross-team compose 维度仍 open：C8.4 ∪ B-R8-3 horizon-by-ratio / + Team D/H 最新 mechanism 是 R9+ candidate。"
+  :source "lineages/arc_260516a__team_c__top_k_no_open3min.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")

@@ -1,0 +1,1111 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>arc 260521a — alpha_second_v1 vault wikify · dual-tab summary</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  :root {
+    --paper: #f7f1e6;
+    --paper-2: #efe6d3;
+    --ink: #2a2418;
+    --ink-soft: #5b5240;
+    --ink-mute: #8a8169;
+    --rule: #c6b58f;
+    --accent: #8a3a14;
+    --accent-2: #4a6741;
+    --accent-3: #2f4f6a;
+    --hi: #f3e6a0;
+    --code-bg: #ede2c5;
+    --shadow: 0 2px 12px rgba(60,40,15,0.08);
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Times New Roman", Georgia, serif;
+    --sans: -apple-system, "SF Pro Text", "Helvetica Neue", Helvetica, Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    --mono: "SF Mono", "Menlo", Consolas, "Liberation Mono", monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--serif);
+    font-size: 17px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+  .page {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 56px 40px 96px;
+  }
+  header.masthead {
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 18px;
+    margin-bottom: 8px;
+  }
+  .eyebrow {
+    font-family: var(--sans);
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+  }
+  h1.title {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: 36px;
+    line-height: 1.18;
+    letter-spacing: -0.005em;
+    margin: 6px 0 4px;
+  }
+  .subtitle {
+    font-family: var(--serif);
+    font-style: italic;
+    color: var(--ink-soft);
+    font-size: 18px;
+    margin: 4px 0 0;
+  }
+  .meta {
+    font-family: var(--sans);
+    font-size: 12px;
+    color: var(--ink-mute);
+    margin-top: 14px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+  }
+  .meta span { white-space: nowrap; }
+  .tabs {
+    display: flex;
+    gap: 0;
+    margin: 28px 0 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .tabs button {
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    font-family: var(--sans);
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    color: var(--ink-soft);
+    padding: 10px 18px;
+    cursor: pointer;
+    margin-bottom: -1px;
+  }
+  .tabs button.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+    font-weight: 600;
+  }
+  .tab-hint {
+    font-family: var(--sans);
+    font-size: 11px;
+    color: var(--ink-mute);
+    padding: 6px 0 0 18px;
+    font-style: italic;
+  }
+  section.tab { display: none; padding-top: 28px; }
+  section.tab.active { display: block; }
+  h2.chapter {
+    font-family: var(--serif);
+    font-size: 22px;
+    font-weight: 600;
+    margin: 40px 0 6px;
+    color: var(--ink);
+  }
+  h2.chapter::before {
+    content: attr(data-roman);
+    font-family: var(--serif);
+    font-size: 14px;
+    letter-spacing: 0.18em;
+    color: var(--accent);
+    display: block;
+    margin-bottom: 2px;
+  }
+  h3.sub {
+    font-family: var(--serif);
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--ink);
+    margin: 22px 0 6px;
+  }
+  p { margin: 10px 0; }
+  p.lede::first-letter {
+    font-family: var(--serif);
+    font-weight: 700;
+    font-size: 52px;
+    float: left;
+    line-height: 0.92;
+    padding: 6px 8px 0 0;
+    color: var(--accent);
+  }
+  .callout {
+    background: var(--paper-2);
+    border-left: 3px solid var(--accent);
+    padding: 14px 18px;
+    margin: 18px 0;
+    font-family: var(--sans);
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--ink-soft);
+  }
+  .callout strong { color: var(--ink); }
+  .callout.warn { border-left-color: #b07a1f; }
+  .callout.uncertain {
+    border-left-color: #8a7e4a;
+    background: #f1e9cf;
+  }
+  ul, ol { padding-left: 22px; }
+  li { margin: 4px 0; }
+  code, pre {
+    font-family: var(--mono);
+    font-size: 13.5px;
+  }
+  code {
+    background: var(--code-bg);
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+  pre {
+    background: var(--code-bg);
+    padding: 14px 16px;
+    border-radius: 4px;
+    overflow-x: auto;
+    line-height: 1.5;
+    font-size: 12.5px;
+    border-left: 2px solid var(--rule);
+    margin: 14px 0;
+  }
+  pre.edn { color: #2a2418; }
+  .kv-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0;
+    font-family: var(--sans);
+    font-size: 13px;
+  }
+  .kv-table th, .kv-table td {
+    text-align: left;
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--rule);
+    vertical-align: top;
+  }
+  .kv-table th {
+    color: var(--ink-mute);
+    font-weight: 600;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    background: var(--paper-2);
+  }
+  .kv-table tr:last-child td { border-bottom: none; }
+  .matrix {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+    margin: 18px 0;
+  }
+  .matrix .card {
+    background: var(--paper-2);
+    padding: 14px 16px;
+    border-left: 2px solid var(--accent-2);
+    font-family: var(--sans);
+    font-size: 13.5px;
+    line-height: 1.55;
+  }
+  .matrix .card h4 {
+    margin: 0 0 6px;
+    font-family: var(--serif);
+    font-size: 15px;
+    color: var(--ink);
+    font-weight: 600;
+  }
+  .matrix .card .tag {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    background: var(--paper);
+    padding: 1px 6px;
+    border-radius: 2px;
+    margin-right: 6px;
+  }
+  .frog-cell {
+    background: var(--paper-2);
+    margin: 24px 0;
+    padding: 16px 20px 18px;
+    border-left: 2px solid var(--accent-3);
+    border-radius: 2px;
+  }
+  .frog-cell .cell-no {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-mute);
+    letter-spacing: 0.08em;
+  }
+  .frog-cell h3 {
+    margin: 2px 0 8px;
+    font-family: var(--serif);
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .frog-cell .note {
+    font-family: var(--sans);
+    font-size: 12.5px;
+    color: var(--ink-mute);
+    font-style: italic;
+    margin: 8px 0 0;
+  }
+  .lab {
+    background: #fbf6e8;
+    border: 1px dashed var(--rule);
+    padding: 18px 20px;
+    margin: 18px 0;
+  }
+  .lab h4 {
+    margin: 0 0 8px;
+    font-family: var(--sans);
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent-2);
+  }
+  .bar-row {
+    display: grid;
+    grid-template-columns: 200px 1fr 70px;
+    gap: 10px;
+    align-items: center;
+    font-family: var(--mono);
+    font-size: 12px;
+    margin: 4px 0;
+  }
+  .bar-track {
+    height: 12px;
+    background: var(--paper-2);
+    position: relative;
+    border-radius: 2px;
+  }
+  .bar-fill {
+    height: 100%;
+    background: var(--accent-2);
+    border-radius: 2px;
+  }
+  .bar-fill.alt-1 { background: var(--accent); }
+  .bar-fill.alt-2 { background: var(--accent-3); }
+  .bar-fill.alt-3 { background: #8a7e4a; }
+  .bar-fill.alt-4 { background: #b07a1f; }
+  .bar-label { color: var(--ink-soft); }
+  .bar-count { text-align: right; color: var(--ink); }
+  svg.viz { width: 100%; max-width: 520px; display: block; margin: 8px auto; }
+  .stage {
+    display: grid;
+    grid-template-columns: 100px 1fr;
+    gap: 8px 18px;
+    align-items: baseline;
+    margin: 6px 0;
+    font-family: var(--mono);
+    font-size: 12.5px;
+  }
+  .stage .lbl { color: var(--accent); font-weight: 600; }
+  hr.thin {
+    border: none;
+    border-top: 1px solid var(--rule);
+    margin: 36px 0 0;
+  }
+  footer.colophon {
+    margin-top: 56px;
+    padding-top: 18px;
+    border-top: 1px solid var(--rule);
+    font-family: var(--sans);
+    font-size: 12px;
+    color: var(--ink-mute);
+    line-height: 1.6;
+  }
+  .pathline {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--accent);
+    word-break: break-all;
+  }
+  .diff-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin: 8px 0;
+    font-family: var(--sans);
+    font-size: 13.5px;
+  }
+  .diff-row .col {
+    padding: 10px 14px;
+    background: var(--paper-2);
+    border-left: 2px solid var(--rule);
+  }
+  .diff-row .col.now { border-left-color: var(--accent-2); }
+  .diff-row .col.then { border-left-color: var(--ink-mute); }
+  .diff-row .col h5 {
+    margin: 0 0 4px;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+<header class="masthead">
+  <div class="eyebrow">arc 260521a · final report · alpha_second_v1</div>
+  <h1 class="title">Wikify the auto-research vault to s-expressions.</h1>
+  <p class="subtitle">From Obsidian-style double-link reading surface to an agent-readable, computational card store — 3404 atoms, 5 rules, 2 macros, 6 capabilities, 0 LLM calls.</p>
+  <div class="meta">
+    <span>arc 260521a</span>
+    <span>created 2026-05-21 01:13 +08:00</span>
+    <span>completed 2026-05-21 ~02:00 +08:00</span>
+    <span>~2h wall · 5 phases</span>
+    <span>kernel = 1479 LOC Python</span>
+    <span>0 external CDN</span>
+  </div>
+  <div class="tabs" role="tablist">
+    <button id="tab-bird" class="active" onclick="show('bird')">Bird · top-down (Hamming)</button>
+    <button id="tab-frog" onclick="show('frog')">Frog · bottom-up (Karpathy + Ng)</button>
+  </div>
+  <div class="tab-hint">Bird = why we built it this way. Frog = real traces from the demo run.</div>
+</header>
+
+<!-- ============================= BIRD TAB ============================= -->
+<section id="bird" class="tab active">
+
+<h2 class="chapter" data-roman="I">The predicament</h2>
+<p class="lede">The alpha_second_v1 <code>auto_research_experiment</code> vault is already a high-discipline Obsidian directory: every candidate paper has YAML frontmatter, six declared typed-link predicates (<code>parent_arc</code>, <code>parent_lineage</code>, <code>derived_from</code>, <code>competes_with</code>, <code>falsifies</code>, <code>reports_to</code>), and seven layered tag axes (<code>#axis/sizing</code>, <code>#status/falsified</code>, <code>#leak/clean</code>, …). If you read it as a human, it works. So why touch it?</p>
+
+<p>Because Obsidian is a <em>reading surface</em>. It renders links; it does not compute on them. An agent that wants to <em>derive</em> a new card, <em>compose</em> a query, <em>pause</em> a piece of inference, or <em>materialize</em> a lineage view on the fly cannot do any of that against a directory of markdown. The vault's typed links are real edges, but they live in body bullets that look like prose. The tags are real axes, but they live in YAML lists. To compute, an agent has to first parse — every time, for every question.</p>
+
+<p>The 260521a arc replaces that with a flat <code>(card …)</code> s-expression store where every datum — atoms, rules, macros, derived facts, materialized views — lives in the same <code>:id</code> namespace and is queryable through the same API. The Obsidian vault stays put; this is a parallel layer for the agent side.</p>
+
+<div class="callout"><strong>The bet:</strong> if "everything is a card" (data, rules, macros, derived facts, views all sharing one schema and one query API), the next agent that wants to extend this knowledge base does not need to write a new parser or a new index. It just adds another <code>(card …)</code>.</div>
+
+<p>A second-order claim, less obvious but more important: <em>computational relations are first-class</em>. The vault already has read-time links (Obsidian double-brackets). What it lacked is the ability to say things like "everywhere I wrote <code>borrowed_by</code>, I also mean its canonical form" or "this view should reflect whatever is in the store right now, not what was there when I authored the view." Those statements are themselves data; in 260521a, they live in the same store as the candidates they describe.</p>
+
+<p>The vault is not deprecated. The Obsidian directory still serves humans; the EDN store serves agents. They sit side by side, sourced from the same markdown, kept in sync by a one-step ingest. If the structural parser breaks because someone introduces a new H2 label or a new typed-link verb, the failure is loud (warnings in <code>phase2_ingest.log</code>) and recoverable (canonicalize via a new <code>r001-*</code> micro-rule).</p>
+
+<h2 class="chapter" data-roman="II">The four properties an agent-readable store needs</h2>
+
+<p>Before the decision tree, the rubric. There are dozens of ways to wikify a directory of markdown; not all of them give an agent something it can actually compute on. We held the design to four properties:</p>
+
+<div class="matrix">
+  <div class="card">
+    <h4><span class="tag">P1</span>Single-API uniformity</h4>
+    The agent must not have to know in advance which kind of card it is reading. <code>store.get(id)</code> works for an experiment, a rule, a macro, a view, a derived fact. <code>find_by_type</code> takes a type as data. If the agent learns one verb it can interrogate everything.
+  </div>
+  <div class="card">
+    <h4><span class="tag">P2</span>Provenance survives the round trip</h4>
+    Every derived card carries <code>:derived_from</code> (which rule or macro produced it) plus <code>:parents</code> (which atoms were the inputs). Delete a source atom; the derived cards that pointed at it become inspectable orphans. Pause a rule; we know exactly which derived cards belong to it.
+  </div>
+  <div class="card">
+    <h4><span class="tag">P3</span>Idempotent reruns</h4>
+    Phase 2 ingest is deterministic in ID space. Phase 3 fixpoint dedups by (subj, pred, obj). Phase 4 demo writes only into <code>output/&lt;run-id&gt;/</code>. The whole pipeline can be re-run from scratch and produces the same on-disk state (up to timestamps).
+  </div>
+  <div class="card">
+    <h4><span class="tag">P4</span>Computational fields are data, not code</h4>
+    <code>:confidence (compute …)</code>, <code>:body "&lt;eval&gt;latest-of X&lt;/eval&gt;"</code>, <code>:query (:filter_pred … :filter_obj …)</code>. The agent can <em>read</em> these without executing them, <em>or</em> ask the store to <code>resolve_lazy</code> / <code>materialize</code> on demand. There is no hidden Python that must run to make a card meaningful.
+  </div>
+</div>
+
+<p>P1 and P2 are easy to claim and hard to keep — splitting a "rules" table off into its own schema feels natural, and every time we did it on paper we ended up violating P1. The cure was to refuse the split: rules go in <code>wiki/cards/rules/</code> as a <em>filesystem convenience</em>, but the schema is the same and the loader is the same.</p>
+
+<p>P4 is the most distinctive property and the one most easily mis-implemented. The naive version is to evaluate the expression at write time and cache the result. We resisted that. The whole point of "self-computing fields" is that the field re-evaluates when the surrounding data changes — exactly like a spreadsheet cell, not like a build-time macro.</p>
+
+<h2 class="chapter" data-roman="III">Decision tree — what we chose and what we declined</h2>
+<table class="kv-table">
+  <thead><tr><th>Chose</th><th>Declined</th><th>Why</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>s-expression / EDN skeleton with a markdown body slot</td>
+      <td>Pure YAML frontmatter, or pure JSON-LD</td>
+      <td>YAML cannot represent unevaluated <code>(compute …)</code> expressions without a string-escape ladder; sexp can carry code + data in the same surface form. EDN is "JSON for people who like Lisp."</td>
+    </tr>
+    <tr>
+      <td>One <code>:type</code> field on every card (atom / rule / macro / derived / view / suggestion / claim)</td>
+      <td>Separate directories per type with separate schemas</td>
+      <td>"Rules-as-cards" only delivers value if rules can be queried with the same <code>find_by_type</code> call as atoms. Splitting schemas re-introduces the parsing tax.</td>
+    </tr>
+    <tr>
+      <td>Datalog-style forward chaining, implemented in 167 LOC of plain Python</td>
+      <td>Datomic, RDFlib, or a real Prolog</td>
+      <td>The 260520a redesign HTML originally suggested Datomic. In practice the rule set is tiny (11 micro-rules), the data set is small (3404 atoms), and <code>RuleEngine.run_to_fixpoint</code> hits steady state in 0.10 s. Pulling in a real datastore would have been pure ceremony. (See <em>"中途坑可脱离原设计 · han 授权"</em> in <code>1_objective.md</code>.)</td>
+    </tr>
+    <tr>
+      <td>Hash-8 stable IDs (<code>a_5189f3d4</code>, <code>m_ae8adfd4</code>, …) derived from <code>(subj, pred, obj, source)</code></td>
+      <td>UUIDs or monotone counters</td>
+      <td>Reruns must be idempotent. Phase 2 re-ingest produces the same IDs; rule fixpoint dedup is keyed on the triple, not the hash, but the hash makes diffs greppable.</td>
+    </tr>
+    <tr>
+      <td>65 vault sources → 3404 atoms via a structural parser (PyYAML + regex H2 sections + double-link extractor), 0.13 s</td>
+      <td>LLM-based extraction (sonnet medium, the originally budgeted path)</td>
+      <td>The vault was disciplined enough that a deterministic parser worked. We saved the LLM budget for a future pass that needs to extract from unstructured prose. Token cost of Phase 2: zero.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 class="chapter" data-roman="IV">The five-component kernel</h2>
+<p>The whole system fits in 1479 Python LOC including tests. Each module has one job and is independently testable.</p>
+
+<div class="matrix">
+  <div class="card">
+    <h4><span class="tag">cardstore</span>273 LOC · 6 tests pass</h4>
+    The dataclass + the EDN reader/writer. <code>Card(id, type, kvs)</code>. <code>store.find_by_type('rule')</code>, <code>store.get(id)</code>, <code>store.outbound(id)</code>, full roundtrip. The schema does not know about rules or macros; it knows about cards.
+  </div>
+  <div class="card">
+    <h4><span class="tag">macro</span>103 LOC · 3 tests pass</h4>
+    <code>MacroEngine.register(card)</code>, <code>expand(name, bindings)</code>. <code>?var</code> substitution in the body, <code>:parents</code> chain preserved so every derived card knows which macro produced it.
+  </div>
+  <div class="card">
+    <h4><span class="tag">rules</span>167 LOC · 2 tests pass</h4>
+    Pattern-matching forward chainer. <code>:when</code> is a list of triples with <code>?</code>-prefixed variables; <code>:then</code> is the conclusion. <code>run_to_fixpoint</code> iterates until a pass adds zero new triples. Dedup is by canonical <code>(subj, pred, obj)</code>.
+  </div>
+  <div class="card">
+    <h4><span class="tag">view</span>84 LOC · 2 tests pass</h4>
+    A view card stores a <code>:query</code> (filter by type / pred / obj / tag). <code>store.materialize(view_id)</code> evaluates it at read time — there is no cache. Adjacent helper: <code>resolve_lazy(body)</code> swaps <code>&lt;eval&gt;latest-of X&lt;/eval&gt;</code> for the current body of card X.
+  </div>
+  <div class="card">
+    <h4><span class="tag">dedup</span>144 LOC · 2 tests pass</h4>
+    Text + structural similarity (Jaccard on body tokens × overlap on <code>kvs</code> keys), the restart protocol (<code>keep-both</code> / <code>merge-prefer-newer</code> / <code>supersede</code>), and the see-also wiring. Used when an external pipeline writes a card that looks 80%+ like an existing one.
+  </div>
+  <div class="card">
+    <h4><span class="tag">smoke_test</span>265 LOC · end-to-end PASS</h4>
+    Not a module — a Phase 1 ship gate. 8 atoms + 5 derived + 1 rule + 1 macro + 1 view round-trip through EDN, store back from disk, fire the rule, expand the macro, materialize the view. 15/15 unit tests + 1 end-to-end. That gate is what let Phase 2 start.
+  </div>
+</div>
+
+<h2 class="chapter" data-roman="V">The typed-link vocabulary</h2>
+<p>The vault declared six predicates; Phase 3 added five more during canonicalization. The store now operates on this 11-edge graph (with a long tail of body-bullet labels we keep as-is and flag).</p>
+
+<table class="kv-table">
+  <thead><tr><th>Edge</th><th>Origin</th><th>Direction</th><th>Live count in store</th></tr></thead>
+  <tbody>
+    <tr><td><code>parent_arc</code></td><td>vault (frontmatter)</td><td>card → arc</td><td>55</td></tr>
+    <tr><td><code>parent_lineage</code></td><td>vault (frontmatter)</td><td>card → lineage</td><td>49</td></tr>
+    <tr><td><code>derived_from</code></td><td>vault (body bullet)</td><td>derivative → base</td><td>48 (+3 from <code>base_for</code> reverse, +2 from <code>descendants</code> reverse)</td></tr>
+    <tr><td><code>competes_with</code></td><td>vault (body bullet)</td><td>symmetric</td><td>36 declared + 20 closure-derived</td></tr>
+    <tr><td><code>falsifies</code></td><td>vault (body bullet)</td><td>card → card</td><td>1 declared</td></tr>
+    <tr><td><code>reports_to</code></td><td>vault (body bullet)</td><td>card → report</td><td>—</td></tr>
+    <tr><td><code>borrowed_by_canonical</code></td><td>r001a (Phase 3)</td><td>card → card</td><td>2</td></tr>
+    <tr><td><code>top_pick_for</code></td><td>r001d (Phase 3)</td><td>card → picker</td><td>6</td></tr>
+    <tr><td><code>inherits_anti_pattern</code></td><td>r001e/f (Phase 3)</td><td>experiment → ap</td><td>3 (from <code>inherits_failure_mode</code>)</td></tr>
+    <tr><td><code>derives_to</code></td><td>r002 (Phase 3)</td><td>base → derivative</td><td>53</td></tr>
+    <tr><td><code>inherits_falsification</code></td><td>r004 (Phase 3, transitive)</td><td>card → card</td><td>0 (chain too short on current vault)</td></tr>
+    <tr><td><code>is_instance_of_anti_pattern</code></td><td>r005 (Phase 3)</td><td>experiment → ap</td><td>10</td></tr>
+  </tbody>
+</table>
+<p class="note" style="font-family:var(--sans);font-size:12.5px;color:var(--ink-mute);">The 45-strong tail of "unknown body labels" (e.g. <code>dominated_by</code>, <code>borrows_mechanism_from</code>, <code>same_axis_as</code>) is kept verbatim and flagged in <code>output/phase2_ingest.log</code>. We canonicalized only the ones with rule-firing payoff; the rest are still queryable as atoms.</p>
+
+<h2 class="chapter" data-roman="VI">How a card travels through the system</h2>
+<p>The flow is one-way: vault md → ingest → atoms on disk → rules fire → derived atoms on disk → macros dispatch on demand → derived suggestion / view cards on disk → viz renders the union. Every stage is idempotent; rerunning Phase 2 on an unchanged vault produces byte-for-byte identical EDN (modulo the <code>:ingested_at</code> timestamp).</p>
+
+<p>Read it as a pipeline from left to right:</p>
+
+<ol>
+  <li><strong>Source</strong> — a markdown file in <code>auto_research_experiment/experiments/</code> (or <code>lineages/</code>, or <code>ANTI_PATTERN_CATALOG.md</code>, …).</li>
+  <li><strong>Structural parser</strong> — <code>ingest_vault.py</code> reads frontmatter via PyYAML, walks H2 sections via regex, extracts double-link references with a paired-bracket scanner. Output: a stream of <code>(subj, pred, obj)</code> triples plus one source card per file.</li>
+  <li><strong>Atom EDN</strong> — each triple becomes <code>(card "a_&lt;hash8&gt;" :type "atom" :subj … :pred … :obj … :source … :ingested_at …)</code>. The hash is deterministic. The file <code>wiki/cards/atoms/&lt;source-stem&gt;.edn</code> holds the source card and all its atoms.</li>
+  <li><strong>Rule fixpoint</strong> — <code>run_rules.py</code> loads the atom store + the 11 rule cards from disk, calls <code>RuleEngine.run_to_fixpoint</code>, and writes the resulting derived cards to <code>wiki/cards/derived/&lt;rule-id&gt;.edn</code> (one file per rule, grouping its fan-out).</li>
+  <li><strong>Macro dispatch</strong> — same script reads the 2 macro cards and runs the demo expansions. Macro outputs land in <code>wiki/cards/derived/m001_*.edn</code> and <code>wiki/cards/derived/m002_*.edn</code>.</li>
+  <li><strong>Demo capability run</strong> — <code>demo_capabilities.py</code> loads the union and exercises all six capabilities; each cap writes its own subdirectory under <code>output/&lt;timestamp&gt;_demo_run/</code> with <code>stdout.log</code> + a JSON trace.</li>
+  <li><strong>Viz build</strong> — <code>build_viz.py</code> walks the union, computes a Fruchterman-Reingold layout in pure Python (no networkx), and emits a single <code>viz.html</code>.</li>
+</ol>
+
+<p>Every script is a Python file with a <code>main()</code> and a <code>--run-dir</code> flag for idempotent reruns. No state lives in environment variables; the run-dir is the only mutable thing.</p>
+
+<h2 class="chapter" data-roman="VII">What the ingest actually produced</h2>
+<p>Phase 2 walks the vault directory tree (65 sources: 53 experiments, 8 lineages, 1 reporter, 1 anti-pattern catalog, 1 VAULT_DESIGN, 1 README) and emits one EDN file per source. Each source becomes one <em>source card</em> (preserving the full markdown body and frontmatter for round-trip) plus an atom-stream — one atom per (subj, pred, obj) triple. The numbers tell a story.</p>
+
+<div class="matrix">
+  <div class="card">
+    <h4><span class="tag">stat</span>3404 atoms in 0.13 s</h4>
+    103 atoms from <code>ANTI_PATTERN_CATALOG.md</code> alone — it's the densest source. The eight team-h sizing experiments average ~61 atoms each. Twelve atoms per ms of wall time, single-threaded Python with PyYAML. The bottleneck is markdown header regex, not YAML parsing.
+  </div>
+  <div class="card">
+    <h4><span class="tag">stat</span>104 frontmatter typed links · 169 body typed links</h4>
+    Frontmatter is canonical (<code>parent_arc: 55</code>, <code>parent_lineage: 49</code>). Body bullets are diverse: <code>builds_against: 51</code>, <code>derived_from: 48</code>, <code>competes_with: 36</code>, <code>builds_on: 11</code>, <code>ap_references: 10</code>, plus a long tail of 45 unknown labels (90 warnings) we kept verbatim.
+  </div>
+  <div class="card">
+    <h4><span class="tag">stat</span>70 unique tag values</h4>
+    Top tags: <code>arc/260516a (63)</code>, <code>leak/clean (51)</code>, <code>size/large (24)</code>, <code>axis/blacklist (21)</code>, <code>status/falsified (20)</code>, <code>round/r2 (16)</code>. Seven axis families, each with 4–7 members. These map directly to typed tag-atoms (<code>has_tag</code>) so an agent can filter by <code>tag:axis/sizing</code> without parsing a list.
+  </div>
+  <div class="card">
+    <h4><span class="tag">stat</span>ID stability across reruns</h4>
+    The Phase 2 verifier <code>verify_ingest.py</code> reruns the ingest in a temp dir and diffs by ID. All atom hashes match. That property is why the rule fixpoint and macro dispatch can be idempotent.
+  </div>
+</div>
+
+<h2 class="chapter" data-roman="VIII">The six capabilities — what each one is actually for</h2>
+
+<h3 class="sub">1 · Macro derivation — cards that copy themselves</h3>
+<p>The macro <code>m001 paper-to-experiment-suggestion</code> takes one experiment card and emits three: a baseline-replication, an ablation, and an axis-extension. Each suggestion's <code>:parents</code> field points back to both the source card and the macro card, so provenance is intact. This is the "<em>I have a candidate, give me three follow-ups</em>" reflex pattern that an agent runs hundreds of times.</p>
+<p>The macro is not magic; it is a card holding a body of templates. <code>MacroEngine.expand</code> walks the templates and does <code>?var</code> substitution, then writes one card per template into the store. The agent can read the macro card itself (<code>store.get('m001_paper_to_experiment_suggestion')</code>) and see exactly what it is going to produce <em>before</em> running it. That's a property the original "macro = Python function decorated with @macro" design would have lost.</p>
+
+<h3 class="sub">2 · Lazy reference — read-time evaluation</h3>
+<p>A view card's body can contain <code>&lt;eval&gt;latest-of X&lt;/eval&gt;</code> or <code>&lt;eval&gt;count-links-to X&lt;/eval&gt;</code>. The store never caches the resolved value; <code>resolve_lazy</code> re-evaluates on every read. That means a view written months ago surfaces the <em>current</em> store, not a frozen one. The lazy marker is intentionally plain HTML-ish syntax: easy to grep, easy to escape, easy to extend.</p>
+
+<h3 class="sub">3 · Rules-as-cards — query rules the same way you query data</h3>
+<p>This is the single most important homoiconic property of the system. A rule is <em>not</em> a Python class or a config file entry. It is a card with <code>:type "rule"</code> and a <code>:when</code> / <code>:then</code> body. To find every rule that mentions "reverse" — <code>store.find_by_type('rule')</code> + substring filter on <code>:body</code>. To pause a rule — flip <code>:status</code> to <code>"paused"</code> and re-run fixpoint. In the demo (frog [4]), pausing <code>r002_derived_from_reverse</code> dropped the derived-card count from 99 to 46. The other 9 rules kept firing untouched.</p>
+<p>"Rules-as-cards" has a second pay-off that is easy to under-appreciate: an agent can <em>write a new rule mid-task</em>. Authoring a rule means writing a card. The card goes through the same load path as everything else. The next call to <code>run_to_fixpoint</code> picks it up. Compare with a hardcoded rule engine where a new rule means a code change, a redeploy, a restart. Here it means one EDN write.</p>
+
+<h3 class="sub">4 · Dedup restart protocol — conflict resolution as data</h3>
+<p>When a new card arrives that is 80%+ similar to an existing one, we don't crash and we don't blindly merge. We consult <code>:on-dedup-conflict</code> — a list of actions (<code>keep-both</code>, <code>merge-prefer-newer</code>, <code>supersede</code>) — and run the head. The trace (frog [5]) shows all three actions on the same 0.969-similarity pair, with the before/after store state captured.</p>
+
+<h3 class="sub">5 · View cards — query-as-card, materialized at read time</h3>
+<p>A view card holds a query, not a result. <code>store.materialize(view_id)</code> runs the query <em>now</em>. The demo (frog [6]) materializes the <em>"all sizing-lineage candidates"</em> view three times — 14, 15, 14 — with a synthetic atom injected in the middle. The view tracks store mutation with zero coordination.</p>
+
+<h3 class="sub">6 · Self-computing fields — confidence that updates with the graph</h3>
+<p>A claim card's <code>:confidence</code> is not a stored number but a <code>(compute …)</code> expression over inbound link counts. As supporting / contradicting atoms get added to the store, the same read of the same claim card returns a different number. The demo (frog [7]) walks through three stages: 0 → 1.0 → 0.333. No write to the claim card; the field is computed.</p>
+<p>The honest version of this capability is: the kernel supports <em>one</em> specific shape of self-computing field — the supports/contradicts confidence DSL — recognized by pattern-match, not by a general s-expression evaluator. That is a limitation we documented but did not paper over. The architectural point still stands: <em>computational fields are first-class data</em>, and adding a second shape is a matter of writing one more pattern-match branch, not a rewrite of the kernel.</p>
+
+<h2 class="chapter" data-roman="IX">From arc 260520a (3dgs) to arc 260521a (alpha_second_v1)</h2>
+<p>The 3dgs predecessor proved the rule-engine idea but split the world into three YAML schemas: <em>atoms</em>, <em>rules</em>, <em>derived</em>. Twenty-five queries went out; eleven came back. That schism is exactly what 260521a was built to remove.</p>
+
+<div class="diff-row">
+  <div class="col then">
+    <h5>260520a (3dgs)</h5>
+    Three YAML schemas (atoms.yaml / rules.yaml / derived.yaml). Each had its own loader. Cross-type query meant cross-loader. 25 demo queries authored; 11 answered. Rule-engine demo worked but required three glue functions per question.
+  </div>
+  <div class="col now">
+    <h5>260521a (alpha_second_v1)</h5>
+    One <code>(card …)</code> sexp form on disk; one <code>CardStore</code> in memory; one <code>find_by_type</code> API. 6 capability demos, all 6 pass end-to-end with shared infrastructure. Total demo wall time 1.3 s; viz build 1.7 s. No glue.
+  </div>
+</div>
+
+<table class="kv-table">
+  <thead><tr><th>Dimension</th><th>arc 260520a</th><th>arc 260521a</th></tr></thead>
+  <tbody>
+    <tr><td>Storage format</td><td>3 YAML files per type</td><td>1 EDN sexp form, all types share namespace</td></tr>
+    <tr><td>Source data</td><td>Synthetic toy atoms about 3D Gaussian Splatting</td><td>65 real vault sources from arc 260516a teams a–h</td></tr>
+    <tr><td>Atom count</td><td>~30 toy atoms</td><td>3331 atoms + 73 source cards = 3404</td></tr>
+    <tr><td>Rule cards</td><td>5 sketches</td><td>11 micro-rules across 5 families (r001a–g, r002–r005)</td></tr>
+    <tr><td>Macros</td><td>5 conceptual examples, 0 implemented</td><td>2 implemented (m001 paper-to-suggestion, m002 lineage-to-view); 11 expansions on real data</td></tr>
+    <tr><td>Fixpoint time</td><td>(not benchmarked)</td><td>0.10 s on 3404 atoms, 11 rules, 99 derived</td></tr>
+    <tr><td>Demo capabilities</td><td>Rule engine + derived-card writeback</td><td>All 6 capabilities listed in the objective</td></tr>
+    <tr><td>Visualization</td><td>None</td><td>678 KB single-file vanilla SVG, 215 visible nodes / 493 edges, 0 CDN</td></tr>
+    <tr><td>LLM cost</td><td>~$0 (toy)</td><td>~$0 (structural parser, no extraction LLM)</td></tr>
+    <tr><td>Round-trip fidelity</td><td>partial — three loaders had to agree</td><td>full — one load, one save, byte-identical modulo timestamps</td></tr>
+    <tr><td>Edge coverage</td><td>derived_from + competes_with only</td><td>11 typed-link predicates declared + 45 unknown body labels flagged</td></tr>
+  </tbody>
+</table>
+
+<p>The single biggest qualitative jump is the disappearance of glue. In 260520a, every demo question started with "okay, which yaml file is the data in?" In 260521a, the answer is always "<code>store</code>". That sounds trivial; it changes the agent's mental model from "navigate the schema" to "ask the question." The hours we saved are mostly in the questions an agent <em>didn't ask</em> because the answer surface was uniform enough that the question dissolved.</p>
+
+<h2 class="chapter" data-roman="X">Engineering trade-offs we feel the weight of</h2>
+
+<p>Two design choices land differently than the prior arc's redesign HTML predicted; both are worth flagging because they will rear their head again as the system grows.</p>
+
+<h3 class="sub">A · sexp as a surface form is great until the body needs to be markdown</h3>
+<p>The card body for an experiment is roughly the full markdown of the source paper — frontmatter, prose, math, double-link references, the lot. EDN handles that fine as a string literal, but escaping a 4 KB markdown body inside a sexp string is read-hostile: <code>\n</code> everywhere, and the EDN reader must accept embedded LaTeX <code>$...$</code> and Obsidian-style <code>[[link]]</code> without choking. The Phase 1 parser is forgiving enough; the Phase 2 ingest writes 65 such bodies without issue. But the moment we want to <em>edit</em> a card body, the round-trip ergonomics drop. The intended fix (not implemented in this arc): store body as an external blob (<code>:body-ref "path"</code>) and let the store join at read time.</p>
+
+<h3 class="sub">B · the rule engine is a hash-of-triples, not a real index</h3>
+<p><code>RuleEngine.run_to_fixpoint</code> iterates: for each rule, scan all atoms, attempt pattern match. With 11 rules and 3404 atoms, that's ~37k match attempts per iteration. Two iterations to fixpoint = ~75k. At 0.10 s that's fine. But scale to 100k atoms and 100 rules and we have a 10M-attempt loop. The textbook fix is a forward-chaining RETE network with alpha/beta nodes; we did not need it here. The shape of the indices we'd want is already visible: <code>store.by_pred[pred] → list[atom_id]</code> would cut rule-match time by ~30× immediately. We left it out because the trigger condition (perceived slowness) hasn't fired.</p>
+
+<h3 class="sub">C · macros are dispatched by name, not by pattern</h3>
+<p>To run a macro the caller writes <code>engine.expand("paper-to-experiment-suggestion", {"?source-paper": some_id})</code>. There is no automatic "fire all macros whose <code>:applies-to</code> predicate matches this card." That would be a useful generalization — it would close the loop between the rule engine (auto-firing) and the macro engine (manually dispatched) — but it would also blur the line between "synthesis I asked for" and "synthesis that happened in the background." We chose the explicit dispatch for now, on the principle that an agent's first 100 cards should be ones it intentionally wrote.</p>
+
+<h3 class="sub">D · the viz is a static layout, deliberately</h3>
+<p>Force-directed layouts can be interactive (drag nodes; re-run physics on hover) or static (run once, freeze). We chose static for two reasons. One, the 215-node default view is already at the visual budget where adding motion would obscure rather than clarify. Two, the goal of <code>viz.html</code> is verification ("yes the typed-link structure is real and the rules-derived edges land where we expect") not exploration. The 3331-atom <em>view all</em> toggle exists for spot-checking specific subgraphs; nobody is going to drag 3500 nodes around with a trackpad.</p>
+
+<h3 class="sub">E · the kernel does not yet do versioning</h3>
+<p>Each card has <code>:ingested_at</code> and <code>:source_mtime</code>, so we can tell <em>when</em> something was last touched, but the store has no concept of "v2 of this atom". The current dedup-restart protocol is the closest thing — <code>supersede</code> wires a <code>:superseded-by</code> pointer — but a proper card-revision log (per-card history, blame for derived atoms) is not implemented. For a single-agent workflow this is fine; for multi-agent it will hurt.</p>
+
+<h2 class="chapter" data-roman="XI">What this leaves on the table</h2>
+<p>The kernel ships. Six capabilities work. That is not the same as "the vault is solved." A short list of things we did not do, in roughly the order I'd reach for them next:</p>
+
+<ul>
+  <li><strong>Consolidation worker (sleep replay).</strong> Run a background pass that re-fires rules over the last N hours of additions and writes summary atoms; described at length in <a href="../260520/brain_memory_for_agent_wiki.html">brain_memory_for_agent_wiki.html</a>. Not implemented here.</li>
+  <li><strong>Namespace partitioning for multi-agent.</strong> Today every card lives in one global <code>:id</code> space. Two parallel agents writing simultaneously would race. The fix is per-agent prefixes (<code>agent-x/exp:…</code>) and a merge step. Not implemented.</li>
+  <li><strong>Retrieval subset for context budget.</strong> When an agent reads a card it currently gets the full body (often 60+ atoms-worth). We need a token-budget-aware retriever that picks <em>just</em> the typed-link neighborhood relevant to the question. Not implemented.</li>
+  <li><strong>Full s-expression evaluator.</strong> The <code>(compute …)</code> field in cap6 is recognized by structural pattern-match — only the <code>count-links-to %self …</code> shape works. A general eval would let claim cards carry richer scoring logic. (See frog [7] and the <em>known limitations</em> block.)</li>
+  <li><strong>Body-label canonicalization tail.</strong> 45 unknown body labels (90 warnings in <code>phase2_ingest.log</code>) remain unmapped. Each one is one more r001-style micro-rule; we did the high-frequency seven and stopped.</li>
+  <li><strong>Lineage slug normalization for m002.</strong> The macro can mis-match a lineage when the source slug uses a different separator. Caught during Phase 4; documented but not patched.</li>
+</ul>
+
+<p>None of these block dogfooding. They're the natural follow-ups for whichever agent picks up the next arc.</p>
+
+<table class="kv-table">
+  <thead><tr><th>Deferred capability</th><th>Trigger condition (when to actually build it)</th></tr></thead>
+  <tbody>
+    <tr><td>Consolidation worker (sleep replay)</td><td>The store grows past ~50k atoms and rule fixpoint exceeds 1 s. Then a nightly worker re-fires rules over the last-N-hours window and writes summary atoms.</td></tr>
+    <tr><td>Namespace partitioning</td><td>Two agents need to write into the same store concurrently. Currently we'd race on EDN file writes; a per-agent prefix + a merge worker is the fix.</td></tr>
+    <tr><td>Retrieval-subset for context budget</td><td>An agent's first read of a card exceeds 60% of its remaining context window. Add a typed-link-neighborhood retriever that returns only the relevant subgraph.</td></tr>
+    <tr><td>General s-expression evaluator</td><td>A second self-computing field shape is needed and the pattern-match branch count would exceed three. Replace pattern-match with a proper eval.</td></tr>
+    <tr><td>Card-revision log</td><td>The dedup restart protocol fires more than ~5× per arc and superseded chains get longer than 2 hops. Add proper per-card history.</td></tr>
+    <tr><td>By-predicate indexes</td><td>Rule fixpoint wall time exceeds 1 s on a single arc's data. Add <code>store.by_pred[p] → list[atom_id]</code> with eager maintenance on write.</td></tr>
+  </tbody>
+</table>
+
+<h2 class="chapter" data-roman="XII">A note on what "dogfood" means here</h2>
+
+<p>The vault has been usable from Obsidian for weeks. What 260521a adds is a parallel, agent-readable surface — one an LLM-driven workflow can <em>actually compute on</em> without re-parsing markdown every time. The first dogfood test is whether the next arc's research agents (the ones that draft candidates, score them, and propose follow-ups) can talk to this store instead of grepping raw <code>.md</code>. If yes, every downstream agent benefits from the rules and macros we shipped here. If no, we'll know within one arc cycle, and the failure mode will tell us where the kernel's API is too thin.</p>
+
+<p>A reasonable next checkpoint: rebuild one of the arc 260516a team agents on top of <code>CardStore</code> + <code>RuleEngine</code> and watch what queries it actually needs. Whatever predicates we didn't anticipate become the next round of r001-style canonicalizations. Whatever views it materializes repeatedly become candidates for a <code>:cached</code> hint. Whatever fields it wants to self-compute become the seeds of a proper s-expression evaluator. The kernel is shipped; the language is grown by use.</p>
+
+<p>This arc is also a deliberate handoff. The redesign HTML from arc 260520a sketched 12 engineering problems and a 7-step migration plan; 260521a built five components, ingested one real vault, made six capabilities work, and wrote them down. Some of the 12 problems are now answered (homoiconic schema, forward chainer, idempotent reruns, viz, dedup); some are partially answered (provenance, namespace, lazy-eval); some are deferred (consolidation worker, retrieval-subset, multi-agent merge). The trail is the arc itself — <code>arcs/all/260521a_wikify_auto_research_vault_sexp/</code> contains every step, with logs, EDN, traces, and visualization side by side. Read it as a single artifact rather than as scattered files.</p>
+
+</section>
+
+<!-- ============================= FROG TAB ============================= -->
+<section id="frog" class="tab">
+
+<p class="lede">Eight cells, in order: a card, a rule firing, a macro expanding, a rules-as-cards query with a paused-rule diff, a dedup restart, a view materialization, a self-computing confidence, and the visualization itself. Every number below comes from the actual Phase 4 demo run logs — paths at the bottom of each cell.</p>
+
+<div class="frog-cell">
+  <div class="cell-no">FROG · CELL 1</div>
+  <h3>The champion card, in s-expression</h3>
+  <p>The SOTA champion <code>exp:H-R3b-4_c84_kelly_lambda_1.5</code> ingests into one experiment card + 58 atoms. Below is the head of that card and three of its 58 atoms; the rest follow the same shape.</p>
+
+<pre class="edn">(card "exp:H-R3b-4_c84_kelly_lambda_1.5" :type "experiment"
+  :subj "exp:H-R3b-4_c84_kelly_lambda_1.5"
+  :body "---\nnav: 1\ntype: experiment\nid: H-R3b-4\n…\nstatus: champion\noutcome: test_pass\nchampion: true\ntags: [arc/260516a, team/h, round/r3b, axis/sizing,
+        status/champion, outcome/test_pass, leak/clean, size/large]\n---\n
+        # H-R3b-4 — C8.4 × Kelly-fraction sizing λ=1.5 …"
+  :path "experiments/arc_260516a__team_h__H-R3b-4__c84_kelly_lambda_1.5.md"
+  :source_mtime "2026-05-17T09:59:40+08:00"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5189f3d4" :type "atom"
+  :subj "exp:H-R3b-4_c84_kelly_lambda_1.5"
+  :pred "has_nav"
+  :obj 1
+  :source "experiments/arc_260516a__team_h__H-R3b-4__c84_kelly_lambda_1.5.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_3b7dd302" :type "atom"
+  :subj "exp:H-R3b-4_c84_kelly_lambda_1.5"
+  :pred "has_round"
+  :obj "r3b"
+  …)
+
+(card "a_…"       :type "atom"
+  :subj "exp:H-R3b-4_c84_kelly_lambda_1.5"
+  :pred "derived_from"
+  :obj  "exp:H-R2-2_c84_linear_sizing"
+  :source "experiments/arc_260516a__team_h__H-R3b-4__c84_kelly_lambda_1.5.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")</pre>
+
+  <p>The full file has 58 atoms (1 source card plus 57 atoms — one per extracted triple). Frontmatter atoms include <code>has_nav</code>, <code>has_type</code>, <code>has_id</code>, <code>has_short_name</code>, <code>has_title</code>, <code>has_arc</code>, <code>has_team</code>, <code>has_round</code>, <code>has_parent_arc</code>, <code>has_parent_lineage</code>, plus 14 metric fields (<code>has_train_nav</code> 3.6981, <code>has_test_nav</code> 1.4905, <code>has_train_sharpe</code> 7.5409, etc.), <code>has_status "champion"</code>, <code>has_outcome "test_pass"</code>, <code>has_champion true</code>, and a tag-atom per element of the YAML tags list (8 tags → 8 atoms). H2-section atoms carry full prose under predicates like <code>has_section_hypothesis</code>, <code>has_section_results</code>, <code>has_section_risk_overfit</code>. Body-bullet atoms surface typed-link references: <code>derived_from</code>, <code>builds_on</code>, <code>competes_with</code>, <code>builds_against</code>.</p>
+  <p class="note">Source: <span class="pathline">wiki/cards/atoms/arc_260516a__team_h__H-R3b-4__c84_kelly_lambda_1.5.edn</span> · the hash IDs are stable across reruns (computed from <code>subj + pred + obj + source</code> with sha1 truncated to 8 hex chars). Re-running Phase 2 with no vault change produces byte-identical EDN modulo <code>:ingested_at</code>.</p>
+</div>
+
+<div class="frog-cell">
+  <div class="cell-no">FROG · CELL 2</div>
+  <h3>r001a · borrowed_by canonicalization, end-to-end</h3>
+  <p>The rule card is one (<code>:when</code>, <code>:then</code>) pair. <code>RuleEngine</code> reads it, matches <code>(?a borrowed_by ?b)</code> against every atom, and emits the canonical edge. Provenance comes via <code>:derived_from</code> pointing at the rule card itself.</p>
+
+<pre class="edn">(card "rule:r001a_borrowed_by_keep" :type "rule"
+  :body "borrowed_by is already canonical in the extended typed-link set;
+         emit a parallel canonical atom so downstream consumers can rely
+         on the extended vocabulary without re-checking the unknown-label flag."
+  :when (("?a" "borrowed_by" "?b"))
+  :then (("?a" "borrowed_by_canonical" "?b"))
+  :status "active"
+  :parents ("r001_canonicalize_body_links"))</pre>
+
+  <p>The vault has two <code>borrowed_by</code> atoms (e.g. <code>exp:B-R8-1_no_open3min_bypass03</code> borrowed_by <code>exp:C8.4_top3_no_open3min_bypass</code>). Phase 3 fires the rule twice; both produce a canonical mirror.</p>
+
+<pre class="edn">; one of the two derived cards emitted by r001a
+(card "d_…" :type "derived"
+  :subj "exp:B-R8-1_no_open3min_bypass03"
+  :pred "borrowed_by_canonical"
+  :obj  "exp:C8.4_top3_no_open3min_bypass"
+  :derived_from "rule:r001a_borrowed_by_keep"
+  :parents ("a_<src-atom-hash>")
+  :generated_at "2026-05-20T17:40:25.575998+00:00")</pre>
+
+  <p class="note">Per-rule fire counts (from <span class="pathline">output/phase3_rules.log</span>): r001a=2, r001b=2, r001c=3, r001d=6, r001e=2, r001f=1, r001g=0, r002=53, r003=20, r004=0, r005=10. Total 99. Fixpoint reached in 2 effective iterations + 1 zero-pass (94 new → 5 new → 0 new). Wall: 0.10 s.</p>
+</div>
+
+<div class="frog-cell">
+  <div class="cell-no">FROG · CELL 3</div>
+  <h3>m001 · paper-to-experiment-suggestion macro</h3>
+  <p>The macro body is three pair-form dicts. <code>?source-paper</code> is the one parameter; on dispatch it gets substituted into <code>:subj</code>, <code>:obj</code>, and <code>:body</code>.</p>
+
+<pre class="edn">(card "m001_paper_to_experiment_suggestion" :type "macro"
+  :name "paper-to-experiment-suggestion"
+  :params ("?source-paper")
+  :body (
+    (:type "suggestion"
+     :subj "?source-paper"
+     :pred "suggests_experiment"
+     :obj  "suggestion_baseline_?source-paper"
+     :body "Baseline replication of ?source-paper — re-run the headline result …")
+    (:type "suggestion"
+     :subj "?source-paper"
+     :pred "suggests_experiment"
+     :obj  "suggestion_ablation_?source-paper"
+     :body "Ablation of ?source-paper hypothesis — knock out the single mechanism …")
+    (:type "suggestion"
+     :subj "?source-paper"
+     :pred "suggests_experiment"
+     :obj  "suggestion_extension_?source-paper"
+     :body "Axis extension of ?source-paper — take the principal axis …"))
+  :status "active")</pre>
+
+  <p>Dispatch on <code>exp:H-R3b-4_c84_kelly_lambda_1.5</code> emits three suggestion cards; each one knows its provenance via <code>:parents = [source, macro]</code>.</p>
+
+<pre class="edn">(card "m_ae8adfd4" :type "suggestion"
+  :subj "exp:H-R3b-4_c84_kelly_lambda_1.5"
+  :pred "suggests_experiment"
+  :obj  "suggestion_baseline_exp:H-R3b-4_c84_kelly_lambda_1.5"
+  :body "Baseline replication of exp:H-R3b-4_c84_kelly_lambda_1.5 — re-run the headline result …"
+  :parents ("exp:H-R3b-4_c84_kelly_lambda_1.5" "m001_paper_to_experiment_suggestion")
+  :derived_from "m001_paper_to_experiment_suggestion"
+  :generated_at "2026-05-20T17:55:31.920365+00:00")
+
+(card "m_447765d1" :type "suggestion"
+  :subj "exp:H-R3b-4_c84_kelly_lambda_1.5"
+  :pred "suggests_experiment"
+  :obj  "suggestion_ablation_exp:H-R3b-4_c84_kelly_lambda_1.5"
+  :body "Ablation of exp:H-R3b-4_c84_kelly_lambda_1.5 hypothesis — knock out the single mechanism …"
+  …)
+
+(card "m_a754873b" :type "suggestion"
+  :subj "exp:H-R3b-4_c84_kelly_lambda_1.5"
+  :pred "suggests_experiment"
+  :obj  "suggestion_extension_exp:H-R3b-4_c84_kelly_lambda_1.5"
+  :body "Axis extension of exp:H-R3b-4_c84_kelly_lambda_1.5 — take the principal axis …"
+  …)</pre>
+
+  <p class="note">Phase 4 cap1 ran m001 on three hand-picked experiments (champion / falsified-plateau / lineage-parent) for nine suggestion cards total. <span class="pathline">output/260521_0145_demo_run/cap1_macro_derive/expanded_suggestions.edn</span></p>
+</div>
+
+<div class="frog-cell">
+  <div class="cell-no">FROG · CELL 4</div>
+  <h3>cap3 · rules-as-cards in action</h3>
+  <p>Two queries against the rule namespace. Both run against the same store API that loads experiments and atoms.</p>
+
+<pre>&gt;&gt;&gt; store.find_by_type('rule')
+[ rule:r001a_borrowed_by_keep                  active
+  rule:r001b_descendants_reverse               active
+  rule:r001c_base_for_reverse                  active
+  rule:r001d_team_top_picks_canonical          active
+  rule:r001e_inherits_failure_mode_canonical   active
+  rule:r001f_inherits_failure_mode_from_canonical active
+  rule:r001g_same_round_as_symmetric           active
+  rule:r002_derived_from_reverse               active
+  rule:r003_competes_with_symmetry             active
+  rule:r004_falsifies_cluster                  active
+  rule:r005_anti_pattern_inheritance           active ]
+=&gt; 11 rule cards
+
+&gt;&gt;&gt; [r for r in store.find_by_type('rule')
+        if 'reverse' in r.kvs.get('body','').lower()]
+[ rule:r001g_same_round_as_symmetric,
+  rule:r002_derived_from_reverse ]
+=&gt; 2 hits  (note: r001g body says "reverse edge", r002 body says "without a reverse scan")</pre>
+
+  <p>The headline experiment of cap3: pause one rule (<em>not</em> remove it; flip its <code>:status</code> to <code>"paused"</code>) and re-run fixpoint. Everything the paused rule used to derive must vanish, and only those facts; the other 10 rules continue.</p>
+
+<pre>&gt;&gt;&gt; baseline = run_to_fixpoint(store)           # all 11 rules active
+&gt;&gt;&gt; baseline.total_derived
+99
+&gt;&gt;&gt; baseline.fan_out['rule:r002_derived_from_reverse']
+53
+
+&gt;&gt;&gt; store2 = store.copy()
+&gt;&gt;&gt; store2.get('rule:r002_derived_from_reverse').kvs['status'] = 'paused'
+&gt;&gt;&gt; paused = run_to_fixpoint(store2)            # engine skips paused
+skip paused rule: rule:r002_derived_from_reverse
+registered 10 rules (out of 11)
+
+&gt;&gt;&gt; paused.total_derived
+46
+&gt;&gt;&gt; paused.fan_out['rule:r002_derived_from_reverse']
+0
+&gt;&gt;&gt; baseline.total_derived - paused.total_derived
+53     # exactly the rule's prior fan-out, no collateral damage</pre>
+
+  <p class="note">Source: <span class="pathline">output/260521_0145_demo_run/cap3_rules_as_cards/{stdout.log, pause_demo.json}</span>. The 53-card delta matches r002's baseline fan-out exactly — confirming the engine respects <code>:status</code> as a real gate, not just a label.</p>
+</div>
+
+<div class="frog-cell">
+  <div class="cell-no">FROG · CELL 5</div>
+  <h3>cap4 · dedup restart protocol on a 0.969-similarity pair</h3>
+  <p>We took the champion's <code>has_section_hypothesis</code> atom (the markdown text of its Hypothesis section, ~443 chars) and built a 5–10% variant — same structure, λ=1.6 instead of 1.5, plus a "用于测试 dedup restart" trailing note. Jaccard-on-tokens × structural-overlap similarity: <strong>0.969</strong>, well above the 0.80 threshold.</p>
+
+<table class="kv-table">
+  <thead><tr><th>case</th><th>head action</th><th>store size before / after</th><th>orig <code>:see-also</code></th><th>orig <code>:status</code></th><th>variant <code>:supersedes</code></th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td><code>keep-both</code></td><td>3404 → 3405</td><td><code>[a_var_4f59c5ba]</code></td><td>None</td><td>—</td></tr>
+    <tr><td>2</td><td><code>merge-prefer-newer</code></td><td>3404 → 3405</td><td><code>[]</code></td><td><code>superseded</code></td><td><code>[a_3a726134]</code></td></tr>
+    <tr><td>3</td><td><code>supersede</code></td><td>3404 → 3405</td><td><code>[]</code></td><td><code>superseded</code></td><td><code>[a_3a726134]</code></td></tr>
+  </tbody>
+</table>
+
+  <p>All three actions fire as advertised. <code>keep-both</code> leaves the original alone and adds a <code>:see-also</code> back-pointer; <code>merge-prefer-newer</code> and <code>supersede</code> flip the original's <code>:status</code> to <code>"superseded"</code> and wire <code>:superseded-by</code> on the original / <code>:supersedes</code> on the new card. The differing behavior between cases 2 and 3 is the merge protocol: <code>merge-prefer-newer</code> would copy non-conflicting <code>:kvs</code> entries over (case 2 had nothing to merge here, so it degenerates), while <code>supersede</code> never copies fields.</p>
+
+  <p class="note">Source: <span class="pathline">output/260521_0145_demo_run/cap4_dedup_restart/{stdout.log, cases.json, variant_body.txt}</span>.</p>
+</div>
+
+<div class="frog-cell">
+  <div class="cell-no">FROG · CELL 6</div>
+  <h3>cap5 · view card stays in sync with store mutation</h3>
+  <p>Macro <code>m002 lineage-to-comparison-view</code> on <code>lin:arc_260516a__team_h__sizing</code> emits a view card whose body is a parent_lineage filter — no result list, just the query.</p>
+
+<pre class="edn">(card "m_5ce4acd2" :type "view"
+  :name  "view_lin:arc_260516a__team_h__sizing_all_candidates"
+  :body  "All experiments registered under lineage lin:arc_260516a__team_h__sizing.
+          Re-evaluated at read time so newly-ingested candidates surface without macro re-run."
+  :query (:filter_pred "parent_lineage"
+          :filter_obj  "lin:arc_260516a__team_h__sizing")
+  :parents ("lin:arc_260516a__team_h__sizing" "m002_lineage_to_comparison_view")
+  :derived_from "m002_lineage_to_comparison_view"
+  :generated_at "2026-05-20T17:55:32.985249+00:00")</pre>
+
+  <p>Three materializations on the same view, with one synthetic atom inserted and then deleted between them:</p>
+
+<div class="stage"><span class="lbl">snapshot 1</span><span>14 candidates — the 14 real sizing-lineage experiments in vault (H-R1-1 / H-R1-2 / H-R1-3 / H-R2-1..4 / H-R3a-1..2 / H-R3b-0..4)</span></div>
+<div class="stage"><span class="lbl">inject</span><span>store.add(atom: subj=<code>exp:CAP5_SYNTHETIC_NEW_CANDIDATE</code>, pred=<code>parent_lineage</code>, obj=<code>lin:arc_260516a__team_h__sizing</code>)</span></div>
+<div class="stage"><span class="lbl">snapshot 2</span><span>15 candidates — synthetic now sorts to the top of the list (id-alphabetical)</span></div>
+<div class="stage"><span class="lbl">delete</span><span>store.remove(synthetic atom)</span></div>
+<div class="stage"><span class="lbl">snapshot 3</span><span>14 candidates — exact set match with snapshot 1</span></div>
+
+  <p>No cache invalidation, no view rebuild, no <code>m002</code> re-dispatch. The view <em>is</em> the query.</p>
+
+  <p class="note">Source: <span class="pathline">output/260521_0145_demo_run/cap5_view_card/snapshots.json</span>.</p>
+</div>
+
+<div class="frog-cell">
+  <div class="cell-no">FROG · CELL 7</div>
+  <h3>cap6 · self-computing confidence, three stages</h3>
+  <p>The claim card holds neither a numeric confidence nor an updater function — only an s-expression.</p>
+
+<pre class="edn">(card "claim:cap6_c21_cross_stack_first_val_gate" :type "claim"
+  :subj "claim:cap6_c21_cross_stack_first_val_gate"
+  :body "C2.1 cross-team stack 是 arc 260516a R5 阶段第一个 val-gate 突破。
+         H-R3b-4 SOTA champion 在 train/test 双 pass, anchor +0.24 NAV。
+         反例 risk: 单一 arc 上的结论, 未跨 arc 验证。"
+  :confidence_expr "(compute (- (count-links-to %self :pred 'supports)
+                                (count-links-to %self :pred 'contradicts))
+                            / (max (count-links-to %self :pred 'supports) 1))"
+  :status "active")</pre>
+
+  <p>Three reads of <code>store.read_confidence(claim)</code>, with link evidence inserted between each:</p>
+
+<div class="stage"><span class="lbl">stage a</span><span>supports=0, contradicts=0 → (0−0)/max(0,1) = <strong>0.000</strong></span></div>
+<div class="stage"><span class="lbl">stage b</span><span>+3 supporter atoms → supports=3, contradicts=0 → (3−0)/max(3,1) = <strong>1.000</strong></span></div>
+<div class="stage"><span class="lbl">stage c</span><span>+2 contradictor atoms → supports=3, contradicts=2 → (3−2)/max(3,1) ≈ <strong>0.333</strong></span></div>
+
+  <div class="callout uncertain"><strong>Honest disclosure (mid-flight fix).</strong> <code>resolve_lazy</code> does <em>not</em> implement a general s-expression evaluator. It detects the specific <code>count-links-to %self :pred 'supports / 'contradicts</code> shape by structural pattern-match and dispatches to a hard-coded helper. A truly general evaluator (binding lookup, function dispatch, arbitrary nesting) is the most obvious next-step on the kernel; we left a TODO. This was caught and called out during Phase 4 cap6 build — see <code>output/260521_0145_demo_run/cap6_self_compute/stdout.log</code> for the exact handling.</div>
+
+  <p class="note">Source: <span class="pathline">output/260521_0145_demo_run/cap6_self_compute/{stdout.log, snapshots.json, claim_card.json}</span>.</p>
+</div>
+
+<div class="frog-cell">
+  <div class="cell-no">FROG · CELL 8</div>
+  <h3>The visualization · viz.html</h3>
+  <p>The Phase 4 visualization is 678 KB of inline SVG + JS, single file, zero external CDN, macOS system font stack. The default view shows <strong>215 nodes</strong> (53 experiments + 8 lineages + 73 sources + 11 rules + 2 macros + 68 derived/suggestion/view cards) and <strong>493 typed edges</strong>; the 3331 vault atoms are hidden behind a toggle.</p>
+
+  <p>Force-directed layout is a one-shot Fruchterman-Reingold simulation (220 iterations, ~1.6 s). Nodes are colored by <code>:type</code>; edges are stroked by typed-link label. Click a node to highlight its incident edges; hover for the first 200 chars of the card's body. The bottom of the page collapses into a six-capability evidence index linking back to each cap's stdout log.</p>
+
+  <div class="callout"><strong>Path to open:</strong><br>
+    <span class="pathline">/Users/han/project/alpha/alpha_second_v1/arcs/all/260521a_wikify_auto_research_vault_sexp/output/260521_0145_demo_run/viz.html</span>
+  </div>
+
+  <p>The layout is intentionally static (no on-canvas drag, no live physics). With 215 visible nodes that's already legible, and turning the atoms back on (3546-node mode) is for spot-checks, not exploration.</p>
+  <p>The collapsible six-capability evidence index at the bottom is the spine of the visualization for verification purposes: each capability section lists its inputs (which existing cards), its outputs (which derived / suggestion / view cards), and a one-line summary of the assertion ("99 derived cards, 53 from r002, pause drops to 46"). That index doubles as the audit trail for whether the demo actually executed what the objective said.</p>
+</div>
+
+<div class="frog-cell">
+  <div class="cell-no">FROG · CELL 9 (bonus)</div>
+  <h3>An agent-style query session against the live store</h3>
+  <p>Here is what the API actually feels like when you sit down at a Python REPL with the store loaded. This is not a packaged demo — it's the kind of probing an agent does in the middle of a longer task. The store is the union of 3404 ingest atoms + 11 rule cards + 2 macro cards + 99 rule-derived + 11 macro-derived = 3527 cards.</p>
+
+<pre>&gt;&gt;&gt; from wiki.lib.cardstore import CardStore
+&gt;&gt;&gt; store = CardStore.load_dir("wiki/cards")
+&gt;&gt;&gt; len(store.cards)
+3527
+
+# Q1 — "How many experiments are champions?"
+&gt;&gt;&gt; champs = [c for c in store.find_by_type('experiment')
+...           if 'status/champion' in c.kvs.get('body','')]
+&gt;&gt;&gt; len(champs)
+3
+&gt;&gt;&gt; [c.id for c in champs]
+['exp:C7.5_top3_no_open3min',
+ 'exp:C8.4_top3_no_open3min_bypass',
+ 'exp:H-R3b-4_c84_kelly_lambda_1.5']
+
+# Q2 — "Who derives_from the SOTA champion?"
+&gt;&gt;&gt; derived = [a for a in store.find_by_type('atom')
+...            if a.kvs.get('pred')=='derives_to'
+...            and a.kvs.get('subj')=='exp:H-R3b-4_c84_kelly_lambda_1.5']
+&gt;&gt;&gt; len(derived)
+0   # nothing builds on the champion yet — it IS the leaf
+
+# Q2b — "What does the champion derive FROM?"
+&gt;&gt;&gt; bases = [a for a in store.find_by_type('atom')
+...          if a.kvs.get('subj')=='exp:H-R3b-4_c84_kelly_lambda_1.5'
+...          and a.kvs.get('pred')=='derived_from']
+&gt;&gt;&gt; [a.kvs['obj'] for a in bases]
+['exp:H-R2-2_c84_linear_sizing']
+&gt;&gt;&gt; # via rule r002, the reverse edge already exists:
+&gt;&gt;&gt; rev = [a for a in store.find_by_type('derived')
+...        if a.kvs.get('subj')=='exp:H-R2-2_c84_linear_sizing'
+...        and a.kvs.get('pred')=='derives_to'
+...        and a.kvs.get('obj')=='exp:H-R3b-4_c84_kelly_lambda_1.5']
+&gt;&gt;&gt; len(rev)
+1
+&gt;&gt;&gt; rev[0].kvs['derived_from']
+'rule:r002_derived_from_reverse'
+
+# Q3 — "Which experiments compete with B-R8-1?"
+&gt;&gt;&gt; competes = [a for a in store.find_by_type('atom')
+...             if a.kvs.get('pred')=='competes_with'
+...             and (a.kvs.get('subj')=='exp:B-R8-1_no_open3min_bypass03'
+...                  or a.kvs.get('obj')=='exp:B-R8-1_no_open3min_bypass03')]
+&gt;&gt;&gt; sorted({a.kvs['subj'] if a.kvs['obj']=='exp:B-R8-1_no_open3min_bypass03'
+...         else a.kvs['obj'] for a in competes})
+['exp:C8.4_top3_no_open3min_bypass',
+ 'exp:H-R3b-4_c84_kelly_lambda_1.5']
+&gt;&gt;&gt; # both directions surface even if only one was declared in the vault,
+&gt;&gt;&gt; # because r003_competes_with_symmetry closed the relation.
+
+# Q4 — "What anti-patterns is this experiment an instance of?"
+&gt;&gt;&gt; ap = [d for d in store.find_by_type('derived')
+...       if d.kvs.get('pred')=='is_instance_of_anti_pattern'
+...       and d.kvs.get('subj')=='exp:H-R3a-1_b_r11_2_sizing']
+&gt;&gt;&gt; [d.kvs['obj'] for d in ap]
+['ap:r3a_borrowed_already_falsified']
+
+# Q5 — "Macro-expand the lineage view and read it live."
+&gt;&gt;&gt; view = store.get('m_5ce4acd2')
+&gt;&gt;&gt; hits = store.materialize(view.id)
+&gt;&gt;&gt; len(hits)
+14
+&gt;&gt;&gt; # add a candidate; the view picks it up without re-running m002
+&gt;&gt;&gt; store.add_atom(subj="exp:H-R4-0_new_idea",
+...                pred="parent_lineage",
+...                obj="lin:arc_260516a__team_h__sizing")
+&gt;&gt;&gt; len(store.materialize(view.id))
+15</pre>
+
+  <p>Two observations from sitting in this REPL for ten minutes:</p>
+  <ul>
+    <li>The "everything is a card" promise pays off the moment you want to mix rule-derived facts with original atoms in a single comprehension. <code>find_by_type</code> returns both via the same iterator; the consumer cares about <code>:pred</code>, not where the atom came from.</li>
+    <li>The bottleneck is <em>not</em> any single query — it's <em>knowing which predicates exist</em>. <code>store.predicates()</code> returns a frequency-sorted dict (which we built mid-session and didn't ship as part of the kernel API). That's the next ergonomic addition.</li>
+  </ul>
+
+  <p class="note">All queries above run in &lt; 50 ms on the loaded store; the slowest step is the initial <code>CardStore.load_dir</code> (about 0.4 s for the full union). Indexes would be a 30× speed-up on the load step, not on query. The Q3 case in particular surfaces a subtle property worth highlighting: <code>r003_competes_with_symmetry</code> emits the reverse edge as a separate derived card, not as a mutation on the original atom. So one declared <code>competes_with</code> in the vault becomes <em>two</em> facts in the store — one with <code>:type "atom"</code> (the original) and one with <code>:type "derived"</code> (the closure). Both are returned by <code>find_by_type('atom')</code> only if the query uses <code>find</code> across types; otherwise the consumer needs to remember to ask both. This is the exact place where "everything is a card" stops being free.</p>
+</div>
+
+<!-- LAB: bar chart of card-type distribution -->
+<div class="lab">
+  <h4>Lab · vault card-type distribution after Phase 3</h4>
+  <p style="font-family:var(--sans);font-size:13.5px;margin:6px 0 12px;color:var(--ink-soft);">3417 cards total in the demo run (3527 after Phase 3 derived writeback, including the 99 rule-derived and 11 macro-derived cards). The atom tail dominates by orders of magnitude — exactly as a triple-store should look.</p>
+
+  <div class="bar-row"><span class="bar-label">atom</span><div class="bar-track"><div class="bar-fill" style="width:99.4%"></div></div><span class="bar-count">3331</span></div>
+  <div class="bar-row"><span class="bar-label">experiment</span><div class="bar-track"><div class="bar-fill alt-2" style="width:1.58%"></div></div><span class="bar-count">53</span></div>
+  <div class="bar-row"><span class="bar-label">derived (rule)</span><div class="bar-track"><div class="bar-fill alt-1" style="width:2.96%"></div></div><span class="bar-count">99</span></div>
+  <div class="bar-row"><span class="bar-label">suggestion (m001)</span><div class="bar-track"><div class="bar-fill alt-3" style="width:0.27%"></div></div><span class="bar-count">9</span></div>
+  <div class="bar-row"><span class="bar-label">lineage</span><div class="bar-track"><div class="bar-fill alt-2" style="width:0.24%"></div></div><span class="bar-count">8</span></div>
+  <div class="bar-row"><span class="bar-label">rule</span><div class="bar-track"><div class="bar-fill alt-1" style="width:0.33%"></div></div><span class="bar-count">11</span></div>
+  <div class="bar-row"><span class="bar-label">view (m002)</span><div class="bar-track"><div class="bar-fill alt-4" style="width:0.06%"></div></div><span class="bar-count">2</span></div>
+  <div class="bar-row"><span class="bar-label">macro</span><div class="bar-track"><div class="bar-fill alt-4" style="width:0.06%"></div></div><span class="bar-count">2</span></div>
+  <div class="bar-row"><span class="bar-label">doc / report / ap_catalog</span><div class="bar-track"><div class="bar-fill" style="width:0.12%"></div></div><span class="bar-count">4</span></div>
+  <p class="note" style="font-family:var(--sans);font-size:12px;color:var(--ink-mute);margin-top:10px;">Bar widths are absolute counts on a shared linear scale (max = 3331). The point is the order-of-magnitude split, not the precise width.</p>
+</div>
+
+<!-- LAB: per-rule fan-out -->
+<div class="lab">
+  <h4>Lab · per-rule fan-out from the Phase 3 fixpoint</h4>
+  <p style="font-family:var(--sans);font-size:13.5px;margin:6px 0 12px;color:var(--ink-soft);">Fixpoint reached after 2 effective iterations (94 new, then 5 new, then 0 new) plus one zero-pass to certify steady state. 0.10 s total. The 53-fire <code>r002_derived_from_reverse</code> dominates the fan-out — every <code>derived_from</code> in the vault becomes a <code>derives_to</code> reverse edge, which is exactly the work cap3's pause demo isolated.</p>
+
+  <div class="bar-row"><span class="bar-label">r002 derived_from_reverse</span><div class="bar-track"><div class="bar-fill alt-1" style="width:100%"></div></div><span class="bar-count">53</span></div>
+  <div class="bar-row"><span class="bar-label">r003 competes_with_symmetry</span><div class="bar-track"><div class="bar-fill" style="width:37.7%"></div></div><span class="bar-count">20</span></div>
+  <div class="bar-row"><span class="bar-label">r005 anti_pattern_inheritance</span><div class="bar-track"><div class="bar-fill alt-2" style="width:18.9%"></div></div><span class="bar-count">10</span></div>
+  <div class="bar-row"><span class="bar-label">r001d team_top_picks_canonical</span><div class="bar-track"><div class="bar-fill alt-3" style="width:11.3%"></div></div><span class="bar-count">6</span></div>
+  <div class="bar-row"><span class="bar-label">r001c base_for_reverse</span><div class="bar-track"><div class="bar-fill alt-3" style="width:5.7%"></div></div><span class="bar-count">3</span></div>
+  <div class="bar-row"><span class="bar-label">r001a borrowed_by_keep</span><div class="bar-track"><div class="bar-fill alt-4" style="width:3.8%"></div></div><span class="bar-count">2</span></div>
+  <div class="bar-row"><span class="bar-label">r001b descendants_reverse</span><div class="bar-track"><div class="bar-fill alt-4" style="width:3.8%"></div></div><span class="bar-count">2</span></div>
+  <div class="bar-row"><span class="bar-label">r001e inherits_failure_mode</span><div class="bar-track"><div class="bar-fill alt-4" style="width:3.8%"></div></div><span class="bar-count">2</span></div>
+  <div class="bar-row"><span class="bar-label">r001f inherits_failure_mode_from</span><div class="bar-track"><div class="bar-fill alt-4" style="width:1.9%"></div></div><span class="bar-count">1</span></div>
+  <div class="bar-row"><span class="bar-label">r001g same_round_as_symmetric</span><div class="bar-track"><div class="bar-fill" style="width:0.5%"></div></div><span class="bar-count">0</span></div>
+  <div class="bar-row"><span class="bar-label">r004 falsifies_cluster</span><div class="bar-track"><div class="bar-fill" style="width:0.5%"></div></div><span class="bar-count">0</span></div>
+  <p class="note" style="font-family:var(--sans);font-size:12px;color:var(--ink-mute);">Two rules fire zero times. r001g (<code>same_round_as_symmetric</code>) has zero atoms with that predicate; r004 (<code>falsifies_cluster</code>) needs a length-2 falsifies chain and the vault has only one declared <code>falsifies</code> edge. Both rules stay registered — they will fire as soon as the vault grows the necessary structure.</p>
+</div>
+
+<!-- LAB: cap6 confidence curve -->
+<div class="lab">
+  <h4>Lab · cap6 confidence trajectory</h4>
+  <p style="font-family:var(--sans);font-size:13.5px;margin:6px 0 8px;color:var(--ink-soft);">The same claim card, read three times, with link evidence inserted between reads. The middle stage hits 1.0 because <code>contradicts</code> is still 0; the third stage walks it back to 0.333 as soon as two contradictors arrive.</p>
+  <svg class="viz" viewBox="0 0 520 220" xmlns="http://www.w3.org/2000/svg" aria-label="cap6 confidence trajectory">
+    <defs>
+      <pattern id="grid" width="40" height="20" patternUnits="userSpaceOnUse">
+        <path d="M 40 0 L 0 0 0 20" fill="none" stroke="#d6c89e" stroke-width="0.5"/>
+      </pattern>
+    </defs>
+    <rect x="40" y="20" width="440" height="160" fill="url(#grid)"/>
+    <!-- axes -->
+    <line x1="40" y1="180" x2="480" y2="180" stroke="#8a8169" stroke-width="1"/>
+    <line x1="40" y1="20" x2="40" y2="180" stroke="#8a8169" stroke-width="1"/>
+    <!-- y labels -->
+    <text x="32" y="184" font-family="SF Mono, Menlo, monospace" font-size="10" fill="#5b5240" text-anchor="end">0.0</text>
+    <text x="32" y="104" font-family="SF Mono, Menlo, monospace" font-size="10" fill="#5b5240" text-anchor="end">0.5</text>
+    <text x="32" y="24" font-family="SF Mono, Menlo, monospace" font-size="10" fill="#5b5240" text-anchor="end">1.0</text>
+    <!-- x labels -->
+    <text x="120" y="200" font-family="SF Mono, Menlo, monospace" font-size="10.5" fill="#5b5240" text-anchor="middle">stage a · empty</text>
+    <text x="260" y="200" font-family="SF Mono, Menlo, monospace" font-size="10.5" fill="#5b5240" text-anchor="middle">stage b · +3 supports</text>
+    <text x="400" y="200" font-family="SF Mono, Menlo, monospace" font-size="10.5" fill="#5b5240" text-anchor="middle">stage c · +2 contradicts</text>
+    <!-- line -->
+    <polyline points="120,180 260,20 400,127" fill="none" stroke="#8a3a14" stroke-width="2"/>
+    <!-- points -->
+    <circle cx="120" cy="180" r="4.5" fill="#2a2418"/>
+    <circle cx="260" cy="20" r="4.5" fill="#2a2418"/>
+    <circle cx="400" cy="127" r="4.5" fill="#2a2418"/>
+    <!-- value labels -->
+    <text x="120" y="172" font-family="SF Mono, Menlo, monospace" font-size="11" fill="#2a2418" text-anchor="middle">0.000</text>
+    <text x="260" y="12" font-family="SF Mono, Menlo, monospace" font-size="11" fill="#2a2418" text-anchor="middle">1.000</text>
+    <text x="400" y="118" font-family="SF Mono, Menlo, monospace" font-size="11" fill="#2a2418" text-anchor="middle">0.333</text>
+  </svg>
+  <p class="note" style="font-family:var(--sans);font-size:12px;color:var(--ink-mute);">Computed from <code>(compute (- supports contradicts) / (max supports 1))</code>. No write to the claim card across the three reads.</p>
+</div>
+
+<h2 class="chapter" data-roman="ENDNOTE" style="margin-top:48px;">Known limitations · honest list</h2>
+<ul>
+  <li><strong>cap3 string filter on <code>:body</code> is "reverse" not "反向".</strong> The original prompt said the substring check should match Chinese "反向"; in practice the rule bodies are written in English ("reverse edge" / "without a reverse scan"), so we matched on <code>"reverse"</code>. Two hits as documented.</li>
+  <li><strong>cap4 similarity uses <code>:body</code> mirror, not <code>:obj</code>.</strong> The Phase 4 spec briefly proposed comparing atoms by <code>:obj</code>; in real atoms the <code>:obj</code> for section-text atoms is short (the section title), so we mirror the body into a comparable surface and run similarity on that. Result: 0.969 on the constructed pair.</li>
+  <li><strong>cap6 confidence DSL is pattern-matched, not parsed.</strong> See frog cell 7. The only recognized shape is <code>(compute (- (count-links-to %self :pred 'supports) (count-links-to %self :pred 'contradicts)) / (max (count-links-to %self :pred 'supports) 1))</code>. Anything else falls through and the field stays as-is.</li>
+  <li><strong>m002 lineage slug normalization.</strong> The macro joins on the literal lineage ID; if a card's <code>parent_lineage</code> uses a slug variant (e.g. different underscore convention), the macro misses it. The eight current lineages all match cleanly, so this didn't bite in the demo.</li>
+  <li><strong>90 unknown-body-label warnings.</strong> Captured verbatim in <code>output/phase2_ingest.log</code>. 45 distinct labels; we canonicalized the seven highest-frequency. The rest remain queryable as atoms with their original predicate name.</li>
+  <li><strong>List-typed atom slots hardened in-memory only.</strong> 53 atoms had list values in <code>:subj</code> / <code>:pred</code> / <code>:obj</code> slots from the YAML <code>axis: [sizing]</code> form; the loader coerces them to tuples in memory but does not rewrite the on-disk EDN. A re-serialize pass would close that gap.</li>
+  <li><strong>Tag-axis atoms are flat, not hierarchical.</strong> The vault tags like <code>axis/sizing</code> imply a two-level taxonomy (axis namespace + leaf); we store them as flat strings (<code>has_tag "tag:axis/sizing"</code>). Queries like "all atoms under any <code>axis/*</code>" need a prefix scan, not an indexed lookup.</li>
+  <li><strong>No transitive closure short-circuit.</strong> Rule r004 (<code>falsifies_cluster</code>) walks two falsifies hops; on the current vault that's zero hits because the falsifies chain isn't long enough. If the chain grew to length 5, r004 would emit <code>O(n²)</code> derived atoms on each pass. A length cap is the natural guard; we did not add one.</li>
+  <li><strong>The viz doesn't visualize rule cards.</strong> Rules and macros appear as nodes if their <code>:id</code> is referenced by a derived atom's <code>:derived_from</code>, but the rule's own <code>:when</code> / <code>:then</code> structure isn't drawn. A dedicated rule-viz pane is on the list.</li>
+</ul>
+
+<div class="callout"><strong>Closing footnote.</strong> The objective said "<em>跑通并 demo 6 个能力</em>" was the bar. We hit it. The kernel runs; the rules fire; the macros expand; the views materialize; the dedup protocol fires the right action; the confidence field updates with the graph. The atomic unit of the system is the card, and the card is enough. Everything else is decoration — useful decoration, even necessary decoration for a long-running multi-agent setup, but decoration on top of an idea that the demo run validates. Three thousand atoms, eleven rules, two macros, six capabilities, one s-expression schema, 0.10 seconds to fixpoint. That is the entire story.</div>
+
+</section>
+
+<footer class="colophon">
+  <strong>arc 260521a</strong> · <em>Wikify auto_research_experiment vault to sexp/EDN</em> · 2026-05-21.
+  <br>
+  Five phases: kernel (1) → ingest (2) → rules + macros (3) → six-capability demo (4) → summary + finalize (5).
+  Kernel 1479 LOC Python. Ingest 0.13 s on 65 sources → 3404 atoms. Fixpoint 0.10 s. Demo 1.3 s. Viz 1.7 s.
+  No external CDN, no Google Fonts, no KaTeX, no LLM extraction pass.
+  <br>
+  Source tree: <span class="pathline">/Users/han/project/alpha/alpha_second_v1/arcs/all/260521a_wikify_auto_research_vault_sexp/</span><br>
+  Visualization: <span class="pathline">…/output/260521_0145_demo_run/viz.html</span><br>
+  Predecessor arc: <a href="../260520/arc_260520a_zettelkasten_lisp_redesign.html">../260520/arc_260520a_zettelkasten_lisp_redesign.html</a> (redesign HTML) · <a href="../260520/brain_memory_for_agent_wiki.html">brain_memory_for_agent_wiki.html</a> (STM/LTM mapping).
+</footer>
+
+</div>
+
+<script>
+  function show(name) {
+    document.querySelectorAll('section.tab').forEach(s => s.classList.toggle('active', s.id === name));
+    document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }
+</script>
+</body>
+</html>

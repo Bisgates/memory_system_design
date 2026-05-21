@@ -1,0 +1,195 @@
+(card "lin:arc_260516a__team_d__cross_source_consensus" :type "lineage"
+  :subj "lin:arc_260516a__team_d__cross_source_consensus"
+  :body "---\ntype: lineage_overview\nteam: d\narc: 260516a\nstatus: plateau\npeak_train_nav: 2.8566\npeak_test_nav: null\nrounds_done: 2\ncandidates_total: 7\nchampions: 1\ntags: [vault/lineage, team/d, arc/260516a, status/plateau, axis/cross_source, axis/blacklist, axis/default_admit, caveat/train_pass_test_fail]\n---\n\n# Team D — cross-source consensus lineage (arc 260516a)\n\n> Team D 在 R1 单维 cross-source post-filter（\"被外部源 echo 越多 → 越好\"）被**实证证伪**；R2 改框架转 \"default-admit + multi-blacklist stack\"，**D-R2-3 = arc 内唯一一条用 cross-source 维度替换 crowding 维度后 NAV 仍 +5% over Team B 同位 R10-4 的 stacked admission champion** (train 2.4235 / val 1.0659 / n=171)。但 hold-out 未 burn, train-pass-test-fail 风险标记中。\n\n## Round 演进时间线\n\n| Round | candidate | n | train NAV | val_nav | mean_ret | NAV champion |\n|---|---|---|---|---|---|---|\n| R1 | **D-R1-1** consensus_gte1 (keep lc_48h≥1) | 18 | 1.0585 | 1.0069 | 0.318% | ✗ (count fail + mean << anchor 0.564%) |\n| R1 | D-R1-2 isolated_keep (keep lc_24h==0) | 124 | 2.0927 | 1.0571 | 0.600% | ✗ (NAV fail, dropped 16 net-positive trades) |\n| R1 | D-R1-3 drop_full_consensus (drop lc_48h==2) | 129 | 2.1011 | 1.0574 | 0.580% | ✗ (NAV fail) |\n| R2 | D-R2-1 default_admit_baseline | 214 | 2.8566 | 1.0782 | 0.494% | ✗ (count > 180) |\n| R2 | D-R2-2 blacklist {lc_48h==2} | 204 | 2.8486 | 1.0785 | 0.517% | ✗ (count > 180) |\n| R2 | **D-R2-3 triple stack** (lc==2 ∪ open_3min ∪ low_amt q10) | 171 | **2.4235** | **1.0659** | 0.522% | **✓** |\n| R2 | D-R2-4 quad stack (R2-3 + crowd≥4) | 154 | 2.2257 | 1.0591 | 0.524% | ✗ (val_NAV 1.0591 < 1.0601 anchor) |\n\n## 决策点 / 反思\n\n- **R1 hypothesis 直接证伪**: \"cross-source echo → better alpha\" 反了。被外部源 echo 的 trade (D-R1-1) mean 0.318% << anchor 0.564%，**说明 echo 多的是\"被 leader_follower 同步抢入\"的 crowded trade, alpha 已被吸走**。这是 R1 最关键的 empirical 反转 —— 之前所有 design.md 假设的 \"consensus = signal validation\" 是错的。\n- **R1→R2 框架级 pivot**: 不再单维 post-filter, 改成 \"关闭 anchor 全部 gate（valid_threshold / arbitrage_threshold / baseline_max_avg / 8-bucket dynamic cap / open_3min skip）, default ADMIT, 只 用 lc_48h==2 ∪ open_3min ∪ low_amt q10 三栈 blacklist\"。**结构上和 Team B 的 admission-set 派同框架，但 axis 选择不同**：B 用 (no_open_3min + bypass)，D 用 (cross-source + open_3min + low_amt)。\n- **R2-1 vs R2-2** (default vs lc==2 drop): train NAV 几乎同 (2.857 vs 2.849, -0.3%), 但 D-R2-2 mean +2.3bp, val_NAV +0.003, Sharpe 6.61→6.75 略升。lc==2 drop 的 10 笔 trade 整体 net-positive (NAV slightly drops) but 高方差 (mean/win/sharpe up) —— **R1 falsification 在 default-admit 框架下被一定程度翻案**，cross-source-as-blacklist 是 mean-positive 的 trade-mix shift 而非 NAV-positive 减法。\n- **D-R2-3 = arc 内 cross-source 维度唯一突破**: train NAV 2.4235 > Team B R10-4 (2.301) **+5.4%**, val 1.066 > 1.061。区别：D-R2-3 (lc==2 ∪ open_3min ∪ low_amt q10) vs R10-4 (open_3min ∪ low_amt ∪ crowding≥4)，**cross-source 替换 crowding 维度 → +5% NAV**。\n- **D-R2-4 quad stack 退步**: 加入 crowding≥4 后 NAV 2.4235 → 2.2257 (-8%), val 1.059 < 1.060 anchor。**crowding 与 cross-source 干涉 negative**, drop 的 trade 是 net-positive —— blacklist stack 不是\"越多越好\"。\n- **future-data audit 0 violation across 1067 records**: 半开窗 `[t_entry−48h, t_entry)` + numpy mask, 事件 pre-load 后只 prefix-only query。\n- **OOM lesson**: R2-4 第一次 RLIMIT_AS=4GB crash, rerun D-R2-4 only 覆盖 audit, D-R2-1/2/3 共用同一 lookup → audit 对 4 个 candidate 全 valid。**memory budget 必须 plan for 后期 candidate 的 dataframe inflation**。\n\n## 跨 lineage 关系\n\n- **shared_axis_with**: [[arc_260516a__team_g__alt_csv_source_swap]] —— Team G R1 也用 cross-source consensus（strict 60-min half-open），同 D-R1-1 同 mechanism 都失败；两条 lineage 互相 falsify 单维 consensus hypothesis。Team G 用 alt source 替换主源, D 用 alt source 作 filter, 两边都死。\n- **shared_axis_with**: [[arc_260516a__team_b__blacklist_axis]] R5-4 (decrowd × side-aware C2.1 stack) —— 都属\"admission-set stack\" 设计派；D-R2-3 直接对位 B-R10-4，**cross-source 与 crowding 是 axis 替换关系不是叠加关系**。\n- **falsifies**: D-R1 hypothesis 与 [[arc_260516a__team_a__multi_axis_singleaxis_discipline]] C20 (recent_signal_flow_skip 30 min same-direction lookback) 的方向相同：**crowded trade alpha 已被吸走** 是两队共同发现。\n- **derived_from**: [[arc_260516a__team_anchor__anchor_g2__baseline]] — D-R2-1 default-admit 是 \"anchor 关掉所有 gate 后\" 的 raw pool。\n- **anti-pattern shared with**: [[arc_260516a__team_b__blacklist_axis]] R8/R9 —— train-pass-test-fail 风险标签（D-R2-3 hold-out 未 burn 但 mechanism 与 B-R8-x 结构相似, 同样 train-side stack-and-narrow，hold-out n 太小，预计 1.05-1.13 区间）。\n\n## 终态判定理由（plateau + caveat）\n\n1. **R1 单维 cross-source post-filter 已 empirically falsified**：consensus_gte1 mean 0.318% << anchor，cross-source 在原始 anchor pool 上是 reverse signal not positive signal。\n2. **R2 cross-source-as-blacklist 框架找到 1 个 NAV champion (D-R2-3)**, 但 4 候选只 1 个过 gate, 边际信号已被压紧 (D-R2-4 直接退步)。\n3. **stack 维度 ablation 未做 R3**：lc_48h window 调参 (24h/12h/72h) / single-leg contribution 未跑 —— Team D 在 R2 结束后没起 R3 (han 未派, status.md \"R3 建议\" 段写完但未 execute)。\n4. **train-pass-test-fail 风险**：hold-out 未 burn, 但 D-R2-3 train_nav 2.42 + val 1.07 同 Team B R8-1 (2.80 train / 1.13 anchor-tie test) 的 train-test 落差模式相似，sample-size n=9 不足以区分 alpha 真实存在 vs train-overfit。\n\n## For future sub-agent\n\n**不要重蹈：**\n\n1. **不要把 \"cross-source consensus\" 当 positive signal direction** —— 反了，consensus_gte1 mean 0.318% << anchor 0.564%, 被 echo 的是 crowded trade, alpha 已被吸走。Hypothesis 已 falsified by D-R1-1。\n2. **不要在 anchor 全 gate 开着的状态下 单维 post-filter cross-source** —— anchor 的 baseline_max_avg + open_3min 等 gate 已经吃掉了大部分 noise, 单维 post-filter 没空间。要做 cross-source 必须切到 default-admit 框架。\n3. **不要再 stack cross-source × crowding 同时叠加** —— D-R2-4 验证两者干涉 negative (NAV -8%)。两者是 axis 替换关系不是 axis 叠加关系。\n4. **不要 strict 60-min half-open consensus window** —— Team G R1-3 已验证同 mechanism count=27 (cap by anchor's volume gate) 且 NAV 1.0096 fail。\n5. **不要 lc_48h 窗口固化** —— window 调参 (24h/12h/72h) 未跑, 是潜在 productive 维度但容易 data-snoop；若做必须 pre-commit 3-point grid。\n6. **不要 budget < 8GB RAM** —— D-R2-4 RLIMIT_AS=4GB OOM 重跑, dataframe inflation 在 default-admit (214 trade) 比 anchor (140 trade) 显著。\n\n**可以继承：**\n\n1. **`default-admit + multi-blacklist stack` 框架** = arc 内 admission-set axis 的最 productive 设计模板（B 系 R7-4 / R8-1 + D-R2-3 + C-R7.5 都属此派）—— 比单维 post-filter productive 5-10x。\n2. **D-R2-3 配方 (lc_48h==2 ∪ open_3min ∪ low_amt q10)** = arc 内 cross-source 维度唯一过 NAV gate 的具体配方，可作 future arc cross-source 实验起点。\n3. **R1→R2 framework pivot 模板**: 单维 axis hypothesis 被反证后, 不要在同框架内 tweak 参数, 直接 pivot 到 \"全 gate 开 + 多 blacklist stack\" 重新构架 search space。\n4. **future-data audit 半开窗 `[t_entry−48h, t_entry)` + numpy mask + event pre-load + prefix-only query** —— 标准 leak-clean cross-source lookup pattern, 跨 arc 复用。\n5. **lc 分布观察 (lc=0:503, lc=2:62, lc=1:28 in 593 leg queries)**: 全 consensus 比 partial 多, 说明外部源（洛阳铲+盈立）高度同源, 不是独立信号。**未来 cross-source 实验设计必须先做 source-pair correlation profiling 再设 hypothesis**。\n6. **OOM lesson**: RLIMIT_AS=4GB 在 default-admit + N trades 200+ 时 inflate dataframe 会爆 —— 跨 arc copy 时记得 raise memory budget。\n\n## 备注\n\n- final report `team_d/output/round_2/_R2_report.html`。\n- R3 建议（lc window 调参 / stack 内三轴 ablation / 与 SPY contra/ticker rolling winrate q20 stack）已写但未 execute, 仍是 open R3 候选。\n- 与 Team C C7.5 比较：C7.5 train 3.03 win on top-K + no_open_3min, D-R2-3 train 2.42 win on cross-source + open_3min blacklist, 两条 lineage 走 different axis 到 different ceiling, **未 cross-team compose** —— C-R8 之后的 R9 candidate 列表里写了 \"C8.4 ∪ Team D 最新 mechanism\" 的 plan, 尚未执行。\n"
+  :path "lineages/arc_260516a__team_d__cross_source_consensus.md"
+  :source_mtime "2026-05-17T10:19:01+08:00"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a5245721" :type "atom"
+  :subj "lin:arc_260516a__team_d__cross_source_consensus"
+  :pred "has_type"
+  :obj "lineage_overview"
+  :source "lineages/arc_260516a__team_d__cross_source_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_8dd5108a" :type "atom"
+  :subj "lin:arc_260516a__team_d__cross_source_consensus"
+  :pred "has_team"
+  :obj "d"
+  :source "lineages/arc_260516a__team_d__cross_source_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_67791b98" :type "atom"
+  :subj "lin:arc_260516a__team_d__cross_source_consensus"
+  :pred "has_arc"
+  :obj "260516a"
+  :source "lineages/arc_260516a__team_d__cross_source_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_146ea2ab" :type "atom"
+  :subj "lin:arc_260516a__team_d__cross_source_consensus"
+  :pred "has_status"
+  :obj "plateau"
+  :source "lineages/arc_260516a__team_d__cross_source_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_bc24c475" :type "atom"
+  :subj "lin:arc_260516a__team_d__cross_source_consensus"
+  :pred "has_peak_train_nav"
+  :obj 2.8566
+  :source "lineages/arc_260516a__team_d__cross_source_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_cce2d776" :type "atom"
+  :subj "lin:arc_260516a__team_d__cross_source_consensus"
+  :pred "has_rounds_done"
+  :obj 2
+  :source "lineages/arc_260516a__team_d__cross_source_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_556819a8" :type "atom"
+  :subj "lin:arc_260516a__team_d__cross_source_consensus"
+  :pred "has_candidates_total"
+  :obj 7
+  :source "lineages/arc_260516a__team_d__cross_source_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_83ee25a8" :type "atom"
+  :subj "lin:arc_260516a__team_d__cross_source_consensus"
+  :pred "has_champions"
+  :obj 1
+  :source "lineages/arc_260516a__team_d__cross_source_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e1253c46" :type "atom"
+  :subj "lin:arc_260516a__team_d__cross_source_consensus"
+  :pred "has_tag"
+  :obj "tag:vault/lineage"
+  :source "lineages/arc_260516a__team_d__cross_source_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_fc65503b" :type "atom"
+  :subj "lin:arc_260516a__team_d__cross_source_consensus"
+  :pred "has_tag"
+  :obj "tag:team/d"
+  :source "lineages/arc_260516a__team_d__cross_source_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_770713f7" :type "atom"
+  :subj "lin:arc_260516a__team_d__cross_source_consensus"
+  :pred "has_tag"
+  :obj "tag:arc/260516a"
+  :source "lineages/arc_260516a__team_d__cross_source_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b2ba0217" :type "atom"
+  :subj "lin:arc_260516a__team_d__cross_source_consensus"
+  :pred "has_tag"
+  :obj "tag:status/plateau"
+  :source "lineages/arc_260516a__team_d__cross_source_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_00ac605b" :type "atom"
+  :subj "lin:arc_260516a__team_d__cross_source_consensus"
+  :pred "has_tag"
+  :obj "tag:axis/cross_source"
+  :source "lineages/arc_260516a__team_d__cross_source_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e9bfe3a6" :type "atom"
+  :subj "lin:arc_260516a__team_d__cross_source_consensus"
+  :pred "has_tag"
+  :obj "tag:axis/blacklist"
+  :source "lineages/arc_260516a__team_d__cross_source_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_68fd8f87" :type "atom"
+  :subj "lin:arc_260516a__team_d__cross_source_consensus"
+  :pred "has_tag"
+  :obj "tag:axis/default_admit"
+  :source "lineages/arc_260516a__team_d__cross_source_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_8ee43dc9" :type "atom"
+  :subj "lin:arc_260516a__team_d__cross_source_consensus"
+  :pred "has_tag"
+  :obj "tag:caveat/train_pass_test_fail"
+  :source "lineages/arc_260516a__team_d__cross_source_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f31f8469" :type "atom"
+  :subj "lin:arc_260516a__team_d__cross_source_consensus"
+  :pred "has_section_intro"
+  :obj "# Team D — cross-source consensus lineage (arc 260516a)\n\n> Team D 在 R1 单维 cross-source post-filter（\"被外部源 echo 越多 → 越好\"）被**实证证伪**；R2 改框架转 \"default-admit + multi-blacklist stack\"，**D-R2-3 = arc 内唯一一条用 cross-source 维度替换 crowding 维度后 NAV 仍 +5% over Team B 同位 R10-4 的 stacked admission champion** (train 2.4235 / val 1.0659 / n=171)。但 hold-out 未 burn, train-pass-test-fail 风险标记中。"
+  :source "lineages/arc_260516a__team_d__cross_source_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_be9f6361" :type "atom"
+  :subj "lin:arc_260516a__team_d__cross_source_consensus"
+  :pred "has_section_round_table"
+  :obj "| Round | candidate | n | train NAV | val_nav | mean_ret | NAV champion |\n|---|---|---|---|---|---|---|\n| R1 | **D-R1-1** consensus_gte1 (keep lc_48h≥1) | 18 | 1.0585 | 1.0069 | 0.318% | ✗ (count fail + mean << anchor 0.564%) |\n| R1 | D-R1-2 isolated_keep (keep lc_24h==0) | 124 | 2.0927 | 1.0571 | 0.600% | ✗ (NAV fail, dropped 16 net-positive trades) |\n| R1 | D-R1-3 drop_full_consensus (drop lc_48h==2) | 129 | 2.1011 | 1.0574 | 0.580% | ✗ (NAV fail) |\n| R2 | D-R2-1 default_admit_baseline | 214 | 2.8566 | 1.0782 | 0.494% | ✗ (count > 180) |\n| R2 | D-R2-2 blacklist {lc_48h==2} | 204 | 2.8486 | 1.0785 | 0.517% | ✗ (count > 180) |\n| R2 | **D-R2-3 triple stack** (lc==2 ∪ open_3min ∪ low_amt q10) | 171 | **2.4235** | **1.0659** | 0.522% | **✓** |\n| R2 | D-R2-4 quad stack (R2-3 + crowd≥4) | 154 | 2.2257 | 1.0591 | 0.524% | ✗ (val_NAV 1.0591 < 1.0601 anchor) |"
+  :source "lineages/arc_260516a__team_d__cross_source_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f8eeea12" :type "atom"
+  :subj "lin:arc_260516a__team_d__cross_source_consensus"
+  :pred "has_section_decisions_reflections"
+  :obj "- **R1 hypothesis 直接证伪**: \"cross-source echo → better alpha\" 反了。被外部源 echo 的 trade (D-R1-1) mean 0.318% << anchor 0.564%，**说明 echo 多的是\"被 leader_follower 同步抢入\"的 crowded trade, alpha 已被吸走**。这是 R1 最关键的 empirical 反转 —— 之前所有 design.md 假设的 \"consensus = signal validation\" 是错的。\n- **R1→R2 框架级 pivot**: 不再单维 post-filter, 改成 \"关闭 anchor 全部 gate（valid_threshold / arbitrage_threshold / baseline_max_avg / 8-bucket dynamic cap / open_3min skip）, default ADMIT, 只 用 lc_48h==2 ∪ open_3min ∪ low_amt q10 三栈 blacklist\"。**结构上和 Team B 的 admission-set 派同框架，但 axis 选择不同**：B 用 (no_open_3min + bypass)，D 用 (cross-source + open_3min + low_amt)。\n- **R2-1 vs R2-2** (default vs lc==2 drop): train NAV 几乎同 (2.857 vs 2.849, -0.3%), 但 D-R2-2 mean +2.3bp, val_NAV +0.003, Sharpe 6.61→6.75 略升。lc==2 drop 的 10 笔 trade 整体 net-positive (NAV slightly drops) but 高方差 (mean/win/sharpe up) —— **R1 falsification 在 default-admit 框架下被一定程度翻案**，cross-source-as-blacklist 是 mean-positive 的 trade-mix shift 而非 NAV-positive 减法。\n- **D-R2-3 = arc 内 cross-source 维度唯一突破**: train NAV 2.4235 > Team B R10-4 (2.301) **+5.4%**, val 1.066 > 1.061。区别：D-R2-3 (lc==2 ∪ open_3min ∪ low_amt q10) vs R10-4 (open_3min ∪ low_amt ∪ crowding≥4)，**cross-source 替换 crowding 维度 → +5% NAV**。\n- **D-R2-4 quad stack 退步**: 加入 crowding≥4 后 NAV 2.4235 → 2.2257 (-8%), val 1.059 < 1.060 anchor。**crowding 与 cross-source 干涉 negative**, drop 的 trade 是 net-positive —— blacklist stack 不是\"越多越好\"。\n- **future-data audit 0 violation across 1067 records**: 半开窗 `[t_entry−48h, t_entry)` + numpy mask, 事件 pre-load 后只 prefix-only query。\n- **OOM lesson**: R2-4 第一次 RLIMIT_AS=4GB crash, rerun D-R2-4 only 覆盖 audit, D-R2-1/2/3 共用同一 lookup → audit 对 4 个 candidate 全 valid。**memory budget 必须 plan for 后期 candidate 的 dataframe inflation**。"
+  :source "lineages/arc_260516a__team_d__cross_source_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_32a14451" :type "atom"
+  :subj "lin:arc_260516a__team_d__cross_source_consensus"
+  :pred "shared_axis_with"
+  :obj "lin:arc_260516a__team_g__alt_csv_source_swap"
+  :source "lineages/arc_260516a__team_d__cross_source_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f76e1c76" :type "atom"
+  :subj "lin:arc_260516a__team_d__cross_source_consensus"
+  :pred "shared_axis_with"
+  :obj "lin:arc_260516a__team_b__blacklist_axis"
+  :source "lineages/arc_260516a__team_d__cross_source_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a3d3f682" :type "atom"
+  :subj "lin:arc_260516a__team_d__cross_source_consensus"
+  :pred "falsifies"
+  :obj "lin:arc_260516a__team_a__multi_axis_singleaxis_discipline"
+  :source "lineages/arc_260516a__team_d__cross_source_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b25dcc24" :type "atom"
+  :subj "lin:arc_260516a__team_d__cross_source_consensus"
+  :pred "derived_from"
+  :obj "exp:anchor_g2_baseline"
+  :source "lineages/arc_260516a__team_d__cross_source_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_136f4e9d" :type "atom"
+  :subj "lin:arc_260516a__team_d__cross_source_consensus"
+  :pred "has_section_cross_lineage_relations"
+  :obj "- **shared_axis_with**: [[arc_260516a__team_g__alt_csv_source_swap]] —— Team G R1 也用 cross-source consensus（strict 60-min half-open），同 D-R1-1 同 mechanism 都失败；两条 lineage 互相 falsify 单维 consensus hypothesis。Team G 用 alt source 替换主源, D 用 alt source 作 filter, 两边都死。\n- **shared_axis_with**: [[arc_260516a__team_b__blacklist_axis]] R5-4 (decrowd × side-aware C2.1 stack) —— 都属\"admission-set stack\" 设计派；D-R2-3 直接对位 B-R10-4，**cross-source 与 crowding 是 axis 替换关系不是叠加关系**。\n- **falsifies**: D-R1 hypothesis 与 [[arc_260516a__team_a__multi_axis_singleaxis_discipline]] C20 (recent_signal_flow_skip 30 min same-direction lookback) 的方向相同：**crowded trade alpha 已被吸走** 是两队共同发现。\n- **derived_from**: [[arc_260516a__team_anchor__anchor_g2__baseline]] — D-R2-1 default-admit 是 \"anchor 关掉所有 gate 后\" 的 raw pool。\n- **anti-pattern shared with**: [[arc_260516a__team_b__blacklist_axis]] R8/R9 —— train-pass-test-fail 风险标签（D-R2-3 hold-out 未 burn 但 mechanism 与 B-R8-x 结构相似, 同样 train-side stack-and-narrow，hold-out n 太小，预计 1.05-1.13 区间）。"
+  :source "lineages/arc_260516a__team_d__cross_source_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_6c338a01" :type "atom"
+  :subj "lin:arc_260516a__team_d__cross_source_consensus"
+  :pred "has_section_终态判定理由_plateau_caveat"
+  :obj "1. **R1 单维 cross-source post-filter 已 empirically falsified**：consensus_gte1 mean 0.318% << anchor，cross-source 在原始 anchor pool 上是 reverse signal not positive signal。\n2. **R2 cross-source-as-blacklist 框架找到 1 个 NAV champion (D-R2-3)**, 但 4 候选只 1 个过 gate, 边际信号已被压紧 (D-R2-4 直接退步)。\n3. **stack 维度 ablation 未做 R3**：lc_48h window 调参 (24h/12h/72h) / single-leg contribution 未跑 —— Team D 在 R2 结束后没起 R3 (han 未派, status.md \"R3 建议\" 段写完但未 execute)。\n4. **train-pass-test-fail 风险**：hold-out 未 burn, 但 D-R2-3 train_nav 2.42 + val 1.07 同 Team B R8-1 (2.80 train / 1.13 anchor-tie test) 的 train-test 落差模式相似，sample-size n=9 不足以区分 alpha 真实存在 vs train-overfit。"
+  :source "lineages/arc_260516a__team_d__cross_source_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_41ea710c" :type "atom"
+  :subj "lin:arc_260516a__team_d__cross_source_consensus"
+  :pred "has_section_for_future_sub_agent"
+  :obj "**不要重蹈：**\n\n1. **不要把 \"cross-source consensus\" 当 positive signal direction** —— 反了，consensus_gte1 mean 0.318% << anchor 0.564%, 被 echo 的是 crowded trade, alpha 已被吸走。Hypothesis 已 falsified by D-R1-1。\n2. **不要在 anchor 全 gate 开着的状态下 单维 post-filter cross-source** —— anchor 的 baseline_max_avg + open_3min 等 gate 已经吃掉了大部分 noise, 单维 post-filter 没空间。要做 cross-source 必须切到 default-admit 框架。\n3. **不要再 stack cross-source × crowding 同时叠加** —— D-R2-4 验证两者干涉 negative (NAV -8%)。两者是 axis 替换关系不是 axis 叠加关系。\n4. **不要 strict 60-min half-open consensus window** —— Team G R1-3 已验证同 mechanism count=27 (cap by anchor's volume gate) 且 NAV 1.0096 fail。\n5. **不要 lc_48h 窗口固化** —— window 调参 (24h/12h/72h) 未跑, 是潜在 productive 维度但容易 data-snoop；若做必须 pre-commit 3-point grid。\n6. **不要 budget < 8GB RAM** —— D-R2-4 RLIMIT_AS=4GB OOM 重跑, dataframe inflation 在 default-admit (214 trade) 比 anchor (140 trade) 显著。\n\n**可以继承：**\n\n1. **`default-admit + multi-blacklist stack` 框架** = arc 内 admission-set axis 的最 productive 设计模板（B 系 R7-4 / R8-1 + D-R2-3 + C-R7.5 都属此派）—— 比单维 post-filter productive 5-10x。\n2. **D-R2-3 配方 (lc_48h==2 ∪ open_3min ∪ low_amt q10)** = arc 内 cross-source 维度唯一过 NAV gate 的具体配方，可作 future arc cross-source 实验起点。\n3. **R1→R2 framework pivot 模板**: 单维 axis hypothesis 被反证后, 不要在同框架内 tweak 参数, 直接 pivot 到 \"全 gate 开 + 多 blacklist stack\" 重新构架 search space。\n4. **future-data audit 半开窗 `[t_entry−48h, t_entry)` + numpy mask + event pre-load + prefix-only query** —— 标准 leak-clean cross-source lookup pattern, 跨 arc 复用。\n5. **lc 分布观察 (lc=0:503, lc=2:62, lc=1:28 in 593 leg queries)**: 全 consensus 比 partial 多, 说明外部源（洛阳铲+盈立）高度同源, 不是独立信号。**未来 cross-source 实验设计必须先做 source-pair correlation profiling 再设 hypothesis**。\n6. **OOM lesson**: RLIMIT_AS=4GB 在 default-admit + N trades 200+ 时 inflate dataframe 会爆 —— 跨 arc copy 时记得 raise memory budget。"
+  :source "lineages/arc_260516a__team_d__cross_source_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_558966a1" :type "atom"
+  :subj "lin:arc_260516a__team_d__cross_source_consensus"
+  :pred "has_section_remarks"
+  :obj "- final report `team_d/output/round_2/_R2_report.html`。\n- R3 建议（lc window 调参 / stack 内三轴 ablation / 与 SPY contra/ticker rolling winrate q20 stack）已写但未 execute, 仍是 open R3 候选。\n- 与 Team C C7.5 比较：C7.5 train 3.03 win on top-K + no_open_3min, D-R2-3 train 2.42 win on cross-source + open_3min blacklist, 两条 lineage 走 different axis 到 different ceiling, **未 cross-team compose** —— C-R8 之后的 R9 candidate 列表里写了 \"C8.4 ∪ Team D 最新 mechanism\" 的 plan, 尚未执行。"
+  :source "lineages/arc_260516a__team_d__cross_source_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")

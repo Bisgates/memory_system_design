@@ -1,0 +1,181 @@
+(card "lin:arc_260516a__team_e__leader_profile" :type "lineage"
+  :subj "lin:arc_260516a__team_e__leader_profile"
+  :body "---\ntype: lineage_overview\nteam: e\narc: 260516a\nstatus: paused\npeak_train_nav: 2.1882\npeak_test_nav: null\nrounds_done: 1\ncandidates_total: 3\nchampions: 0\ntags: [vault/lineage, team/e, arc/260516a, status/paused, axis/leader_profile, axis/blacklist, anti_pattern/no_op_on_anchor_pool]\n---\n\n# Team E — leader profile lineage (arc 260516a)\n\n> Team E 设计是 \"学 leader (策略发起人) 的 quality profile → blacklist 历史 winrate 低的 leader\"。R1 schema reality 直接 block 主方向（`多空.csv` 没有 `leader_id` 列），pivot 到合成 leader proxy (ratio_bucket × side / ticker rolling q20 / ticker mean_ret_pos)。**3 candidate 全 no-op (bit-for-bit anchor 2.1882)** —— 根因是 anchor pipeline 已 pre-filter 掉 low-quality signatures，proxy filter 都不 bite。Lineage paused, R2 未 dispatch。\n\n## Round 演进时间线\n\n| Round | candidate | leader def | rule | dropped trades / 140 | train_nav | val_nav | NAV champion |\n|---|---|---|---|---|---|---|---|\n| R1 | E-R1-1 leader_ratio_bucket | (side, ratio_bucket) × 14d | past wr < 0.40 | **0** | 2.1882 | 1.0601 | ✗ (no-op) |\n| R1 | E-R1-2 leader_ticker_rolling_q20 | ticker × 30d | past wr ≤ rolling q20 | **0** | 2.1882 | 1.0601 | ✗ (no-op) |\n| R1 | E-R1-3 leader_ticker_mean_ret_pos | ticker × 30d | past mean_ret ≤ 0 | **0** | 2.1882 | 1.0601 | ✗ (no-op) |\n\n## 决策点 / 反思\n\n- **Schema reality 直接 block 原始 hypothesis**: 原 design 想做 `leader_id` aggregate (策略发起人 quality), 但 `多空.csv` 没有 `leader_id` / `source_account` / `from_account` / `account_id` 任何列 —— **数据集根本不暴露 leader identity**。\n- **Pivot to synthetic leader proxies**: ratio_bucket × side / ticker rolling q20 / ticker mean_ret_pos 三种合成 leader 定义, 都用 `floor(t_entry, '1D')` 边界 + `< dec_day_floor` strict past-only。\n- **6-axis future-data audit all PASS** (team_e/audit/round_1_audit.md): 设计上 leak-clean，filter 机制本身没问题。\n- **0/140 dropped trades** 三条 candidate 全部, 输出 leaderboard 行 bit-for-bit identical to anchor —— **filter 不 bite 的根因 (Findings § b)**：\n  - **数据稀疏**: 只有 14-22% decision 有 ≥5 prior trade in lookback window, cold-start 直接 fallthrough。\n  - **anchor 已 pre-filter to 85.7% winrate**: 没有 signature 落在 0.40 / q20 / 0 mean_ret threshold 之下 —— anchor pipeline 已经把\"低质量发起人\"过滤掉了。\n- **Mirrors Team C R6/R7 adversarial-leader (frequency-based) 100% no-op**: 同根因。\n- **R2 未 dispatch**: status.md \"Round 2 direction (recommendation)\" 段建议彻底 drop leader-profile theme, 转向 minute-of-day blacklist / SPY-contra detection / batch-confluence × side cross blacklist / default-admit + 新 blacklist axis。\n\n## 跨 lineage 关系\n\n- **shares_anti_pattern_with**: [[arc_260516a__team_c__top_k_no_open3min]] R6-C6.2 adversarial-leader + R7-C7.4 adversarial ≥2/10min —— 都是 frequency-based leader-profile filter, 100% no-op (max recurrence threshold 不 hit), 同根因。\n- **shares_anti_pattern_with**: [[arc_260516a__team_c__top_k_no_open3min]] R6-C6.3 ticker N=20 base-rate + R7-C7.3 ticker N=30 —— 都是 cold-start fallthrough 主导, marginal at best (≤1 trade 差)。\n- **falsifies sister-hypothesis**: 与 [[arc_260516a__team_d__cross_source_consensus]] R1 (consensus = signal validation) 同模式 —— \"信号源 quality profile\" 类 hypothesis 在此 anchor pool 上全是 wrong direction or no-op。\n- **proposed pivot**: status.md 推荐转 [[arc_260516a__team_b__blacklist_axis]] / [[arc_260516a__team_d__cross_source_consensus]] R2 同款 \"default-admit + 新 blacklist axis\"。\n- **anchor 共享**: [[arc_260516a__team_anchor__anchor_g2__baseline]] —— 3 candidate 全 bit-for-bit reproduce anchor 2.1882/1.0601。\n\n## 终态判定理由（paused）\n\n1. **Schema reality block**: 原 hypothesis (`leader_id` aggregate) 数据集不支持, pivot 到 proxy 后机制不 bite。\n2. **3 候选全 0 dropped trades**: filter 100% no-op, 不是数字略低或微小 lift —— 是 **structurally inactive**。\n3. **anchor pipeline 已 pre-filter**: Team C R6/R7 同款 mechanism 也 100% no-op, 跨队 reproducible 证明这是 anchor pool 的 ceiling 不是 filter implementation bug。\n4. **R2 未 dispatch**: 没有 R2/R3 在 status.md 出现, 表明 host agent 接受 lineage 失败结论, 没有派后续 round。\n5. **paused (not falsified)**: 因为 hypothesis \"leader quality 可学\" 本身没被证伪 —— 只是在 *anchor 已 pre-filter 的 pool 上* 无 incremental signal。下游 default-admit pool 上可能仍有信号（未测试）。\n\n## For future sub-agent\n\n**不要重蹈：**\n\n1. **不要在 anchor pre-filtered pool 上 做 frequency-based / winrate-based leader filter** —— Team E R1 全 3 + Team C R6/R7 全 2 一共 5 个 candidate 反证 5 次, anchor 85.7% winrate ceiling 是结构性的, 没 signature 在 0.40/q20/0-mean_ret 之下。\n2. **不要 ticker N=10/20/30 cold-start rolling base-rate without warmup fallback** —— 14-22% decision 在 lookback window 内不到 5 prior trade, 大量 fallthrough 让 filter 几乎 100% no-op。\n3. **不要假设 `多空.csv` 有 leader identity 列** —— schema reality block, leader_id / source_account / from_account / account_id 全 absent。设计前必须 schema check 先行。\n4. **不要重复 frequency-based adversarial-leader axis** —— Team C R6-C6.2 / R7-C7.4 已 100% no-op (max recurrence=1, threshold ≥3 never hit), 同根因。\n\n**可以继承：**\n\n1. **Past-only `floor(t_entry, '1D')` + `< dec_day_floor` strict 模板** —— audit 上一致 pass, 是 leak-clean leader-profile aggregation 的 reference pattern。\n2. **R2 pivot 方向建议保留**：minute-of-day blacklist (anchor 只 touch 09:30-09:33 open_3min, 其他 minute 未探), SPY-contra detection at decision t, batch-confluence × side cross blacklist, default-admit + 新 blacklist axis —— **任何走\"profile leader\"的 future arc 必须先切到 default-admit pool 才有 signal space**。\n3. **schema check 优先 hypothesis design**: design 之前先 `head -1 多空.csv` 看真实列, 不要照 PRD 假设 schema。\n4. **3-candidate 一齐 no-op = 强信号 not noise** —— bit-for-bit identical to anchor 是 mechanism inactive 的 unambiguous evidence, 比 marginal lift 更值得作 falsification 证据写进 vault。\n\n## 备注\n\n- report `output/team_e_R1_report_20260516T183821Z.html`。\n- final test slice 未触碰 (无 candidate 值得 burn)。\n- Team E 是 arc 内**唯一一支只跑 1 轮就 pause 的队伍** —— 早期数据现实 + cross-team reproducible no-op 让 host agent 提前关账，节省 R2 token budget。\n- 历史教训值得 propagate 给跨 arc：**任何\"profile X by past behavior\" 假设在 pre-filtered pool 上都要先 prove filter 会 bite, 否则直接 no-op**。\n"
+  :path "lineages/arc_260516a__team_e__leader_profile.md"
+  :source_mtime "2026-05-17T10:19:51+08:00"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_affa0986" :type "atom"
+  :subj "lin:arc_260516a__team_e__leader_profile"
+  :pred "has_type"
+  :obj "lineage_overview"
+  :source "lineages/arc_260516a__team_e__leader_profile.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_046b63a7" :type "atom"
+  :subj "lin:arc_260516a__team_e__leader_profile"
+  :pred "has_team"
+  :obj "e"
+  :source "lineages/arc_260516a__team_e__leader_profile.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_3ecba2de" :type "atom"
+  :subj "lin:arc_260516a__team_e__leader_profile"
+  :pred "has_arc"
+  :obj "260516a"
+  :source "lineages/arc_260516a__team_e__leader_profile.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e05d084d" :type "atom"
+  :subj "lin:arc_260516a__team_e__leader_profile"
+  :pred "has_status"
+  :obj "paused"
+  :source "lineages/arc_260516a__team_e__leader_profile.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_8538e363" :type "atom"
+  :subj "lin:arc_260516a__team_e__leader_profile"
+  :pred "has_peak_train_nav"
+  :obj 2.1882
+  :source "lineages/arc_260516a__team_e__leader_profile.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_011db565" :type "atom"
+  :subj "lin:arc_260516a__team_e__leader_profile"
+  :pred "has_rounds_done"
+  :obj 1
+  :source "lineages/arc_260516a__team_e__leader_profile.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_8f5a38e0" :type "atom"
+  :subj "lin:arc_260516a__team_e__leader_profile"
+  :pred "has_candidates_total"
+  :obj 3
+  :source "lineages/arc_260516a__team_e__leader_profile.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d2c080d3" :type "atom"
+  :subj "lin:arc_260516a__team_e__leader_profile"
+  :pred "has_champions"
+  :obj 0
+  :source "lineages/arc_260516a__team_e__leader_profile.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_4ac3596f" :type "atom"
+  :subj "lin:arc_260516a__team_e__leader_profile"
+  :pred "has_tag"
+  :obj "tag:vault/lineage"
+  :source "lineages/arc_260516a__team_e__leader_profile.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_0deefee5" :type "atom"
+  :subj "lin:arc_260516a__team_e__leader_profile"
+  :pred "has_tag"
+  :obj "tag:team/e"
+  :source "lineages/arc_260516a__team_e__leader_profile.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9620e198" :type "atom"
+  :subj "lin:arc_260516a__team_e__leader_profile"
+  :pred "has_tag"
+  :obj "tag:arc/260516a"
+  :source "lineages/arc_260516a__team_e__leader_profile.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_74a64305" :type "atom"
+  :subj "lin:arc_260516a__team_e__leader_profile"
+  :pred "has_tag"
+  :obj "tag:status/paused"
+  :source "lineages/arc_260516a__team_e__leader_profile.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_afb3cf8b" :type "atom"
+  :subj "lin:arc_260516a__team_e__leader_profile"
+  :pred "has_tag"
+  :obj "tag:axis/leader_profile"
+  :source "lineages/arc_260516a__team_e__leader_profile.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_71c5dc4c" :type "atom"
+  :subj "lin:arc_260516a__team_e__leader_profile"
+  :pred "has_tag"
+  :obj "tag:axis/blacklist"
+  :source "lineages/arc_260516a__team_e__leader_profile.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5f9ed88d" :type "atom"
+  :subj "lin:arc_260516a__team_e__leader_profile"
+  :pred "has_tag"
+  :obj "tag:anti_pattern/no_op_on_anchor_pool"
+  :source "lineages/arc_260516a__team_e__leader_profile.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_3c90082c" :type "atom"
+  :subj "lin:arc_260516a__team_e__leader_profile"
+  :pred "has_section_intro"
+  :obj "# Team E — leader profile lineage (arc 260516a)\n\n> Team E 设计是 \"学 leader (策略发起人) 的 quality profile → blacklist 历史 winrate 低的 leader\"。R1 schema reality 直接 block 主方向（`多空.csv` 没有 `leader_id` 列），pivot 到合成 leader proxy (ratio_bucket × side / ticker rolling q20 / ticker mean_ret_pos)。**3 candidate 全 no-op (bit-for-bit anchor 2.1882)** —— 根因是 anchor pipeline 已 pre-filter 掉 low-quality signatures，proxy filter 都不 bite。Lineage paused, R2 未 dispatch。"
+  :source "lineages/arc_260516a__team_e__leader_profile.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_38e7c2f9" :type "atom"
+  :subj "lin:arc_260516a__team_e__leader_profile"
+  :pred "has_section_round_table"
+  :obj "| Round | candidate | leader def | rule | dropped trades / 140 | train_nav | val_nav | NAV champion |\n|---|---|---|---|---|---|---|---|\n| R1 | E-R1-1 leader_ratio_bucket | (side, ratio_bucket) × 14d | past wr < 0.40 | **0** | 2.1882 | 1.0601 | ✗ (no-op) |\n| R1 | E-R1-2 leader_ticker_rolling_q20 | ticker × 30d | past wr ≤ rolling q20 | **0** | 2.1882 | 1.0601 | ✗ (no-op) |\n| R1 | E-R1-3 leader_ticker_mean_ret_pos | ticker × 30d | past mean_ret ≤ 0 | **0** | 2.1882 | 1.0601 | ✗ (no-op) |"
+  :source "lineages/arc_260516a__team_e__leader_profile.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_523e2cb1" :type "atom"
+  :subj "lin:arc_260516a__team_e__leader_profile"
+  :pred "has_section_decisions_reflections"
+  :obj "- **Schema reality 直接 block 原始 hypothesis**: 原 design 想做 `leader_id` aggregate (策略发起人 quality), 但 `多空.csv` 没有 `leader_id` / `source_account` / `from_account` / `account_id` 任何列 —— **数据集根本不暴露 leader identity**。\n- **Pivot to synthetic leader proxies**: ratio_bucket × side / ticker rolling q20 / ticker mean_ret_pos 三种合成 leader 定义, 都用 `floor(t_entry, '1D')` 边界 + `< dec_day_floor` strict past-only。\n- **6-axis future-data audit all PASS** (team_e/audit/round_1_audit.md): 设计上 leak-clean，filter 机制本身没问题。\n- **0/140 dropped trades** 三条 candidate 全部, 输出 leaderboard 行 bit-for-bit identical to anchor —— **filter 不 bite 的根因 (Findings § b)**：\n  - **数据稀疏**: 只有 14-22% decision 有 ≥5 prior trade in lookback window, cold-start 直接 fallthrough。\n  - **anchor 已 pre-filter to 85.7% winrate**: 没有 signature 落在 0.40 / q20 / 0 mean_ret threshold 之下 —— anchor pipeline 已经把\"低质量发起人\"过滤掉了。\n- **Mirrors Team C R6/R7 adversarial-leader (frequency-based) 100% no-op**: 同根因。\n- **R2 未 dispatch**: status.md \"Round 2 direction (recommendation)\" 段建议彻底 drop leader-profile theme, 转向 minute-of-day blacklist / SPY-contra detection / batch-confluence × side cross blacklist / default-admit + 新 blacklist axis。"
+  :source "lineages/arc_260516a__team_e__leader_profile.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_98a5d7b5" :type "atom"
+  :subj "lin:arc_260516a__team_e__leader_profile"
+  :pred "shares_anti_pattern_with"
+  :obj "lin:arc_260516a__team_c__top_k_no_open3min"
+  :source "lineages/arc_260516a__team_e__leader_profile.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c2dc30f8" :type "atom"
+  :subj "lin:arc_260516a__team_e__leader_profile"
+  :pred "proposed_pivot"
+  :obj "lin:arc_260516a__team_b__blacklist_axis"
+  :source "lineages/arc_260516a__team_e__leader_profile.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_159ac2b0" :type "atom"
+  :subj "lin:arc_260516a__team_e__leader_profile"
+  :pred "proposed_pivot"
+  :obj "lin:arc_260516a__team_d__cross_source_consensus"
+  :source "lineages/arc_260516a__team_e__leader_profile.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_42b55492" :type "atom"
+  :subj "lin:arc_260516a__team_e__leader_profile"
+  :pred "has_section_cross_lineage_relations"
+  :obj "- **shares_anti_pattern_with**: [[arc_260516a__team_c__top_k_no_open3min]] R6-C6.2 adversarial-leader + R7-C7.4 adversarial ≥2/10min —— 都是 frequency-based leader-profile filter, 100% no-op (max recurrence threshold 不 hit), 同根因。\n- **shares_anti_pattern_with**: [[arc_260516a__team_c__top_k_no_open3min]] R6-C6.3 ticker N=20 base-rate + R7-C7.3 ticker N=30 —— 都是 cold-start fallthrough 主导, marginal at best (≤1 trade 差)。\n- **falsifies sister-hypothesis**: 与 [[arc_260516a__team_d__cross_source_consensus]] R1 (consensus = signal validation) 同模式 —— \"信号源 quality profile\" 类 hypothesis 在此 anchor pool 上全是 wrong direction or no-op。\n- **proposed pivot**: status.md 推荐转 [[arc_260516a__team_b__blacklist_axis]] / [[arc_260516a__team_d__cross_source_consensus]] R2 同款 \"default-admit + 新 blacklist axis\"。\n- **anchor 共享**: [[arc_260516a__team_anchor__anchor_g2__baseline]] —— 3 candidate 全 bit-for-bit reproduce anchor 2.1882/1.0601。"
+  :source "lineages/arc_260516a__team_e__leader_profile.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_2972d47a" :type "atom"
+  :subj "lin:arc_260516a__team_e__leader_profile"
+  :pred "has_section_终态判定理由_paused"
+  :obj "1. **Schema reality block**: 原 hypothesis (`leader_id` aggregate) 数据集不支持, pivot 到 proxy 后机制不 bite。\n2. **3 候选全 0 dropped trades**: filter 100% no-op, 不是数字略低或微小 lift —— 是 **structurally inactive**。\n3. **anchor pipeline 已 pre-filter**: Team C R6/R7 同款 mechanism 也 100% no-op, 跨队 reproducible 证明这是 anchor pool 的 ceiling 不是 filter implementation bug。\n4. **R2 未 dispatch**: 没有 R2/R3 在 status.md 出现, 表明 host agent 接受 lineage 失败结论, 没有派后续 round。\n5. **paused (not falsified)**: 因为 hypothesis \"leader quality 可学\" 本身没被证伪 —— 只是在 *anchor 已 pre-filter 的 pool 上* 无 incremental signal。下游 default-admit pool 上可能仍有信号（未测试）。"
+  :source "lineages/arc_260516a__team_e__leader_profile.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f813b265" :type "atom"
+  :subj "lin:arc_260516a__team_e__leader_profile"
+  :pred "has_section_for_future_sub_agent"
+  :obj "**不要重蹈：**\n\n1. **不要在 anchor pre-filtered pool 上 做 frequency-based / winrate-based leader filter** —— Team E R1 全 3 + Team C R6/R7 全 2 一共 5 个 candidate 反证 5 次, anchor 85.7% winrate ceiling 是结构性的, 没 signature 在 0.40/q20/0-mean_ret 之下。\n2. **不要 ticker N=10/20/30 cold-start rolling base-rate without warmup fallback** —— 14-22% decision 在 lookback window 内不到 5 prior trade, 大量 fallthrough 让 filter 几乎 100% no-op。\n3. **不要假设 `多空.csv` 有 leader identity 列** —— schema reality block, leader_id / source_account / from_account / account_id 全 absent。设计前必须 schema check 先行。\n4. **不要重复 frequency-based adversarial-leader axis** —— Team C R6-C6.2 / R7-C7.4 已 100% no-op (max recurrence=1, threshold ≥3 never hit), 同根因。\n\n**可以继承：**\n\n1. **Past-only `floor(t_entry, '1D')` + `< dec_day_floor` strict 模板** —— audit 上一致 pass, 是 leak-clean leader-profile aggregation 的 reference pattern。\n2. **R2 pivot 方向建议保留**：minute-of-day blacklist (anchor 只 touch 09:30-09:33 open_3min, 其他 minute 未探), SPY-contra detection at decision t, batch-confluence × side cross blacklist, default-admit + 新 blacklist axis —— **任何走\"profile leader\"的 future arc 必须先切到 default-admit pool 才有 signal space**。\n3. **schema check 优先 hypothesis design**: design 之前先 `head -1 多空.csv` 看真实列, 不要照 PRD 假设 schema。\n4. **3-candidate 一齐 no-op = 强信号 not noise** —— bit-for-bit identical to anchor 是 mechanism inactive 的 unambiguous evidence, 比 marginal lift 更值得作 falsification 证据写进 vault。"
+  :source "lineages/arc_260516a__team_e__leader_profile.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9f415adb" :type "atom"
+  :subj "lin:arc_260516a__team_e__leader_profile"
+  :pred "has_section_remarks"
+  :obj "- report `output/team_e_R1_report_20260516T183821Z.html`。\n- final test slice 未触碰 (无 candidate 值得 burn)。\n- Team E 是 arc 内**唯一一支只跑 1 轮就 pause 的队伍** —— 早期数据现实 + cross-team reproducible no-op 让 host agent 提前关账，节省 R2 token budget。\n- 历史教训值得 propagate 给跨 arc：**任何\"profile X by past behavior\" 假设在 pre-filtered pool 上都要先 prove filter 会 bite, 否则直接 no-op**。"
+  :source "lineages/arc_260516a__team_e__leader_profile.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")

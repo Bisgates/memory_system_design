@@ -1,0 +1,363 @@
+(card "exp:anchor_g2_baseline" :type "experiment"
+  :subj "exp:anchor_g2_baseline"
+  :body "---\nnav: 0\ntype: experiment\nid: anchor_G2\nshort_name: baseline\ntitle: \"Anchor — G2 default (new-split SOTA reference baseline)\"\narc: 260516a\nteam: anchor\nround: anchor\nparent_arc: \"[[arcs/260516a]]\"\nparent_lineage: null\ntrain_nav: 2.1882\ntrain_trade_count: 140\ntrain_win_rate: 0.8571\ntrain_sharpe: 7.6980\ntrain_max_drawdown: -0.0101\nval_nav_mean: 1.0601\nval_nav_sigma: 0.0809\nval_window_count: 13\ntest_nav: 1.2486\ntest_trade_count: 20\ntest_sharpe: 7.1522\ntest_win_rate: 0.7500\ntest_max_drawdown: -0.0053\nanchor_train_nav: 2.1882\nanchor_test_nav: 1.2486\nstatus: anchor\noutcome: test_pass\nchampion: false\noverfit_score: 0\nleak_audit: clean\naxis: [baseline]\npast_only_window_days: null\nwarmup_required: null\ncreated: 2026-05-16T18:59:00\nlast_updated: 2026-05-17T01:50:00\ntags: [arc/260516a, team/anchor, round/anchor, axis/baseline, status/anchor, outcome/test_pass, leak/clean, size/medium]\n---\n\n# Anchor — G2 default (new-split SOTA reference baseline)\n\n> **TL;DR** —— alpha_second_v1 当前生产 SOTA（kernel_v3 G2 默认配置）在 arc 260516a 新 split 上的\"裸跑\"成绩。所有 candidate 必须严格胜过这一行才算 challenger / champion。**train NAV = 2.19, test NAV = 1.25**。\n\n## 假设 (Hypothesis)\n不是 hypothesis，是**参考点**。G2 是 kernel_v3 当前已 deploy 的 default config，commit `70c54eb`。arc 260516a 的全部 candidate 都以此为 anchor 做比较；ranking 主标尺 = 严格高的 NAV。\n\n## 实现 (Implementation)\n- G2 source: `/Users/han/project/alpha/alpha_second_v1/.worktrees/kernel_v3/experiments/g2_post_0209.py`\n- 跑法 script: `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/scripts/shared/run_anchor.py`\n- output 目录: `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/output/260516_1857_anchor/`\n- 关键 config（不动）：\n  - `baseline_max_avg` = 1,300,000\n  - `arbitrage_threshold` = 0.09\n  - `valid_threshold` = 0.04\n  - `horizon_seconds` = 65\n  - `fee` = 0.0003, `slippage` = 0.00148\n\n## Past-only window 处理\n- G2 默认不用 rolling stat。所有 admit 决策只看 t 时刻当下的 ratio / volume / leg 信息。**结构上没有 lookahead 风险**（critic 2026-05-16 audit pass）。\n\n## 结果 (Results)\n| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train (seg1+seg2) | 2.1882 | 140 | 7.70 | 85.7% | -1.01% |\n| Val (rolling 13w mean ± σ) | 1.0601 ± 0.0809 | - | - | - | - |\n| Test (hold-out 2026-05-01 → 05-15, eff 05-08) | 1.2486 | 20 | 7.15 | 75.0% | -0.53% |\n\nTrain mean_return_per_trade = 0.5636% ⇒ implied gate \"anchor train mean + 1σ noise floor\" ≈ 0.807% per-trade val mean。\n\n## 风险 & overfit 嫌疑\n- N/A（这是 baseline，不存在 overfit 的概念）\n- 仅记录：train 笔数 140 给出了 candidate count gate 的中心点 (`140 ± 30%` = 100-180)。\n\n## Lineage（双链网）\n- **descendants** (直接以本 anchor 为对照基准的所有 candidate)：\n  - [[arc_260516a__team_h__H-R3b-4__c84_kelly_lambda_1.5]] ← 当前 SOTA challenger\n  - [[arc_260516a__team_h__H-R2-2__c84_linear_sizing]]\n  - [[arc_260516a__team_c__C8.4__top3_no_open3min_bypass]]\n  - [[arc_260516a__team_b__B-R8-1__no_open3min_bypass03]]\n  - [[arc_260516a__team_d__D-R2-3__blacklist_stack_triple]]\n  - [[arc_260516a__team_f__F-R1-1__ofi_drop_extreme]]\n  - [[arc_260516a__team_g__G-R1-1__luoyangchan_solo]]\n\n## Reports\n- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/output/260516_1857_anchor/README.md`\n- [[arc_260516a__reporter_20260517_0547]]\n\n## Notes / 下次迭代\n- arc 260516a 给后续 anchor 留的 lessons：\n  1. **NAV 是 ranking 主标尺**，mean_return_per_trade 已降级为辅助 —— 下次开新 arc 直接以 NAV 排序，不要重蹈 mean-ranking 时代的尺度切换。\n  2. anchor 跑出来的 **val_nav_mean** 一定要算 13 个 rolling window，给 NAV gate 提供 σ；count gate 中心点取 anchor trade_count。\n  3. test 数据上限 effective_test_end (2026-05-08 in this arc) 一定要在 metadata 里显式记录，不能让 candidate test 数和 anchor test 数对不齐。\n"
+  :path "experiments/arc_260516a__team_anchor__anchor_g2__baseline.md"
+  :source_mtime "2026-05-17T09:58:47+08:00"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9b979cbf" :type "atom"
+  :subj "exp:anchor_g2_baseline"
+  :pred "has_nav"
+  :obj 0
+  :source "experiments/arc_260516a__team_anchor__anchor_g2__baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ce85ddab" :type "atom"
+  :subj "exp:anchor_g2_baseline"
+  :pred "has_type"
+  :obj "experiment"
+  :source "experiments/arc_260516a__team_anchor__anchor_g2__baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5de864bb" :type "atom"
+  :subj "exp:anchor_g2_baseline"
+  :pred "has_id"
+  :obj "anchor_G2"
+  :source "experiments/arc_260516a__team_anchor__anchor_g2__baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_cf910f89" :type "atom"
+  :subj "exp:anchor_g2_baseline"
+  :pred "has_short_name"
+  :obj "baseline"
+  :source "experiments/arc_260516a__team_anchor__anchor_g2__baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a6beb1b4" :type "atom"
+  :subj "exp:anchor_g2_baseline"
+  :pred "has_title"
+  :obj "Anchor — G2 default (new-split SOTA reference baseline)"
+  :source "experiments/arc_260516a__team_anchor__anchor_g2__baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_98de4613" :type "atom"
+  :subj "exp:anchor_g2_baseline"
+  :pred "has_arc"
+  :obj "260516a"
+  :source "experiments/arc_260516a__team_anchor__anchor_g2__baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_4c95fe66" :type "atom"
+  :subj "exp:anchor_g2_baseline"
+  :pred "has_team"
+  :obj "anchor"
+  :source "experiments/arc_260516a__team_anchor__anchor_g2__baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_439f30ad" :type "atom"
+  :subj "exp:anchor_g2_baseline"
+  :pred "has_round"
+  :obj "anchor"
+  :source "experiments/arc_260516a__team_anchor__anchor_g2__baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_10b408ae" :type "atom"
+  :subj "exp:anchor_g2_baseline"
+  :pred "parent_arc"
+  :obj "arc:260516a"
+  :source "experiments/arc_260516a__team_anchor__anchor_g2__baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1fc0308d" :type "atom"
+  :subj "exp:anchor_g2_baseline"
+  :pred "has_train_nav"
+  :obj 2.1882
+  :source "experiments/arc_260516a__team_anchor__anchor_g2__baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_7a39a778" :type "atom"
+  :subj "exp:anchor_g2_baseline"
+  :pred "has_train_trade_count"
+  :obj 140
+  :source "experiments/arc_260516a__team_anchor__anchor_g2__baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_aaf37b2c" :type "atom"
+  :subj "exp:anchor_g2_baseline"
+  :pred "has_train_win_rate"
+  :obj 0.8571
+  :source "experiments/arc_260516a__team_anchor__anchor_g2__baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a479aa37" :type "atom"
+  :subj "exp:anchor_g2_baseline"
+  :pred "has_train_sharpe"
+  :obj 7.698
+  :source "experiments/arc_260516a__team_anchor__anchor_g2__baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_2b29a1b3" :type "atom"
+  :subj "exp:anchor_g2_baseline"
+  :pred "has_train_max_drawdown"
+  :obj -0.0101
+  :source "experiments/arc_260516a__team_anchor__anchor_g2__baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_8732384a" :type "atom"
+  :subj "exp:anchor_g2_baseline"
+  :pred "has_val_nav_mean"
+  :obj 1.0601
+  :source "experiments/arc_260516a__team_anchor__anchor_g2__baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_beba2872" :type "atom"
+  :subj "exp:anchor_g2_baseline"
+  :pred "has_val_nav_sigma"
+  :obj 0.0809
+  :source "experiments/arc_260516a__team_anchor__anchor_g2__baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a21469af" :type "atom"
+  :subj "exp:anchor_g2_baseline"
+  :pred "has_val_window_count"
+  :obj 13
+  :source "experiments/arc_260516a__team_anchor__anchor_g2__baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_79186fc4" :type "atom"
+  :subj "exp:anchor_g2_baseline"
+  :pred "has_test_nav"
+  :obj 1.2486
+  :source "experiments/arc_260516a__team_anchor__anchor_g2__baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_03557db7" :type "atom"
+  :subj "exp:anchor_g2_baseline"
+  :pred "has_test_trade_count"
+  :obj 20
+  :source "experiments/arc_260516a__team_anchor__anchor_g2__baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_62a89a7a" :type "atom"
+  :subj "exp:anchor_g2_baseline"
+  :pred "has_test_sharpe"
+  :obj 7.1522
+  :source "experiments/arc_260516a__team_anchor__anchor_g2__baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_6cd19d56" :type "atom"
+  :subj "exp:anchor_g2_baseline"
+  :pred "has_test_win_rate"
+  :obj 0.75
+  :source "experiments/arc_260516a__team_anchor__anchor_g2__baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_584302c4" :type "atom"
+  :subj "exp:anchor_g2_baseline"
+  :pred "has_test_max_drawdown"
+  :obj -0.0053
+  :source "experiments/arc_260516a__team_anchor__anchor_g2__baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c54985f9" :type "atom"
+  :subj "exp:anchor_g2_baseline"
+  :pred "has_anchor_train_nav"
+  :obj 2.1882
+  :source "experiments/arc_260516a__team_anchor__anchor_g2__baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_cf5596a7" :type "atom"
+  :subj "exp:anchor_g2_baseline"
+  :pred "has_anchor_test_nav"
+  :obj 1.2486
+  :source "experiments/arc_260516a__team_anchor__anchor_g2__baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c56945e6" :type "atom"
+  :subj "exp:anchor_g2_baseline"
+  :pred "has_status"
+  :obj "anchor"
+  :source "experiments/arc_260516a__team_anchor__anchor_g2__baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_74f12626" :type "atom"
+  :subj "exp:anchor_g2_baseline"
+  :pred "has_outcome"
+  :obj "test_pass"
+  :source "experiments/arc_260516a__team_anchor__anchor_g2__baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_88e0aa25" :type "atom"
+  :subj "exp:anchor_g2_baseline"
+  :pred "has_champion"
+  :obj false
+  :source "experiments/arc_260516a__team_anchor__anchor_g2__baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_acd33bd8" :type "atom"
+  :subj "exp:anchor_g2_baseline"
+  :pred "has_overfit_score"
+  :obj 0
+  :source "experiments/arc_260516a__team_anchor__anchor_g2__baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_52a6e6d2" :type "atom"
+  :subj "exp:anchor_g2_baseline"
+  :pred "has_leak_audit"
+  :obj "clean"
+  :source "experiments/arc_260516a__team_anchor__anchor_g2__baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_fc867d0b" :type "atom"
+  :subj "exp:anchor_g2_baseline"
+  :pred "has_axis"
+  :obj "axis:baseline"
+  :source "experiments/arc_260516a__team_anchor__anchor_g2__baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c0e3aa53" :type "atom"
+  :subj "exp:anchor_g2_baseline"
+  :pred "has_axis_list"
+  :obj ("baseline")
+  :source "experiments/arc_260516a__team_anchor__anchor_g2__baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1387b00d" :type "atom"
+  :subj "exp:anchor_g2_baseline"
+  :pred "has_created"
+  :obj "2026-05-16 18:59:00"
+  :source "experiments/arc_260516a__team_anchor__anchor_g2__baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_2af72e04" :type "atom"
+  :subj "exp:anchor_g2_baseline"
+  :pred "has_last_updated"
+  :obj "2026-05-17 01:50:00"
+  :source "experiments/arc_260516a__team_anchor__anchor_g2__baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c1ab769a" :type "atom"
+  :subj "exp:anchor_g2_baseline"
+  :pred "has_tag"
+  :obj "tag:arc/260516a"
+  :source "experiments/arc_260516a__team_anchor__anchor_g2__baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_bc3bed8b" :type "atom"
+  :subj "exp:anchor_g2_baseline"
+  :pred "has_tag"
+  :obj "tag:team/anchor"
+  :source "experiments/arc_260516a__team_anchor__anchor_g2__baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a7aaba26" :type "atom"
+  :subj "exp:anchor_g2_baseline"
+  :pred "has_tag"
+  :obj "tag:round/anchor"
+  :source "experiments/arc_260516a__team_anchor__anchor_g2__baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9872899a" :type "atom"
+  :subj "exp:anchor_g2_baseline"
+  :pred "has_tag"
+  :obj "tag:axis/baseline"
+  :source "experiments/arc_260516a__team_anchor__anchor_g2__baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c1ed93e4" :type "atom"
+  :subj "exp:anchor_g2_baseline"
+  :pred "has_tag"
+  :obj "tag:status/anchor"
+  :source "experiments/arc_260516a__team_anchor__anchor_g2__baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_cc79aac2" :type "atom"
+  :subj "exp:anchor_g2_baseline"
+  :pred "has_tag"
+  :obj "tag:outcome/test_pass"
+  :source "experiments/arc_260516a__team_anchor__anchor_g2__baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_fe866ba9" :type "atom"
+  :subj "exp:anchor_g2_baseline"
+  :pred "has_tag"
+  :obj "tag:leak/clean"
+  :source "experiments/arc_260516a__team_anchor__anchor_g2__baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_0e2cdcf4" :type "atom"
+  :subj "exp:anchor_g2_baseline"
+  :pred "has_tag"
+  :obj "tag:size/medium"
+  :source "experiments/arc_260516a__team_anchor__anchor_g2__baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5b72a3ac" :type "atom"
+  :subj "exp:anchor_g2_baseline"
+  :pred "has_tl_dr"
+  :obj "alpha_second_v1 当前生产 SOTA（kernel_v3 G2 默认配置）在 arc 260516a 新 split 上的\"裸跑\"成绩。所有 candidate 必须严格胜过这一行才算 challenger / champion。**train NAV = 2.19, test NAV = 1.25**。"
+  :source "experiments/arc_260516a__team_anchor__anchor_g2__baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_95754c2b" :type "atom"
+  :subj "exp:anchor_g2_baseline"
+  :pred "has_section_intro"
+  :obj "# Anchor — G2 default (new-split SOTA reference baseline)\n\n> **TL;DR** —— alpha_second_v1 当前生产 SOTA（kernel_v3 G2 默认配置）在 arc 260516a 新 split 上的\"裸跑\"成绩。所有 candidate 必须严格胜过这一行才算 challenger / champion。**train NAV = 2.19, test NAV = 1.25**。"
+  :source "experiments/arc_260516a__team_anchor__anchor_g2__baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_35e921ed" :type "atom"
+  :subj "exp:anchor_g2_baseline"
+  :pred "has_section_hypothesis"
+  :obj "不是 hypothesis，是**参考点**。G2 是 kernel_v3 当前已 deploy 的 default config，commit `70c54eb`。arc 260516a 的全部 candidate 都以此为 anchor 做比较；ranking 主标尺 = 严格高的 NAV。"
+  :source "experiments/arc_260516a__team_anchor__anchor_g2__baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_dd83fa6c" :type "atom"
+  :subj "exp:anchor_g2_baseline"
+  :pred "has_section_implementation"
+  :obj "- G2 source: `/Users/han/project/alpha/alpha_second_v1/.worktrees/kernel_v3/experiments/g2_post_0209.py`\n- 跑法 script: `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/scripts/shared/run_anchor.py`\n- output 目录: `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/output/260516_1857_anchor/`\n- 关键 config（不动）：\n  - `baseline_max_avg` = 1,300,000\n  - `arbitrage_threshold` = 0.09\n  - `valid_threshold` = 0.04\n  - `horizon_seconds` = 65\n  - `fee` = 0.0003, `slippage` = 0.00148"
+  :source "experiments/arc_260516a__team_anchor__anchor_g2__baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5a62b361" :type "atom"
+  :subj "exp:anchor_g2_baseline"
+  :pred "has_section_past_only_window"
+  :obj "- G2 默认不用 rolling stat。所有 admit 决策只看 t 时刻当下的 ratio / volume / leg 信息。**结构上没有 lookahead 风险**（critic 2026-05-16 audit pass）。"
+  :source "experiments/arc_260516a__team_anchor__anchor_g2__baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_3add2a89" :type "atom"
+  :subj "exp:anchor_g2_baseline"
+  :pred "has_section_results"
+  :obj "| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train (seg1+seg2) | 2.1882 | 140 | 7.70 | 85.7% | -1.01% |\n| Val (rolling 13w mean ± σ) | 1.0601 ± 0.0809 | - | - | - | - |\n| Test (hold-out 2026-05-01 → 05-15, eff 05-08) | 1.2486 | 20 | 7.15 | 75.0% | -0.53% |\n\nTrain mean_return_per_trade = 0.5636% ⇒ implied gate \"anchor train mean + 1σ noise floor\" ≈ 0.807% per-trade val mean。"
+  :source "experiments/arc_260516a__team_anchor__anchor_g2__baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_898bc6ac" :type "atom"
+  :subj "exp:anchor_g2_baseline"
+  :pred "has_section_risk_overfit"
+  :obj "- N/A（这是 baseline，不存在 overfit 的概念）\n- 仅记录：train 笔数 140 给出了 candidate count gate 的中心点 (`140 ± 30%` = 100-180)。"
+  :source "experiments/arc_260516a__team_anchor__anchor_g2__baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_55456aba" :type "atom"
+  :subj "exp:anchor_g2_baseline"
+  :pred "has_section_lineage_links"
+  :obj "- **descendants** (直接以本 anchor 为对照基准的所有 candidate)：\n  - [[arc_260516a__team_h__H-R3b-4__c84_kelly_lambda_1.5]] ← 当前 SOTA challenger\n  - [[arc_260516a__team_h__H-R2-2__c84_linear_sizing]]\n  - [[arc_260516a__team_c__C8.4__top3_no_open3min_bypass]]\n  - [[arc_260516a__team_b__B-R8-1__no_open3min_bypass03]]\n  - [[arc_260516a__team_d__D-R2-3__blacklist_stack_triple]]\n  - [[arc_260516a__team_f__F-R1-1__ofi_drop_extreme]]\n  - [[arc_260516a__team_g__G-R1-1__luoyangchan_solo]]"
+  :source "experiments/arc_260516a__team_anchor__anchor_g2__baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9b2953b6" :type "atom"
+  :subj "exp:anchor_g2_baseline"
+  :pred "has_section_reports"
+  :obj "- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/output/260516_1857_anchor/README.md`\n- [[arc_260516a__reporter_20260517_0547]]"
+  :source "experiments/arc_260516a__team_anchor__anchor_g2__baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9f8399d9" :type "atom"
+  :subj "exp:anchor_g2_baseline"
+  :pred "has_section_notes"
+  :obj "- arc 260516a 给后续 anchor 留的 lessons：\n  1. **NAV 是 ranking 主标尺**，mean_return_per_trade 已降级为辅助 —— 下次开新 arc 直接以 NAV 排序，不要重蹈 mean-ranking 时代的尺度切换。\n  2. anchor 跑出来的 **val_nav_mean** 一定要算 13 个 rolling window，给 NAV gate 提供 σ；count gate 中心点取 anchor trade_count。\n  3. test 数据上限 effective_test_end (2026-05-08 in this arc) 一定要在 metadata 里显式记录，不能让 candidate test 数和 anchor test 数对不齐。"
+  :source "experiments/arc_260516a__team_anchor__anchor_g2__baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")

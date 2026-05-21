@@ -1,0 +1,405 @@
+(card "exp:B-R9-4_confluence_horizon" :type "experiment"
+  :subj "exp:B-R9-4_confluence_horizon"
+  :body "---\nnav: 18\ntype: experiment\nid: B-R9-4_confluence_horizon\nshort_name: confluence_horizon\ntitle: \"B-R9-4 — R8-1 + confluence-aware horizon (≥2 prior 5min → 85s, else 65s)\"\narc: 260516a\nteam: b\nround: r9\nparent_arc: \"[[arcs/260516a]]\"\nparent_lineage: \"[[lineages/arc_260516a__team_b__blacklist_evolution]]\"\ntrain_nav: 2.7971\ntrain_trade_count: 169\ntrain_win_rate: 0.8521\ntrain_sharpe: 7.7577\ntrain_max_drawdown: -0.0101\nval_nav_mean: 1.0794\nval_nav_sigma: 0.0805\nval_window_count: 13\ntest_nav: 1.2722\ntest_trade_count: 23\ntest_sharpe: 7.1151\ntest_win_rate: 0.7391\ntest_max_drawdown: -0.0067\nanchor_train_nav: 2.1882\nanchor_test_nav: 1.2486\nstatus: challenger\noutcome: test_marginal\nchampion: false\noverfit_score: 0\nleak_audit: clean\naxis: [horizon, cross_source]\npast_only_window_days: null\nwarmup_required: null\ncreated: 2026-05-17T01:50:00\nlast_updated: 2026-05-17T05:09:00\ntags: [arc/260516a, team/b, round/r9, axis/horizon, axis/cross_source, status/challenger, outcome/test_marginal, leak/clean, size/large]\n---\n\n# B-R9-4 — R8-1 + confluence-aware horizon\n\n> **TL;DR** —— R9-4 在 R8-1 base 上加 **confluence-aware horizon**：若过去 5min 内有 ≥2 个同方向 signal，认为 momentum 强，延长 horizon 到 85s；否则 65s。train/test 数字与 R8-1 几乎完全一致 (test NAV 1.272 vs R8-1 1.272, **bit-for-bit tie**)。confluence 在 test 上完全没 trigger 额外的 PnL diff。\n\n## 假设 (Hypothesis)\n- 假设：confluence (≥2 prior same-side signals in 5min) = momentum 强 → 延长 hold = 多吃 trend；非 confluence = 反转快 → 短 hold。\n- 期待：sharpe 上一点，NAV 略升。\n- 实测：confluence 条件触发率太低（trade pool 169 笔里只有少量满足 ≥2），integral effect ≈ 0。\n\n## 实现 (Implementation)\n- 主脚本：`/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_b/scripts/round_9_runner.py`\n- 步骤：\n  1. R8-1 base\n  2. 对每个 trade 时刻 t 数过去 5min 内同源同方向 signal 个数\n  3. ≥2 → horizon=85s, 否则 65s\n\n## Past-only window 处理\n- \"过去 5min 同方向 signal count\" 严格 past-only（trigger 前 5min 窗口）。\n- `#leak/clean`。\n\n## 结果 (Results)\n| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 2.7971 | 169 | 7.76 | 85.2% | -1.01% |\n| Val (rolling 13w) | 1.0794 ± 0.081 | - | - | - | - |\n| Test | 1.2722 | 23 | 7.12 | 73.9% | -0.67% |\n| **Δ test NAV vs anchor** | +0.024 | +3 | -0.04 | -1.1pp | -0.14pp |\n| **Δ vs R8-1 base** | 0.000 | 0 | 0 | 0 | 0 |\n\n## 风险 & overfit 嫌疑\n- overfit_score = 0。\n- bit-for-bit tie with R8-1 in test = confluence horizon mechanism 在 hold-out 上**完全没有 active leg**。说明 5min 同方向 ≥2 signal 在 test 期不存在。\n\n## Lineage（双链网）\n- **derived_from**: [[arc_260516a__team_b__B-R8-1__no_open3min_bypass03]]\n- **same_round_as**: [[arc_260516a__team_b__B-R9-3__sigma_regime_exit]]\n- **builds against**: [[arc_260516a__team_anchor__anchor_g2__baseline]]\n\n## Reports\n- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_b/output/cross_round_leaderboard_nav.csv` (R9-4)\n- [[arc_260516a__reporter_20260517_0547]]\n\n## Notes / 下次迭代\n- **anti-pattern: conditional mechanism with very low trigger frequency**。confluence ≥2 在 trade pool 169 笔里只有少数满足，整 mechanism 几乎是 NO-OP。\n- 下次类似 conditional axis 必须先做 trigger frequency audit：如果机制触发率 < 10% 的 trades，effect 大概率被 noise 淹没。\n- R9-3 / R9-4 一同证明 **R8-1 已是 B 队默认 horizon 模式下的 NAV 天花板**，要往上走必须换 axis（sizing / trade selector）。\n"
+  :path "experiments/arc_260516a__team_b__B-R9-4__confluence_horizon.md"
+  :source_mtime "2026-05-17T10:23:06+08:00"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_7284c716" :type "atom"
+  :subj "exp:B-R9-4_confluence_horizon"
+  :pred "has_nav"
+  :obj 18
+  :source "experiments/arc_260516a__team_b__B-R9-4__confluence_horizon.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9b4db582" :type "atom"
+  :subj "exp:B-R9-4_confluence_horizon"
+  :pred "has_type"
+  :obj "experiment"
+  :source "experiments/arc_260516a__team_b__B-R9-4__confluence_horizon.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f204b8a2" :type "atom"
+  :subj "exp:B-R9-4_confluence_horizon"
+  :pred "has_id"
+  :obj "B-R9-4_confluence_horizon"
+  :source "experiments/arc_260516a__team_b__B-R9-4__confluence_horizon.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_49286607" :type "atom"
+  :subj "exp:B-R9-4_confluence_horizon"
+  :pred "has_short_name"
+  :obj "confluence_horizon"
+  :source "experiments/arc_260516a__team_b__B-R9-4__confluence_horizon.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_4270beca" :type "atom"
+  :subj "exp:B-R9-4_confluence_horizon"
+  :pred "has_title"
+  :obj "B-R9-4 — R8-1 + confluence-aware horizon (≥2 prior 5min → 85s, else 65s)"
+  :source "experiments/arc_260516a__team_b__B-R9-4__confluence_horizon.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_8b56b8e8" :type "atom"
+  :subj "exp:B-R9-4_confluence_horizon"
+  :pred "has_arc"
+  :obj "260516a"
+  :source "experiments/arc_260516a__team_b__B-R9-4__confluence_horizon.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_0d4cb4fa" :type "atom"
+  :subj "exp:B-R9-4_confluence_horizon"
+  :pred "has_team"
+  :obj "b"
+  :source "experiments/arc_260516a__team_b__B-R9-4__confluence_horizon.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b18ba881" :type "atom"
+  :subj "exp:B-R9-4_confluence_horizon"
+  :pred "has_round"
+  :obj "r9"
+  :source "experiments/arc_260516a__team_b__B-R9-4__confluence_horizon.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b6c1ea83" :type "atom"
+  :subj "exp:B-R9-4_confluence_horizon"
+  :pred "parent_arc"
+  :obj "arc:260516a"
+  :source "experiments/arc_260516a__team_b__B-R9-4__confluence_horizon.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_253f2746" :type "atom"
+  :subj "exp:B-R9-4_confluence_horizon"
+  :pred "parent_lineage"
+  :obj "lin:arc_260516a__team_b__blacklist_evolution"
+  :source "experiments/arc_260516a__team_b__B-R9-4__confluence_horizon.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_67c3d0b4" :type "atom"
+  :subj "exp:B-R9-4_confluence_horizon"
+  :pred "has_train_nav"
+  :obj 2.7971
+  :source "experiments/arc_260516a__team_b__B-R9-4__confluence_horizon.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_8fb4e558" :type "atom"
+  :subj "exp:B-R9-4_confluence_horizon"
+  :pred "has_train_trade_count"
+  :obj 169
+  :source "experiments/arc_260516a__team_b__B-R9-4__confluence_horizon.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b39b5484" :type "atom"
+  :subj "exp:B-R9-4_confluence_horizon"
+  :pred "has_train_win_rate"
+  :obj 0.8521
+  :source "experiments/arc_260516a__team_b__B-R9-4__confluence_horizon.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_bb0727df" :type "atom"
+  :subj "exp:B-R9-4_confluence_horizon"
+  :pred "has_train_sharpe"
+  :obj 7.7577
+  :source "experiments/arc_260516a__team_b__B-R9-4__confluence_horizon.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b5aed7b5" :type "atom"
+  :subj "exp:B-R9-4_confluence_horizon"
+  :pred "has_train_max_drawdown"
+  :obj -0.0101
+  :source "experiments/arc_260516a__team_b__B-R9-4__confluence_horizon.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c1df1638" :type "atom"
+  :subj "exp:B-R9-4_confluence_horizon"
+  :pred "has_val_nav_mean"
+  :obj 1.0794
+  :source "experiments/arc_260516a__team_b__B-R9-4__confluence_horizon.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_02ce4cf1" :type "atom"
+  :subj "exp:B-R9-4_confluence_horizon"
+  :pred "has_val_nav_sigma"
+  :obj 0.0805
+  :source "experiments/arc_260516a__team_b__B-R9-4__confluence_horizon.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a297b76c" :type "atom"
+  :subj "exp:B-R9-4_confluence_horizon"
+  :pred "has_val_window_count"
+  :obj 13
+  :source "experiments/arc_260516a__team_b__B-R9-4__confluence_horizon.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_575916aa" :type "atom"
+  :subj "exp:B-R9-4_confluence_horizon"
+  :pred "has_test_nav"
+  :obj 1.2722
+  :source "experiments/arc_260516a__team_b__B-R9-4__confluence_horizon.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_135f6c27" :type "atom"
+  :subj "exp:B-R9-4_confluence_horizon"
+  :pred "has_test_trade_count"
+  :obj 23
+  :source "experiments/arc_260516a__team_b__B-R9-4__confluence_horizon.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_6a753ceb" :type "atom"
+  :subj "exp:B-R9-4_confluence_horizon"
+  :pred "has_test_sharpe"
+  :obj 7.1151
+  :source "experiments/arc_260516a__team_b__B-R9-4__confluence_horizon.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_cbc6326c" :type "atom"
+  :subj "exp:B-R9-4_confluence_horizon"
+  :pred "has_test_win_rate"
+  :obj 0.7391
+  :source "experiments/arc_260516a__team_b__B-R9-4__confluence_horizon.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5d673bb0" :type "atom"
+  :subj "exp:B-R9-4_confluence_horizon"
+  :pred "has_test_max_drawdown"
+  :obj -0.0067
+  :source "experiments/arc_260516a__team_b__B-R9-4__confluence_horizon.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5ed861d5" :type "atom"
+  :subj "exp:B-R9-4_confluence_horizon"
+  :pred "has_anchor_train_nav"
+  :obj 2.1882
+  :source "experiments/arc_260516a__team_b__B-R9-4__confluence_horizon.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_0f40af55" :type "atom"
+  :subj "exp:B-R9-4_confluence_horizon"
+  :pred "has_anchor_test_nav"
+  :obj 1.2486
+  :source "experiments/arc_260516a__team_b__B-R9-4__confluence_horizon.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a24d8133" :type "atom"
+  :subj "exp:B-R9-4_confluence_horizon"
+  :pred "has_status"
+  :obj "challenger"
+  :source "experiments/arc_260516a__team_b__B-R9-4__confluence_horizon.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e38bca47" :type "atom"
+  :subj "exp:B-R9-4_confluence_horizon"
+  :pred "has_outcome"
+  :obj "test_marginal"
+  :source "experiments/arc_260516a__team_b__B-R9-4__confluence_horizon.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ffb7b6d9" :type "atom"
+  :subj "exp:B-R9-4_confluence_horizon"
+  :pred "has_champion"
+  :obj false
+  :source "experiments/arc_260516a__team_b__B-R9-4__confluence_horizon.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5e122140" :type "atom"
+  :subj "exp:B-R9-4_confluence_horizon"
+  :pred "has_overfit_score"
+  :obj 0
+  :source "experiments/arc_260516a__team_b__B-R9-4__confluence_horizon.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a17620fa" :type "atom"
+  :subj "exp:B-R9-4_confluence_horizon"
+  :pred "has_leak_audit"
+  :obj "clean"
+  :source "experiments/arc_260516a__team_b__B-R9-4__confluence_horizon.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_73ba65e3" :type "atom"
+  :subj "exp:B-R9-4_confluence_horizon"
+  :pred "has_axis"
+  :obj "axis:horizon"
+  :source "experiments/arc_260516a__team_b__B-R9-4__confluence_horizon.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1fa7fe94" :type "atom"
+  :subj "exp:B-R9-4_confluence_horizon"
+  :pred "has_axis"
+  :obj "axis:cross_source"
+  :source "experiments/arc_260516a__team_b__B-R9-4__confluence_horizon.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_fa280fa0" :type "atom"
+  :subj "exp:B-R9-4_confluence_horizon"
+  :pred "has_axis_list"
+  :obj ("horizon" "cross_source")
+  :source "experiments/arc_260516a__team_b__B-R9-4__confluence_horizon.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5f8c6f4e" :type "atom"
+  :subj "exp:B-R9-4_confluence_horizon"
+  :pred "has_created"
+  :obj "2026-05-17 01:50:00"
+  :source "experiments/arc_260516a__team_b__B-R9-4__confluence_horizon.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9701d210" :type "atom"
+  :subj "exp:B-R9-4_confluence_horizon"
+  :pred "has_last_updated"
+  :obj "2026-05-17 05:09:00"
+  :source "experiments/arc_260516a__team_b__B-R9-4__confluence_horizon.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9322e266" :type "atom"
+  :subj "exp:B-R9-4_confluence_horizon"
+  :pred "has_tag"
+  :obj "tag:arc/260516a"
+  :source "experiments/arc_260516a__team_b__B-R9-4__confluence_horizon.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b5ba2423" :type "atom"
+  :subj "exp:B-R9-4_confluence_horizon"
+  :pred "has_tag"
+  :obj "tag:team/b"
+  :source "experiments/arc_260516a__team_b__B-R9-4__confluence_horizon.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5529252d" :type "atom"
+  :subj "exp:B-R9-4_confluence_horizon"
+  :pred "has_tag"
+  :obj "tag:round/r9"
+  :source "experiments/arc_260516a__team_b__B-R9-4__confluence_horizon.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_51b91896" :type "atom"
+  :subj "exp:B-R9-4_confluence_horizon"
+  :pred "has_tag"
+  :obj "tag:axis/horizon"
+  :source "experiments/arc_260516a__team_b__B-R9-4__confluence_horizon.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_2287dce9" :type "atom"
+  :subj "exp:B-R9-4_confluence_horizon"
+  :pred "has_tag"
+  :obj "tag:axis/cross_source"
+  :source "experiments/arc_260516a__team_b__B-R9-4__confluence_horizon.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e5cac0c4" :type "atom"
+  :subj "exp:B-R9-4_confluence_horizon"
+  :pred "has_tag"
+  :obj "tag:status/challenger"
+  :source "experiments/arc_260516a__team_b__B-R9-4__confluence_horizon.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_98f55127" :type "atom"
+  :subj "exp:B-R9-4_confluence_horizon"
+  :pred "has_tag"
+  :obj "tag:outcome/test_marginal"
+  :source "experiments/arc_260516a__team_b__B-R9-4__confluence_horizon.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_fe04bfd7" :type "atom"
+  :subj "exp:B-R9-4_confluence_horizon"
+  :pred "has_tag"
+  :obj "tag:leak/clean"
+  :source "experiments/arc_260516a__team_b__B-R9-4__confluence_horizon.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_fce0105d" :type "atom"
+  :subj "exp:B-R9-4_confluence_horizon"
+  :pred "has_tag"
+  :obj "tag:size/large"
+  :source "experiments/arc_260516a__team_b__B-R9-4__confluence_horizon.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9a9096ed" :type "atom"
+  :subj "exp:B-R9-4_confluence_horizon"
+  :pred "has_tl_dr"
+  :obj "R9-4 在 R8-1 base 上加 **confluence-aware horizon**：若过去 5min 内有 ≥2 个同方向 signal，认为 momentum 强，延长 horizon 到 85s；否则 65s。train/test 数字与 R8-1 几乎完全一致 (test NAV 1.272 vs R8-1 1.272, **bit-for-bit tie**)。confluence 在 test 上完全没 trigger 额外的 PnL diff。"
+  :source "experiments/arc_260516a__team_b__B-R9-4__confluence_horizon.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1055f27c" :type "atom"
+  :subj "exp:B-R9-4_confluence_horizon"
+  :pred "has_section_intro"
+  :obj "# B-R9-4 — R8-1 + confluence-aware horizon\n\n> **TL;DR** —— R9-4 在 R8-1 base 上加 **confluence-aware horizon**：若过去 5min 内有 ≥2 个同方向 signal，认为 momentum 强，延长 horizon 到 85s；否则 65s。train/test 数字与 R8-1 几乎完全一致 (test NAV 1.272 vs R8-1 1.272, **bit-for-bit tie**)。confluence 在 test 上完全没 trigger 额外的 PnL diff。"
+  :source "experiments/arc_260516a__team_b__B-R9-4__confluence_horizon.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_bafcdcff" :type "atom"
+  :subj "exp:B-R9-4_confluence_horizon"
+  :pred "has_section_hypothesis"
+  :obj "- 假设：confluence (≥2 prior same-side signals in 5min) = momentum 强 → 延长 hold = 多吃 trend；非 confluence = 反转快 → 短 hold。\n- 期待：sharpe 上一点，NAV 略升。\n- 实测：confluence 条件触发率太低（trade pool 169 笔里只有少量满足 ≥2），integral effect ≈ 0。"
+  :source "experiments/arc_260516a__team_b__B-R9-4__confluence_horizon.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a1572e62" :type "atom"
+  :subj "exp:B-R9-4_confluence_horizon"
+  :pred "has_section_implementation"
+  :obj "- 主脚本：`/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_b/scripts/round_9_runner.py`\n- 步骤：\n  1. R8-1 base\n  2. 对每个 trade 时刻 t 数过去 5min 内同源同方向 signal 个数\n  3. ≥2 → horizon=85s, 否则 65s"
+  :source "experiments/arc_260516a__team_b__B-R9-4__confluence_horizon.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_65c83af4" :type "atom"
+  :subj "exp:B-R9-4_confluence_horizon"
+  :pred "has_section_past_only_window"
+  :obj "- \"过去 5min 同方向 signal count\" 严格 past-only（trigger 前 5min 窗口）。\n- `#leak/clean`。"
+  :source "experiments/arc_260516a__team_b__B-R9-4__confluence_horizon.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_7352b6ca" :type "atom"
+  :subj "exp:B-R9-4_confluence_horizon"
+  :pred "has_section_results"
+  :obj "| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 2.7971 | 169 | 7.76 | 85.2% | -1.01% |\n| Val (rolling 13w) | 1.0794 ± 0.081 | - | - | - | - |\n| Test | 1.2722 | 23 | 7.12 | 73.9% | -0.67% |\n| **Δ test NAV vs anchor** | +0.024 | +3 | -0.04 | -1.1pp | -0.14pp |\n| **Δ vs R8-1 base** | 0.000 | 0 | 0 | 0 | 0 |"
+  :source "experiments/arc_260516a__team_b__B-R9-4__confluence_horizon.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_91b9d575" :type "atom"
+  :subj "exp:B-R9-4_confluence_horizon"
+  :pred "has_section_risk_overfit"
+  :obj "- overfit_score = 0。\n- bit-for-bit tie with R8-1 in test = confluence horizon mechanism 在 hold-out 上**完全没有 active leg**。说明 5min 同方向 ≥2 signal 在 test 期不存在。"
+  :source "experiments/arc_260516a__team_b__B-R9-4__confluence_horizon.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a89b0091" :type "atom"
+  :subj "exp:B-R9-4_confluence_horizon"
+  :pred "derived_from"
+  :obj "exp:B-R8-1_no_open3min_bypass03"
+  :source "experiments/arc_260516a__team_b__B-R9-4__confluence_horizon.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_dc7a4cbb" :type "atom"
+  :subj "exp:B-R9-4_confluence_horizon"
+  :pred "same_round_as"
+  :obj "exp:B-R9-3_sigma_regime_exit"
+  :source "experiments/arc_260516a__team_b__B-R9-4__confluence_horizon.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_55496045" :type "atom"
+  :subj "exp:B-R9-4_confluence_horizon"
+  :pred "builds_against"
+  :obj "exp:anchor_g2_baseline"
+  :source "experiments/arc_260516a__team_b__B-R9-4__confluence_horizon.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_4d544f7b" :type "atom"
+  :subj "exp:B-R9-4_confluence_horizon"
+  :pred "has_section_lineage_links"
+  :obj "- **derived_from**: [[arc_260516a__team_b__B-R8-1__no_open3min_bypass03]]\n- **same_round_as**: [[arc_260516a__team_b__B-R9-3__sigma_regime_exit]]\n- **builds against**: [[arc_260516a__team_anchor__anchor_g2__baseline]]"
+  :source "experiments/arc_260516a__team_b__B-R9-4__confluence_horizon.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_94b4e5ef" :type "atom"
+  :subj "exp:B-R9-4_confluence_horizon"
+  :pred "has_section_reports"
+  :obj "- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_b/output/cross_round_leaderboard_nav.csv` (R9-4)\n- [[arc_260516a__reporter_20260517_0547]]"
+  :source "experiments/arc_260516a__team_b__B-R9-4__confluence_horizon.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_83dcde4d" :type "atom"
+  :subj "exp:B-R9-4_confluence_horizon"
+  :pred "has_section_notes"
+  :obj "- **anti-pattern: conditional mechanism with very low trigger frequency**。confluence ≥2 在 trade pool 169 笔里只有少数满足，整 mechanism 几乎是 NO-OP。\n- 下次类似 conditional axis 必须先做 trigger frequency audit：如果机制触发率 < 10% 的 trades，effect 大概率被 noise 淹没。\n- R9-3 / R9-4 一同证明 **R8-1 已是 B 队默认 horizon 模式下的 NAV 天花板**，要往上走必须换 axis（sizing / trade selector）。"
+  :source "experiments/arc_260516a__team_b__B-R9-4__confluence_horizon.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")

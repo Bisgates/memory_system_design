@@ -1,0 +1,21 @@
+- id: a_18000640
+  subj: doc:specs/drivestudio_bev.md
+  pred: has_type
+  obj: type:spec
+  source: SPECS/drivestudio_bev.md
+  derived_from: null
+  parents: []
+- id: a_151a7eba
+  subj: doc:specs/drivestudio_bev.md
+  pred: has_title
+  obj: DriveStudio × BEV Data — 多方法场景重建
+  source: SPECS/drivestudio_bev.md
+  derived_from: null
+  parents: []
+- id: a_8aa6c88b
+  subj: doc:specs/drivestudio_bev.md
+  pred: mentions_doc
+  obj: doc:specs/sam3_bev.md
+  source: SPECS/drivestudio_bev.md
+  derived_from: null
+  parents: []

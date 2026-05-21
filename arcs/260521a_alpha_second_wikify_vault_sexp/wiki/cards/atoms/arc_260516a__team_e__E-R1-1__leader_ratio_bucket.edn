@@ -1,0 +1,377 @@
+(card "exp:E-R1-1_leader_ratio_bucket" :type "experiment"
+  :subj "exp:E-R1-1_leader_ratio_bucket"
+  :body "---\nnav: 35\ntype: experiment\nid: E-R1-1_leader_ratio_bucket\nshort_name: leader_ratio_bucket\ntitle: \"E-R1-1 — Anchor + drop (side,ratio_bucket) past 14d winrate < 0.40 (paused)\"\narc: 260516a\nteam: e\nround: r1\nparent_arc: \"[[arcs/260516a]]\"\nparent_lineage: \"[[lineages/arc_260516a__team_e__leader_profile_paused]]\"\ntrain_nav: 2.1882\ntrain_trade_count: 140\ntrain_win_rate: 0.8571\ntrain_sharpe: 7.698\ntrain_max_drawdown: -0.0101\nval_nav_mean: 1.0601\nval_nav_sigma: 0.0675\nval_window_count: 13\ntest_nav: null\ntest_trade_count: null\ntest_sharpe: null\ntest_win_rate: null\ntest_max_drawdown: null\nanchor_train_nav: 2.1882\nanchor_test_nav: 1.2486\nstatus: paused\noutcome: no_test_run\nchampion: false\noverfit_score: 0\nleak_audit: clean\naxis: [leader_profile, blacklist]\npast_only_window_days: 14\nwarmup_required: 5\ncreated: 2026-05-17T01:30:00\nlast_updated: 2026-05-17T05:09:00\ntags: [arc/260516a, team/e, round/r1, axis/leader_profile, axis/blacklist, status/paused, outcome/no_test_run, leak/clean, size/medium]\n---\n\n# E-R1-1 — drop (side, ratio_bucket) past-14d winrate < 0.40\n\n> **TL;DR** —— Team E paused lineage 候选：基于 (side, ratio_bucket) 的 leader 历史 14d winrate 做 blacklist。 train NAV/sharpe/dd 完全等于 anchor —— **mechanism 实际为 NO-OP** (14d 窗口 + min_trades 5 + winrate threshold 0.40 在 anchor pool 上几乎触发不了 drop). lineage 整体被 pause, 作 anti-pattern reference 留下。\n\n## 假设 (Hypothesis)\n- 假设：(side, ratio_bucket) 维度上的 leader 历史 win-rate < 0.40 = \"结构性烂 setup\" → drop.\n- 实测：mechanism NO-OP (anchor 140 trade 没一个落到 winrate<0.40 bucket).\n\n## 实现 (Implementation)\n- `team_e/scripts/round_1_runner.py`\n- 步骤：anchor base + drop legs where (side, ratio_bucket) past-14d winrate < 0.40, min_trades 5.\n\n## Past-only window 处理\n- past 14d strict past-only. min_trades 5 warmup. `#leak/clean`.\n\n## 结果 (Results)\n| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 2.1882 | 140 | 7.70 | 85.7% | -1.01% |\n| Val (rolling 13w) | 1.0601 ± 0.068 | - | - | - | - |\n| Test | NOT RUN (NO-OP, no gain expected) | - | - | - | - |\n\nbit-for-bit anchor = mechanism 在 train 期 never triggers.\n\n## 风险 & overfit 嫌疑\n- overfit_score = 0; NO-OP.\n\n## Lineage（双链网）\n- **derived_from**: [[arc_260516a__team_anchor__anchor_g2__baseline]]\n- **same_lineage_NO-OP**: [[arc_260516a__team_e__E-R1-2__leader_ticker_rolling_q20]], [[arc_260516a__team_e__E-R1-3__leader_ticker_mean_ret_pos]]\n- **builds against**: [[arc_260516a__team_anchor__anchor_g2__baseline]]\n\n## Reports\n- `team_e/output/cross_round_leaderboard_nav.csv` (E-R1-1)\n- [[arc_260516a__reporter_20260517_0547]]\n\n## Notes / 下次迭代\n- **anti-pattern: too-strict mechanism + small pool = NO-OP**. Team E 三个 R1 候选都因 mechanism 几乎不触发而 bit-for-bit 等于 anchor.\n- 下次 leader-profile axis 必须先 audit \"raw trigger frequency\"。若 mechanism 在 anchor 期 trigger < 5% legs, 必须放宽阈值或扩窗口才有意义。\n- 这是 vault 里 `paused` status 唯一 example, 留作 \"NO-OP mechanism\" 反例.\n"
+  :path "experiments/arc_260516a__team_e__E-R1-1__leader_ratio_bucket.md"
+  :source_mtime "2026-05-17T10:32:08+08:00"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d3d24d18" :type "atom"
+  :subj "exp:E-R1-1_leader_ratio_bucket"
+  :pred "has_nav"
+  :obj 35
+  :source "experiments/arc_260516a__team_e__E-R1-1__leader_ratio_bucket.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d59fbe26" :type "atom"
+  :subj "exp:E-R1-1_leader_ratio_bucket"
+  :pred "has_type"
+  :obj "experiment"
+  :source "experiments/arc_260516a__team_e__E-R1-1__leader_ratio_bucket.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_8695d07f" :type "atom"
+  :subj "exp:E-R1-1_leader_ratio_bucket"
+  :pred "has_id"
+  :obj "E-R1-1_leader_ratio_bucket"
+  :source "experiments/arc_260516a__team_e__E-R1-1__leader_ratio_bucket.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1669366e" :type "atom"
+  :subj "exp:E-R1-1_leader_ratio_bucket"
+  :pred "has_short_name"
+  :obj "leader_ratio_bucket"
+  :source "experiments/arc_260516a__team_e__E-R1-1__leader_ratio_bucket.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_85c217a5" :type "atom"
+  :subj "exp:E-R1-1_leader_ratio_bucket"
+  :pred "has_title"
+  :obj "E-R1-1 — Anchor + drop (side,ratio_bucket) past 14d winrate < 0.40 (paused)"
+  :source "experiments/arc_260516a__team_e__E-R1-1__leader_ratio_bucket.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_dccf9cf7" :type "atom"
+  :subj "exp:E-R1-1_leader_ratio_bucket"
+  :pred "has_arc"
+  :obj "260516a"
+  :source "experiments/arc_260516a__team_e__E-R1-1__leader_ratio_bucket.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_731f09ec" :type "atom"
+  :subj "exp:E-R1-1_leader_ratio_bucket"
+  :pred "has_team"
+  :obj "e"
+  :source "experiments/arc_260516a__team_e__E-R1-1__leader_ratio_bucket.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c047f099" :type "atom"
+  :subj "exp:E-R1-1_leader_ratio_bucket"
+  :pred "has_round"
+  :obj "r1"
+  :source "experiments/arc_260516a__team_e__E-R1-1__leader_ratio_bucket.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e03c08c8" :type "atom"
+  :subj "exp:E-R1-1_leader_ratio_bucket"
+  :pred "parent_arc"
+  :obj "arc:260516a"
+  :source "experiments/arc_260516a__team_e__E-R1-1__leader_ratio_bucket.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_28127be3" :type "atom"
+  :subj "exp:E-R1-1_leader_ratio_bucket"
+  :pred "parent_lineage"
+  :obj "lin:arc_260516a__team_e__leader_profile_paused"
+  :source "experiments/arc_260516a__team_e__E-R1-1__leader_ratio_bucket.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_65b4cd6a" :type "atom"
+  :subj "exp:E-R1-1_leader_ratio_bucket"
+  :pred "has_train_nav"
+  :obj 2.1882
+  :source "experiments/arc_260516a__team_e__E-R1-1__leader_ratio_bucket.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_91aadd38" :type "atom"
+  :subj "exp:E-R1-1_leader_ratio_bucket"
+  :pred "has_train_trade_count"
+  :obj 140
+  :source "experiments/arc_260516a__team_e__E-R1-1__leader_ratio_bucket.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_6d2482c4" :type "atom"
+  :subj "exp:E-R1-1_leader_ratio_bucket"
+  :pred "has_train_win_rate"
+  :obj 0.8571
+  :source "experiments/arc_260516a__team_e__E-R1-1__leader_ratio_bucket.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c3c31bbe" :type "atom"
+  :subj "exp:E-R1-1_leader_ratio_bucket"
+  :pred "has_train_sharpe"
+  :obj 7.698
+  :source "experiments/arc_260516a__team_e__E-R1-1__leader_ratio_bucket.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f58b4778" :type "atom"
+  :subj "exp:E-R1-1_leader_ratio_bucket"
+  :pred "has_train_max_drawdown"
+  :obj -0.0101
+  :source "experiments/arc_260516a__team_e__E-R1-1__leader_ratio_bucket.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c133de0d" :type "atom"
+  :subj "exp:E-R1-1_leader_ratio_bucket"
+  :pred "has_val_nav_mean"
+  :obj 1.0601
+  :source "experiments/arc_260516a__team_e__E-R1-1__leader_ratio_bucket.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_01f2ba4a" :type "atom"
+  :subj "exp:E-R1-1_leader_ratio_bucket"
+  :pred "has_val_nav_sigma"
+  :obj 0.0675
+  :source "experiments/arc_260516a__team_e__E-R1-1__leader_ratio_bucket.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9f913d7c" :type "atom"
+  :subj "exp:E-R1-1_leader_ratio_bucket"
+  :pred "has_val_window_count"
+  :obj 13
+  :source "experiments/arc_260516a__team_e__E-R1-1__leader_ratio_bucket.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_8b014c63" :type "atom"
+  :subj "exp:E-R1-1_leader_ratio_bucket"
+  :pred "has_anchor_train_nav"
+  :obj 2.1882
+  :source "experiments/arc_260516a__team_e__E-R1-1__leader_ratio_bucket.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_48988d90" :type "atom"
+  :subj "exp:E-R1-1_leader_ratio_bucket"
+  :pred "has_anchor_test_nav"
+  :obj 1.2486
+  :source "experiments/arc_260516a__team_e__E-R1-1__leader_ratio_bucket.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d2a77ddc" :type "atom"
+  :subj "exp:E-R1-1_leader_ratio_bucket"
+  :pred "has_status"
+  :obj "paused"
+  :source "experiments/arc_260516a__team_e__E-R1-1__leader_ratio_bucket.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_11a272d2" :type "atom"
+  :subj "exp:E-R1-1_leader_ratio_bucket"
+  :pred "has_outcome"
+  :obj "no_test_run"
+  :source "experiments/arc_260516a__team_e__E-R1-1__leader_ratio_bucket.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e3b9d633" :type "atom"
+  :subj "exp:E-R1-1_leader_ratio_bucket"
+  :pred "has_champion"
+  :obj false
+  :source "experiments/arc_260516a__team_e__E-R1-1__leader_ratio_bucket.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_3c729d60" :type "atom"
+  :subj "exp:E-R1-1_leader_ratio_bucket"
+  :pred "has_overfit_score"
+  :obj 0
+  :source "experiments/arc_260516a__team_e__E-R1-1__leader_ratio_bucket.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_db18bfce" :type "atom"
+  :subj "exp:E-R1-1_leader_ratio_bucket"
+  :pred "has_leak_audit"
+  :obj "clean"
+  :source "experiments/arc_260516a__team_e__E-R1-1__leader_ratio_bucket.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c38f691b" :type "atom"
+  :subj "exp:E-R1-1_leader_ratio_bucket"
+  :pred "has_axis"
+  :obj "axis:leader_profile"
+  :source "experiments/arc_260516a__team_e__E-R1-1__leader_ratio_bucket.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_6916fb56" :type "atom"
+  :subj "exp:E-R1-1_leader_ratio_bucket"
+  :pred "has_axis"
+  :obj "axis:blacklist"
+  :source "experiments/arc_260516a__team_e__E-R1-1__leader_ratio_bucket.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_42b3ae86" :type "atom"
+  :subj "exp:E-R1-1_leader_ratio_bucket"
+  :pred "has_axis_list"
+  :obj ("leader_profile" "blacklist")
+  :source "experiments/arc_260516a__team_e__E-R1-1__leader_ratio_bucket.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_4805f248" :type "atom"
+  :subj "exp:E-R1-1_leader_ratio_bucket"
+  :pred "has_past_only_window_days"
+  :obj 14
+  :source "experiments/arc_260516a__team_e__E-R1-1__leader_ratio_bucket.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_4a3be802" :type "atom"
+  :subj "exp:E-R1-1_leader_ratio_bucket"
+  :pred "has_warmup_required"
+  :obj 5
+  :source "experiments/arc_260516a__team_e__E-R1-1__leader_ratio_bucket.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f1a57293" :type "atom"
+  :subj "exp:E-R1-1_leader_ratio_bucket"
+  :pred "has_created"
+  :obj "2026-05-17 01:30:00"
+  :source "experiments/arc_260516a__team_e__E-R1-1__leader_ratio_bucket.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_4866013c" :type "atom"
+  :subj "exp:E-R1-1_leader_ratio_bucket"
+  :pred "has_last_updated"
+  :obj "2026-05-17 05:09:00"
+  :source "experiments/arc_260516a__team_e__E-R1-1__leader_ratio_bucket.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_93a1e4b4" :type "atom"
+  :subj "exp:E-R1-1_leader_ratio_bucket"
+  :pred "has_tag"
+  :obj "tag:arc/260516a"
+  :source "experiments/arc_260516a__team_e__E-R1-1__leader_ratio_bucket.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_0c62eba7" :type "atom"
+  :subj "exp:E-R1-1_leader_ratio_bucket"
+  :pred "has_tag"
+  :obj "tag:team/e"
+  :source "experiments/arc_260516a__team_e__E-R1-1__leader_ratio_bucket.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_56b44af7" :type "atom"
+  :subj "exp:E-R1-1_leader_ratio_bucket"
+  :pred "has_tag"
+  :obj "tag:round/r1"
+  :source "experiments/arc_260516a__team_e__E-R1-1__leader_ratio_bucket.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_72015fb7" :type "atom"
+  :subj "exp:E-R1-1_leader_ratio_bucket"
+  :pred "has_tag"
+  :obj "tag:axis/leader_profile"
+  :source "experiments/arc_260516a__team_e__E-R1-1__leader_ratio_bucket.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_6a425c99" :type "atom"
+  :subj "exp:E-R1-1_leader_ratio_bucket"
+  :pred "has_tag"
+  :obj "tag:axis/blacklist"
+  :source "experiments/arc_260516a__team_e__E-R1-1__leader_ratio_bucket.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_bc4f6102" :type "atom"
+  :subj "exp:E-R1-1_leader_ratio_bucket"
+  :pred "has_tag"
+  :obj "tag:status/paused"
+  :source "experiments/arc_260516a__team_e__E-R1-1__leader_ratio_bucket.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1c591a35" :type "atom"
+  :subj "exp:E-R1-1_leader_ratio_bucket"
+  :pred "has_tag"
+  :obj "tag:outcome/no_test_run"
+  :source "experiments/arc_260516a__team_e__E-R1-1__leader_ratio_bucket.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_bf256122" :type "atom"
+  :subj "exp:E-R1-1_leader_ratio_bucket"
+  :pred "has_tag"
+  :obj "tag:leak/clean"
+  :source "experiments/arc_260516a__team_e__E-R1-1__leader_ratio_bucket.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_64f38dac" :type "atom"
+  :subj "exp:E-R1-1_leader_ratio_bucket"
+  :pred "has_tag"
+  :obj "tag:size/medium"
+  :source "experiments/arc_260516a__team_e__E-R1-1__leader_ratio_bucket.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9b89d336" :type "atom"
+  :subj "exp:E-R1-1_leader_ratio_bucket"
+  :pred "has_tl_dr"
+  :obj "Team E paused lineage 候选：基于 (side, ratio_bucket) 的 leader 历史 14d winrate 做 blacklist。 train NAV/sharpe/dd 完全等于 anchor —— **mechanism 实际为 NO-OP** (14d 窗口 + min_trades 5 + winrate threshold 0.40 在 anchor pool 上几乎触发不了 drop). lineage 整体被 pause, 作 anti-pattern reference 留下。"
+  :source "experiments/arc_260516a__team_e__E-R1-1__leader_ratio_bucket.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d6422978" :type "atom"
+  :subj "exp:E-R1-1_leader_ratio_bucket"
+  :pred "has_section_intro"
+  :obj "# E-R1-1 — drop (side, ratio_bucket) past-14d winrate < 0.40\n\n> **TL;DR** —— Team E paused lineage 候选：基于 (side, ratio_bucket) 的 leader 历史 14d winrate 做 blacklist。 train NAV/sharpe/dd 完全等于 anchor —— **mechanism 实际为 NO-OP** (14d 窗口 + min_trades 5 + winrate threshold 0.40 在 anchor pool 上几乎触发不了 drop). lineage 整体被 pause, 作 anti-pattern reference 留下。"
+  :source "experiments/arc_260516a__team_e__E-R1-1__leader_ratio_bucket.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d38a5beb" :type "atom"
+  :subj "exp:E-R1-1_leader_ratio_bucket"
+  :pred "has_section_hypothesis"
+  :obj "- 假设：(side, ratio_bucket) 维度上的 leader 历史 win-rate < 0.40 = \"结构性烂 setup\" → drop.\n- 实测：mechanism NO-OP (anchor 140 trade 没一个落到 winrate<0.40 bucket)."
+  :source "experiments/arc_260516a__team_e__E-R1-1__leader_ratio_bucket.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ffcb78d6" :type "atom"
+  :subj "exp:E-R1-1_leader_ratio_bucket"
+  :pred "has_section_implementation"
+  :obj "- `team_e/scripts/round_1_runner.py`\n- 步骤：anchor base + drop legs where (side, ratio_bucket) past-14d winrate < 0.40, min_trades 5."
+  :source "experiments/arc_260516a__team_e__E-R1-1__leader_ratio_bucket.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a3a6a061" :type "atom"
+  :subj "exp:E-R1-1_leader_ratio_bucket"
+  :pred "has_section_past_only_window"
+  :obj "- past 14d strict past-only. min_trades 5 warmup. `#leak/clean`."
+  :source "experiments/arc_260516a__team_e__E-R1-1__leader_ratio_bucket.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e6fd0d77" :type "atom"
+  :subj "exp:E-R1-1_leader_ratio_bucket"
+  :pred "has_section_results"
+  :obj "| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 2.1882 | 140 | 7.70 | 85.7% | -1.01% |\n| Val (rolling 13w) | 1.0601 ± 0.068 | - | - | - | - |\n| Test | NOT RUN (NO-OP, no gain expected) | - | - | - | - |\n\nbit-for-bit anchor = mechanism 在 train 期 never triggers."
+  :source "experiments/arc_260516a__team_e__E-R1-1__leader_ratio_bucket.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1ea530a0" :type "atom"
+  :subj "exp:E-R1-1_leader_ratio_bucket"
+  :pred "has_section_risk_overfit"
+  :obj "- overfit_score = 0; NO-OP."
+  :source "experiments/arc_260516a__team_e__E-R1-1__leader_ratio_bucket.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c408dc1f" :type "atom"
+  :subj "exp:E-R1-1_leader_ratio_bucket"
+  :pred "derived_from"
+  :obj "exp:anchor_g2_baseline"
+  :source "experiments/arc_260516a__team_e__E-R1-1__leader_ratio_bucket.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_dbe84efb" :type "atom"
+  :subj "exp:E-R1-1_leader_ratio_bucket"
+  :pred "builds_against"
+  :obj "exp:anchor_g2_baseline"
+  :source "experiments/arc_260516a__team_e__E-R1-1__leader_ratio_bucket.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_498a09cf" :type "atom"
+  :subj "exp:E-R1-1_leader_ratio_bucket"
+  :pred "has_section_lineage_links"
+  :obj "- **derived_from**: [[arc_260516a__team_anchor__anchor_g2__baseline]]\n- **same_lineage_NO-OP**: [[arc_260516a__team_e__E-R1-2__leader_ticker_rolling_q20]], [[arc_260516a__team_e__E-R1-3__leader_ticker_mean_ret_pos]]\n- **builds against**: [[arc_260516a__team_anchor__anchor_g2__baseline]]"
+  :source "experiments/arc_260516a__team_e__E-R1-1__leader_ratio_bucket.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_4d17099e" :type "atom"
+  :subj "exp:E-R1-1_leader_ratio_bucket"
+  :pred "has_section_reports"
+  :obj "- `team_e/output/cross_round_leaderboard_nav.csv` (E-R1-1)\n- [[arc_260516a__reporter_20260517_0547]]"
+  :source "experiments/arc_260516a__team_e__E-R1-1__leader_ratio_bucket.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_174103e6" :type "atom"
+  :subj "exp:E-R1-1_leader_ratio_bucket"
+  :pred "has_section_notes"
+  :obj "- **anti-pattern: too-strict mechanism + small pool = NO-OP**. Team E 三个 R1 候选都因 mechanism 几乎不触发而 bit-for-bit 等于 anchor.\n- 下次 leader-profile axis 必须先 audit \"raw trigger frequency\"。若 mechanism 在 anchor 期 trigger < 5% legs, 必须放宽阈值或扩窗口才有意义。\n- 这是 vault 里 `paused` status 唯一 example, 留作 \"NO-OP mechanism\" 反例."
+  :source "experiments/arc_260516a__team_e__E-R1-1__leader_ratio_bucket.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")

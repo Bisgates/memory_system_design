@@ -1,0 +1,447 @@
+(card "exp:H-R1-1_rolling_30d_median_solo" :type "experiment"
+  :subj "exp:H-R1-1_rolling_30d_median_solo"
+  :body "---\nnav: 12\ntype: experiment\nid: H-R1-1\nshort_name: rolling_30d_median_solo\ntitle: \"H-R1-1 — size = clip(ratio/rolling_30d_median, 0.5, 1.5) on anchor base\"\narc: 260516a\nteam: h\nround: r1\nparent_arc: \"[[arcs/260516a]]\"\nparent_lineage: \"[[lineages/arc_260516a__team_h__sizing]]\"\ntrain_nav: 2.3919\ntrain_trade_count: 140\ntrain_win_rate: 0.8571\ntrain_sharpe: 6.9372\ntrain_max_drawdown: -0.0065\nval_nav_mean: 1.0667\nval_nav_sigma: 0.0812\nval_window_count: 13\ntest_nav: 1.3232\ntest_trade_count: 20\ntest_sharpe: 6.9568\ntest_win_rate: 0.7500\ntest_max_drawdown: -0.0034\nanchor_train_nav: 2.1882\nanchor_test_nav: 1.2486\nstatus: challenger\noutcome: test_pass\nchampion: false\noverfit_score: 0\nleak_audit: clean\naxis: [sizing]\npast_only_window_days: 30\nwarmup_required: 10\ncreated: 2026-05-17T02:00:00\nlast_updated: 2026-05-17T05:09:00\ntags: [arc/260516a, team/h, round/r1, axis/sizing, status/challenger, outcome/test_pass, leak/clean, size/medium]\n---\n\n# H-R1-1 — anchor × clip(ratio/rolling_30d_median, 0.5, 1.5)\n\n> **TL;DR** —— H 系列 sizing 的 **第一代 prototype**：直接套在 anchor base 上（不换 trade selector），验证 sizing axis 自身是否能 add NAV。**train 2.39 / test 1.32 vs anchor 2.19/1.25**，分别 +9.3% / +6.0% —— 证明 sizing 在 anchor pool 上就有正贡献。后续 R2/R3b 换更强 base (C7.5 / C8.4) 才进一步放大 NAV。\n\n## 假设 (Hypothesis)\n- 在不动 trade selector 的前提下，仅加 `ratio / 30d-past-median` 的 sizing factor，能否带来 NAV gain？\n- 假设：如果 ratio/median 反映信号强度，则 size weighted aggregate return 应严格高于 fixed-size。\n- 期待：train NAV +5-10%，test 上保留至少一半 edge。\n\n## 实现 (Implementation)\n- 主脚本：`/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_h/scripts/round_1_runner.py`\n- trade selector = anchor G2 (140 笔)\n- sizing：\n  $$ \\text{size}(t) = \\mathrm{clip}\\!\\left(\\frac{r_t}{\\widetilde{r}^{\\;\\text{past-30d}}_{\\,t}},\\; 0.5,\\; 1.5\\right) $$\n- mean_size = 1.058, std_size = 0.360.\n\n## Past-only window 处理\n- `rolling_30d_ratio_median`: 对每个 trade 时刻 t 取 `events[event_time < t & event_time >= t-30d]` 的 ratio 中位数。\n- warmup<10 时 size=1.0（cold-start fallback）。\n- critic 2026-05-17 audit pass (`#leak/clean`)。\n\n## 结果 (Results)\n| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 2.3919 | 140 | 6.94 | 85.7% | -0.65% |\n| Val (rolling 13w) | 1.0667 ± 0.081 | - | - | - | - |\n| Test | 1.3232 | 20 | 6.96 | 75.0% | -0.34% |\n| **Δ test NAV vs anchor** | **+0.075** | 0 | -0.19 | 0 | +0.19pp |\n| **Δ train NAV vs anchor** | +0.204 | 0 | -0.76 | 0 | +0.36pp |\n\n## 风险 & overfit 嫌疑\n- overfit_score = 0。trade pool 不变 → 直接对比 anchor。\n- 注意：sharpe 略降（7.70 → 6.94）—— sizing variance 引入额外波动；但 mean return per trade 升 (0.56% → 0.63%) 抵消。\n\n## Lineage（双链网）\n- **derived_from**: [[arc_260516a__team_anchor__anchor_g2__baseline]] (直接套 anchor base)\n- **descendants**: [[arc_260516a__team_h__H-R2-1__c75_linear_sizing]], [[arc_260516a__team_h__H-R2-2__c84_linear_sizing]], [[arc_260516a__team_h__H-R2-3__b_r8_1_sizing]], [[arc_260516a__team_h__H-R2-4__c75_sqrt_damp]] (H-R2 换 base)\n- **descendants_via_R3b**: [[arc_260516a__team_h__H-R3b-4__c84_kelly_lambda_1.5]] (SOTA)\n- **competes_with**: [[arc_260516a__team_h__H-R1-2__pre_avg_amount_sizing]], [[arc_260516a__team_h__H-R1-3__ratio_vol_blend]]\n- **builds against**: [[arc_260516a__team_anchor__anchor_g2__baseline]]\n\n## Reports\n- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_h/output/cross_round_leaderboard_nav.csv` (R1-1)\n- [[arc_260516a__reporter_20260517_0547]]\n\n## Notes / 下次迭代\n- **H 系列起点**：R1-1 是整个 sizing lineage 的母体。**任何未来 sizing 实验都应先在 anchor base 上跑同公式作 reference**，方便分离 \"sizing add\" vs \"trade-selector add\"。\n- 30d 窗口是 R1 直接选定，未在 H 系列 sweep —— vault gap，下次 arc 可补 7d/14d/60d 对比。\n"
+  :path "experiments/arc_260516a__team_h__H-R1-1__rolling_30d_median_solo.md"
+  :source_mtime "2026-05-17T10:18:12+08:00"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_96f8cfb9" :type "atom"
+  :subj "exp:H-R1-1_rolling_30d_median_solo"
+  :pred "has_nav"
+  :obj 12
+  :source "experiments/arc_260516a__team_h__H-R1-1__rolling_30d_median_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_cd6a4aa6" :type "atom"
+  :subj "exp:H-R1-1_rolling_30d_median_solo"
+  :pred "has_type"
+  :obj "experiment"
+  :source "experiments/arc_260516a__team_h__H-R1-1__rolling_30d_median_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c3aa02a1" :type "atom"
+  :subj "exp:H-R1-1_rolling_30d_median_solo"
+  :pred "has_id"
+  :obj "H-R1-1"
+  :source "experiments/arc_260516a__team_h__H-R1-1__rolling_30d_median_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d97fbb1a" :type "atom"
+  :subj "exp:H-R1-1_rolling_30d_median_solo"
+  :pred "has_short_name"
+  :obj "rolling_30d_median_solo"
+  :source "experiments/arc_260516a__team_h__H-R1-1__rolling_30d_median_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_dbec91b9" :type "atom"
+  :subj "exp:H-R1-1_rolling_30d_median_solo"
+  :pred "has_title"
+  :obj "H-R1-1 — size = clip(ratio/rolling_30d_median, 0.5, 1.5) on anchor base"
+  :source "experiments/arc_260516a__team_h__H-R1-1__rolling_30d_median_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9d296532" :type "atom"
+  :subj "exp:H-R1-1_rolling_30d_median_solo"
+  :pred "has_arc"
+  :obj "260516a"
+  :source "experiments/arc_260516a__team_h__H-R1-1__rolling_30d_median_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_67c5fc85" :type "atom"
+  :subj "exp:H-R1-1_rolling_30d_median_solo"
+  :pred "has_team"
+  :obj "h"
+  :source "experiments/arc_260516a__team_h__H-R1-1__rolling_30d_median_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a222fd45" :type "atom"
+  :subj "exp:H-R1-1_rolling_30d_median_solo"
+  :pred "has_round"
+  :obj "r1"
+  :source "experiments/arc_260516a__team_h__H-R1-1__rolling_30d_median_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_80ba1e3b" :type "atom"
+  :subj "exp:H-R1-1_rolling_30d_median_solo"
+  :pred "parent_arc"
+  :obj "arc:260516a"
+  :source "experiments/arc_260516a__team_h__H-R1-1__rolling_30d_median_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_240fd8ab" :type "atom"
+  :subj "exp:H-R1-1_rolling_30d_median_solo"
+  :pred "parent_lineage"
+  :obj "lin:arc_260516a__team_h__sizing"
+  :source "experiments/arc_260516a__team_h__H-R1-1__rolling_30d_median_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a2e36a93" :type "atom"
+  :subj "exp:H-R1-1_rolling_30d_median_solo"
+  :pred "has_train_nav"
+  :obj 2.3919
+  :source "experiments/arc_260516a__team_h__H-R1-1__rolling_30d_median_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_4693506f" :type "atom"
+  :subj "exp:H-R1-1_rolling_30d_median_solo"
+  :pred "has_train_trade_count"
+  :obj 140
+  :source "experiments/arc_260516a__team_h__H-R1-1__rolling_30d_median_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_0ff8f10f" :type "atom"
+  :subj "exp:H-R1-1_rolling_30d_median_solo"
+  :pred "has_train_win_rate"
+  :obj 0.8571
+  :source "experiments/arc_260516a__team_h__H-R1-1__rolling_30d_median_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_556911ca" :type "atom"
+  :subj "exp:H-R1-1_rolling_30d_median_solo"
+  :pred "has_train_sharpe"
+  :obj 6.9372
+  :source "experiments/arc_260516a__team_h__H-R1-1__rolling_30d_median_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1e391b5f" :type "atom"
+  :subj "exp:H-R1-1_rolling_30d_median_solo"
+  :pred "has_train_max_drawdown"
+  :obj -0.0065
+  :source "experiments/arc_260516a__team_h__H-R1-1__rolling_30d_median_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_6bbcae61" :type "atom"
+  :subj "exp:H-R1-1_rolling_30d_median_solo"
+  :pred "has_val_nav_mean"
+  :obj 1.0667
+  :source "experiments/arc_260516a__team_h__H-R1-1__rolling_30d_median_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_cc48b05f" :type "atom"
+  :subj "exp:H-R1-1_rolling_30d_median_solo"
+  :pred "has_val_nav_sigma"
+  :obj 0.0812
+  :source "experiments/arc_260516a__team_h__H-R1-1__rolling_30d_median_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_41ce687d" :type "atom"
+  :subj "exp:H-R1-1_rolling_30d_median_solo"
+  :pred "has_val_window_count"
+  :obj 13
+  :source "experiments/arc_260516a__team_h__H-R1-1__rolling_30d_median_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_55054bb5" :type "atom"
+  :subj "exp:H-R1-1_rolling_30d_median_solo"
+  :pred "has_test_nav"
+  :obj 1.3232
+  :source "experiments/arc_260516a__team_h__H-R1-1__rolling_30d_median_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_fd392dc2" :type "atom"
+  :subj "exp:H-R1-1_rolling_30d_median_solo"
+  :pred "has_test_trade_count"
+  :obj 20
+  :source "experiments/arc_260516a__team_h__H-R1-1__rolling_30d_median_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_7b286cc3" :type "atom"
+  :subj "exp:H-R1-1_rolling_30d_median_solo"
+  :pred "has_test_sharpe"
+  :obj 6.9568
+  :source "experiments/arc_260516a__team_h__H-R1-1__rolling_30d_median_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ddcff7b8" :type "atom"
+  :subj "exp:H-R1-1_rolling_30d_median_solo"
+  :pred "has_test_win_rate"
+  :obj 0.75
+  :source "experiments/arc_260516a__team_h__H-R1-1__rolling_30d_median_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_7014db3b" :type "atom"
+  :subj "exp:H-R1-1_rolling_30d_median_solo"
+  :pred "has_test_max_drawdown"
+  :obj -0.0034
+  :source "experiments/arc_260516a__team_h__H-R1-1__rolling_30d_median_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_de61f211" :type "atom"
+  :subj "exp:H-R1-1_rolling_30d_median_solo"
+  :pred "has_anchor_train_nav"
+  :obj 2.1882
+  :source "experiments/arc_260516a__team_h__H-R1-1__rolling_30d_median_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_82fee7da" :type "atom"
+  :subj "exp:H-R1-1_rolling_30d_median_solo"
+  :pred "has_anchor_test_nav"
+  :obj 1.2486
+  :source "experiments/arc_260516a__team_h__H-R1-1__rolling_30d_median_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b316060c" :type "atom"
+  :subj "exp:H-R1-1_rolling_30d_median_solo"
+  :pred "has_status"
+  :obj "challenger"
+  :source "experiments/arc_260516a__team_h__H-R1-1__rolling_30d_median_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1181da21" :type "atom"
+  :subj "exp:H-R1-1_rolling_30d_median_solo"
+  :pred "has_outcome"
+  :obj "test_pass"
+  :source "experiments/arc_260516a__team_h__H-R1-1__rolling_30d_median_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_8135ccdf" :type "atom"
+  :subj "exp:H-R1-1_rolling_30d_median_solo"
+  :pred "has_champion"
+  :obj false
+  :source "experiments/arc_260516a__team_h__H-R1-1__rolling_30d_median_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_375d5f18" :type "atom"
+  :subj "exp:H-R1-1_rolling_30d_median_solo"
+  :pred "has_overfit_score"
+  :obj 0
+  :source "experiments/arc_260516a__team_h__H-R1-1__rolling_30d_median_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d1939c87" :type "atom"
+  :subj "exp:H-R1-1_rolling_30d_median_solo"
+  :pred "has_leak_audit"
+  :obj "clean"
+  :source "experiments/arc_260516a__team_h__H-R1-1__rolling_30d_median_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ba803c06" :type "atom"
+  :subj "exp:H-R1-1_rolling_30d_median_solo"
+  :pred "has_axis"
+  :obj "axis:sizing"
+  :source "experiments/arc_260516a__team_h__H-R1-1__rolling_30d_median_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_6e47e0ab" :type "atom"
+  :subj "exp:H-R1-1_rolling_30d_median_solo"
+  :pred "has_axis_list"
+  :obj ("sizing")
+  :source "experiments/arc_260516a__team_h__H-R1-1__rolling_30d_median_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c85a22ef" :type "atom"
+  :subj "exp:H-R1-1_rolling_30d_median_solo"
+  :pred "has_past_only_window_days"
+  :obj 30
+  :source "experiments/arc_260516a__team_h__H-R1-1__rolling_30d_median_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_2daded7a" :type "atom"
+  :subj "exp:H-R1-1_rolling_30d_median_solo"
+  :pred "has_warmup_required"
+  :obj 10
+  :source "experiments/arc_260516a__team_h__H-R1-1__rolling_30d_median_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_94e81328" :type "atom"
+  :subj "exp:H-R1-1_rolling_30d_median_solo"
+  :pred "has_created"
+  :obj "2026-05-17 02:00:00"
+  :source "experiments/arc_260516a__team_h__H-R1-1__rolling_30d_median_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_3449e622" :type "atom"
+  :subj "exp:H-R1-1_rolling_30d_median_solo"
+  :pred "has_last_updated"
+  :obj "2026-05-17 05:09:00"
+  :source "experiments/arc_260516a__team_h__H-R1-1__rolling_30d_median_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c659155d" :type "atom"
+  :subj "exp:H-R1-1_rolling_30d_median_solo"
+  :pred "has_tag"
+  :obj "tag:arc/260516a"
+  :source "experiments/arc_260516a__team_h__H-R1-1__rolling_30d_median_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_3840054a" :type "atom"
+  :subj "exp:H-R1-1_rolling_30d_median_solo"
+  :pred "has_tag"
+  :obj "tag:team/h"
+  :source "experiments/arc_260516a__team_h__H-R1-1__rolling_30d_median_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_7413d1f1" :type "atom"
+  :subj "exp:H-R1-1_rolling_30d_median_solo"
+  :pred "has_tag"
+  :obj "tag:round/r1"
+  :source "experiments/arc_260516a__team_h__H-R1-1__rolling_30d_median_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_74918237" :type "atom"
+  :subj "exp:H-R1-1_rolling_30d_median_solo"
+  :pred "has_tag"
+  :obj "tag:axis/sizing"
+  :source "experiments/arc_260516a__team_h__H-R1-1__rolling_30d_median_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ee89b521" :type "atom"
+  :subj "exp:H-R1-1_rolling_30d_median_solo"
+  :pred "has_tag"
+  :obj "tag:status/challenger"
+  :source "experiments/arc_260516a__team_h__H-R1-1__rolling_30d_median_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_87cb8269" :type "atom"
+  :subj "exp:H-R1-1_rolling_30d_median_solo"
+  :pred "has_tag"
+  :obj "tag:outcome/test_pass"
+  :source "experiments/arc_260516a__team_h__H-R1-1__rolling_30d_median_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b88ccc5e" :type "atom"
+  :subj "exp:H-R1-1_rolling_30d_median_solo"
+  :pred "has_tag"
+  :obj "tag:leak/clean"
+  :source "experiments/arc_260516a__team_h__H-R1-1__rolling_30d_median_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_27db1f77" :type "atom"
+  :subj "exp:H-R1-1_rolling_30d_median_solo"
+  :pred "has_tag"
+  :obj "tag:size/medium"
+  :source "experiments/arc_260516a__team_h__H-R1-1__rolling_30d_median_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_0d544ff9" :type "atom"
+  :subj "exp:H-R1-1_rolling_30d_median_solo"
+  :pred "has_tl_dr"
+  :obj "H 系列 sizing 的 **第一代 prototype**：直接套在 anchor base 上（不换 trade selector），验证 sizing axis 自身是否能 add NAV。**train 2.39 / test 1.32 vs anchor 2.19/1.25**，分别 +9.3% / +6.0% —— 证明 sizing 在 anchor pool 上就有正贡献。后续 R2/R3b 换更强 base (C7.5 / C8.4) 才进一步放大 NAV。"
+  :source "experiments/arc_260516a__team_h__H-R1-1__rolling_30d_median_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f4779ddc" :type "atom"
+  :subj "exp:H-R1-1_rolling_30d_median_solo"
+  :pred "has_section_intro"
+  :obj "# H-R1-1 — anchor × clip(ratio/rolling_30d_median, 0.5, 1.5)\n\n> **TL;DR** —— H 系列 sizing 的 **第一代 prototype**：直接套在 anchor base 上（不换 trade selector），验证 sizing axis 自身是否能 add NAV。**train 2.39 / test 1.32 vs anchor 2.19/1.25**，分别 +9.3% / +6.0% —— 证明 sizing 在 anchor pool 上就有正贡献。后续 R2/R3b 换更强 base (C7.5 / C8.4) 才进一步放大 NAV。"
+  :source "experiments/arc_260516a__team_h__H-R1-1__rolling_30d_median_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_31f72329" :type "atom"
+  :subj "exp:H-R1-1_rolling_30d_median_solo"
+  :pred "has_section_hypothesis"
+  :obj "- 在不动 trade selector 的前提下，仅加 `ratio / 30d-past-median` 的 sizing factor，能否带来 NAV gain？\n- 假设：如果 ratio/median 反映信号强度，则 size weighted aggregate return 应严格高于 fixed-size。\n- 期待：train NAV +5-10%，test 上保留至少一半 edge。"
+  :source "experiments/arc_260516a__team_h__H-R1-1__rolling_30d_median_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_936c3e7d" :type "atom"
+  :subj "exp:H-R1-1_rolling_30d_median_solo"
+  :pred "has_section_implementation"
+  :obj "- 主脚本：`/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_h/scripts/round_1_runner.py`\n- trade selector = anchor G2 (140 笔)\n- sizing：\n  $$ \\text{size}(t) = \\mathrm{clip}\\!\\left(\\frac{r_t}{\\widetilde{r}^{\\;\\text{past-30d}}_{\\,t}},\\; 0.5,\\; 1.5\\right) $$\n- mean_size = 1.058, std_size = 0.360."
+  :source "experiments/arc_260516a__team_h__H-R1-1__rolling_30d_median_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_da65c50a" :type "atom"
+  :subj "exp:H-R1-1_rolling_30d_median_solo"
+  :pred "has_section_past_only_window"
+  :obj "- `rolling_30d_ratio_median`: 对每个 trade 时刻 t 取 `events[event_time < t & event_time >= t-30d]` 的 ratio 中位数。\n- warmup<10 时 size=1.0（cold-start fallback）。\n- critic 2026-05-17 audit pass (`#leak/clean`)。"
+  :source "experiments/arc_260516a__team_h__H-R1-1__rolling_30d_median_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f068f459" :type "atom"
+  :subj "exp:H-R1-1_rolling_30d_median_solo"
+  :pred "has_section_results"
+  :obj "| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 2.3919 | 140 | 6.94 | 85.7% | -0.65% |\n| Val (rolling 13w) | 1.0667 ± 0.081 | - | - | - | - |\n| Test | 1.3232 | 20 | 6.96 | 75.0% | -0.34% |\n| **Δ test NAV vs anchor** | **+0.075** | 0 | -0.19 | 0 | +0.19pp |\n| **Δ train NAV vs anchor** | +0.204 | 0 | -0.76 | 0 | +0.36pp |"
+  :source "experiments/arc_260516a__team_h__H-R1-1__rolling_30d_median_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_96aa7cdf" :type "atom"
+  :subj "exp:H-R1-1_rolling_30d_median_solo"
+  :pred "has_section_risk_overfit"
+  :obj "- overfit_score = 0。trade pool 不变 → 直接对比 anchor。\n- 注意：sharpe 略降（7.70 → 6.94）—— sizing variance 引入额外波动；但 mean return per trade 升 (0.56% → 0.63%) 抵消。"
+  :source "experiments/arc_260516a__team_h__H-R1-1__rolling_30d_median_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9a40e5d9" :type "atom"
+  :subj "exp:H-R1-1_rolling_30d_median_solo"
+  :pred "derived_from"
+  :obj "exp:anchor_g2_baseline"
+  :source "experiments/arc_260516a__team_h__H-R1-1__rolling_30d_median_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1866f79e" :type "atom"
+  :subj "exp:H-R1-1_rolling_30d_median_solo"
+  :pred "descendants"
+  :obj "exp:H-R2-1_c75_linear_sizing"
+  :source "experiments/arc_260516a__team_h__H-R1-1__rolling_30d_median_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b20e74bc" :type "atom"
+  :subj "exp:H-R1-1_rolling_30d_median_solo"
+  :pred "descendants"
+  :obj "exp:H-R2-2_c84_linear_sizing"
+  :source "experiments/arc_260516a__team_h__H-R1-1__rolling_30d_median_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c9b23aba" :type "atom"
+  :subj "exp:H-R1-1_rolling_30d_median_solo"
+  :pred "descendants"
+  :obj "exp:H-R2-3_b_r8_1_sizing"
+  :source "experiments/arc_260516a__team_h__H-R1-1__rolling_30d_median_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_6dfae08d" :type "atom"
+  :subj "exp:H-R1-1_rolling_30d_median_solo"
+  :pred "descendants"
+  :obj "exp:H-R2-4_c75_sqrt_damp"
+  :source "experiments/arc_260516a__team_h__H-R1-1__rolling_30d_median_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a3cb91bd" :type "atom"
+  :subj "exp:H-R1-1_rolling_30d_median_solo"
+  :pred "descendants_via_r3b"
+  :obj "exp:H-R3b-4_c84_kelly_lambda_1.5"
+  :source "experiments/arc_260516a__team_h__H-R1-1__rolling_30d_median_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_8e5a1dba" :type "atom"
+  :subj "exp:H-R1-1_rolling_30d_median_solo"
+  :pred "competes_with"
+  :obj "exp:H-R1-2_pre_avg_amount_sizing"
+  :source "experiments/arc_260516a__team_h__H-R1-1__rolling_30d_median_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c6bd1774" :type "atom"
+  :subj "exp:H-R1-1_rolling_30d_median_solo"
+  :pred "competes_with"
+  :obj "exp:H-R1-3_ratio_vol_blend"
+  :source "experiments/arc_260516a__team_h__H-R1-1__rolling_30d_median_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_92b9caa0" :type "atom"
+  :subj "exp:H-R1-1_rolling_30d_median_solo"
+  :pred "builds_against"
+  :obj "exp:anchor_g2_baseline"
+  :source "experiments/arc_260516a__team_h__H-R1-1__rolling_30d_median_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_88fc264d" :type "atom"
+  :subj "exp:H-R1-1_rolling_30d_median_solo"
+  :pred "has_section_lineage_links"
+  :obj "- **derived_from**: [[arc_260516a__team_anchor__anchor_g2__baseline]] (直接套 anchor base)\n- **descendants**: [[arc_260516a__team_h__H-R2-1__c75_linear_sizing]], [[arc_260516a__team_h__H-R2-2__c84_linear_sizing]], [[arc_260516a__team_h__H-R2-3__b_r8_1_sizing]], [[arc_260516a__team_h__H-R2-4__c75_sqrt_damp]] (H-R2 换 base)\n- **descendants_via_R3b**: [[arc_260516a__team_h__H-R3b-4__c84_kelly_lambda_1.5]] (SOTA)\n- **competes_with**: [[arc_260516a__team_h__H-R1-2__pre_avg_amount_sizing]], [[arc_260516a__team_h__H-R1-3__ratio_vol_blend]]\n- **builds against**: [[arc_260516a__team_anchor__anchor_g2__baseline]]"
+  :source "experiments/arc_260516a__team_h__H-R1-1__rolling_30d_median_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_7bbdf31f" :type "atom"
+  :subj "exp:H-R1-1_rolling_30d_median_solo"
+  :pred "has_section_reports"
+  :obj "- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_h/output/cross_round_leaderboard_nav.csv` (R1-1)\n- [[arc_260516a__reporter_20260517_0547]]"
+  :source "experiments/arc_260516a__team_h__H-R1-1__rolling_30d_median_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c73dfbf1" :type "atom"
+  :subj "exp:H-R1-1_rolling_30d_median_solo"
+  :pred "has_section_notes"
+  :obj "- **H 系列起点**：R1-1 是整个 sizing lineage 的母体。**任何未来 sizing 实验都应先在 anchor base 上跑同公式作 reference**，方便分离 \"sizing add\" vs \"trade-selector add\"。\n- 30d 窗口是 R1 直接选定，未在 H 系列 sweep —— vault gap，下次 arc 可补 7d/14d/60d 对比。"
+  :source "experiments/arc_260516a__team_h__H-R1-1__rolling_30d_median_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")

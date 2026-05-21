@@ -1,0 +1,41 @@
+============================================================
+SMOKE TEST — wiki kernel phase 1
+============================================================
+
+[1] Create store + 5 atom cards
+  atom count = 5
+
+[2] Rule engine — introduces_doc reverse + topic sharing
+  derived count after fixpoint = 2
+  doc:paper_3dgs introduced_by: ['arc:260508b']
+
+[3] Macro engine — paper → 3 experiment suggestions
+  macro expanded 3 new suggestion cards
+  suggestion objs: ['exp:baseline_doc:paper_3dgs', 'exp:ablation_doc:paper_3dgs', 'exp:extension_doc:paper_3dgs']
+
+[4] View card — materialize all 'suggests_experiment' derived cards
+  view materialize count = 3
+  lazy ref resolved: 'Summary ref: 3D Gaussian splatting achieves real-time novel '...
+
+[5] Dedup — near-duplicate restart
+  similarity(dup_a, dup_b) = 0.893
+  near dupes of dup:a (threshold=0.80): [('dup:b', '0.893')]
+  restart action = 'keep-both'
+  see-also links verified on both dup cards
+
+[6] EDN dump → load → equivalence check
+  16 cards dumped → 16 cards reloaded (all match)
+
+============================================================
+SMOKE TEST SUMMARY:
+  atom count              = 8
+  rule count              = 1
+  macro count             = 1
+  derived count           = 5
+  view count              = 1
+  total cards in store    = 16
+  view materialize count  = 3
+  dedup sim score         = 0.893
+  dedup restart action    = keep-both
+============================================================
+SMOKE TEST PASSED

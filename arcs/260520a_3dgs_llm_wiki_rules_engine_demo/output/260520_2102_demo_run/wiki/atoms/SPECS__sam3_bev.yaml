@@ -1,0 +1,14 @@
+- id: a_901a476a
+  subj: doc:specs/sam3_bev.md
+  pred: has_type
+  obj: type:spec
+  source: SPECS/sam3_bev.md
+  derived_from: null
+  parents: []
+- id: a_8ff52057
+  subj: doc:specs/sam3_bev.md
+  pred: has_title
+  obj: SAM 3 × BEV Data — Instance Segmentation
+  source: SPECS/sam3_bev.md
+  derived_from: null
+  parents: []

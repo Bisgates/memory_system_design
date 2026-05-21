@@ -1,0 +1,21 @@
+- id: a_04f3829e
+  subj: arc:260430a
+  pred: has_type
+  obj: type:arc
+  source: arcs/all/260430a_refine_agents_md/9_summary.md
+  derived_from: null
+  parents: []
+- id: a_fe6895d7
+  subj: arc:260430a
+  pred: has_title
+  obj: 9_summary — refine_agents_md
+  source: arcs/all/260430a_refine_agents_md/9_summary.md
+  derived_from: null
+  parents: []
+- id: a_c6aa6c96
+  subj: arc:260430a
+  pred: introduces_doc
+  obj: doc:policy/agents_md_conventions.md
+  source: arcs/all/260430a_refine_agents_md/9_summary.md
+  derived_from: null
+  parents: []

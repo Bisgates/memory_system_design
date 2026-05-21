@@ -1,0 +1,69 @@
+(card "doc:vault_readme" :type "doc"
+  :subj "doc:vault_readme"
+  :body "---\nnav: 0\ntype: readme\ntags: [vault/meta]\n---\n\n# auto_research_experiment — Obsidian Vault\n\n> alpha_second_v1 auto-research 实验**长期记忆**：每个 candidate 一个 .md，双链 + tag 网状组织。\n> **设计文档**: [[VAULT_DESIGN]] —— 先读那个再读这里。\n\n---\n\n## 给 sub-agent 的 1-page 用法\n\n**新 arc 开始前必做**：\n\n```bash\n# 1. 按 axis grep 历史 candidate\ngrep -rln \"axis/sizing\" /Users/han/project/alpha/alpha_second_v1/auto_research_experiment/experiments/\n\n# 2. 按 status 找历史失败案例（极重要，看清楚谁踩过坑）\ngrep -rln \"status/falsified\" /Users/han/project/alpha/alpha_second_v1/auto_research_experiment/experiments/\n\n# 3. 按 outcome 找 hold-out 通过的方案\ngrep -rln \"outcome/test_pass\" /Users/han/project/alpha/alpha_second_v1/auto_research_experiment/experiments/\n\n# 4. 按 anti-pattern 找已知坑\ngrep -rln \"anti-pattern\" /Users/han/project/alpha/alpha_second_v1/auto_research_experiment/experiments/\n```\n\n新候选设计文档**至少**引用 1 个历史 candidate 作 lesson reference，写成 `[[arc_<id>__team_<x>__<cand>__<short>]]` 双链。\n\n---\n\n## 给 han 的 Obsidian 配置建议\n\n### 1. 打开方式\n\nObsidian → Open folder as vault → `/Users/han/project/alpha/alpha_second_v1/auto_research_experiment/`\n\n### 2. 推荐 core plugin（Obsidian 自带）\n\n- **Graph view** —— 直接看 candidate 网络\n  - Settings → Filter by tags: 试 `tag:#arc/260516a` 只看一个 arc\n  - Group by tag color: `#status/champion` 高亮金色，`#status/falsified` 灰色，`#status/anchor` 蓝色\n- **Tag pane** —— 左侧面板按 tag 分类\n- **Backlinks** —— 看哪些候选反向链到当前 candidate（lineage 真值）\n- **Outgoing links** —— 当前候选链出去到哪些 candidate / lineage / report\n- **Quick switcher** —— `Cmd-O` 然后输入 `H-R3b-4` 秒跳 SOTA champion\n\n### 3. 强烈推荐 community plugin\n\n- **Dataview** —— 写 SQL-like query 块直接在 markdown 里渲染表\n  - 例：在某个 lineage 文件里加\n    ```dataview\n    TABLE train_nav, test_nav, status FROM \"experiments\"\n    WHERE team = \"h\" AND axis = \"sizing\"\n    SORT test_nav DESC\n    ```\n  - 自动出 lineage 表，candidate 增加时表实时更新\n- **Tag Wrangler** —— 批量重命名 tag\n- **Templater** —— 新 candidate 文件用模板秒建\n\n### 4. Graph view 配色推荐\n\n| Tag | Color | Meaning |\n|---|---|---|\n| `#status/champion` | gold | 当前 SOTA |\n| `#status/challenger` | green | 通过 train+val gate |\n| `#status/falsified` | red | hold-out 上崩 |\n| `#status/demoted` | gray | 被同 lineage 更强 candidate 替代 |\n| `#status/anchor` | blue | 参考基准 |\n| `#outcome/test_pass` | (size larger) | hold-out 通过 |\n| `#leak/structural` | red border | 严重 leak |\n\n---\n\n## 目录布局\n\n```\nauto_research_experiment/\n├── VAULT_DESIGN.md           ← 方法论 + schema 定义\n├── README.md                 ← 本文件\n├── experiments/              ← 每个 candidate 一个 .md（flat）\n├── lineages/                 ← 一条 lineage 一个概览页\n└── reports/                  ← reporter HTML 的 stub 双链\n```\n\n**为什么 flat experiments/**：详见 [[VAULT_DESIGN]] §2 trade-off 表。短答案：tag 分类比目录灵活；命名前缀已经是分类。\n\n---\n\n## 文件命名 cheat sheet\n\n| 类型 | 模板 | 例 |\n|---|---|---|\n| candidate | `arc_<id>__team_<x>__<cand>__<short>.md` | `arc_260516a__team_h__H-R3b-4__c84_kelly_lambda_1.5.md` |\n| lineage | `arc_<id>__team_<x>__<axis>.md` | `arc_260516a__team_h__sizing.md` |\n| report | `arc_<id>__<name>.md` | `arc_260516a__reporter_20260517_0547.md` |\n\n---\n\n## 当前 vault 状态（2026-05-17 由 design sub-agent seed）\n\n### Seeded (8)\n\n- [[experiments/arc_260516a__team_anchor__anchor_g2__baseline]] ← root\n- [[experiments/arc_260516a__team_h__H-R3b-4__c84_kelly_lambda_1.5]] ← **SOTA champion**\n- [[experiments/arc_260516a__team_h__H-R2-2__c84_linear_sizing]]\n- [[experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass]]\n- [[experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03]]\n- [[experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple]] ← **falsified, must-read anti-pattern**\n- [[experiments/arc_260516a__team_f__F-R1-1__ofi_drop_extreme]] ← **microstructure axis falsified**\n- [[experiments/arc_260516a__team_g__G-R1-1__luoyangchan_solo]] ← **source-swap demoted**\n\n### Lineages\n\n- [[lineages/arc_260516a__team_h__sizing]] ← SOTA lineage 概览\n\n### Reports stubs\n\n- [[reports/arc_260516a__reporter_20260517_0547]]\n\n### Pending (han 拍是否继续 migrate)\n\n剩 ~25 个 candidate 未 migrate：H-R3b-0/1/2/3、H-R3a-1/2、H-R1-1/2/3、B 队 R7-R11 全部、C 队 C1-C8 完整、D 队 R1/R2-1/2/4、F 队 R2-x、G 队 R1-2/3 R2-1/2/3、Team A、Team E。\n请 han 拍是否要 batch 继续。\n"
+  :path "README.md"
+  :source_mtime "2026-05-17T10:05:15+08:00"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_73ff382d" :type "atom"
+  :subj "doc:vault_readme"
+  :pred "has_nav"
+  :obj 0
+  :source "README.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e0f80641" :type "atom"
+  :subj "doc:vault_readme"
+  :pred "has_type"
+  :obj "readme"
+  :source "README.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_89cb16aa" :type "atom"
+  :subj "doc:vault_readme"
+  :pred "has_tag"
+  :obj "tag:vault/meta"
+  :source "README.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e279a933" :type "atom"
+  :subj "doc:vault_readme"
+  :pred "has_section_intro"
+  :obj "# auto_research_experiment — Obsidian Vault\n\n> alpha_second_v1 auto-research 实验**长期记忆**：每个 candidate 一个 .md，双链 + tag 网状组织。\n> **设计文档**: [[VAULT_DESIGN]] —— 先读那个再读这里。\n\n---"
+  :source "README.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9e406af1" :type "atom"
+  :subj "doc:vault_readme"
+  :pred "has_section_给_sub_agent_的_1_page_用法"
+  :obj "**新 arc 开始前必做**：\n\n```bash\n# 1. 按 axis grep 历史 candidate\ngrep -rln \"axis/sizing\" /Users/han/project/alpha/alpha_second_v1/auto_research_experiment/experiments/\n\n# 2. 按 status 找历史失败案例（极重要，看清楚谁踩过坑）\ngrep -rln \"status/falsified\" /Users/han/project/alpha/alpha_second_v1/auto_research_experiment/experiments/\n\n# 3. 按 outcome 找 hold-out 通过的方案\ngrep -rln \"outcome/test_pass\" /Users/han/project/alpha/alpha_second_v1/auto_research_experiment/experiments/\n\n# 4. 按 anti-pattern 找已知坑\ngrep -rln \"anti-pattern\" /Users/han/project/alpha/alpha_second_v1/auto_research_experiment/experiments/\n```\n\n新候选设计文档**至少**引用 1 个历史 candidate 作 lesson reference，写成 `[[arc_<id>__team_<x>__<cand>__<short>]]` 双链。\n\n---"
+  :source "README.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_6af0d836" :type "atom"
+  :subj "doc:vault_readme"
+  :pred "has_section_给_han_的_obsidian_配置建议"
+  :obj "### 1. 打开方式\n\nObsidian → Open folder as vault → `/Users/han/project/alpha/alpha_second_v1/auto_research_experiment/`\n\n### 2. 推荐 core plugin（Obsidian 自带）\n\n- **Graph view** —— 直接看 candidate 网络\n  - Settings → Filter by tags: 试 `tag:#arc/260516a` 只看一个 arc\n  - Group by tag color: `#status/champion` 高亮金色，`#status/falsified` 灰色，`#status/anchor` 蓝色\n- **Tag pane** —— 左侧面板按 tag 分类\n- **Backlinks** —— 看哪些候选反向链到当前 candidate（lineage 真值）\n- **Outgoing links** —— 当前候选链出去到哪些 candidate / lineage / report\n- **Quick switcher** —— `Cmd-O` 然后输入 `H-R3b-4` 秒跳 SOTA champion\n\n### 3. 强烈推荐 community plugin\n\n- **Dataview** —— 写 SQL-like query 块直接在 markdown 里渲染表\n  - 例：在某个 lineage 文件里加\n    ```dataview\n    TABLE train_nav, test_nav, status FROM \"experiments\"\n    WHERE team = \"h\" AND axis = \"sizing\"\n    SORT test_nav DESC\n    ```\n  - 自动出 lineage 表，candidate 增加时表实时更新\n- **Tag Wrangler** —— 批量重命名 tag\n- **Templater** —— 新 candidate 文件用模板秒建\n\n### 4. Graph view 配色推荐\n\n| Tag | Color | Meaning |\n|---|---|---|\n| `#status/champion` | gold | 当前 SOTA |\n| `#status/challenger` | green | 通过 train+val gate |\n| `#status/falsified` | red | hold-out 上崩 |\n| `#status/demoted` | gray | 被同 lineage 更强 candidate 替代 |\n| `#status/anchor` | blue | 参考基准 |\n| `#outcome/test_pass` | (size larger) | hold-out 通过 |\n| `#leak/structural` | red border | 严重 leak |\n\n---"
+  :source "README.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_71bc96c1" :type "atom"
+  :subj "doc:vault_readme"
+  :pred "has_section_目录布局"
+  :obj "```\nauto_research_experiment/\n├── VAULT_DESIGN.md           ← 方法论 + schema 定义\n├── README.md                 ← 本文件\n├── experiments/              ← 每个 candidate 一个 .md（flat）\n├── lineages/                 ← 一条 lineage 一个概览页\n└── reports/                  ← reporter HTML 的 stub 双链\n```\n\n**为什么 flat experiments/**：详见 [[VAULT_DESIGN]] §2 trade-off 表。短答案：tag 分类比目录灵活；命名前缀已经是分类。\n\n---"
+  :source "README.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_da84ad9c" :type "atom"
+  :subj "doc:vault_readme"
+  :pred "has_section_文件命名_cheat_sheet"
+  :obj "| 类型 | 模板 | 例 |\n|---|---|---|\n| candidate | `arc_<id>__team_<x>__<cand>__<short>.md` | `arc_260516a__team_h__H-R3b-4__c84_kelly_lambda_1.5.md` |\n| lineage | `arc_<id>__team_<x>__<axis>.md` | `arc_260516a__team_h__sizing.md` |\n| report | `arc_<id>__<name>.md` | `arc_260516a__reporter_20260517_0547.md` |\n\n---"
+  :source "README.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f143a684" :type "atom"
+  :subj "doc:vault_readme"
+  :pred "has_section_当前_vault_状态_2026_05_17_由_design_sub_agent_seed"
+  :obj "### Seeded (8)\n\n- [[experiments/arc_260516a__team_anchor__anchor_g2__baseline]] ← root\n- [[experiments/arc_260516a__team_h__H-R3b-4__c84_kelly_lambda_1.5]] ← **SOTA champion**\n- [[experiments/arc_260516a__team_h__H-R2-2__c84_linear_sizing]]\n- [[experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass]]\n- [[experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03]]\n- [[experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple]] ← **falsified, must-read anti-pattern**\n- [[experiments/arc_260516a__team_f__F-R1-1__ofi_drop_extreme]] ← **microstructure axis falsified**\n- [[experiments/arc_260516a__team_g__G-R1-1__luoyangchan_solo]] ← **source-swap demoted**\n\n### Lineages\n\n- [[lineages/arc_260516a__team_h__sizing]] ← SOTA lineage 概览\n\n### Reports stubs\n\n- [[reports/arc_260516a__reporter_20260517_0547]]\n\n### Pending (han 拍是否继续 migrate)\n\n剩 ~25 个 candidate 未 migrate：H-R3b-0/1/2/3、H-R3a-1/2、H-R1-1/2/3、B 队 R7-R11 全部、C 队 C1-C8 完整、D 队 R1/R2-1/2/4、F 队 R2-x、G 队 R1-2/3 R2-1/2/3、Team A、Team E。\n请 han 拍是否要 batch 继续。"
+  :source "README.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")

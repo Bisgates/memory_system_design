@@ -1,0 +1,159 @@
+(card "d_7ca6a81e" :type "derived"
+  :subj "exp:B-R8-1_no_open3min_bypass03"
+  :pred "competes_with"
+  :obj "exp:B-R10-0_all_admit_baseline"
+  :derived_from "rule:r003_competes_with_symmetry"
+  :parents ("a_e4d620ba")
+  :generated_at "2026-05-20T17:40:25.578792+00:00")
+
+(card "d_0ef791d2" :type "derived"
+  :subj "exp:B-R10-4_blacklist_stack_3"
+  :pred "competes_with"
+  :obj "exp:B-R10-2_blacklist_low_amt"
+  :derived_from "rule:r003_competes_with_symmetry"
+  :parents ("a_5b840734")
+  :generated_at "2026-05-20T17:40:25.578796+00:00")
+
+(card "d_98134643" :type "derived"
+  :subj "exp:C7.3_top3_rolling_baserate"
+  :pred "competes_with"
+  :obj "exp:C6.4_top3_expand"
+  :derived_from "rule:r003_competes_with_symmetry"
+  :parents ("a_589e4ec4")
+  :generated_at "2026-05-20T17:40:25.578803+00:00")
+
+(card "d_02c17cb2" :type "derived"
+  :subj "exp:B-R9-1_rolling_baserate"
+  :pred "competes_with"
+  :obj "exp:C7.3_top3_rolling_baserate"
+  :derived_from "rule:r003_competes_with_symmetry"
+  :parents ("a_5829d56d")
+  :generated_at "2026-05-20T17:40:25.578806+00:00")
+
+(card "d_231c6832" :type "derived"
+  :subj "exp:B-R8-1_no_open3min_bypass03"
+  :pred "competes_with"
+  :obj "exp:C8.4_top3_no_open3min_bypass"
+  :derived_from "rule:r003_competes_with_symmetry"
+  :parents ("a_c78abca7")
+  :generated_at "2026-05-20T17:40:25.578809+00:00")
+
+(card "d_f64b4ec1" :type "derived"
+  :subj "exp:D-R1-2_isolated_keep"
+  :pred "competes_with"
+  :obj "exp:D-R1-1_consensus_gte1"
+  :derived_from "rule:r003_competes_with_symmetry"
+  :parents ("a_491a0c5c")
+  :generated_at "2026-05-20T17:40:25.578814+00:00")
+
+(card "d_75691aea" :type "derived"
+  :subj "exp:anchor_g2_baseline"
+  :pred "competes_with"
+  :obj "exp:D-R2-1_default_admit_baseline"
+  :derived_from "rule:r003_competes_with_symmetry"
+  :parents ("a_40864fb7")
+  :generated_at "2026-05-20T17:40:25.578824+00:00")
+
+(card "d_28bdc785" :type "derived"
+  :subj "exp:H-R3b-4_c84_kelly_lambda_1.5"
+  :pred "competes_with"
+  :obj "exp:D-R2-3_blacklist_stack_triple"
+  :derived_from "rule:r003_competes_with_symmetry"
+  :parents ("a_ea40ec03")
+  :generated_at "2026-05-20T17:40:25.578827+00:00")
+
+(card "d_f9326a8a" :type "derived"
+  :subj "exp:H-R3b-4_c84_kelly_lambda_1.5"
+  :pred "competes_with"
+  :obj "exp:F-R1-1_ofi_drop_extreme"
+  :derived_from "rule:r003_competes_with_symmetry"
+  :parents ("a_777160bc")
+  :generated_at "2026-05-20T17:40:25.578830+00:00")
+
+(card "d_c178ffdc" :type "derived"
+  :subj "exp:F-R2-1_vpin_drop_q80_300s"
+  :pred "competes_with"
+  :obj "exp:F-R2-4_ofi_dir_align"
+  :derived_from "rule:r003_competes_with_symmetry"
+  :parents ("a_30bafcd5")
+  :generated_at "2026-05-20T17:40:25.578836+00:00")
+
+(card "d_7046028c" :type "derived"
+  :subj "exp:H-R3b-4_c84_kelly_lambda_1.5"
+  :pred "competes_with"
+  :obj "exp:G-R1-1_luoyangchan_solo"
+  :derived_from "rule:r003_competes_with_symmetry"
+  :parents ("a_752c4e7c")
+  :generated_at "2026-05-20T17:40:25.578839+00:00")
+
+(card "d_bebdb228" :type "derived"
+  :subj "exp:G-R2-2_luoyangchan_cap5M"
+  :pred "competes_with"
+  :obj "exp:G-R2-1_luoyangchan_cap26M"
+  :derived_from "rule:r003_competes_with_symmetry"
+  :parents ("a_92010297")
+  :generated_at "2026-05-20T17:40:25.578842+00:00")
+
+(card "d_6bfd088e" :type "derived"
+  :subj "exp:G-R2-3_luoyangchan_nocap"
+  :pred "competes_with"
+  :obj "exp:G-R2-1_luoyangchan_cap26M"
+  :derived_from "rule:r003_competes_with_symmetry"
+  :parents ("a_ba529c35")
+  :generated_at "2026-05-20T17:40:25.578845+00:00")
+
+(card "d_e7022d93" :type "derived"
+  :subj "exp:H-R1-2_pre_avg_amount_sizing"
+  :pred "competes_with"
+  :obj "exp:H-R1-1_rolling_30d_median_solo"
+  :derived_from "rule:r003_competes_with_symmetry"
+  :parents ("a_8e5a1dba")
+  :generated_at "2026-05-20T17:40:25.578848+00:00")
+
+(card "d_8c9347a9" :type "derived"
+  :subj "exp:H-R1-3_ratio_vol_blend"
+  :pred "competes_with"
+  :obj "exp:H-R1-1_rolling_30d_median_solo"
+  :derived_from "rule:r003_competes_with_symmetry"
+  :parents ("a_c6bd1774")
+  :generated_at "2026-05-20T17:40:25.578851+00:00")
+
+(card "d_90728506" :type "derived"
+  :subj "exp:H-R1-2_pre_avg_amount_sizing"
+  :pred "competes_with"
+  :obj "exp:H-R1-3_ratio_vol_blend"
+  :derived_from "rule:r003_competes_with_symmetry"
+  :parents ("a_70136570")
+  :generated_at "2026-05-20T17:40:25.578855+00:00")
+
+(card "d_04114d52" :type "derived"
+  :subj "exp:H-R2-2_c84_linear_sizing"
+  :pred "competes_with"
+  :obj "exp:H-R2-1_c75_linear_sizing"
+  :derived_from "rule:r003_competes_with_symmetry"
+  :parents ("a_66b1269e")
+  :generated_at "2026-05-20T17:40:25.578857+00:00")
+
+(card "d_3cecbe1e" :type "derived"
+  :subj "exp:H-R2-4_c75_sqrt_damp"
+  :pred "competes_with"
+  :obj "exp:H-R2-3_b_r8_1_sizing"
+  :derived_from "rule:r003_competes_with_symmetry"
+  :parents ("a_758d0111")
+  :generated_at "2026-05-20T17:40:25.578866+00:00")
+
+(card "d_ba020e8c" :type "derived"
+  :subj "exp:H-R2-2_c84_linear_sizing"
+  :pred "competes_with"
+  :obj "exp:H-R2-4_c75_sqrt_damp"
+  :derived_from "rule:r003_competes_with_symmetry"
+  :parents ("a_aa66fdde")
+  :generated_at "2026-05-20T17:40:25.578871+00:00")
+
+(card "d_ad12a3a6" :type "derived"
+  :subj "exp:H-R3b-3_c84_kelly_lambda_1.0"
+  :pred "competes_with"
+  :obj "exp:H-R3b-2_c84_kelly_lambda_0.5"
+  :derived_from "rule:r003_competes_with_symmetry"
+  :parents ("a_820ae2cb")
+  :generated_at "2026-05-20T17:40:25.578878+00:00")

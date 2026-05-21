@@ -1,0 +1,423 @@
+(card "d_643b3730" :type "derived"
+  :subj "exp:anchor_g2_baseline"
+  :pred "derives_to"
+  :obj "exp:C20_recent_signal_flow_skip"
+  :derived_from "rule:r002_derived_from_reverse"
+  :parents ("a_7ead88ff")
+  :generated_at "2026-05-20T17:40:25.575998+00:00")
+
+(card "d_f08685f7" :type "derived"
+  :subj "exp:anchor_g2_baseline"
+  :pred "derives_to"
+  :obj "exp:C6_anchor_plus_impact_cap"
+  :derived_from "rule:r002_derived_from_reverse"
+  :parents ("a_8d939c6c")
+  :generated_at "2026-05-20T17:40:25.576001+00:00")
+
+(card "d_58f360cc" :type "derived"
+  :subj "exp:anchor_g2_baseline"
+  :pred "derives_to"
+  :obj "exp:C7_same_minute_pre_amt"
+  :derived_from "rule:r002_derived_from_reverse"
+  :parents ("a_0972ecb0")
+  :generated_at "2026-05-20T17:40:25.576004+00:00")
+
+(card "d_e943025c" :type "derived"
+  :subj "exp:B-R10-0_all_admit_baseline"
+  :pred "derives_to"
+  :obj "exp:B-R10-2_blacklist_low_amt"
+  :derived_from "rule:r002_derived_from_reverse"
+  :parents ("a_63a99d37")
+  :generated_at "2026-05-20T17:40:25.576008+00:00")
+
+(card "d_041818b7" :type "derived"
+  :subj "exp:B-R10-0_all_admit_baseline"
+  :pred "derives_to"
+  :obj "exp:B-R10-4_blacklist_stack_3"
+  :derived_from "rule:r002_derived_from_reverse"
+  :parents ("a_8e92e24a")
+  :generated_at "2026-05-20T17:40:25.576010+00:00")
+
+(card "d_84cffa54" :type "derived"
+  :subj "exp:B-R10-4_blacklist_stack_3"
+  :pred "derives_to"
+  :obj "exp:B-R11-2_blacklist_vol_regime_low"
+  :derived_from "rule:r002_derived_from_reverse"
+  :parents ("a_81cc8aa4")
+  :generated_at "2026-05-20T17:40:25.576014+00:00")
+
+(card "d_a39bb56e" :type "derived"
+  :subj "exp:B-R7-4_no_open_3min"
+  :pred "derives_to"
+  :obj "exp:B-R8-1_no_open3min_bypass03"
+  :derived_from "rule:r002_derived_from_reverse"
+  :parents ("a_f835a693")
+  :generated_at "2026-05-20T17:40:25.576017+00:00")
+
+(card "d_1406efb3" :type "derived"
+  :subj "exp:B-R8-1_no_open3min_bypass03"
+  :pred "derives_to"
+  :obj "exp:B-R9-3_sigma_regime_exit"
+  :derived_from "rule:r002_derived_from_reverse"
+  :parents ("a_da416780")
+  :generated_at "2026-05-20T17:40:25.576020+00:00")
+
+(card "d_45396db6" :type "derived"
+  :subj "exp:B-R8-1_no_open3min_bypass03"
+  :pred "derives_to"
+  :obj "exp:B-R9-4_confluence_horizon"
+  :derived_from "rule:r002_derived_from_reverse"
+  :parents ("a_a89b0091")
+  :generated_at "2026-05-20T17:40:25.576023+00:00")
+
+(card "d_3d75bb11" :type "derived"
+  :subj "exp:anchor_g2_baseline"
+  :pred "derives_to"
+  :obj "lin:arc_260516a__team_b__blacklist_axis"
+  :derived_from "rule:r002_derived_from_reverse"
+  :parents ("a_07bd46ec")
+  :generated_at "2026-05-20T17:40:25.576026+00:00")
+
+(card "d_69e50d64" :type "derived"
+  :subj "exp:anchor_g2_baseline"
+  :pred "derives_to"
+  :obj "exp:C6.4_top3_expand"
+  :derived_from "rule:r002_derived_from_reverse"
+  :parents ("a_024c6074")
+  :generated_at "2026-05-20T17:40:25.576029+00:00")
+
+(card "d_78fbb87d" :type "derived"
+  :subj "exp:baseline_C6.4_top3_expand"
+  :pred "derives_to"
+  :obj "exp:C7.3_top3_rolling_baserate"
+  :derived_from "rule:r002_derived_from_reverse"
+  :parents ("a_5e9f7572")
+  :generated_at "2026-05-20T17:40:25.576032+00:00")
+
+(card "d_6cdcf5ff" :type "derived"
+  :subj "exp:baseline_C6.4_top3_expand"
+  :pred "derives_to"
+  :obj "exp:C7.5_top3_no_open3min"
+  :derived_from "rule:r002_derived_from_reverse"
+  :parents ("a_cadd05ad")
+  :generated_at "2026-05-20T17:40:25.576035+00:00")
+
+(card "d_622b6035" :type "derived"
+  :subj "exp:C6.4_top3_expand"
+  :pred "derives_to"
+  :obj "exp:C7.5_top3_no_open3min"
+  :derived_from "rule:r002_derived_from_reverse"
+  :parents ("a_276d9b7c")
+  :generated_at "2026-05-20T17:40:25.576038+00:00")
+
+(card "d_985d4bb2" :type "derived"
+  :subj "exp:baseline_C7.5_top3_no_open3min"
+  :pred "derives_to"
+  :obj "exp:C8.4_top3_no_open3min_bypass"
+  :derived_from "rule:r002_derived_from_reverse"
+  :parents ("a_7ace9890")
+  :generated_at "2026-05-20T17:40:25.576041+00:00")
+
+(card "d_ea6e539a" :type "derived"
+  :subj "exp:anchor_g2_baseline"
+  :pred "derives_to"
+  :obj "lin:arc_260516a__team_c__top_k_no_open3min"
+  :derived_from "rule:r002_derived_from_reverse"
+  :parents ("a_591aedbc")
+  :generated_at "2026-05-20T17:40:25.576044+00:00")
+
+(card "d_19832db0" :type "derived"
+  :subj "exp:anchor_g2_baseline"
+  :pred "derives_to"
+  :obj "exp:D-R1-1_consensus_gte1"
+  :derived_from "rule:r002_derived_from_reverse"
+  :parents ("a_13376c1c")
+  :generated_at "2026-05-20T17:40:25.576047+00:00")
+
+(card "d_0c8cb3cd" :type "derived"
+  :subj "exp:anchor_g2_baseline"
+  :pred "derives_to"
+  :obj "exp:D-R1-2_isolated_keep"
+  :derived_from "rule:r002_derived_from_reverse"
+  :parents ("a_f627b39c")
+  :generated_at "2026-05-20T17:40:25.576050+00:00")
+
+(card "d_9de90906" :type "derived"
+  :subj "exp:anchor_g2_baseline"
+  :pred "derives_to"
+  :obj "exp:D-R1-3_drop_full_consensus"
+  :derived_from "rule:r002_derived_from_reverse"
+  :parents ("a_655b9ca1")
+  :generated_at "2026-05-20T17:40:25.576053+00:00")
+
+(card "d_c3c33c2e" :type "derived"
+  :subj "exp:D-R2-1_default_admit_baseline"
+  :pred "derives_to"
+  :obj "exp:D-R2-2_blacklist_cross_source"
+  :derived_from "rule:r002_derived_from_reverse"
+  :parents ("a_51ef1984")
+  :generated_at "2026-05-20T17:40:25.576056+00:00")
+
+(card "d_c006402f" :type "derived"
+  :subj "exp:D-R2-1_default_admit_baseline"
+  :pred "derives_to"
+  :obj "exp:D-R2-3_blacklist_stack_triple"
+  :derived_from "rule:r002_derived_from_reverse"
+  :parents ("a_d27ef2b2")
+  :generated_at "2026-05-20T17:40:25.576059+00:00")
+
+(card "d_0295a7ff" :type "derived"
+  :subj "exp:D-R2-3_blacklist_stack_triple"
+  :pred "derives_to"
+  :obj "exp:D-R2-4_blacklist_stack_quad"
+  :derived_from "rule:r002_derived_from_reverse"
+  :parents ("a_17cb9310")
+  :generated_at "2026-05-20T17:40:25.576062+00:00")
+
+(card "d_ae2db5b5" :type "derived"
+  :subj "exp:anchor_g2_baseline"
+  :pred "derives_to"
+  :obj "lin:arc_260516a__team_d__cross_source_consensus"
+  :derived_from "rule:r002_derived_from_reverse"
+  :parents ("a_b25dcc24")
+  :generated_at "2026-05-20T17:40:25.576065+00:00")
+
+(card "d_9b8d04eb" :type "derived"
+  :subj "exp:anchor_g2_baseline"
+  :pred "derives_to"
+  :obj "exp:E-R1-1_leader_ratio_bucket"
+  :derived_from "rule:r002_derived_from_reverse"
+  :parents ("a_c408dc1f")
+  :generated_at "2026-05-20T17:40:25.576068+00:00")
+
+(card "d_de94ba9f" :type "derived"
+  :subj "exp:anchor_g2_baseline"
+  :pred "derives_to"
+  :obj "exp:E-R1-2_leader_ticker_rolling_q20"
+  :derived_from "rule:r002_derived_from_reverse"
+  :parents ("a_64f6c6c8")
+  :generated_at "2026-05-20T17:40:25.576071+00:00")
+
+(card "d_a4d41b12" :type "derived"
+  :subj "exp:anchor_g2_baseline"
+  :pred "derives_to"
+  :obj "exp:E-R1-3_leader_ticker_mean_ret_pos"
+  :derived_from "rule:r002_derived_from_reverse"
+  :parents ("a_48aad43c")
+  :generated_at "2026-05-20T17:40:25.576078+00:00")
+
+(card "d_1abce945" :type "derived"
+  :subj "exp:D-R2-1_default_admit_baseline"
+  :pred "derives_to"
+  :obj "exp:F-R1-1_ofi_drop_extreme"
+  :derived_from "rule:r002_derived_from_reverse"
+  :parents ("a_d487a4c3")
+  :generated_at "2026-05-20T17:40:25.576081+00:00")
+
+(card "d_edeec4ec" :type "derived"
+  :subj "exp:D-R2-1_default_admit_baseline"
+  :pred "derives_to"
+  :obj "exp:F-R1-2_vpin_q80_admit"
+  :derived_from "rule:r002_derived_from_reverse"
+  :parents ("a_a7492c21")
+  :generated_at "2026-05-20T17:40:25.576084+00:00")
+
+(card "d_7b14b4dc" :type "derived"
+  :subj "exp:F-R2-1_vpin_drop_q80_300s"
+  :pred "derives_to"
+  :obj "exp:F-R2-2_vpin_drop_q70_300s"
+  :derived_from "rule:r002_derived_from_reverse"
+  :parents ("a_a794a99c")
+  :generated_at "2026-05-20T17:40:25.576087+00:00")
+
+(card "d_39011a0f" :type "derived"
+  :subj "exp:F-R2-1_vpin_drop_q80_300s"
+  :pred "derives_to"
+  :obj "exp:F-R2-3_vpin_drop_q80_600s"
+  :derived_from "rule:r002_derived_from_reverse"
+  :parents ("a_afdc021a")
+  :generated_at "2026-05-20T17:40:25.576090+00:00")
+
+(card "d_361d50df" :type "derived"
+  :subj "exp:anchor_g2_baseline"
+  :pred "derives_to"
+  :obj "exp:G-R1-1_luoyangchan_solo"
+  :derived_from "rule:r002_derived_from_reverse"
+  :parents ("a_f23c562f")
+  :generated_at "2026-05-20T17:40:25.576093+00:00")
+
+(card "d_7517f874" :type "derived"
+  :subj "exp:anchor_g2_baseline"
+  :pred "derives_to"
+  :obj "exp:G-R1-2_yingli_solo"
+  :derived_from "rule:r002_derived_from_reverse"
+  :parents ("a_92e34ea0")
+  :generated_at "2026-05-20T17:40:25.576096+00:00")
+
+(card "d_91e500a0" :type "derived"
+  :subj "exp:anchor_g2_baseline"
+  :pred "derives_to"
+  :obj "exp:G-R1-3_cross_source_consensus_strict"
+  :derived_from "rule:r002_derived_from_reverse"
+  :parents ("a_05b04f55")
+  :generated_at "2026-05-20T17:40:25.576099+00:00")
+
+(card "d_9a1e37f0" :type "derived"
+  :subj "exp:G-R1-1_luoyangchan_solo"
+  :pred "derives_to"
+  :obj "exp:G-R2-1_luoyangchan_cap26M"
+  :derived_from "rule:r002_derived_from_reverse"
+  :parents ("a_e1eb4247")
+  :generated_at "2026-05-20T17:40:25.576101+00:00")
+
+(card "d_e1db741c" :type "derived"
+  :subj "exp:G-R2-1_luoyangchan_cap26M"
+  :pred "derives_to"
+  :obj "exp:G-R2-2_luoyangchan_cap5M"
+  :derived_from "rule:r002_derived_from_reverse"
+  :parents ("a_77cde0ae")
+  :generated_at "2026-05-20T17:40:25.576104+00:00")
+
+(card "d_bbaa5880" :type "derived"
+  :subj "exp:G-R2-1_luoyangchan_cap26M"
+  :pred "derives_to"
+  :obj "exp:G-R2-3_luoyangchan_nocap"
+  :derived_from "rule:r002_derived_from_reverse"
+  :parents ("a_e5dd12c2")
+  :generated_at "2026-05-20T17:40:25.576107+00:00")
+
+(card "d_c3edc149" :type "derived"
+  :subj "exp:anchor_g2_baseline"
+  :pred "derives_to"
+  :obj "exp:H-R1-1_rolling_30d_median_solo"
+  :derived_from "rule:r002_derived_from_reverse"
+  :parents ("a_9a40e5d9")
+  :generated_at "2026-05-20T17:40:25.576110+00:00")
+
+(card "d_e12fe4e9" :type "derived"
+  :subj "exp:anchor_g2_baseline"
+  :pred "derives_to"
+  :obj "exp:H-R1-2_pre_avg_amount_sizing"
+  :derived_from "rule:r002_derived_from_reverse"
+  :parents ("a_4abe66eb")
+  :generated_at "2026-05-20T17:40:25.576113+00:00")
+
+(card "d_bbf9ac1c" :type "derived"
+  :subj "exp:anchor_g2_baseline"
+  :pred "derives_to"
+  :obj "exp:H-R1-3_ratio_vol_blend"
+  :derived_from "rule:r002_derived_from_reverse"
+  :parents ("a_0142cc17")
+  :generated_at "2026-05-20T17:40:25.576117+00:00")
+
+(card "d_e207e21f" :type "derived"
+  :subj "exp:H-R1-1_rolling_30d_median_solo"
+  :pred "derives_to"
+  :obj "exp:H-R2-1_c75_linear_sizing"
+  :derived_from "rule:r002_derived_from_reverse"
+  :parents ("a_31bb9656")
+  :generated_at "2026-05-20T17:40:25.576120+00:00")
+
+(card "d_143def24" :type "derived"
+  :subj "exp:H-R1-1_rolling_30d_median_solo"
+  :pred "derives_to"
+  :obj "exp:H-R2-2_c84_linear_sizing"
+  :derived_from "rule:r002_derived_from_reverse"
+  :parents ("a_da2180dc")
+  :generated_at "2026-05-20T17:40:25.576123+00:00")
+
+(card "d_48cc62f5" :type "derived"
+  :subj "exp:H-R1-1_rolling_30d_median_solo"
+  :pred "derives_to"
+  :obj "exp:H-R2-3_b_r8_1_sizing"
+  :derived_from "rule:r002_derived_from_reverse"
+  :parents ("a_4308a389")
+  :generated_at "2026-05-20T17:40:25.576126+00:00")
+
+(card "d_6f411ea3" :type "derived"
+  :subj "exp:H-R1-1_rolling_30d_median_solo"
+  :pred "derives_to"
+  :obj "exp:H-R2-4_c75_sqrt_damp"
+  :derived_from "rule:r002_derived_from_reverse"
+  :parents ("a_4b904eee")
+  :generated_at "2026-05-20T17:40:25.576129+00:00")
+
+(card "d_f4d10475" :type "derived"
+  :subj "exp:H-R1-1_rolling_30d_median_solo"
+  :pred "derives_to"
+  :obj "exp:H-R3a-1_b_r11_2_sizing"
+  :derived_from "rule:r002_derived_from_reverse"
+  :parents ("a_1d052dd3")
+  :generated_at "2026-05-20T17:40:25.576132+00:00")
+
+(card "d_ac7c5ea0" :type "derived"
+  :subj "exp:H-R1-1_rolling_30d_median_solo"
+  :pred "derives_to"
+  :obj "exp:H-R3a-2_d_r2_3_sizing"
+  :derived_from "rule:r002_derived_from_reverse"
+  :parents ("a_14b0f68f")
+  :generated_at "2026-05-20T17:40:25.576135+00:00")
+
+(card "d_3f12bac7" :type "derived"
+  :subj "exp:H-R2-2_c84_linear_sizing"
+  :pred "derives_to"
+  :obj "exp:H-R3b-1_c84_kelly_lambda_0.25"
+  :derived_from "rule:r002_derived_from_reverse"
+  :parents ("a_c724a56c")
+  :generated_at "2026-05-20T17:40:25.576138+00:00")
+
+(card "d_372c69b4" :type "derived"
+  :subj "exp:H-R2-2_c84_linear_sizing"
+  :pred "derives_to"
+  :obj "exp:H-R3b-2_c84_kelly_lambda_0.5"
+  :derived_from "rule:r002_derived_from_reverse"
+  :parents ("a_c4a4536e")
+  :generated_at "2026-05-20T17:40:25.576141+00:00")
+
+(card "d_25c5c412" :type "derived"
+  :subj "exp:H-R2-2_c84_linear_sizing"
+  :pred "derives_to"
+  :obj "exp:H-R3b-4_c84_kelly_lambda_1.5"
+  :derived_from "rule:r002_derived_from_reverse"
+  :parents ("a_c493671d")
+  :generated_at "2026-05-20T17:40:25.576144+00:00")
+
+(card "d_b378dda9" :type "derived"
+  :subj "exp:C6.4_top3_expand"
+  :pred "derives_to"
+  :obj "exp:C8.4_top3_no_open3min_bypass"
+  :derived_from "rule:r002_derived_from_reverse"
+  :parents ("d_707447ca")
+  :generated_at "2026-05-20T17:40:25.609085+00:00")
+
+(card "d_949b90ae" :type "derived"
+  :subj "exp:F-R2-1_vpin_drop_q80_300s"
+  :pred "derives_to"
+  :obj "exp:F-R2-4_ofi_dir_align"
+  :derived_from "rule:r002_derived_from_reverse"
+  :parents ("d_a4db1f73")
+  :generated_at "2026-05-20T17:40:25.609091+00:00")
+
+(card "d_4b535c9d" :type "derived"
+  :subj "exp:C7.5_top3_no_open3min"
+  :pred "derives_to"
+  :obj "exp:H-R2-1_c75_linear_sizing"
+  :derived_from "rule:r002_derived_from_reverse"
+  :parents ("d_80a88a9f")
+  :generated_at "2026-05-20T17:40:25.609095+00:00")
+
+(card "d_aa62c4d2" :type "derived"
+  :subj "exp:C7.5_top3_no_open3min"
+  :pred "derives_to"
+  :obj "exp:H-R2-4_c75_sqrt_damp"
+  :derived_from "rule:r002_derived_from_reverse"
+  :parents ("d_703646bf")
+  :generated_at "2026-05-20T17:40:25.609098+00:00")
+
+(card "d_782f46d5" :type "derived"
+  :subj "exp:C8.4_top3_no_open3min_bypass"
+  :pred "derives_to"
+  :obj "exp:H-R3b-4_c84_kelly_lambda_1.5"
+  :derived_from "rule:r002_derived_from_reverse"
+  :parents ("d_fb178757")
+  :generated_at "2026-05-20T17:40:25.609101+00:00")

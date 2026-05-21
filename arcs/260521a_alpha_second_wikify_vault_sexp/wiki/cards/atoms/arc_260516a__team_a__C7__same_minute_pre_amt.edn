@@ -1,0 +1,405 @@
+(card "exp:C7_same_minute_pre_amt" :type "experiment"
+  :subj "exp:C7_same_minute_pre_amt"
+  :body "---\nnav: 21\ntype: experiment\nid: C7_same_minute_pre_amt\nshort_name: same_minute_pre_amt\ntitle: \"C7 — same-minute pre_amt impact (Team A top-3 reference)\"\narc: 260516a\nteam: a\nround: r3\nparent_arc: \"[[arcs/260516a]]\"\nparent_lineage: null\ntrain_nav: 2.2416\ntrain_trade_count: 140\ntrain_win_rate: 0.8643\ntrain_sharpe: 7.6801\ntrain_max_drawdown: -0.0101\nval_nav_mean: 1.06\nval_nav_sigma: 0.0027\nval_window_count: 13\ntest_nav: 1.27\ntest_trade_count: 20\ntest_sharpe: 7.92\ntest_win_rate: 0.8\ntest_max_drawdown: -0.0038\nanchor_train_nav: 2.1882\nanchor_test_nav: 1.2486\nstatus: challenger\noutcome: test_marginal\nchampion: false\noverfit_score: 0\nleak_audit: clean\naxis: [microstructure, sizing]\npast_only_window_days: null\nwarmup_required: null\ncreated: 2026-05-17T01:30:00\nlast_updated: 2026-05-17T05:09:00\ntags: [arc/260516a, team/a, round/r3, axis/microstructure, axis/sizing, status/challenger, outcome/test_marginal, leak/clean, size/medium]\n---\n\n# C7 — same-minute pre_amt impact\n\n> **TL;DR** —— Team A C7 候选: 用 trigger 同 minute 内的 pre_trigger amount 作 impact-aware ranker. train NAV 2.24 marginal +0.05 vs anchor; **test NAV 1.27 vs anchor 1.25, +0.02 marginal**. 是 Team A 整个 impact-aware 路线中 test 表现最好的一档.\n\n## 假设 (Hypothesis)\n- 假设：同 minute 内 pre_amt 反映\"当前 minute trigger 强度\"，比 trigger time 离散 impact 更精确。\n- 期待: marginal NAV gain + 更稳 sharpe.\n- 实测：marginal +0.02 test NAV — 信号确实正向但弱.\n\n## 实现 (Implementation)\n- 主脚本：`team_a/scripts/round_3_runner.py`\n- 步骤: anchor base + same-minute pre_amt impact rank.\n\n## Past-only window 处理\n- pre_amt is past-only (trigger 前 5min). `#leak/clean`.\n\n## 结果 (Results)\n| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 2.2416 | 140 | 7.68 | 86.4% | -1.01% |\n| Val (rolling 13w) | 1.06 ± 0.003 | - | - | - | - |\n| Test | 1.27 | 20 | 7.92 | 80.0% | -0.38% |\n| **Δ test NAV vs anchor** | +0.022 | 0 | +0.77 | +5.0pp | +0.15pp |\n\n## 风险 & overfit 嫌疑\n- overfit_score = 0.\n- marginal gain, 在 noise 边缘.\n\n## Lineage（双链网）\n- **derived_from**: [[arc_260516a__team_anchor__anchor_g2__baseline]]\n- **Team A top picks**: [[arc_260516a__team_a__C20__recent_signal_flow_skip]], [[arc_260516a__team_a__C6__anchor_plus_impact_cap]]\n- **builds against**: [[arc_260516a__team_anchor__anchor_g2__baseline]]\n\n## Reports\n- `team_a/output/cross_round_leaderboard.csv` (C7 row)\n- `cross_team_test_nav_ranking_v2.csv` (C7 test 1.27)\n- [[arc_260516a__reporter_20260517_0547]]\n\n## Notes / 下次迭代\n- Team A \"impact-aware ranker\" 路线整体在 test 上 marginal positive but no big gains. 是 niche 优化, NAV 主战场已被 H/C 占据.\n- 与 C8.4 (Team C) 比, Team A 路线缺 top-3 expand —— 这条 lesson 未来 ranker 实验应吸收.\n"
+  :path "experiments/arc_260516a__team_a__C7__same_minute_pre_amt.md"
+  :source_mtime "2026-05-17T10:31:14+08:00"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_000db8a2" :type "atom"
+  :subj "exp:C7_same_minute_pre_amt"
+  :pred "has_nav"
+  :obj 21
+  :source "experiments/arc_260516a__team_a__C7__same_minute_pre_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_56b8c26c" :type "atom"
+  :subj "exp:C7_same_minute_pre_amt"
+  :pred "has_type"
+  :obj "experiment"
+  :source "experiments/arc_260516a__team_a__C7__same_minute_pre_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_7d408b74" :type "atom"
+  :subj "exp:C7_same_minute_pre_amt"
+  :pred "has_id"
+  :obj "C7_same_minute_pre_amt"
+  :source "experiments/arc_260516a__team_a__C7__same_minute_pre_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e5b78de1" :type "atom"
+  :subj "exp:C7_same_minute_pre_amt"
+  :pred "has_short_name"
+  :obj "same_minute_pre_amt"
+  :source "experiments/arc_260516a__team_a__C7__same_minute_pre_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d4bca20f" :type "atom"
+  :subj "exp:C7_same_minute_pre_amt"
+  :pred "has_title"
+  :obj "C7 — same-minute pre_amt impact (Team A top-3 reference)"
+  :source "experiments/arc_260516a__team_a__C7__same_minute_pre_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_04090c24" :type "atom"
+  :subj "exp:C7_same_minute_pre_amt"
+  :pred "has_arc"
+  :obj "260516a"
+  :source "experiments/arc_260516a__team_a__C7__same_minute_pre_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_dc6c3362" :type "atom"
+  :subj "exp:C7_same_minute_pre_amt"
+  :pred "has_team"
+  :obj "a"
+  :source "experiments/arc_260516a__team_a__C7__same_minute_pre_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ecc2941e" :type "atom"
+  :subj "exp:C7_same_minute_pre_amt"
+  :pred "has_round"
+  :obj "r3"
+  :source "experiments/arc_260516a__team_a__C7__same_minute_pre_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_539746d7" :type "atom"
+  :subj "exp:C7_same_minute_pre_amt"
+  :pred "parent_arc"
+  :obj "arc:260516a"
+  :source "experiments/arc_260516a__team_a__C7__same_minute_pre_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_3cb64406" :type "atom"
+  :subj "exp:C7_same_minute_pre_amt"
+  :pred "has_train_nav"
+  :obj 2.2416
+  :source "experiments/arc_260516a__team_a__C7__same_minute_pre_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_8e90d538" :type "atom"
+  :subj "exp:C7_same_minute_pre_amt"
+  :pred "has_train_trade_count"
+  :obj 140
+  :source "experiments/arc_260516a__team_a__C7__same_minute_pre_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_267d9fa8" :type "atom"
+  :subj "exp:C7_same_minute_pre_amt"
+  :pred "has_train_win_rate"
+  :obj 0.8643
+  :source "experiments/arc_260516a__team_a__C7__same_minute_pre_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5f52629b" :type "atom"
+  :subj "exp:C7_same_minute_pre_amt"
+  :pred "has_train_sharpe"
+  :obj 7.6801
+  :source "experiments/arc_260516a__team_a__C7__same_minute_pre_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_7d101d50" :type "atom"
+  :subj "exp:C7_same_minute_pre_amt"
+  :pred "has_train_max_drawdown"
+  :obj -0.0101
+  :source "experiments/arc_260516a__team_a__C7__same_minute_pre_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ba8ccb2c" :type "atom"
+  :subj "exp:C7_same_minute_pre_amt"
+  :pred "has_val_nav_mean"
+  :obj 1.06
+  :source "experiments/arc_260516a__team_a__C7__same_minute_pre_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e4b7c3c4" :type "atom"
+  :subj "exp:C7_same_minute_pre_amt"
+  :pred "has_val_nav_sigma"
+  :obj 0.0027
+  :source "experiments/arc_260516a__team_a__C7__same_minute_pre_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_82c3a35b" :type "atom"
+  :subj "exp:C7_same_minute_pre_amt"
+  :pred "has_val_window_count"
+  :obj 13
+  :source "experiments/arc_260516a__team_a__C7__same_minute_pre_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1d3cd2ab" :type "atom"
+  :subj "exp:C7_same_minute_pre_amt"
+  :pred "has_test_nav"
+  :obj 1.27
+  :source "experiments/arc_260516a__team_a__C7__same_minute_pre_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_2a841ce7" :type "atom"
+  :subj "exp:C7_same_minute_pre_amt"
+  :pred "has_test_trade_count"
+  :obj 20
+  :source "experiments/arc_260516a__team_a__C7__same_minute_pre_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_864e7912" :type "atom"
+  :subj "exp:C7_same_minute_pre_amt"
+  :pred "has_test_sharpe"
+  :obj 7.92
+  :source "experiments/arc_260516a__team_a__C7__same_minute_pre_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_08d64789" :type "atom"
+  :subj "exp:C7_same_minute_pre_amt"
+  :pred "has_test_win_rate"
+  :obj 0.8
+  :source "experiments/arc_260516a__team_a__C7__same_minute_pre_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_289586f8" :type "atom"
+  :subj "exp:C7_same_minute_pre_amt"
+  :pred "has_test_max_drawdown"
+  :obj -0.0038
+  :source "experiments/arc_260516a__team_a__C7__same_minute_pre_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a519a05b" :type "atom"
+  :subj "exp:C7_same_minute_pre_amt"
+  :pred "has_anchor_train_nav"
+  :obj 2.1882
+  :source "experiments/arc_260516a__team_a__C7__same_minute_pre_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e37390b4" :type "atom"
+  :subj "exp:C7_same_minute_pre_amt"
+  :pred "has_anchor_test_nav"
+  :obj 1.2486
+  :source "experiments/arc_260516a__team_a__C7__same_minute_pre_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_2f5eed08" :type "atom"
+  :subj "exp:C7_same_minute_pre_amt"
+  :pred "has_status"
+  :obj "challenger"
+  :source "experiments/arc_260516a__team_a__C7__same_minute_pre_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_8acd52b4" :type "atom"
+  :subj "exp:C7_same_minute_pre_amt"
+  :pred "has_outcome"
+  :obj "test_marginal"
+  :source "experiments/arc_260516a__team_a__C7__same_minute_pre_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d7b9af3b" :type "atom"
+  :subj "exp:C7_same_minute_pre_amt"
+  :pred "has_champion"
+  :obj false
+  :source "experiments/arc_260516a__team_a__C7__same_minute_pre_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_3c968f98" :type "atom"
+  :subj "exp:C7_same_minute_pre_amt"
+  :pred "has_overfit_score"
+  :obj 0
+  :source "experiments/arc_260516a__team_a__C7__same_minute_pre_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_6a4114c1" :type "atom"
+  :subj "exp:C7_same_minute_pre_amt"
+  :pred "has_leak_audit"
+  :obj "clean"
+  :source "experiments/arc_260516a__team_a__C7__same_minute_pre_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9a06e356" :type "atom"
+  :subj "exp:C7_same_minute_pre_amt"
+  :pred "has_axis"
+  :obj "axis:microstructure"
+  :source "experiments/arc_260516a__team_a__C7__same_minute_pre_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_60a5a7e0" :type "atom"
+  :subj "exp:C7_same_minute_pre_amt"
+  :pred "has_axis"
+  :obj "axis:sizing"
+  :source "experiments/arc_260516a__team_a__C7__same_minute_pre_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_399fc6d6" :type "atom"
+  :subj "exp:C7_same_minute_pre_amt"
+  :pred "has_axis_list"
+  :obj ("microstructure" "sizing")
+  :source "experiments/arc_260516a__team_a__C7__same_minute_pre_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_695b5116" :type "atom"
+  :subj "exp:C7_same_minute_pre_amt"
+  :pred "has_created"
+  :obj "2026-05-17 01:30:00"
+  :source "experiments/arc_260516a__team_a__C7__same_minute_pre_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_af714778" :type "atom"
+  :subj "exp:C7_same_minute_pre_amt"
+  :pred "has_last_updated"
+  :obj "2026-05-17 05:09:00"
+  :source "experiments/arc_260516a__team_a__C7__same_minute_pre_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e1fee552" :type "atom"
+  :subj "exp:C7_same_minute_pre_amt"
+  :pred "has_tag"
+  :obj "tag:arc/260516a"
+  :source "experiments/arc_260516a__team_a__C7__same_minute_pre_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_075b6ac0" :type "atom"
+  :subj "exp:C7_same_minute_pre_amt"
+  :pred "has_tag"
+  :obj "tag:team/a"
+  :source "experiments/arc_260516a__team_a__C7__same_minute_pre_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_4dc113d0" :type "atom"
+  :subj "exp:C7_same_minute_pre_amt"
+  :pred "has_tag"
+  :obj "tag:round/r3"
+  :source "experiments/arc_260516a__team_a__C7__same_minute_pre_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_7f195c82" :type "atom"
+  :subj "exp:C7_same_minute_pre_amt"
+  :pred "has_tag"
+  :obj "tag:axis/microstructure"
+  :source "experiments/arc_260516a__team_a__C7__same_minute_pre_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_cf3db047" :type "atom"
+  :subj "exp:C7_same_minute_pre_amt"
+  :pred "has_tag"
+  :obj "tag:axis/sizing"
+  :source "experiments/arc_260516a__team_a__C7__same_minute_pre_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b2239e2e" :type "atom"
+  :subj "exp:C7_same_minute_pre_amt"
+  :pred "has_tag"
+  :obj "tag:status/challenger"
+  :source "experiments/arc_260516a__team_a__C7__same_minute_pre_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_38900fb0" :type "atom"
+  :subj "exp:C7_same_minute_pre_amt"
+  :pred "has_tag"
+  :obj "tag:outcome/test_marginal"
+  :source "experiments/arc_260516a__team_a__C7__same_minute_pre_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_4dc009b3" :type "atom"
+  :subj "exp:C7_same_minute_pre_amt"
+  :pred "has_tag"
+  :obj "tag:leak/clean"
+  :source "experiments/arc_260516a__team_a__C7__same_minute_pre_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_230cb971" :type "atom"
+  :subj "exp:C7_same_minute_pre_amt"
+  :pred "has_tag"
+  :obj "tag:size/medium"
+  :source "experiments/arc_260516a__team_a__C7__same_minute_pre_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_dd75be48" :type "atom"
+  :subj "exp:C7_same_minute_pre_amt"
+  :pred "has_tl_dr"
+  :obj "Team A C7 候选: 用 trigger 同 minute 内的 pre_trigger amount 作 impact-aware ranker. train NAV 2.24 marginal +0.05 vs anchor; **test NAV 1.27 vs anchor 1.25, +0.02 marginal**. 是 Team A 整个 impact-aware 路线中 test 表现最好的一档."
+  :source "experiments/arc_260516a__team_a__C7__same_minute_pre_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9dc7a853" :type "atom"
+  :subj "exp:C7_same_minute_pre_amt"
+  :pred "has_section_intro"
+  :obj "# C7 — same-minute pre_amt impact\n\n> **TL;DR** —— Team A C7 候选: 用 trigger 同 minute 内的 pre_trigger amount 作 impact-aware ranker. train NAV 2.24 marginal +0.05 vs anchor; **test NAV 1.27 vs anchor 1.25, +0.02 marginal**. 是 Team A 整个 impact-aware 路线中 test 表现最好的一档."
+  :source "experiments/arc_260516a__team_a__C7__same_minute_pre_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1ffb8f3e" :type "atom"
+  :subj "exp:C7_same_minute_pre_amt"
+  :pred "has_section_hypothesis"
+  :obj "- 假设：同 minute 内 pre_amt 反映\"当前 minute trigger 强度\"，比 trigger time 离散 impact 更精确。\n- 期待: marginal NAV gain + 更稳 sharpe.\n- 实测：marginal +0.02 test NAV — 信号确实正向但弱."
+  :source "experiments/arc_260516a__team_a__C7__same_minute_pre_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_0a3487fc" :type "atom"
+  :subj "exp:C7_same_minute_pre_amt"
+  :pred "has_section_implementation"
+  :obj "- 主脚本：`team_a/scripts/round_3_runner.py`\n- 步骤: anchor base + same-minute pre_amt impact rank."
+  :source "experiments/arc_260516a__team_a__C7__same_minute_pre_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_08fa1cb6" :type "atom"
+  :subj "exp:C7_same_minute_pre_amt"
+  :pred "has_section_past_only_window"
+  :obj "- pre_amt is past-only (trigger 前 5min). `#leak/clean`."
+  :source "experiments/arc_260516a__team_a__C7__same_minute_pre_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_487c2629" :type "atom"
+  :subj "exp:C7_same_minute_pre_amt"
+  :pred "has_section_results"
+  :obj "| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 2.2416 | 140 | 7.68 | 86.4% | -1.01% |\n| Val (rolling 13w) | 1.06 ± 0.003 | - | - | - | - |\n| Test | 1.27 | 20 | 7.92 | 80.0% | -0.38% |\n| **Δ test NAV vs anchor** | +0.022 | 0 | +0.77 | +5.0pp | +0.15pp |"
+  :source "experiments/arc_260516a__team_a__C7__same_minute_pre_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_cba72474" :type "atom"
+  :subj "exp:C7_same_minute_pre_amt"
+  :pred "has_section_risk_overfit"
+  :obj "- overfit_score = 0.\n- marginal gain, 在 noise 边缘."
+  :source "experiments/arc_260516a__team_a__C7__same_minute_pre_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_0972ecb0" :type "atom"
+  :subj "exp:C7_same_minute_pre_amt"
+  :pred "derived_from"
+  :obj "exp:anchor_g2_baseline"
+  :source "experiments/arc_260516a__team_a__C7__same_minute_pre_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1662e38b" :type "atom"
+  :subj "exp:C7_same_minute_pre_amt"
+  :pred "team_a_top_picks"
+  :obj "exp:C20_recent_signal_flow_skip"
+  :source "experiments/arc_260516a__team_a__C7__same_minute_pre_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a6fca38a" :type "atom"
+  :subj "exp:C7_same_minute_pre_amt"
+  :pred "team_a_top_picks"
+  :obj "exp:C6_anchor_plus_impact_cap"
+  :source "experiments/arc_260516a__team_a__C7__same_minute_pre_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_7a1e2f51" :type "atom"
+  :subj "exp:C7_same_minute_pre_amt"
+  :pred "builds_against"
+  :obj "exp:anchor_g2_baseline"
+  :source "experiments/arc_260516a__team_a__C7__same_minute_pre_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_2231cd23" :type "atom"
+  :subj "exp:C7_same_minute_pre_amt"
+  :pred "has_section_lineage_links"
+  :obj "- **derived_from**: [[arc_260516a__team_anchor__anchor_g2__baseline]]\n- **Team A top picks**: [[arc_260516a__team_a__C20__recent_signal_flow_skip]], [[arc_260516a__team_a__C6__anchor_plus_impact_cap]]\n- **builds against**: [[arc_260516a__team_anchor__anchor_g2__baseline]]"
+  :source "experiments/arc_260516a__team_a__C7__same_minute_pre_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ff10e547" :type "atom"
+  :subj "exp:C7_same_minute_pre_amt"
+  :pred "has_section_reports"
+  :obj "- `team_a/output/cross_round_leaderboard.csv` (C7 row)\n- `cross_team_test_nav_ranking_v2.csv` (C7 test 1.27)\n- [[arc_260516a__reporter_20260517_0547]]"
+  :source "experiments/arc_260516a__team_a__C7__same_minute_pre_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c95e3d78" :type "atom"
+  :subj "exp:C7_same_minute_pre_amt"
+  :pred "has_section_notes"
+  :obj "- Team A \"impact-aware ranker\" 路线整体在 test 上 marginal positive but no big gains. 是 niche 优化, NAV 主战场已被 H/C 占据.\n- 与 C8.4 (Team C) 比, Team A 路线缺 top-3 expand —— 这条 lesson 未来 ranker 实验应吸收."
+  :source "experiments/arc_260516a__team_a__C7__same_minute_pre_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")

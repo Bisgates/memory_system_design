@@ -1,0 +1,7 @@
+(card "d_3d4f5b1f" :type "derived"
+  :subj "exp:H-R3a-1_b_r11_2_sizing"
+  :pred "inherits_anti_pattern"
+  :obj "exp:B-R11-2_blacklist_vol_regime_low"
+  :derived_from "rule:r001f_inherits_failure_mode_from_canonical"
+  :parents ("a_53ff7e27")
+  :generated_at "2026-05-20T17:40:25.570752+00:00")

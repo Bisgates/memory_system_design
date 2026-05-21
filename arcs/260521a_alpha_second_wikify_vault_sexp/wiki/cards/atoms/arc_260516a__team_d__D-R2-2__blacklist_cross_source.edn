@@ -1,0 +1,377 @@
+(card "exp:D-R2-2_blacklist_cross_source" :type "experiment"
+  :subj "exp:D-R2-2_blacklist_cross_source"
+  :body "---\nnav: 21\ntype: experiment\nid: D-R2-2_blacklist_cross_source\nshort_name: blacklist_cross_source\ntitle: \"D-R2-2 — default admit ∖ {lc_48h == 2}\"\narc: 260516a\nteam: d\nround: r2\nparent_arc: \"[[arcs/260516a]]\"\nparent_lineage: \"[[lineages/arc_260516a__team_d__blacklist_default_admit]]\"\ntrain_nav: 2.8486\ntrain_trade_count: 204\ntrain_win_rate: 0.8088\ntrain_sharpe: 6.7455\ntrain_max_drawdown: -0.0101\nval_nav_mean: 1.0785\nval_nav_sigma: 0.0776\nval_window_count: 13\ntest_nav: null\ntest_trade_count: null\ntest_sharpe: null\ntest_win_rate: null\ntest_max_drawdown: null\nanchor_train_nav: 2.1882\nanchor_test_nav: 1.2486\nstatus: challenger\noutcome: no_test_run\nchampion: false\noverfit_score: 0\nleak_audit: clean\naxis: [blacklist, cross_source]\npast_only_window_days: null\nwarmup_required: null\ncreated: 2026-05-17T02:00:00\nlast_updated: 2026-05-17T05:09:00\ntags: [arc/260516a, team/d, round/r2, axis/blacklist, axis/cross_source, status/challenger, outcome/no_test_run, leak/clean, size/large]\n---\n\n# D-R2-2 — default admit ∖ {lc_48h == 2}\n\n> **TL;DR** —— D-R2 系列 single-blacklist 之一：default-admit + 砍 cross-source crowd (lc_48h == 2，即过去 48h 内同源 ≥2 个 leader)。从 214 → 204 笔，train NAV 2.85 与 D-R2-1 几乎 tie。**未跑 test**，作 D-R2-3 / D-R2-4 stack 的单独 component 验证。\n\n## 假设 (Hypothesis)\n- 假设：过去 48h 内同源 cross-source crowd (lc_48h == 2) 的 leg = \"已被多人 picked 的 trade\" → mean reversion 已被前人吃掉，自己进去概率亏。\n- 期待：trade_count 略降 (drop 10 笔)，NAV 升或持平。\n- 实测：NAV 2.849 vs 2.857，几乎 tie —— 单条 blacklist effect 微弱。\n\n## 实现 (Implementation)\n- 主脚本：`/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_d/scripts/round_2_runner.py`\n- 步骤：default-admit (D-R2-1 base) → drop leg if `lc_48h == 2`.\n\n## Past-only window 处理\n- `lc_48h` 用 events 表过去 48h half-open window 数同 ticker leader 个数 —— strict past-only (`event_time < t`)。\n- critic audit pass。`#leak/clean`.\n\n## 结果 (Results)\n| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 2.8486 | 204 | 6.75 | 80.9% | -1.01% |\n| Val (rolling 13w) | 1.0785 ± 0.078 | - | - | - | - |\n| Test | NOT RUN | - | - | - | - |\n| **Δ vs D-R2-1** | -0.008 | -10 | +0.14 | -0.9pp | +0.21pp |\n\n## 风险 & overfit 嫌疑\n- overfit_score = 0.\n- 单 blacklist 几乎 NO-OP —— 真正问题在 D-R2-3 stack 后才显化（test 崩盘）。\n\n## Lineage（双链网）\n- **derived_from**: [[arc_260516a__team_d__D-R2-1__default_admit_baseline]]\n- **synthesizes_into**: [[arc_260516a__team_d__D-R2-3__blacklist_stack_triple]] (D-R2-3 把 lc_48h==2 作 stack 第一条)\n- **borrowed_by**: [[arc_260516a__team_d__D-R1-3__drop_full_consensus]] (R1 同 axis 不同 base)\n- **builds against**: [[arc_260516a__team_anchor__anchor_g2__baseline]]\n\n## Reports\n- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_d/output/cross_round_leaderboard_nav.csv` (D-R2-2)\n- [[arc_260516a__reporter_20260517_0547]]\n\n## Notes / 下次迭代\n- lc_48h == 2 的单 blacklist 是 NO-OP，但被 D-R2-3 拿去作 stack 第一条。**单 component 效果微 → stack 后 effect 不应大幅 amplify**，这是个 sanity warning：D-R2-3 train 涨那么多是 stack 互动 noise，不是 mechanism merit。\n- cross-source consensus 信号在该 trade pool 上 statistical power 偏弱，需更长窗口 (96h / 7d) 或更高 crowd threshold (>=3) 才有效。\n"
+  :path "experiments/arc_260516a__team_d__D-R2-2__blacklist_cross_source.md"
+  :source_mtime "2026-05-17T10:26:02+08:00"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d4b6fbd4" :type "atom"
+  :subj "exp:D-R2-2_blacklist_cross_source"
+  :pred "has_nav"
+  :obj 21
+  :source "experiments/arc_260516a__team_d__D-R2-2__blacklist_cross_source.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c86e9d9d" :type "atom"
+  :subj "exp:D-R2-2_blacklist_cross_source"
+  :pred "has_type"
+  :obj "experiment"
+  :source "experiments/arc_260516a__team_d__D-R2-2__blacklist_cross_source.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b1c414e8" :type "atom"
+  :subj "exp:D-R2-2_blacklist_cross_source"
+  :pred "has_id"
+  :obj "D-R2-2_blacklist_cross_source"
+  :source "experiments/arc_260516a__team_d__D-R2-2__blacklist_cross_source.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d1897fa5" :type "atom"
+  :subj "exp:D-R2-2_blacklist_cross_source"
+  :pred "has_short_name"
+  :obj "blacklist_cross_source"
+  :source "experiments/arc_260516a__team_d__D-R2-2__blacklist_cross_source.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_47b75a21" :type "atom"
+  :subj "exp:D-R2-2_blacklist_cross_source"
+  :pred "has_title"
+  :obj "D-R2-2 — default admit ∖ {lc_48h == 2}"
+  :source "experiments/arc_260516a__team_d__D-R2-2__blacklist_cross_source.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ff71173a" :type "atom"
+  :subj "exp:D-R2-2_blacklist_cross_source"
+  :pred "has_arc"
+  :obj "260516a"
+  :source "experiments/arc_260516a__team_d__D-R2-2__blacklist_cross_source.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_31a5b9ad" :type "atom"
+  :subj "exp:D-R2-2_blacklist_cross_source"
+  :pred "has_team"
+  :obj "d"
+  :source "experiments/arc_260516a__team_d__D-R2-2__blacklist_cross_source.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_4657ecda" :type "atom"
+  :subj "exp:D-R2-2_blacklist_cross_source"
+  :pred "has_round"
+  :obj "r2"
+  :source "experiments/arc_260516a__team_d__D-R2-2__blacklist_cross_source.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_8fda2b3a" :type "atom"
+  :subj "exp:D-R2-2_blacklist_cross_source"
+  :pred "parent_arc"
+  :obj "arc:260516a"
+  :source "experiments/arc_260516a__team_d__D-R2-2__blacklist_cross_source.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a2714f29" :type "atom"
+  :subj "exp:D-R2-2_blacklist_cross_source"
+  :pred "parent_lineage"
+  :obj "lin:arc_260516a__team_d__blacklist_default_admit"
+  :source "experiments/arc_260516a__team_d__D-R2-2__blacklist_cross_source.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d37b2bdf" :type "atom"
+  :subj "exp:D-R2-2_blacklist_cross_source"
+  :pred "has_train_nav"
+  :obj 2.8486
+  :source "experiments/arc_260516a__team_d__D-R2-2__blacklist_cross_source.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_4b15a3f4" :type "atom"
+  :subj "exp:D-R2-2_blacklist_cross_source"
+  :pred "has_train_trade_count"
+  :obj 204
+  :source "experiments/arc_260516a__team_d__D-R2-2__blacklist_cross_source.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_483a8c99" :type "atom"
+  :subj "exp:D-R2-2_blacklist_cross_source"
+  :pred "has_train_win_rate"
+  :obj 0.8088
+  :source "experiments/arc_260516a__team_d__D-R2-2__blacklist_cross_source.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d87092d8" :type "atom"
+  :subj "exp:D-R2-2_blacklist_cross_source"
+  :pred "has_train_sharpe"
+  :obj 6.7455
+  :source "experiments/arc_260516a__team_d__D-R2-2__blacklist_cross_source.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_03cdebd1" :type "atom"
+  :subj "exp:D-R2-2_blacklist_cross_source"
+  :pred "has_train_max_drawdown"
+  :obj -0.0101
+  :source "experiments/arc_260516a__team_d__D-R2-2__blacklist_cross_source.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_42ed6567" :type "atom"
+  :subj "exp:D-R2-2_blacklist_cross_source"
+  :pred "has_val_nav_mean"
+  :obj 1.0785
+  :source "experiments/arc_260516a__team_d__D-R2-2__blacklist_cross_source.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_34837387" :type "atom"
+  :subj "exp:D-R2-2_blacklist_cross_source"
+  :pred "has_val_nav_sigma"
+  :obj 0.0776
+  :source "experiments/arc_260516a__team_d__D-R2-2__blacklist_cross_source.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_32bcfcbc" :type "atom"
+  :subj "exp:D-R2-2_blacklist_cross_source"
+  :pred "has_val_window_count"
+  :obj 13
+  :source "experiments/arc_260516a__team_d__D-R2-2__blacklist_cross_source.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1140750c" :type "atom"
+  :subj "exp:D-R2-2_blacklist_cross_source"
+  :pred "has_anchor_train_nav"
+  :obj 2.1882
+  :source "experiments/arc_260516a__team_d__D-R2-2__blacklist_cross_source.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_75e3f9bd" :type "atom"
+  :subj "exp:D-R2-2_blacklist_cross_source"
+  :pred "has_anchor_test_nav"
+  :obj 1.2486
+  :source "experiments/arc_260516a__team_d__D-R2-2__blacklist_cross_source.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_8e30abed" :type "atom"
+  :subj "exp:D-R2-2_blacklist_cross_source"
+  :pred "has_status"
+  :obj "challenger"
+  :source "experiments/arc_260516a__team_d__D-R2-2__blacklist_cross_source.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_af691b1e" :type "atom"
+  :subj "exp:D-R2-2_blacklist_cross_source"
+  :pred "has_outcome"
+  :obj "no_test_run"
+  :source "experiments/arc_260516a__team_d__D-R2-2__blacklist_cross_source.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_848fbb17" :type "atom"
+  :subj "exp:D-R2-2_blacklist_cross_source"
+  :pred "has_champion"
+  :obj false
+  :source "experiments/arc_260516a__team_d__D-R2-2__blacklist_cross_source.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9949a39e" :type "atom"
+  :subj "exp:D-R2-2_blacklist_cross_source"
+  :pred "has_overfit_score"
+  :obj 0
+  :source "experiments/arc_260516a__team_d__D-R2-2__blacklist_cross_source.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_278b1d3a" :type "atom"
+  :subj "exp:D-R2-2_blacklist_cross_source"
+  :pred "has_leak_audit"
+  :obj "clean"
+  :source "experiments/arc_260516a__team_d__D-R2-2__blacklist_cross_source.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_4dc457ec" :type "atom"
+  :subj "exp:D-R2-2_blacklist_cross_source"
+  :pred "has_axis"
+  :obj "axis:blacklist"
+  :source "experiments/arc_260516a__team_d__D-R2-2__blacklist_cross_source.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f6f55153" :type "atom"
+  :subj "exp:D-R2-2_blacklist_cross_source"
+  :pred "has_axis"
+  :obj "axis:cross_source"
+  :source "experiments/arc_260516a__team_d__D-R2-2__blacklist_cross_source.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_396120f1" :type "atom"
+  :subj "exp:D-R2-2_blacklist_cross_source"
+  :pred "has_axis_list"
+  :obj ("blacklist" "cross_source")
+  :source "experiments/arc_260516a__team_d__D-R2-2__blacklist_cross_source.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_830e0f15" :type "atom"
+  :subj "exp:D-R2-2_blacklist_cross_source"
+  :pred "has_created"
+  :obj "2026-05-17 02:00:00"
+  :source "experiments/arc_260516a__team_d__D-R2-2__blacklist_cross_source.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f11b3a05" :type "atom"
+  :subj "exp:D-R2-2_blacklist_cross_source"
+  :pred "has_last_updated"
+  :obj "2026-05-17 05:09:00"
+  :source "experiments/arc_260516a__team_d__D-R2-2__blacklist_cross_source.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_7050120e" :type "atom"
+  :subj "exp:D-R2-2_blacklist_cross_source"
+  :pred "has_tag"
+  :obj "tag:arc/260516a"
+  :source "experiments/arc_260516a__team_d__D-R2-2__blacklist_cross_source.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_6750b0bb" :type "atom"
+  :subj "exp:D-R2-2_blacklist_cross_source"
+  :pred "has_tag"
+  :obj "tag:team/d"
+  :source "experiments/arc_260516a__team_d__D-R2-2__blacklist_cross_source.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a2a8fcd9" :type "atom"
+  :subj "exp:D-R2-2_blacklist_cross_source"
+  :pred "has_tag"
+  :obj "tag:round/r2"
+  :source "experiments/arc_260516a__team_d__D-R2-2__blacklist_cross_source.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_3274dc37" :type "atom"
+  :subj "exp:D-R2-2_blacklist_cross_source"
+  :pred "has_tag"
+  :obj "tag:axis/blacklist"
+  :source "experiments/arc_260516a__team_d__D-R2-2__blacklist_cross_source.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_42736625" :type "atom"
+  :subj "exp:D-R2-2_blacklist_cross_source"
+  :pred "has_tag"
+  :obj "tag:axis/cross_source"
+  :source "experiments/arc_260516a__team_d__D-R2-2__blacklist_cross_source.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_443789ee" :type "atom"
+  :subj "exp:D-R2-2_blacklist_cross_source"
+  :pred "has_tag"
+  :obj "tag:status/challenger"
+  :source "experiments/arc_260516a__team_d__D-R2-2__blacklist_cross_source.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_18b1339e" :type "atom"
+  :subj "exp:D-R2-2_blacklist_cross_source"
+  :pred "has_tag"
+  :obj "tag:outcome/no_test_run"
+  :source "experiments/arc_260516a__team_d__D-R2-2__blacklist_cross_source.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c8ef463b" :type "atom"
+  :subj "exp:D-R2-2_blacklist_cross_source"
+  :pred "has_tag"
+  :obj "tag:leak/clean"
+  :source "experiments/arc_260516a__team_d__D-R2-2__blacklist_cross_source.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e501e285" :type "atom"
+  :subj "exp:D-R2-2_blacklist_cross_source"
+  :pred "has_tag"
+  :obj "tag:size/large"
+  :source "experiments/arc_260516a__team_d__D-R2-2__blacklist_cross_source.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_af35baf6" :type "atom"
+  :subj "exp:D-R2-2_blacklist_cross_source"
+  :pred "has_tl_dr"
+  :obj "D-R2 系列 single-blacklist 之一：default-admit + 砍 cross-source crowd (lc_48h == 2，即过去 48h 内同源 ≥2 个 leader)。从 214 → 204 笔，train NAV 2.85 与 D-R2-1 几乎 tie。**未跑 test**，作 D-R2-3 / D-R2-4 stack 的单独 component 验证。"
+  :source "experiments/arc_260516a__team_d__D-R2-2__blacklist_cross_source.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a5cae841" :type "atom"
+  :subj "exp:D-R2-2_blacklist_cross_source"
+  :pred "has_section_intro"
+  :obj "# D-R2-2 — default admit ∖ {lc_48h == 2}\n\n> **TL;DR** —— D-R2 系列 single-blacklist 之一：default-admit + 砍 cross-source crowd (lc_48h == 2，即过去 48h 内同源 ≥2 个 leader)。从 214 → 204 笔，train NAV 2.85 与 D-R2-1 几乎 tie。**未跑 test**，作 D-R2-3 / D-R2-4 stack 的单独 component 验证。"
+  :source "experiments/arc_260516a__team_d__D-R2-2__blacklist_cross_source.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b4e7b56a" :type "atom"
+  :subj "exp:D-R2-2_blacklist_cross_source"
+  :pred "has_section_hypothesis"
+  :obj "- 假设：过去 48h 内同源 cross-source crowd (lc_48h == 2) 的 leg = \"已被多人 picked 的 trade\" → mean reversion 已被前人吃掉，自己进去概率亏。\n- 期待：trade_count 略降 (drop 10 笔)，NAV 升或持平。\n- 实测：NAV 2.849 vs 2.857，几乎 tie —— 单条 blacklist effect 微弱。"
+  :source "experiments/arc_260516a__team_d__D-R2-2__blacklist_cross_source.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c440e132" :type "atom"
+  :subj "exp:D-R2-2_blacklist_cross_source"
+  :pred "has_section_implementation"
+  :obj "- 主脚本：`/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_d/scripts/round_2_runner.py`\n- 步骤：default-admit (D-R2-1 base) → drop leg if `lc_48h == 2`."
+  :source "experiments/arc_260516a__team_d__D-R2-2__blacklist_cross_source.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_32735d90" :type "atom"
+  :subj "exp:D-R2-2_blacklist_cross_source"
+  :pred "has_section_past_only_window"
+  :obj "- `lc_48h` 用 events 表过去 48h half-open window 数同 ticker leader 个数 —— strict past-only (`event_time < t`)。\n- critic audit pass。`#leak/clean`."
+  :source "experiments/arc_260516a__team_d__D-R2-2__blacklist_cross_source.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_4e6d3c46" :type "atom"
+  :subj "exp:D-R2-2_blacklist_cross_source"
+  :pred "has_section_results"
+  :obj "| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 2.8486 | 204 | 6.75 | 80.9% | -1.01% |\n| Val (rolling 13w) | 1.0785 ± 0.078 | - | - | - | - |\n| Test | NOT RUN | - | - | - | - |\n| **Δ vs D-R2-1** | -0.008 | -10 | +0.14 | -0.9pp | +0.21pp |"
+  :source "experiments/arc_260516a__team_d__D-R2-2__blacklist_cross_source.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1f53ac24" :type "atom"
+  :subj "exp:D-R2-2_blacklist_cross_source"
+  :pred "has_section_risk_overfit"
+  :obj "- overfit_score = 0.\n- 单 blacklist 几乎 NO-OP —— 真正问题在 D-R2-3 stack 后才显化（test 崩盘）。"
+  :source "experiments/arc_260516a__team_d__D-R2-2__blacklist_cross_source.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_51ef1984" :type "atom"
+  :subj "exp:D-R2-2_blacklist_cross_source"
+  :pred "derived_from"
+  :obj "exp:D-R2-1_default_admit_baseline"
+  :source "experiments/arc_260516a__team_d__D-R2-2__blacklist_cross_source.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5354feda" :type "atom"
+  :subj "exp:D-R2-2_blacklist_cross_source"
+  :pred "synthesizes_into"
+  :obj "exp:D-R2-3_blacklist_stack_triple"
+  :source "experiments/arc_260516a__team_d__D-R2-2__blacklist_cross_source.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f5bd9e79" :type "atom"
+  :subj "exp:D-R2-2_blacklist_cross_source"
+  :pred "borrowed_by"
+  :obj "exp:D-R1-3_drop_full_consensus"
+  :source "experiments/arc_260516a__team_d__D-R2-2__blacklist_cross_source.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_0fe22c53" :type "atom"
+  :subj "exp:D-R2-2_blacklist_cross_source"
+  :pred "builds_against"
+  :obj "exp:anchor_g2_baseline"
+  :source "experiments/arc_260516a__team_d__D-R2-2__blacklist_cross_source.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_158b70e0" :type "atom"
+  :subj "exp:D-R2-2_blacklist_cross_source"
+  :pred "has_section_lineage_links"
+  :obj "- **derived_from**: [[arc_260516a__team_d__D-R2-1__default_admit_baseline]]\n- **synthesizes_into**: [[arc_260516a__team_d__D-R2-3__blacklist_stack_triple]] (D-R2-3 把 lc_48h==2 作 stack 第一条)\n- **borrowed_by**: [[arc_260516a__team_d__D-R1-3__drop_full_consensus]] (R1 同 axis 不同 base)\n- **builds against**: [[arc_260516a__team_anchor__anchor_g2__baseline]]"
+  :source "experiments/arc_260516a__team_d__D-R2-2__blacklist_cross_source.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_75d7d64c" :type "atom"
+  :subj "exp:D-R2-2_blacklist_cross_source"
+  :pred "has_section_reports"
+  :obj "- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_d/output/cross_round_leaderboard_nav.csv` (D-R2-2)\n- [[arc_260516a__reporter_20260517_0547]]"
+  :source "experiments/arc_260516a__team_d__D-R2-2__blacklist_cross_source.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_7a75fc4d" :type "atom"
+  :subj "exp:D-R2-2_blacklist_cross_source"
+  :pred "has_section_notes"
+  :obj "- lc_48h == 2 的单 blacklist 是 NO-OP，但被 D-R2-3 拿去作 stack 第一条。**单 component 效果微 → stack 后 effect 不应大幅 amplify**，这是个 sanity warning：D-R2-3 train 涨那么多是 stack 互动 noise，不是 mechanism merit。\n- cross-source consensus 信号在该 trade pool 上 statistical power 偏弱，需更长窗口 (96h / 7d) 或更高 crowd threshold (>=3) 才有效。"
+  :source "experiments/arc_260516a__team_d__D-R2-2__blacklist_cross_source.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")

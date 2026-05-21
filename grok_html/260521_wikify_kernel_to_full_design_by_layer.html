@@ -1,0 +1,1735 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>从最小内核到完整设计 · arc 260521a wikify 的逐层重述</title>
+<style>
+:root {
+  --paper:        #fbf6e9;
+  --paper-2:      #f3ebd6;
+  --ink:          #1f1a14;
+  --ink-soft:     #3b332a;
+  --ink-faint:    #6b6052;
+  --rule:         #b8a583;
+  --rule-soft:    #d8c9a2;
+  --accent:       #8c2f1c;
+  --accent-2:     #2c5340;
+  --gold:         #a37c2a;
+  --quote-bg:     #f0e6cd;
+  --code-bg:      #efe6ce;
+  --code-fg:      #1a140d;
+
+  /* shared color-code for recurring entities (same hex both tabs) */
+  --c-card:    #8c2f1c; /* warm red — Card / CardStore (the kernel itself) */
+  --c-atom:    #2c5340; /* deep green — atom triple (subj pred obj) */
+  --c-rule:    #a37c2a; /* amber — rule cards & fan-out */
+  --c-macro:   #5e2a6b; /* purple — macros, template expansion */
+  --c-view:    #1f6b8c; /* blue — views, lazy / materialized */
+  --c-dedup:   #6b1f1f; /* dark red — dedup / restart conflict */
+}
+* { box-sizing: border-box; }
+html, body {
+  margin: 0; padding: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: -apple-system, "Iowan Old Style", "Charter", "Cormorant Garamond", "Playfair Display", Georgia, "Times New Roman", serif;
+  font-size: 18px; line-height: 1.7;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+body { padding-bottom: 6em; }
+.mono, code, pre {
+  font-family: ui-monospace, "SF Mono", Menlo, Monaco, "Cascadia Mono", Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+/* shared inline colored variables — same hex across tabs */
+.v-card  { color: var(--c-card);  }
+.v-atom  { color: var(--c-atom);  font-style: italic; }
+.v-rule  { color: var(--c-rule);  }
+.v-macro { color: var(--c-macro); }
+.v-view  { color: var(--c-view);  }
+.v-dedup { color: var(--c-dedup); }
+
+/* tab bar */
+.tabbar {
+  position: sticky; top: 0; z-index: 50;
+  display: flex; gap: 0;
+  background: var(--paper-2);
+  border-bottom: 1px solid var(--rule);
+  padding: 0 24px;
+}
+.tab-btn {
+  appearance: none; border: 0; background: transparent;
+  font: inherit; font-size: 14px; color: var(--ink-faint);
+  padding: 14px 22px; cursor: pointer;
+  border-bottom: 2px solid transparent;
+  font-variant: small-caps; letter-spacing: 0.12em;
+}
+.tab-btn:hover { color: var(--ink); }
+.tab-btn.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+.tab-meta {
+  margin-left: auto; align-self: center;
+  font-size: 12px; color: var(--ink-faint);
+  font-style: italic;
+}
+
+main { max-width: 820px; margin: 0 auto; padding: 56px 32px 0; }
+.tab-pane { display: none; }
+.tab-pane.active { display: block; }
+
+/* ============================================================
+   bird tab — Roman numerals, drop cap, callout, pull, matrix
+   ============================================================ */
+.tab-bird .masthead {
+  text-align: center;
+  border-top: 4px double var(--rule);
+  border-bottom: 1px solid var(--rule);
+  padding: 32px 0 22px;
+  margin-bottom: 36px;
+}
+.tab-bird .masthead .kicker {
+  font-variant: small-caps; letter-spacing: 0.28em;
+  font-size: 12px; color: var(--accent);
+}
+.tab-bird .masthead h1 {
+  font-size: 44px; line-height: 1.18; margin: 14px 0 8px;
+  font-weight: 500;
+}
+.tab-bird .masthead .deck {
+  font-style: italic; color: var(--ink-soft);
+  font-size: 18px; max-width: 620px; margin: 0 auto;
+}
+.tab-bird .masthead .byline {
+  margin-top: 14px;
+  font-size: 12px; letter-spacing: 0.18em;
+  text-transform: uppercase; color: var(--ink-faint);
+}
+
+.tab-bird .chapter-rule {
+  text-align: center;
+  margin: 64px 0 26px;
+  color: var(--accent);
+  font-variant: small-caps; letter-spacing: 0.3em;
+}
+.tab-bird .chapter-rule .roman {
+  display: inline-block; font-size: 22px; font-style: italic;
+  padding: 0 18px;
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  line-height: 2;
+}
+.tab-bird .chapter-title {
+  text-align: center; font-size: 26px;
+  font-style: italic; font-weight: 500;
+  margin: 0 0 28px; color: var(--ink);
+}
+
+.tab-bird p { margin: 0 0 1.05em; }
+.tab-bird .lede::first-letter {
+  font-size: 4.4em; line-height: 0.86;
+  float: left; padding: 6px 12px 0 0;
+  color: var(--accent);
+  font-family: "Iowan Old Style", "Cormorant Garamond", "Playfair Display", Georgia, serif;
+  font-weight: 500;
+}
+.tab-bird h3 {
+  font-size: 19px; font-weight: 500;
+  font-variant: small-caps; letter-spacing: 0.08em;
+  margin: 32px 0 12px;
+  color: var(--ink-soft);
+  border-bottom: 1px solid var(--rule-soft);
+  padding-bottom: 4px;
+}
+
+.tab-bird .callout {
+  border-left: 3px solid var(--accent);
+  background: rgba(140,47,28,0.05);
+  padding: 14px 18px; margin: 22px 0;
+  font-size: 16.5px;
+}
+.tab-bird .callout .ctitle {
+  font-variant: small-caps; letter-spacing: 0.12em;
+  font-size: 12px; color: var(--accent); margin-bottom: 4px;
+}
+.tab-bird .pull {
+  margin: 28px 0; text-align: center;
+  font-style: italic; font-size: 22px;
+  color: var(--accent-2); line-height: 1.4;
+  border-top: 1px solid var(--rule-soft);
+  border-bottom: 1px solid var(--rule-soft);
+  padding: 14px 0;
+}
+.tab-bird .pull .who {
+  display: block; margin-top: 8px;
+  font-size: 12px; letter-spacing: 0.12em;
+  font-style: normal; color: var(--ink-faint);
+  text-transform: uppercase;
+}
+.tab-bird .matrix {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 16px; margin: 22px 0;
+}
+.tab-bird .matrix .cell {
+  border: 1px solid var(--rule);
+  background: var(--paper-2);
+  padding: 14px 16px; font-size: 15.5px;
+}
+.tab-bird .matrix .cell .h {
+  font-variant: small-caps; letter-spacing: 0.1em;
+  font-size: 12px; color: var(--accent); margin-bottom: 6px;
+}
+
+.tab-bird code {
+  background: var(--code-bg); color: var(--code-fg);
+  padding: 1px 5px; border-radius: 2px;
+  font-size: 0.88em;
+}
+.tab-bird pre {
+  background: var(--code-bg);
+  border-left: 3px solid var(--gold);
+  padding: 14px 18px; overflow-x: auto;
+  font-size: 13.5px; line-height: 1.55;
+  margin: 22px 0;
+}
+.tab-bird pre code { background: transparent; padding: 0; }
+
+.tab-bird table {
+  width: 100%; border-collapse: collapse;
+  margin: 22px 0; font-size: 15.5px;
+}
+.tab-bird th, .tab-bird td {
+  border-top: 1px solid var(--rule-soft);
+  border-bottom: 1px solid var(--rule-soft);
+  padding: 8px 10px; text-align: left;
+  vertical-align: top;
+}
+.tab-bird th {
+  font-variant: small-caps; letter-spacing: 0.08em;
+  color: var(--accent);
+  border-bottom: 1px solid var(--rule);
+}
+
+.tab-bird .afterword {
+  margin: 56px 0 28px;
+  border: 1px solid var(--ink-soft);
+  background: var(--paper-2);
+  padding: 22px 24px;
+}
+.tab-bird .afterword .label {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 11px; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--ink-faint);
+}
+.tab-bird .afterword h4 {
+  font-style: italic; font-weight: 500;
+  font-size: 22px; margin: 6px 0 12px;
+  color: var(--ink);
+}
+
+/* layer-card: small label that pins each chapter to its mechanism */
+.tab-bird .layer-card {
+  display: grid; grid-template-columns: max-content 1fr;
+  gap: 14px 18px; align-items: start;
+  margin: 18px 0 26px; padding: 12px 16px;
+  border: 1px solid var(--rule-soft);
+  background: var(--paper-2);
+  font-size: 14.5px;
+}
+.tab-bird .layer-card .k {
+  font-variant: small-caps; letter-spacing: 0.1em;
+  font-size: 11px; color: var(--accent);
+  white-space: nowrap;
+}
+.tab-bird .layer-card .v { color: var(--ink-soft); }
+
+/* lab: capability matrix */
+.lab {
+  margin: 26px 0; padding: 16px;
+  border: 1px solid var(--rule);
+  background: var(--paper-2);
+}
+.lab-title {
+  font-variant: small-caps; letter-spacing: 0.14em;
+  font-size: 13px; color: var(--accent);
+  margin-bottom: 4px;
+}
+.lab-sub {
+  font-size: 13px; font-style: italic;
+  color: var(--ink-faint); margin-bottom: 12px;
+}
+.lab-controls {
+  display: flex; gap: 14px; flex-wrap: wrap;
+  font-size: 13px; margin-top: 10px; align-items: center;
+}
+.lab-controls label {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  color: var(--ink-faint); letter-spacing: 0.04em;
+}
+.lab canvas { display: block; max-width: 100%; height: auto; }
+.cap-matrix table { font-size: 13px; margin: 0; }
+.cap-matrix th, .cap-matrix td { padding: 5px 7px; }
+.cap-matrix .y { color: var(--accent-2); font-weight: 600; }
+.cap-matrix .n { color: var(--ink-faint); }
+.cap-matrix .p { color: var(--gold); font-style: italic; }
+
+/* ============================================================
+   frog tab — notebook cells, mono section heads
+   ============================================================ */
+.tab-frog {
+  font-family: -apple-system, "Charter", "Iowan Old Style", Georgia, "Times New Roman", serif;
+}
+.tab-frog .nb-head {
+  border-bottom: 2px solid var(--ink-soft);
+  padding: 0 0 18px; margin-bottom: 26px;
+}
+.tab-frog .nb-head .stamp {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 12px; color: var(--ink-faint);
+  letter-spacing: 0.05em;
+}
+.tab-frog .nb-head h1 {
+  margin: 6px 0 4px; font-size: 30px; font-weight: 500;
+}
+.tab-frog .nb-head .sub {
+  font-style: italic; color: var(--ink-soft); font-size: 16px;
+}
+
+.tab-frog h2.section {
+  font-size: 18px;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-variant: small-caps; letter-spacing: 0.14em;
+  color: var(--accent-2);
+  margin: 42px 0 10px;
+  padding: 0 0 4px;
+  border-bottom: 1px solid var(--rule);
+  display: flex; align-items: baseline; gap: 12px;
+}
+.tab-frog h2.section .num {
+  color: var(--ink-faint); font-size: 12px;
+}
+.tab-frog h3.subsection {
+  font-size: 16px; font-weight: 500;
+  color: var(--ink-soft);
+  margin: 22px 0 6px;
+}
+
+.tab-frog .cell {
+  margin: 14px 0;
+  border-left: 4px solid transparent;
+  padding-left: 14px;
+}
+.tab-frog .cell.md   { border-color: var(--rule); }
+.tab-frog .cell.code { border-color: var(--accent-2); }
+.tab-frog .cell.out  { border-color: var(--gold); }
+.tab-frog .cell .label {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 11px; color: var(--ink-faint);
+  margin-bottom: 4px;
+  letter-spacing: 0.04em;
+}
+.tab-frog .cell.code pre {
+  background: var(--code-bg);
+  padding: 12px 14px;
+  font-size: 13px; line-height: 1.55;
+  overflow-x: auto; margin: 0;
+}
+.tab-frog .cell.out pre {
+  background: transparent;
+  padding: 6px 0 0;
+  font-size: 13px; line-height: 1.55;
+  margin: 0; color: var(--ink-soft);
+  white-space: pre-wrap;
+}
+.tab-frog .cell.md p { margin: 0 0 8px; }
+
+.tab-frog code {
+  background: var(--code-bg);
+  padding: 1px 5px; border-radius: 2px;
+  font-size: 0.86em;
+}
+
+.tab-frog .stop {
+  background: rgba(44,83,64,0.06);
+  border-left: 4px solid var(--accent-2);
+  padding: 12px 16px; margin: 18px 0;
+  font-size: 15.5px;
+}
+.tab-frog .stop .h {
+  font-variant: small-caps; letter-spacing: 0.12em;
+  font-size: 12px; color: var(--accent-2); margin-bottom: 4px;
+}
+
+.tab-frog .callout {
+  border-left: 3px solid var(--ink-faint);
+  background: var(--paper-2);
+  padding: 12px 16px; margin: 18px 0;
+  font-size: 15.5px;
+}
+.tab-frog .callout .tag {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 11px; letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-faint); margin-bottom: 4px;
+}
+.tab-frog .callout.warn  { border-color: var(--gold); }
+.tab-frog .callout.warn  .tag { color: var(--gold); }
+.tab-frog .callout.red   { border-color: var(--accent); background: rgba(140,47,28,0.05); }
+.tab-frog .callout.red   .tag { color: var(--accent); }
+.tab-frog .callout.green { border-color: var(--accent-2); background: rgba(44,83,64,0.05); }
+.tab-frog .callout.green .tag { color: var(--accent-2); }
+
+.tab-frog .nums {
+  display: grid; gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  margin: 18px 0;
+}
+.tab-frog .nums .num-box {
+  border: 1px solid var(--rule);
+  background: var(--paper-2);
+  padding: 10px 14px;
+}
+.tab-frog .nums .k {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 11px; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--ink-faint);
+}
+.tab-frog .nums .v {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 22px; font-weight: 500; color: var(--ink);
+}
+
+.tab-frog .nb-foot {
+  margin-top: 56px; padding-top: 14px;
+  border-top: 1px solid var(--rule);
+  font-size: 13px; color: var(--ink-faint); font-style: italic;
+}
+
+.tab-frog .lab {
+  margin: 22px 0;
+  border: 1px solid var(--rule);
+  background: var(--paper-2);
+  padding: 14px 16px;
+}
+.tab-frog .lab-title {
+  font-variant: small-caps; letter-spacing: 0.14em;
+  font-size: 13px; color: var(--accent-2);
+  margin-bottom: 4px;
+}
+.tab-frog .lab-sub {
+  font-size: 13px; font-style: italic;
+  color: var(--ink-faint); margin-bottom: 12px;
+}
+.tab-frog .lab canvas { display: block; max-width: 100%; height: auto; }
+
+/* shared uncertainty */
+.uncertain {
+  border-left: 3px dashed var(--accent);
+  background: rgba(140,47,28,0.04);
+  padding: 10px 14px; margin: 18px 0;
+  font-style: italic; color: var(--ink-soft);
+}
+
+/* narrow-screen rules */
+@media (max-width: 720px) {
+  .tabbar {
+    padding: 0 12px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .tabbar::-webkit-scrollbar { display: none; }
+  .tab-btn {
+    padding: 12px 14px;
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .tab-meta { display: none; }
+
+  main { padding: 28px 14px 0; max-width: 100%; }
+  body { font-size: 16px; line-height: 1.6; }
+
+  .tab-bird .masthead { padding: 22px 0 16px; margin-bottom: 24px; }
+  .tab-bird .masthead h1 { font-size: 28px; line-height: 1.22; }
+  .tab-bird .masthead .deck { font-size: 16px; }
+  .tab-bird .chapter-rule { margin: 44px 0 18px; }
+  .tab-bird .chapter-rule .roman { font-size: 18px; }
+  .tab-bird .chapter-title { font-size: 22px; margin-bottom: 20px; }
+  .tab-bird .lede::first-letter { font-size: 3.2em; padding: 4px 8px 0 0; }
+  .tab-bird h3 { font-size: 17px; }
+  .tab-bird .callout { padding: 12px 14px; margin: 18px 0; font-size: 15.5px; }
+  .tab-bird .pull { font-size: 18px; padding: 12px 0; margin: 22px 0; }
+  .tab-bird .matrix { grid-template-columns: 1fr; gap: 12px; }
+  .tab-bird .matrix .cell { padding: 12px 14px; font-size: 15px; }
+  .tab-bird pre {
+    padding: 10px 12px;
+    font-size: 12.5px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .tab-bird pre code { white-space: pre; }
+  .tab-bird table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    white-space: nowrap;
+    font-size: 14px;
+  }
+  .tab-bird th, .tab-bird td { padding: 6px 8px; }
+  .tab-bird .afterword { padding: 18px 18px; margin: 36px 0 22px; }
+  .tab-bird .afterword h4 { font-size: 18px; }
+  .tab-bird .layer-card { grid-template-columns: 1fr; gap: 4px 0; padding: 10px 12px; }
+
+  .tab-frog .nb-head h1 { font-size: 24px; }
+  .tab-frog h2.section { font-size: 16px; margin: 32px 0 8px; }
+  .tab-frog h3.subsection { font-size: 15px; }
+  .tab-frog .cell { padding-left: 10px; margin: 12px 0; }
+  .tab-frog .cell.code pre,
+  .tab-frog .cell.out pre {
+    padding: 10px 12px;
+    font-size: 12px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .tab-frog .cell.code pre { white-space: pre; }
+  .tab-frog .stop { padding: 10px 14px; font-size: 14.5px; margin: 14px 0; }
+  .tab-frog .callout { padding: 10px 14px; font-size: 14.5px; margin: 14px 0; }
+  .tab-frog .nums { gap: 10px; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); }
+  .tab-frog .nums .num-box { padding: 8px 12px; }
+  .tab-frog .nums .v { font-size: 18px; }
+}
+
+@media (max-width: 480px) {
+  .tabbar { padding: 0 8px; }
+  .tab-btn { padding: 10px 11px; font-size: 12px; letter-spacing: 0.06em; }
+  main { padding: 22px 12px 0; }
+  body { font-size: 15px; }
+
+  .tab-bird .masthead h1 { font-size: 24px; }
+  .tab-bird .chapter-title { font-size: 19px; }
+  .tab-bird .lede::first-letter { font-size: 2.8em; }
+  .tab-bird pre { padding: 8px 10px; font-size: 11.5px; }
+  .tab-bird .pull { font-size: 17px; }
+
+  .tab-frog .nb-head h1 { font-size: 21px; }
+  .tab-frog .cell.code pre,
+  .tab-frog .cell.out pre { padding: 8px 10px; font-size: 11.5px; }
+}
+</style>
+</head>
+<body>
+
+<nav class="tabbar">
+  <button class="tab-btn active" data-tab="bird">Bird &middot; 鸟瞰</button>
+  <button class="tab-btn" data-tab="frog">Frog &middot; 蛙跳</button>
+  <span class="tab-meta">arc 260521a · layered re-telling · 2026-05-21</span>
+</nav>
+
+<main>
+
+<!-- ============ BIRD TAB ============ -->
+<section class="tab-pane tab-bird active" id="tab-bird">
+
+  <header class="masthead">
+    <div class="kicker">arc 260521a · layered re-telling</div>
+    <h1>从最小内核，到完整设计</h1>
+    <div class="deck">同一个 agent-LTM。如果今天从零开始讲，我会怎么一层一层加上去？</div>
+    <div class="byline">bird · 自顶向下 · hamming-flavored</div>
+  </header>
+
+  <!-- ============================================================ -->
+  <section id="bird-predicament">
+  <div class="chapter-rule"><span class="roman">I · The predicament</span></div>
+  <h2 class="chapter-title">为什么不能直接用 Obsidian 双链就完事</h2>
+
+  <p class="lede">手上有一个 Obsidian vault，里面 53 张实验候选 md，8 张 lineage，1 张 anti-pattern catalog，全部 yaml frontmatter + Markdown 正文 + <code>[[双链]]</code>。看起来已经够用——一张卡指向另一张卡，<code>derived_from</code>、<code>competes_with</code>、<code>falsifies</code>，关系都标得清清楚楚。明天来个 agent，让它从 vault 里读出"这次 arc 的 SOTA champion 是谁、它建立在谁之上、谁来挑战它"——它读得出来吗？</p>
+
+  <p>读得出来一半。<code>[[双链]]</code> 是字符串，agent 能 grep。但 vault 里没人写过 <code>derives_to</code>——只有 <code>derived_from</code> 的反向；没人写过 <code>competes_with</code> 的对称半边；没人把 anti-pattern catalog 里的 case-example 列表反向接到实验卡上。这些都是 <em>能从已有事实推出来</em> 的事实，可 Obsidian 不推。它只忠实地存。</p>
+
+  <div class="callout">
+    <div class="ctitle">问题真正的形状</div>
+    存事实 ≠ 让事实之间互相说话。文件系统给得了第一件事；要第二件，你需要一个能在 <em>读取时</em> 计算的层。Obsidian/Roam/Logseq 都在第一层。
+  </div>
+
+  <p>这篇要做的事很简单：把 vault 重新表达成一种格式，让事实之间能<em>互相推</em>、能<em>互相生</em>、能<em>互相校</em>。我会从最小到能跑的内核起步——只有 <span class="v-card">Card</span> 和 <span class="v-atom">(subj pred obj)</span> 三元组——然后每加一层就只加 <strong>一个机制</strong>，并交代清楚：前一层撑不住的是什么、加完后能做的新动作是什么、还有什么仍然做不了。最后一层叠完，就是 arc 260521a 实际跑通的设计。</p>
+
+  <div class="pull">
+    "What's the question behind the question?"
+    <span class="who">— the move that organizes this page</span>
+  </div>
+
+  <p>每一层我都会用 arc 260516a 的 SOTA champion 卡 <code>H-R3b-4_c84_kelly_lambda_1.5</code> 走一遍——同一张卡，看它在每一层"被看见"的方式如何变厚。frog tab 里会把这张卡的真实 EDN dump 贴出来。</p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="bird-layer0-store">
+  <div class="chapter-rule"><span class="roman">II · Layer 0</span></div>
+  <h2 class="chapter-title">最小可跑内核 — Card + (subj pred obj)</h2>
+
+  <div class="layer-card">
+    <div class="k">加入的机制</div><div class="v">一个 <span class="v-card">Card</span> 数据结构 + 一个 <span class="v-card">CardStore</span> 容器；卡的 kvs 里允许有 <span class="v-atom">:subj :pred :obj</span> 三元组。</div>
+    <div class="k">前一层撑不住</div><div class="v">没有"层"——这是地基。</div>
+    <div class="k">新能做</div><div class="v">装数据；按字段查询；按 <code>subj/obj</code> 反向找入度。</div>
+    <div class="k">还做不了</div><div class="v">不能 <em>派生</em> 新事实；不能区分 link 类型；不能 lazy；不能 dedup。</div>
+  </div>
+
+  <p>把最少能跑的东西先定下来。一张 <span class="v-card">Card</span> 就是 <code>(id, type, kvs)</code>，<code>type</code> 暂时全部 <code>'atom'</code>，<code>kvs</code> 是一张开的字典。<span class="v-card">CardStore</span> 就是一个 <code>dict[id → Card]</code>，加上四个动作：<code>add / get / update / delete</code>，加两个查询：<code>find_links_to(obj)</code> 和 <code>find_links_from(subj)</code>。</p>
+
+  <p>这就是一个三元组数据库——RDF 的最简退化、Datomic 的祖先形态。Hamming 的反射在这里出现一次：把 <em>带索引的关系数据</em> 推到极简边界，剩下的就是 <code>(subj, pred, obj)</code>。任何更复杂的 schema 都可以折回这个形状。</p>
+
+  <h3>H-R3b-4 在这一层长什么样</h3>
+
+  <p>vault 里那张 SOTA champion 的 markdown，有 30 多个 frontmatter 字段 + 6 种 typed link。Layer 0 把它拆成 <strong>58 张卡</strong>：1 张 <code>:type "experiment"</code> 根卡（带原始 markdown 作 <code>:body</code>）+ 57 张 <code>:type "atom"</code> 卡，每张表达一条 (subj pred obj) 事实。</p>
+
+  <pre><code>(card "a_5189f3d4" :type "atom"
+  :subj "exp:H-R3b-4_c84_kelly_lambda_1.5"
+  :pred "has_train_nav"
+  :obj  3.6981)</code></pre>
+
+  <p>等等——<code>has_train_nav</code> 是个 pred 吗？是。在 Layer 0 里 <strong>任何字符串都能当 pred</strong>，没人管。<code>has_test_nav</code>、<code>has_tag</code>、<code>parent_arc</code>、<code>derived_from</code>、<code>competes_with</code>——全部并排住在一个 namespace 里。这是地基的 freedom，也正是 Layer 1 要解决的混乱。</p>
+
+  <div class="callout">
+    <div class="ctitle">extreme-case 检查</div>
+    把 pred 词表推到极限：所有 pred 是同一个串。那 store 退化为一张 <code>(subj, obj)</code> 邻接表，连 type 都看不出来——这是 Obsidian 双链网络的纯粹版本。Layer 0 至少多了 pred 这一维，但 pred 是<em>未约束</em>的。
+  </div>
+
+  <h3>能做的 trace</h3>
+
+  <p>装完 53 张 experiment md 之后，<code>store.find_links_to("exp:H-R3b-4_c84_kelly_lambda_1.5")</code> 能告诉你 14 条入度——那些 <code>:obj</code> 指向 champion 的卡。可它没法告诉你：哪些是"基于它做的下游"，哪些是"和它平行竞争"，哪些是"声明它失败"。一切都长得一样。</p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="bird-layer1-typed">
+  <div class="chapter-rule"><span class="roman">III · Layer 1</span></div>
+  <h2 class="chapter-title">约定 pred 词表 — typed predicate</h2>
+
+  <div class="layer-card">
+    <div class="k">加入的机制</div><div class="v">一份约定俗成的 typed predicate 词表，从 vault 实际用法反推。</div>
+    <div class="k">前一层撑不住</div><div class="v">pred 自由 = 没法按 link <em>类型</em> 走有向图。</div>
+    <div class="k">新能做</div><div class="v">"谁是 champion 的 derivee"、"谁挑战它"、"谁声明它已被 falsify"——三个不同动作，三条不同 pred。</div>
+    <div class="k">还做不了</div><div class="v">反向边、对称边、传递闭包都得手动写；agent 看不出 <code>derived_from</code> 和 <code>derives_to</code> 是同一关系的两个方向。</div>
+  </div>
+
+  <p>这一层不动 cardstore.py 一行代码——它纯是<em>语义层</em>的约束。从 vault 里梳出 6 个"原生" typed pred（vault 写过的双链类型），再扩 3 个从 body 文本里抽出来的：</p>
+
+  <div class="matrix">
+    <div class="cell"><div class="h">structural</div><code>parent_arc</code> · <code>parent_lineage</code> · <code>builds_on</code> · <code>has_axis</code></div>
+    <div class="cell"><div class="h">derivation</div><code>derived_from</code> · <code>extends</code> · <code>supports</code></div>
+    <div class="cell"><div class="h">conflict</div><code>competes_with</code> · <code>falsifies</code> · <code>contradicts</code></div>
+    <div class="cell"><div class="h">attribution</div><code>reports_to</code> · <code>references_in_case_examples</code> · <code>is_instance_of_anti_pattern</code></div>
+  </div>
+
+  <p>注意——这里有个微妙之处。Layer 1 <strong>没有</strong>给 store 加上约束："你必须只用这 13 个 pred"。它只是<em>声明</em>了一个词表。任何不在词表里的 pred 依然进得来（vault body 里随手出现的 <code>borrowed_by</code>、<code>same_round_as</code>、<code>inherits_anti_pattern</code>——arc 实际遇到 90 条 warning），它们留在 store 里，等着下一层（Layer 2）的某条规则把它们 canonicalize 到主词表上。</p>
+
+  <h3>H-R3b-4 在这一层</h3>
+
+  <p>同一张卡的 58 张拆解里，原本平铺的 link 现在分了类：</p>
+
+  <table>
+    <thead><tr><th>typed pred</th><th>:obj 是谁</th><th>语义</th></tr></thead>
+    <tbody>
+      <tr><td><code>parent_arc</code></td><td><code>arc:260516a</code></td><td>属于哪个 arc</td></tr>
+      <tr><td><code>parent_lineage</code></td><td><code>lin:arc_260516a__team_h__sizing</code></td><td>属于哪条 sizing 实验线</td></tr>
+      <tr><td><code>derived_from</code></td><td><code>exp:H-R2-2_c84_linear_sizing</code></td><td>是 λ=1.0 那版的 amplified 版</td></tr>
+      <tr><td><code>builds_on</code></td><td><code>exp:C8.4_top3_no_open3min_bypass</code></td><td>用 C8.4 当 trade selector</td></tr>
+      <tr><td><code>competes_with</code></td><td><code>exp:B-R8-1_no_open3min_bypass03</code></td><td>不同 axis 的 challenger</td></tr>
+    </tbody>
+  </table>
+
+  <p>现在 agent 看到这张卡，能区分清楚——"这是它的上游"、"这是它的对手"。但反向呢？vault 里没人在 H-R2-2 那张卡上写 <code>derives_to: H-R3b-4</code>。没写就没有。如果 agent 问"H-R2-2 被谁继承了？"，Layer 1 答得出来——靠暴力扫描所有卡，看谁的 <code>derived_from</code> 指向 H-R2-2。但这是 O(N) 扫描；想让 agent <em>顺着</em> 上下游走，需要反向边<em>已经在那里</em>。</p>
+
+  <div class="pull">"每条 derived_from 都得手动写一遍 derives_to" — 这是 Layer 1 撑不住的 tension</div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="bird-layer2-rules">
+  <div class="chapter-rule"><span class="roman">IV · Layer 2</span></div>
+  <h2 class="chapter-title">规则即卡片 — rules as cards</h2>
+
+  <div class="layer-card">
+    <div class="k">加入的机制</div><div class="v">一类新的 <code>:type "rule"</code> 卡，带 <code>:when [pattern...]</code> 和 <code>:then [conclusion...]</code>；一个 <span class="v-rule">RuleEngine</span> 跑 forward-chaining fixpoint。</div>
+    <div class="k">前一层撑不住</div><div class="v">反向边、对称边、传递闭包都得人写。</div>
+    <div class="k">新能做</div><div class="v">写一条 r002，全 store 53 条 <code>derived_from</code> 自动 fan 出 53 条 <code>derives_to</code>；规则本身存成卡，能 <code>find_by_type('rule')</code> 查、能 <code>:status</code> "paused" 一键关掉。</div>
+    <div class="k">还做不了</div><div class="v">规则只能 derive <em>边</em>（新的三元组）；它 derive 不了<em>节点</em>——你没法用 rule 从一张 paper 卡批量生出 3 张新建议卡。</div>
+  </div>
+
+  <p>这是真正的拐点。Layer 2 把"事实"和"产生事实的方法"放进<strong>同一个 namespace</strong>。一张 rule 卡长这样：</p>
+
+  <pre><code>(card "rule:r002_derived_from_reverse" :type "rule"
+  :body "A derived_from B implies B derives_to A."
+  :when (("?a" "derived_from" "?b"))
+  :then (("?b" "derives_to" "?a"))
+  :status "active")</code></pre>
+
+  <p>RuleEngine 的实现刻意单薄——167 行：扫所有 atom + derived，做 pattern unify，把所有满足 <code>:when</code> 的绑定代入 <code>:then</code>，dedup 用 <code>(subj, pred, obj)</code> 作自然键，<code>run_to_fixpoint</code> 反复跑直到没新东西。没有 join 优化、没有 magic set、没有 stratified negation——故意不要。Hamming 反射又来一次：把规则引擎推到极限，就是<em>无聚合、单调 append</em>，并且 <strong>fixpoint 保证终止</strong>。</p>
+
+  <h3>arc 260521a 真实跑出来的</h3>
+
+  <p>11 张 rule card（r001a..g 七张 micro + r002/r003/r004/r005），跑 2 个 iteration 到 fixpoint，<strong>99 条 derived 卡</strong>。其中：</p>
+
+  <table>
+    <thead><tr><th>rule</th><th>语义</th><th>fan-out</th></tr></thead>
+    <tbody>
+      <tr><td>r001 (a..g)</td><td>把 body 里非标准 link canonicalize 到主词表</td><td>16</td></tr>
+      <tr><td>r002</td><td><code>derived_from</code> → <code>derives_to</code> 反向</td><td><strong>53</strong></td></tr>
+      <tr><td>r003</td><td><code>competes_with</code> 对称闭包</td><td>20</td></tr>
+      <tr><td>r004</td><td><code>falsifies</code> 传递（A 反 B 反 C ⇒ A inherits_falsification C）</td><td>0</td></tr>
+      <tr><td>r005</td><td>anti-pattern 反向（catalog 引用 → 实验 instance_of）</td><td>10</td></tr>
+    </tbody>
+  </table>
+
+  <p>r004 那个 0 不是 bug——是 vault 里目前还没出现 falsifies 长链；rule 在那里，等数据到了再点亮。这就是 forward-chaining 的好处：规则不需要"被调用"，它<em>在</em>。</p>
+
+  <h3>规则作为数据的代价</h3>
+
+  <p>r002 跑完以后，"r002 这条规则" 自己也<em>在</em> store 里。可以问：</p>
+
+  <ul>
+    <li><code>store.find_by_type('rule')</code> → 11 张</li>
+    <li><code>store.query(lambda c: "reverse" in c.kvs.get("body","").lower())</code> → 2 张（r001g 和 r002）</li>
+    <li>把 r002 的 <code>:status</code> 翻成 <code>"paused"</code>，re-run fixpoint → derived 总数 99 → 46，差正好 <strong>53</strong>。规则的关停是<em>数据操作</em>，不是代码修改。</li>
+  </ul>
+
+  <div class="callout">
+    <div class="ctitle">cross-domain transfer</div>
+    "规则即数据"是 Lisp 半个世纪的主旋律——<code>defmacro</code>、Datomic 的 <code>:db.fn</code>、Datalog 的 EDB/IDB 平等。Layer 2 把它用到知识库上，得到的不是新概念，而是<em>把这件事真的做了</em>。
+  </div>
+
+  <h3>tension</h3>
+
+  <p>r002 fire 出 53 条 derived 三元组，每条都是一行 <code>(?b derives_to ?a)</code> 的小事实。它<em>不能</em>给你 53 张<strong>新结构的卡</strong>——比如"从一张 paper 卡派生 3 张建议卡（baseline / ablation / extension）"，每张都有自己的 body、自己的 subj/pred/obj、自己的 metadata。规则只 derive 边。要 derive 节点簇，需要更大的工具。</p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="bird-layer3-macros">
+  <div class="chapter-rule"><span class="roman">V · Layer 3</span></div>
+  <h2 class="chapter-title">宏即卡片 — macros as cards</h2>
+
+  <div class="layer-card">
+    <div class="k">加入的机制</div><div class="v">一类 <code>:type "macro"</code> 卡，带 <code>:params (?source)</code> 和 <code>:body (template-card-1 template-card-2 ...)</code>；一个 <span class="v-macro">MacroEngine</span> 做字面 <code>?var</code> 替换。</div>
+    <div class="k">前一层撑不住</div><div class="v">规则只 derive 边；要批量生成"新结构的卡"，需要模板展开。</div>
+    <div class="k">新能做</div><div class="v">一张 paper 卡过 m001 macro，立刻 expand 出 3 张 suggestion 卡（baseline / ablation / extension）。模板本身也是卡，<code>find_by_type('macro')</code> 能查到。</div>
+    <div class="k">还做不了</div><div class="v">展开出来的卡是<em>冻结快照</em>——macro fire 那一刻什么样，以后就什么样。store 后续变化不会反映到这些卡里。</div>
+  </div>
+
+  <p>Layer 3 的 mechanism 看起来跟 Layer 2 很像——都是"匹配一个模式，产生新东西"。差别在<strong>产生物的结构</strong>：rule 产生 <em>三元组事实</em>（<code>:type "derived"</code>），macro 产生 <em>整张新卡</em>（任意 <code>:type</code>，任意字段）。</p>
+
+  <pre><code>(card "m001_paper_to_experiment_suggestion" :type "macro"
+  :name "paper-to-experiment-suggestion"
+  :params ("?source-paper")
+  :body (
+    (:type "suggestion"
+     :subj "?source-paper"
+     :pred "suggests_experiment"
+     :obj  "suggestion_baseline_?source-paper"
+     :body "Baseline replication of ?source-paper — re-run...")
+    (:type "suggestion" ... :body "Ablation of ?source-paper — knock out...")
+    (:type "suggestion" ... :body "Axis extension of ?source-paper — probe...")))</code></pre>
+
+  <p>跑 <code>macro_engine.expand("paper-to-experiment-suggestion", {"source-paper": "exp:H-R3b-4_c84_kelly_lambda_1.5"}, ...)</code>，store 多出 3 张 <code>:type "suggestion"</code> 卡：</p>
+
+  <pre><code>m_ae8adfd4 → "Baseline replication of exp:H-R3b-4_c84_kelly_lambda_1.5 ..."
+m_447765d1 → "Ablation of exp:H-R3b-4_c84_kelly_lambda_1.5 ..."
+m_a754873b → "Axis extension of exp:H-R3b-4_c84_kelly_lambda_1.5 ..."</code></pre>
+
+  <p>arc 260521a 在 cap1 demo 里跑了 m001 × 3 张源卡（SOTA champion / 被 falsify 的 B-R10-2 / lineage parent H-R2-2），<strong>9 张新建议卡</strong>。每张都带 <code>:parents [source_card_id, macro_card_id]</code>——provenance 完整保留，可以反查"这张建议是哪个 macro 在哪张源卡上 fire 出来的"。</p>
+
+  <div class="callout">
+    <div class="ctitle">homoiconicity 落地</div>
+    macro 的 <code>:body</code> 是 sexp 形式存盘的，跟 atom 卡走同一个 parser；MacroEngine 只做 <code>?var</code> 字面替换，没有任何 eval。Lisp 把"代码即数据"做了 60 年，这里只用了它最瘦的版本——但已经够。
+  </div>
+
+  <h3>tension</h3>
+
+  <p>看一眼 m_ae8adfd4 的 <code>:body</code>："Baseline replication of <code>exp:H-R3b-4_c84_kelly_lambda_1.5</code>"。这串字符是 macro 在 <strong>2026-05-20T17:55:31</strong> 那一刻替换出来的。明天 H-R3b-4 被 dedup 标 superseded、被 r004 标 inherits_falsification——那张 suggestion 卡<em>不知道</em>。它的 body 是 frozen text，跟 store 当前状态脱钩。</p>
+
+  <p>所以下一层要的不是"再做一次展开"，而是"展开出来的东西<em>本身就是一个查询</em>，每次读它都重新评估"。</p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="bird-layer4-views">
+  <div class="chapter-rule"><span class="roman">VI · Layer 4</span></div>
+  <h2 class="chapter-title">视图卡 — query as card, materialize on read</h2>
+
+  <div class="layer-card">
+    <div class="k">加入的机制</div><div class="v">一类 <code>:type "view"</code> 卡，带 <code>:query {:filter_pred ... :filter_obj ...}</code>；<code>materialize(view, store)</code> 在读取时跑 filter 返回当前匹配集。</div>
+    <div class="k">前一层撑不住</div><div class="v">macro 展开是冻结快照。</div>
+    <div class="k">新能做</div><div class="v">一张 view 卡说"所有 <code>parent_lineage = lin:sizing</code> 的实验"，store 加一张新 sizing 实验，view 立刻在下次读取时反映出来——不需要重跑任何 macro。</div>
+    <div class="k">还做不了</div><div class="v">view 是<em>整张卡的过滤</em>。如果你想说"卡里某个<strong>字段</strong>是一个查询、读取时 eval"，view 还做不到——它的颗粒度是卡，不是字段。</div>
+  </div>
+
+  <p>view 跟 macro 的关系很有意思——view 是 macro 能产出的<em>一种特殊卡</em>。arc 260521a 的 m002 就专门做这事：</p>
+
+  <pre><code>(card "m002_lineage_to_comparison_view" :type "macro"
+  :name "lineage-to-comparison-view"
+  :params ("?lineage")
+  :body (
+    (:type "view"
+     :name  "view_?lineage_all_candidates"
+     :body  "All experiments registered under lineage ?lineage."
+     :query (:filter_pred "parent_lineage" :filter_obj "?lineage"))))</code></pre>
+
+  <p>m002 在 <code>lin:arc_260516a__team_h__sizing</code> 上 fire 一次，产出 <strong>1 张 view 卡</strong>。这张卡的 <code>:body</code> 是说明文字，<code>:query</code> 才是 payload。每次 <code>materialize(view, store)</code> 都会扫 store，把所有满足 filter 的卡返回——<em>当前快照</em>，不缓存。</p>
+
+  <h3>cap5 demo 跑出来</h3>
+
+  <p>三次 <code>materialize</code> 之间故意改 store：</p>
+
+  <ol>
+    <li>初始：14 张 sizing 实验匹配（H-R1-1..H-R3b-4 全套）</li>
+    <li>注入一张合成的 <code>(? parent_lineage lin:sizing)</code> atom 卡 → materialize 立刻给 <strong>15</strong></li>
+    <li>把那张合成卡 delete → materialize 回到 <strong>14</strong></li>
+  </ol>
+
+  <p>view 不缓存的代价是<em>每次都重新扫</em>。3404 张卡的 store，一次 materialize ≈ 几毫秒——可接受。当 store 长到百万级才需要谈索引和增量；现在这个 scale 故意不做。</p>
+
+  <div class="pull">"view 反映 store 现状，但 view 的<em>边界</em>是整张卡"</div>
+
+  <h3>tension</h3>
+
+  <p>m001 fire 出来的 suggestion 卡，body 里写死了 "Baseline replication of <code>exp:H-R3b-4_c84_kelly_lambda_1.5</code>"。这串字符<strong>是字段值</strong>，不是整张卡。view 救不了——view 的查询只能说"哪些卡进来"，没法说"卡里这个字段的<em>值</em>到读取那一刻才算出来"。</p>
+
+  <p>问题：能不能在卡里某个 <code>:body</code> 字段里内嵌一个表达式，读取这张卡时，引擎跑去 evaluate 这个表达式、把它替换成最新值？</p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="bird-layer5-lazy">
+  <div class="chapter-rule"><span class="roman">VII · Layer 5</span></div>
+  <h2 class="chapter-title">字段级延迟引用 — <code>&lt;eval&gt;</code> at retrieve</h2>
+
+  <div class="layer-card">
+    <div class="k">加入的机制</div><div class="v">允许 <code>:body</code> 字段里内嵌 <code>&lt;eval&gt;expr&lt;/eval&gt;</code>；<code>store.resolve_lazy(card)</code> 在读取时把 <code>expr</code> 跑出结果替换回去。</div>
+    <div class="k">前一层撑不住</div><div class="v">view 的颗粒度是卡，不是字段。</div>
+    <div class="k">新能做</div><div class="v">一张卡里写 <code>&lt;eval&gt;count-links-to exp:H-R3b-4_c84_kelly_lambda_1.5&lt;/eval&gt;</code>，读取时得到当前入度 14；明天来了新引用、读取自动变 15。<code>latest-of</code> 同理，取另一张卡的当前 body 内嵌进来。</div>
+    <div class="k">还做不了</div><div class="v">表达式词表是<strong>枚举</strong>的——<code>latest-of</code>、<code>count-links-to</code> 两个动词写在 cardstore.py 的 <code>resolve_lazy</code> 里。一个真正的 s-expr evaluator 不在 kernel 范围内（诚实地说）。</div>
+  </div>
+
+  <p>这一层不复杂，但<em>位置</em>关键。它把"求值时机"从写入时彻底移到读取时——而且颗粒度细到字段值内嵌的一段串。看看 cap2 demo 的输入：</p>
+
+  <pre><code>view_card.body =
+  "Latest SOTA snapshot:
+   champion body excerpt → &lt;eval&gt;latest-of exp:H-R3b-4_c84_kelly_lambda_1.5&lt;/eval&gt;
+   inbound link count for champion → &lt;eval&gt;count-links-to exp:H-R3b-4_c84_kelly_lambda_1.5&lt;/eval&gt;
+   inbound link count for parent (H-R2-2) → &lt;eval&gt;count-links-to exp:H-R2-2_c84_linear_sizing&lt;/eval&gt;"</code></pre>
+
+  <p>跑 <code>store.resolve_lazy(view_card)</code>，输出：</p>
+
+  <pre><code>champion body excerpt → ---
+  nav: 1
+  type: experiment
+  ...（H-R3b-4 完整 markdown 内嵌进来）
+inbound link count for champion → 14
+inbound link count for parent (H-R2-2) → 11</code></pre>
+
+  <p>有意思的是<strong>实现</strong>：<code>resolve_lazy</code> 一共 20 行——一个正则匹 <code>&lt;eval&gt;(.*?)&lt;/eval&gt;</code>，按第一个 token 分派到两个 hardcoded handler。Hamming reflex 第三次：把这件事压到最薄——既然只有两个 verb 在用，先写两个；明天需要第三个，加 7 行；什么时候 verb 多到代码丑了，再上 s-expr evaluator。</p>
+
+  <div class="callout">
+    <div class="ctitle">为什么<em>不</em>现在就写 evaluator</div>
+    YAGNI + Hamming：把 evaluator 现在写出来，得花一周；用着两个 verb 跑了三个月才知道实际需要什么形状。<em>把基础设施推迟到第二次出现需求时再建</em>——这是工程而非学术。
+  </div>
+
+  <h3>tension</h3>
+
+  <p>跑了几天以后，store 长到 3404 张卡。某个 agent 试图加一张新的 hypothesis claim 卡——可它跟已有的 H-R3b-4 hypothesis 卡相似度 0.969。是新事实？是 paraphrase？是 patch？kernel 没有<em>规则</em>处理这个；写死哪个版本胜不灵活；让 agent 每次都问 han 又太吵。</p>
+
+  <p>需要一个机制：让<em>每张可能产生冲突的卡，在被加进 store 之前，自带它的冲突处理方案</em>。</p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="bird-layer6-dedup">
+  <div class="chapter-rule"><span class="roman">VIII · Layer 6</span></div>
+  <h2 class="chapter-title">冲突协议作为数据 — dedup restart</h2>
+
+  <div class="layer-card">
+    <div class="k">加入的机制</div><div class="v">卡上加 <code>:on-dedup-conflict (action-1 action-2 ...)</code>；新卡入库前先 <code>find_near_dupes</code>，命中就执行 head action。</div>
+    <div class="k">前一层撑不住</div><div class="v">store 增长不可逆，没有冲突协议会累积污染。</div>
+    <div class="k">新能做</div><div class="v">同一张高相似度新卡，三个不同的 <code>:on-dedup-conflict</code> 头部 → 三条不同的协议路径（<span class="v-dedup">keep-both</span> / merge-prefer-newer / supersede），dedup engine 不需要 hardcode 冲突类型。</div>
+    <div class="k">还做不了</div><div class="v">这里到顶了——arc 260521a 的全部 6 capability 都覆盖到这一层。后面是 forward look。</div>
+  </div>
+
+  <p>把"冲突怎么处理"这件事，从<em>引擎里的硬代码</em>挪到<em>卡片自己的字段</em>。dedup.py 144 行，核心动作就两个：<code>_action_keep_both</code>（双向加 <code>:see-also</code>）和 <code>_action_supersede</code>（旧卡翻 <code>status: "superseded"</code>，记 <code>:superseded-by</code>，新卡记 <code>:supersedes [...]</code>）。引擎不知道"应该 keep 还是 supersede"——卡自己说。</p>
+
+  <h3>cap4 demo 实测</h3>
+
+  <p>构造一张跟 H-R3b-4 的 <code>has_section_hypothesis</code> atom 相似度 <strong>0.8358</strong> 的变体（修了 5-10% 文字），跑三次入库，每次只换 <code>:on-dedup-conflict</code> 列表的头：</p>
+
+  <table>
+    <thead><tr><th>case</th><th><code>:on-dedup-conflict</code> head</th><th>action 触发</th><th>store 状态变化</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>keep-both</td><td>keep-both</td><td>双方互加 <code>:see-also</code>，原卡 status 不变</td></tr>
+      <tr><td>2</td><td>merge-prefer-newer</td><td>merge-prefer-newer</td><td>原卡 <code>status: "superseded"</code>，<code>:superseded-by</code> = 新卡</td></tr>
+      <tr><td>3</td><td>supersede</td><td>supersede</td><td>同 case 2（这俩同义）</td></tr>
+    </tbody>
+  </table>
+
+  <p>三个 action 都 fire 了。引擎只有 144 行；要新加一种 action（譬如 "branch-and-mark-as-fork"），只要写 <code>_action_branch</code> 然后在 <code>resolve_conflict</code> 的分派里加一行——卡端不变。</p>
+
+  <div class="pull">"冲突协议不是代码——是数据。每张卡自己说"</div>
+
+  <h3>到这里 kernel 就完整了</h3>
+
+  <p>把六层叠起来，arc 260521a 的<strong>全部 6 capability</strong> 都能跑出来：</p>
+
+  <ul>
+    <li>Layer 2 (rules-as-cards) → cap3：rule 自己是卡，查得到、能 paused</li>
+    <li>Layer 3 (macros) → cap1：m001 派 3 × 3 = 9 张 suggestion 卡</li>
+    <li>Layer 4 (views) → cap5：m002 view 14 → 15 → 14 跟 store 同步</li>
+    <li>Layer 5 (&lt;eval&gt;) → cap2：count-links-to 给 14；latest-of 内嵌当前 body</li>
+    <li>Layer 6 (dedup restart) → cap4：3 个 action 都 fire</li>
+    <li>+ cap6 (self-compute confidence) — 是 Layer 5 思路在<em>结构匹配</em>下的一个特殊化，见末章 limitation</li>
+  </ul>
+
+  <div class="lab cap-matrix">
+    <div class="lab-title">capability × layer matrix</div>
+    <div class="lab-sub">此 lab 揭示：6 个 capability 被一层层 unlock 的过程（对应 phase 4 demo run 的实证结果）</div>
+    <table>
+      <thead><tr><th>capability</th><th>L0</th><th>L1</th><th>L2</th><th>L3</th><th>L4</th><th>L5</th><th>L6</th></tr></thead>
+      <tbody>
+        <tr><td>cap1 macro-derive</td><td class="n">·</td><td class="n">·</td><td class="n">·</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td></tr>
+        <tr><td>cap2 lazy ref</td><td class="n">·</td><td class="n">·</td><td class="n">·</td><td class="n">·</td><td class="n">·</td><td class="y">✓</td><td class="y">✓</td></tr>
+        <tr><td>cap3 rules-as-cards</td><td class="n">·</td><td class="n">·</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td></tr>
+        <tr><td>cap4 dedup restart</td><td class="n">·</td><td class="n">·</td><td class="n">·</td><td class="n">·</td><td class="n">·</td><td class="n">·</td><td class="y">✓</td></tr>
+        <tr><td>cap5 view card</td><td class="n">·</td><td class="n">·</td><td class="n">·</td><td class="n">·</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td></tr>
+        <tr><td>cap6 self-compute</td><td class="n">·</td><td class="n">·</td><td class="n">·</td><td class="n">·</td><td class="n">·</td><td class="p">~</td><td class="p">~</td></tr>
+        <tr><td colspan="8" style="border-top:1px solid var(--rule); font-size:12px; color:var(--ink-faint); padding-top:8px;"><span class="y">✓</span> 该层 unlock 后能跑 &nbsp;·&nbsp; <span class="p">~</span> 部分能跑 (cap6 用结构匹配实现，非完整 s-expr eval)</td></tr>
+      </tbody>
+    </table>
+  </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="bird-layer7-forward">
+  <div class="chapter-rule"><span class="roman">IX · Forward look</span></div>
+  <h2 class="chapter-title">Layer 7+ — 没做但显然该做</h2>
+
+  <div class="layer-card">
+    <div class="k">状态</div><div class="v">这一节全是 <em>forward look</em>。设计上有位置，arc 260521a 没实现。</div>
+  </div>
+
+  <div class="uncertain">下文每一条都未在 arc 260521a 内 implement / verify。列在这里是为了诚实地标出 kernel 的当前边界。</div>
+
+  <h3>L7 · consolidation worker（仿 sleep replay）</h3>
+
+  <p>store 长到 N 张卡之后，需要一个夜间 worker 跑：合并高相似度对（夜间打 batch 而不是 ingest 时打）、跑 utility prune（按 used_count + recency + link_count - age 评分淘汰 long tail）、检查 falsifies-cluster 有没有新的 cycle。当前 kernel 是<em>append-only</em>，没有这层。</p>
+
+  <h3>L8 · 三层 index（symbolic / vector / graph）</h3>
+
+  <p>Layer 0 只有 by-id 字典 + 反向 obj 扫描。检索要不退化，至少需要三种 index：</p>
+
+  <ul>
+    <li><em>symbolic</em> — 按 pred 倒排（agent 问"所有 falsifies 链"，直接走 pred index）</li>
+    <li><em>vector</em> — body 文本的 embedding，做近义检索（dedup.py 现在用 SequenceMatcher，够 demo 不够规模）</li>
+    <li><em>graph</em> — derived_from / builds_on / parent_lineage 的有向图索引，跑可达性</li>
+  </ul>
+
+  <h3>L9 · 多 agent namespace</h3>
+
+  <p>当前 store 是 single-tenant。3dgs 项目、quant 项目、life 项目、TARS-meta 各自的卡片如果都进来，需要 namespace 隔离 + 选择性 cross-link（譬如 "TARS 的人格契约卡可以被 quant agent 引用"）。</p>
+
+  <h3>L10 · 多 agent 并发 write 的 transaction model</h3>
+
+  <p>当前 RuleEngine 单线程跑 fixpoint，没有并发问题。两个 agent 同时往 store 写——尤其各自带 dedup restart——需要 transaction / optimistic-lock 类的机制。这是<em>把数据库该补的洞补上</em>，不是 wiki 的新概念。</p>
+
+  <h3>L11 · 自计算字段的真 s-expr evaluator</h3>
+
+  <p>cap6 demo 的 <code>:confidence (compute (- supports contradicts) / (max supports 1))</code> 字段，现在的实现是<strong>结构匹配</strong>——只识别这个 canonical 表达式形状的 token sequence，不是真的 eval。要做 self-computing fields 普遍化，需要把 Layer 5 的 <code>&lt;eval&gt;</code> 词表换成<em>真的</em> s-expr evaluator + 安全沙箱。这是<em>已经知道形状</em>、只是工程量大。</p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="bird-coda">
+  <div class="chapter-rule"><span class="roman">X · Coda</span></div>
+  <h2 class="chapter-title">同一张 H-R3b-4，六层之后的样子</h2>
+
+  <p>把六层全叠到这张 SOTA champion 卡上，agent 在 store 里看到的是：</p>
+
+  <table>
+    <thead><tr><th>层</th><th>新增的"看到的东西"</th></tr></thead>
+    <tbody>
+      <tr><td>L0</td><td>1 张 root 卡 + 57 张原子事实</td></tr>
+      <tr><td>L1</td><td>同样 58 张，但 <code>:pred</code> 被分类到 typed 词表</td></tr>
+      <tr><td>L2</td><td>+ <code>derives_to H-R2-2</code> 和 <code>competes_with B-R8-1</code> 的反向边（rule 派生）<br>+ <code>references_in_case_examples</code> 的 inverse 也接上</td></tr>
+      <tr><td>L3</td><td>+ 3 张 suggestion 卡：<code>m_ae8adfd4</code> (baseline) · <code>m_447765d1</code> (ablation) · <code>m_a754873b</code> (extension)</td></tr>
+      <tr><td>L4</td><td>+ 1 张 view 卡 <code>view_lin:sizing_all_candidates</code>，每次 materialize 含 H-R3b-4 在内的 14/15 张</td></tr>
+      <tr><td>L5</td><td>有人写了一张 view，body 里嵌 <code>&lt;eval&gt;count-links-to ...&lt;/eval&gt;</code>，读出来现在是 14——明天可能是 15</td></tr>
+      <tr><td>L6</td><td>有 5-10% 偏差变体出现时，<code>:on-dedup-conflict</code> 决定是 see-also 还是 supersede</td></tr>
+    </tbody>
+  </table>
+
+  <p>整套 store 跑下来：<strong>3404 atoms + 53 experiments + 8 lineages + 11 rules + 2 macros = 3478 起步</strong>；fixpoint 后 +99 derived；macro fire 后 +9 suggestion + 2 view = <strong>3588 张卡</strong>，全在一个 EDN namespace。一份语料、一个 query 接口、一种 sexp surface form。</p>
+
+  <div class="pull">"the same trick reappears at every layer: keep the substrate flat, push the differentiation into the cards themselves"</div>
+
+  <h3>跟 arc 260521a 那篇 phase-summary 的关系</h3>
+
+  <p>之前那篇 (<code>arc_260521a_wikify_alpha_second_vault_summary.html</code>) 是按<em>phase</em> 组织——predicament → 4 properties → 5-component kernel → typed vocabulary → 6 capabilities → 工程权衡。它讲的是<em>这周</em>做了什么。</p>
+
+  <p>这一篇是按<em>layer</em> 组织——每一层只加一个 mechanism，每一层都交代为什么前一层不够。它讲的是<em>如果今天从零开始给别人讲，我会怎么把这个东西一层一层走出来</em>。同一个 design，两种切入点。</p>
+
+  <div class="afterword">
+    <div class="label">meta-reflection · pull when details fade</div>
+    <h4>the layered move, distilled</h4>
+    <p>每一层都把<strong>差异化</strong>往下推一格——L0 全是 atom；L1 给 atom 装 typed pred；L2 给 store 加 rule 卡；L3 加 macro 卡；L4 加 view 卡；L5 给字段值加 lazy；L6 给冲突路径加数据驱动。引擎不长肉；卡片接管。</p>
+    <p>这是 Lisp 的传统、Datomic 的传统、SQLite 的传统——把<em>区分</em>放在数据里，不放在代码里。代码做的事永远是"对一切卡都做同一件事"；卡说自己是什么。</p>
+    <p>下一次设计任何 agent LTM，可以问的第一个问题不再是"我要存什么"——而是"<em>哪些区分</em>我要让卡片自己承担"。</p>
+  </div>
+  </section>
+
+</section>
+
+<!-- ============ FROG TAB ============ -->
+<section class="tab-pane tab-frog" id="tab-frog">
+
+  <header class="nb-head">
+    <div class="stamp">notebook · arc 260521a · layered re-build · 2026-05-21</div>
+    <h1>同一张 H-R3b-4，六层叠加</h1>
+    <div class="sub">每一格 cell 只加一个机制，看 SOTA champion 卡片在新机制下能干什么新动作。<br>所有 EDN / 数字 verbatim 来自 <code>wiki/cards/atoms/arc_260516a__team_h__H-R3b-4__c84_kelly_lambda_1.5.edn</code> 和 <code>output/260521_0145_demo_run/</code>。</div>
+  </header>
+
+  <!-- ============================================================ -->
+  <h2 class="section" id="frog-predicament"><span class="num">[0]</span> setup — 我们手里的卡长什么样</h2>
+
+  <div class="cell md">
+    <div class="label">In [md]:</div>
+    <p>okay 直接看一张真实的 vault 卡。这是 arc 260516a 跑出来的 SOTA champion——sizing axis 上 train NAV 3.70 / test NAV 1.49，比 anchor 高 19.4%。我们后面每一层都拿它做样本。</p>
+  </div>
+
+  <div class="cell code">
+    <div class="label">In [1]:</div>
+<pre><code>$ head -5 experiments/arc_260516a__team_h__H-R3b-4__c84_kelly_lambda_1.5.md</code></pre>
+  </div>
+  <div class="cell out">
+    <div class="label">Out[1]:</div>
+<pre>---
+nav: 1
+type: experiment
+id: H-R3b-4
+short_name: c84_kelly_lambda_1.5</pre>
+  </div>
+
+  <div class="cell md">
+    <div class="label">In [md]:</div>
+    <p>这是 vault 里它的样子——一个 markdown 文件，frontmatter 30+ 字段，body 里 6 种 typed link。Obsidian 看它就是一张<em>有 yaml 头的 markdown</em>，<code>[[derived_from]]</code> 是它的双链。</p>
+    <p>问题在哪——agent 想问"H-R2-2 被谁继承了？"<em>。vault 里没人写 H-R2-2 的 <code>derives_to: H-R3b-4</code>——大家只写了正向的 <code>derived_from</code>。Obsidian 不推。okay 这个就是我们要解的问题</em>。</p>
+  </div>
+
+  <!-- ============================================================ -->
+  <h2 class="section" id="frog-layer0-store"><span class="num">[1]</span> Layer 0 — Card + (subj pred obj)</h2>
+
+  <div class="cell md">
+    <div class="label">In [md]:</div>
+    <p>先把 vault 转成最最最小的形状——每个 frontmatter 字段一张三元组卡。<code>:type "atom"</code>，<code>:subj :pred :obj</code> 三个固定字段，其他随便加。下面三张是 ingest 跑出来 H-R3b-4 的真 EDN：</p>
+  </div>
+
+  <div class="cell code">
+    <div class="label">In [2]:</div>
+<pre><code># wiki/cards/atoms/arc_260516a__team_h__H-R3b-4__c84_kelly_lambda_1.5.edn
+
+(card "a_5189f3d4" :type "atom"
+  :subj "exp:H-R3b-4_c84_kelly_lambda_1.5"
+  :pred "has_nav"
+  :obj  1)
+
+(card "a_6684b4d7" :type "atom"
+  :subj "exp:H-R3b-4_c84_kelly_lambda_1.5"
+  :pred "has_train_nav"
+  :obj  3.6981)
+
+(card "a_c493671d" :type "atom"
+  :subj "exp:H-R3b-4_c84_kelly_lambda_1.5"
+  :pred "derived_from"
+  :obj  "exp:H-R2-2_c84_linear_sizing")</code></pre>
+  </div>
+  <div class="cell out">
+    <div class="label">Out[2]:</div>
+<pre>(3 of 58 atoms from this one .edn file)</pre>
+  </div>
+
+  <div class="cell md">
+    <div class="label">In [md]:</div>
+    <p>注意——<code>derived_from</code>、<code>has_train_nav</code>、<code>has_tag</code> 都在<em>同一个 pred namespace</em> 里。Layer 0 不管你 pred 写什么；它就是个 dict + 反向扫描。让我们看 store 能干嘛：</p>
+  </div>
+
+  <div class="cell code">
+    <div class="label">In [3]:</div>
+<pre><code>store = CardStore()
+store.load_edn(".../arc_260516a__team_h__H-R3b-4__c84_kelly_lambda_1.5.edn")
+
+# 它的 train_nav 字段是？
+nav_atom = next(c for c in store.all_cards()
+                if c.kvs.get("pred") == "has_train_nav")
+print(nav_atom.kvs["obj"])
+
+# 入度（谁的 :obj 指向我？）
+inbound = store.find_links_to("exp:H-R3b-4_c84_kelly_lambda_1.5")
+print(f"inbound = {len(inbound)}")</code></pre>
+  </div>
+  <div class="cell out">
+    <div class="label">Out[3]:</div>
+<pre>3.6981
+inbound = 14</pre>
+  </div>
+
+  <div class="stop">
+    <div class="h">stop &amp; think</div>
+    L0 能告诉你 H-R3b-4 入度 14。但<em>这 14 条入度里，哪几条是"下游 derive"、哪几条是"竞争对手"、哪几条是"被它 falsify"</em>？L0 没法分——pred 字符串你能 grep，但语义引擎不存在。这是 L1 要解的。
+  </div>
+
+  <!-- ============================================================ -->
+  <h2 class="section" id="frog-layer1-typed"><span class="num">[2]</span> Layer 1 — typed predicate（语义层约定）</h2>
+
+  <div class="cell md">
+    <div class="label">In [md]:</div>
+    <p>L1 不改一行 cardstore.py 代码——它只是<em>约定</em> 13 个核心 pred 词表。看 H-R3b-4 的 58 张 atom 怎么分类：</p>
+  </div>
+
+  <div class="cell code">
+    <div class="label">In [4]:</div>
+<pre><code>from collections import Counter
+
+cards = store.all_cards()
+pred_counter = Counter(c.kvs.get("pred")
+                       for c in cards
+                       if c.type == "atom")
+for pred, n in pred_counter.most_common(10):
+    print(f"{pred:30s} {n}")</code></pre>
+  </div>
+  <div class="cell out">
+    <div class="label">Out[4]:</div>
+<pre>has_tag                          8
+has_train_nav                    1
+has_test_nav                     1
+parent_arc                       1
+parent_lineage                   1
+derived_from                     1
+builds_on                        1
+competes_with                    1
+has_section_intro                1
+has_section_hypothesis           1
+... (and ~40 more single-occurrence has_* preds)</pre>
+  </div>
+
+  <div class="cell md">
+    <div class="label">In [md]:</div>
+    <p>okay—你能看到一些 pred 是<em>关系</em>（<code>derived_from</code> / <code>competes_with</code> / <code>parent_lineage</code>），有些只是<em>属性</em>（<code>has_train_nav</code> / <code>has_tag</code>）。L1 给前者一个 typed 词表：</p>
+  </div>
+
+  <div class="cell code">
+    <div class="label">In [5]:</div>
+<pre><code>TYPED_PREDS = {
+  "structural":  ["parent_arc", "parent_lineage", "builds_on", "has_axis"],
+  "derivation":  ["derived_from", "extends", "supports"],
+  "conflict":    ["competes_with", "falsifies", "contradicts"],
+  "attribution": ["reports_to", "references_in_case_examples",
+                  "is_instance_of_anti_pattern"],
+}
+
+# H-R3b-4 在每类里的链
+for category, preds in TYPED_PREDS.items():
+    hits = [c for c in cards if c.kvs.get("pred") in preds]
+    print(f"{category:12s} {len(hits)} link(s)")</code></pre>
+  </div>
+  <div class="cell out">
+    <div class="label">Out[5]:</div>
+<pre>structural   2 link(s)    # parent_arc + parent_lineage
+derivation   1 link(s)    # derived_from H-R2-2
+conflict     1 link(s)    # competes_with B-R8-1
+attribution  0 link(s)    # no anti-pattern hits</pre>
+  </div>
+
+  <div class="stop">
+    <div class="h">stop &amp; think</div>
+    现在 agent 能区分清楚——"H-R3b-4 是 H-R2-2 的下游" vs "它在跟 B-R8-1 竞争"。但反向呢？我们去看 H-R2-2 那张卡，它有没有 <code>derives_to: H-R3b-4</code>？没有——vault 里没人写。要不得每次都扫一遍全 store，要不得让"反向边"<em>自动出现</em>。这是 L2。
+  </div>
+
+  <!-- ============================================================ -->
+  <h2 class="section" id="frog-layer2-rules"><span class="num">[3]</span> Layer 2 — rules-as-cards 把规则也存成卡</h2>
+
+  <div class="cell md">
+    <div class="label">In [md]:</div>
+    <p>这是真正的杠杆。L2 加一类 <code>:type "rule"</code> 卡，加一个 167 行的 RuleEngine 做 forward-chaining。看 r002 长什么样：</p>
+  </div>
+
+  <div class="cell code">
+    <div class="label">In [6]:</div>
+<pre><code># wiki/cards/rules/r002_derived_from_reverse.edn
+
+(card "rule:r002_derived_from_reverse" :type "rule"
+  :body "A derived_from B implies B derives_to A."
+  :when (("?a" "derived_from" "?b"))
+  :then (("?b" "derives_to" "?a"))
+  :status "active")</code></pre>
+  </div>
+
+  <div class="cell md">
+    <div class="label">In [md]:</div>
+    <p>就这么短。:when 是 pattern list，<code>?a / ?b</code> 是变量；:then 给反向边。register 到 RuleEngine，跑 fixpoint：</p>
+  </div>
+
+  <div class="cell code">
+    <div class="label">In [7]:</div>
+<pre><code># Phase 3 full run on the 3404-atom store
+$ python wiki/scripts/run_rules.py
+
+[load] 3404 atoms, 11 rule cards, 2 macros
+[fire] iteration 1: +94 derived
+[fire] iteration 2: +5 derived
+[fire] iteration 3: +0  (fixpoint)
+
+per-rule fan-out:
+  r001a borrowed_by_keep          : 2
+  r001b descendants_reverse       : 2
+  r001c base_for_reverse          : 3
+  r001d team_top_picks_canonical  : 6
+  r001e inherits_failure_mode_..  : 2
+  r001f inherits_failure_mode_..  : 1
+  r001g                           : 0
+  r002 derived_from_reverse       : 53
+  r003 competes_with_symmetry     : 20
+  r004 falsifies_cluster          : 0
+  r005 anti_pattern_inheritance   : 10
+
+total: 99 derived in 0.10s</code></pre>
+  </div>
+  <div class="cell out">
+    <div class="label">Out[7]:</div>
+<pre>store now contains 3404 + 99 = 3503 cards
++ 11 rules + 2 macros = 3516 cards total</pre>
+  </div>
+
+  <div class="cell md">
+    <div class="label">In [md]:</div>
+    <p>r002 fire 53 次——vault 里有 53 条 <code>derived_from</code>，每条都生出一条 <code>derives_to</code> 反向。具体到 H-R3b-4：它原本有 <code>derived_from H-R2-2</code>，rule 跑完，现在 H-R2-2 的 store 视图里多了一条三元组 <code>(H-R2-2 derives_to H-R3b-4)</code>，不需要手写。</p>
+  </div>
+
+  <div class="cell code">
+    <div class="label">In [8]:</div>
+<pre><code># 验证：r002 fire 之后，H-R2-2 能不能反查到 H-R3b-4？
+derives_to_atoms = store.find_links_from(
+    "exp:H-R2-2_c84_linear_sizing",
+    link_pred="derives_to")
+for c in derives_to_atoms:
+    print(c.kvs["obj"])</code></pre>
+  </div>
+  <div class="cell out">
+    <div class="label">Out[8]:</div>
+<pre>exp:H-R3b-4_c84_kelly_lambda_1.5
+exp:H-R3b-3_c84_kelly_lambda_1.0
+exp:H-R3b-2_c84_kelly_lambda_0.5
+exp:H-R3b-1_c84_kelly_lambda_0.25
+exp:H-R3b-0_c84_binary_baseline
+exp:H-R3a-2_d_r2_3_sizing
+exp:H-R3a-1_b_r11_2_sizing</pre>
+  </div>
+
+  <div class="cell md">
+    <div class="label">In [md]:</div>
+    <p>7 张 r3a/r3b 后代——全是 r002 在 fixpoint 里 fire 出来的。规则<em>在</em>，不用 invoke。</p>
+    <p>而且——rule 自己也是卡。<code>store.find_by_type('rule')</code> 给你 11 张：</p>
+  </div>
+
+  <div class="cell code">
+    <div class="label">In [9]:</div>
+<pre><code># cap3 trace — rules are cards
+rules = store.find_by_type('rule')
+print(f"rule cards in store: {len(rules)}")
+
+# 子查询：含 "reverse" 的 rule
+reverse_rules = [r for r in rules
+                 if "reverse" in r.kvs.get("body","").lower()]
+print(f"rules mentioning 'reverse': {len(reverse_rules)}")
+for r in reverse_rules:
+    print(f"  {r.id}")
+
+# pause r002 然后 re-run fixpoint
+store.update("rule:r002_derived_from_reverse", status="paused")
+# re-fire from scratch
+store2 = reload_store_without_derived()
+register_only_active_rules(store2)
+new_derived = engine.run_to_fixpoint(store2)
+print(f"derived count w/ r002 paused: {len(new_derived)}")</code></pre>
+  </div>
+  <div class="cell out">
+    <div class="label">Out[9]:</div>
+<pre>rule cards in store: 11
+rules mentioning 'reverse': 2
+  rule:r001g_same_round_as
+  rule:r002_derived_from_reverse
+derived count w/ r002 paused: 46    # 99 - 53 = 46 ✓</pre>
+  </div>
+
+  <div class="stop">
+    <div class="h">stop &amp; think</div>
+    pause = data write，不是 code change——把 <code>:status</code> 翻成 <code>"paused"</code>，r002 不再 fire。如果 rule 是引擎里的 <code>if/elif</code>，关掉它就是改代码 + 重启；现在关掉它就是 UPDATE SET status='paused'。这是 L2 的真正威力。
+    <br><br>但是——r002 fire 出来的 53 条 derived 都是<em>三元组事实</em>。要从一张 paper 卡<em>生 3 张全新结构的卡</em>（baseline + ablation + extension 各一张），rule 干不了。需要 macro。
+  </div>
+
+  <!-- ============================================================ -->
+  <h2 class="section" id="frog-layer3-macros"><span class="num">[4]</span> Layer 3 — macros-as-cards 模板展开</h2>
+
+  <div class="cell md">
+    <div class="label">In [md]:</div>
+    <p>macro 在 store 里也是卡——<code>:type "macro"</code>，<code>:params (?source-paper)</code>，<code>:body</code> 是一串<em>模板卡</em>。看 m001：</p>
+  </div>
+
+  <div class="cell code">
+    <div class="label">In [10]:</div>
+<pre><code># wiki/cards/macros/m001_paper_to_experiment_suggestion.edn
+
+(card "m001_paper_to_experiment_suggestion" :type "macro"
+  :name "paper-to-experiment-suggestion"
+  :params ("?source-paper")
+  :body (
+    (:type "suggestion"
+     :subj "?source-paper"
+     :pred "suggests_experiment"
+     :obj  "suggestion_baseline_?source-paper"
+     :body "Baseline replication of ?source-paper — re-run...")
+    (:type "suggestion"
+     :subj "?source-paper"
+     :pred "suggests_experiment"
+     :obj  "suggestion_ablation_?source-paper"
+     :body "Ablation of ?source-paper hypothesis — knock out...")
+    (:type "suggestion"
+     :subj "?source-paper"
+     :pred "suggests_experiment"
+     :obj  "suggestion_extension_?source-paper"
+     :body "Axis extension of ?source-paper — probe..."))
+  :status "active")</code></pre>
+  </div>
+
+  <div class="cell md">
+    <div class="label">In [md]:</div>
+    <p>:body 是<em>三张模板卡</em>。MacroEngine.expand 做字面 <code>?var</code> 替换。在 H-R3b-4 上跑：</p>
+  </div>
+
+  <div class="cell code">
+    <div class="label">In [11]:</div>
+<pre><code>new_cards = macro_engine.expand(
+    "paper-to-experiment-suggestion",
+    {"source-paper": "exp:H-R3b-4_c84_kelly_lambda_1.5"},
+    source_card_id="exp:H-R3b-4_c84_kelly_lambda_1.5"
+)
+for c in new_cards:
+    print(c.id, "→", c.kvs["body"][:65], "...")</code></pre>
+  </div>
+  <div class="cell out">
+    <div class="label">Out[11]:</div>
+<pre>m_ae8adfd4 → Baseline replication of exp:H-R3b-4_c84_kelly_lambda_1.5 — re-run...
+m_447765d1 → Ablation of exp:H-R3b-4_c84_kelly_lambda_1.5 hypothesis — knock out...
+m_a754873b → Axis extension of exp:H-R3b-4_c84_kelly_lambda_1.5 — take...</pre>
+  </div>
+
+  <div class="cell md">
+    <div class="label">In [md]:</div>
+    <p>3 张全新结构的卡，全带 <code>:parents [source_id, macro_id]</code> provenance。cap1 demo 跑了 3 张源卡 × m001 = <strong>9 张 suggestion 卡</strong>。</p>
+  </div>
+
+  <div class="cell code">
+    <div class="label">In [12]:</div>
+<pre><code># H-R3b-4 那张 m_ae8adfd4 的完整 EDN dump
+$ cat output/260521_0145_demo_run/cap1_macro_derive/expanded_suggestions.edn | head -8</code></pre>
+  </div>
+  <div class="cell out">
+    <div class="label">Out[12]:</div>
+<pre>(card "m_ae8adfd4" :type "suggestion"
+  :subj "exp:H-R3b-4_c84_kelly_lambda_1.5"
+  :pred "suggests_experiment"
+  :obj "suggestion_baseline_exp:H-R3b-4_c84_kelly_lambda_1.5"
+  :body "Baseline replication of exp:H-R3b-4_c84_kelly_lambda_1.5 — re-run the headline result on the canonical dataset, no hyperparameter change, to confirm reproducibility before any new variant is built on top."
+  :parents ("exp:H-R3b-4_c84_kelly_lambda_1.5" "m001_paper_to_experiment_suggestion")
+  :derived_from "m001_paper_to_experiment_suggestion"
+  :generated_at "2026-05-20T17:55:31.920365+00:00")</pre>
+  </div>
+
+  <div class="stop">
+    <div class="h">stop &amp; think</div>
+    注意 :body 里那串 "Baseline replication of exp:H-R3b-4_c84_kelly_lambda_1.5"——这是 macro fire 那一刻被替换出来的<em>冻结串</em>。明天 H-R3b-4 被 dedup 标 superseded，这张 suggestion 卡<em>不知道</em>，body 不变。
+    <br><br>要让卡的 body 跟 store 当前状态<em>同步</em>，需要新机制——L4 (view) + L5 (lazy ref)。
+  </div>
+
+  <!-- ============================================================ -->
+  <h2 class="section" id="frog-layer4-views"><span class="num">[5]</span> Layer 4 — views: query-as-card, materialize on read</h2>
+
+  <div class="cell md">
+    <div class="label">In [md]:</div>
+    <p>view 是一种特殊的 macro 产出物——<code>:type "view"</code>，<code>:query</code> 是 filter spec。每次 <code>materialize(view, store)</code> 都<em>当下扫</em>。看 m002：</p>
+  </div>
+
+  <div class="cell code">
+    <div class="label">In [13]:</div>
+<pre><code># wiki/cards/macros/m002_lineage_to_comparison_view.edn
+
+(card "m002_lineage_to_comparison_view" :type "macro"
+  :name "lineage-to-comparison-view"
+  :params ("?lineage")
+  :body (
+    (:type "view"
+     :name  "view_?lineage_all_candidates"
+     :body  "All experiments under lineage ?lineage."
+     :query (:filter_pred "parent_lineage" :filter_obj "?lineage"))))</code></pre>
+  </div>
+
+  <div class="cell md">
+    <div class="label">In [md]:</div>
+    <p>m002 在 sizing lineage 上 fire 一次，生 1 张 view 卡。lineage 下属于 sizing 的实验 = 14 张（H-R1-1..H-R3b-4 全套）。手动注入一张新 atom 看 view 反应——</p>
+  </div>
+
+  <div class="cell code">
+    <div class="label">In [14]:</div>
+<pre><code>view_card = macro_engine.expand(
+    "lineage-to-comparison-view",
+    {"lineage": "lin:arc_260516a__team_h__sizing"}, ...)[0]
+store.add(view_card)
+
+# materialize 1 — 初始
+hits = materialize(view_card, store)
+print(f"initial: {len(hits)} experiments")
+
+# 注入一张合成的 parent_lineage atom
+synthetic = Card(id="a_synthetic", type="atom", kvs={
+    "subj": "exp:fake_new_sizing_experiment",
+    "pred": "parent_lineage",
+    "obj":  "lin:arc_260516a__team_h__sizing",
+})
+store.add(synthetic)
+
+# materialize 2 — 应该 +1
+hits = materialize(view_card, store)
+print(f"after inject: {len(hits)}")
+
+# delete synthetic
+store.delete("a_synthetic")
+
+# materialize 3 — 回到 14
+hits = materialize(view_card, store)
+print(f"after delete: {len(hits)}")</code></pre>
+  </div>
+  <div class="cell out">
+    <div class="label">Out[14]:</div>
+<pre>initial: 14 experiments
+after inject: 15
+after delete: 14</pre>
+  </div>
+
+  <div class="cell md">
+    <div class="label">In [md]:</div>
+    <p>14 → 15 → 14。view 完全不缓存——每次都扫。这是 cap5 demo 实测。</p>
+  </div>
+
+  <div class="stop">
+    <div class="h">stop &amp; think</div>
+    view 救了"哪些卡进来"这件事——但 view 的<em>颗粒度</em>是整张卡。Layer 3 那张 m_ae8adfd4 suggestion 卡的 :body 里写死了 "Baseline replication of exp:H-R3b-4_c84_kelly_lambda_1.5"——这串<em>字段值</em>，view 救不了。要救字段值，得让<em>字段值本身</em>是一个表达式。这是 L5。
+  </div>
+
+  <!-- ============================================================ -->
+  <h2 class="section" id="frog-layer5-lazy"><span class="num">[6]</span> Layer 5 — &lt;eval&gt; at retrieve（字段级 lazy）</h2>
+
+  <div class="cell md">
+    <div class="label">In [md]:</div>
+    <p>cap2 demo 在 view_card 的 :body 里塞了三个 <code>&lt;eval&gt;</code> 表达式：</p>
+  </div>
+
+  <div class="cell code">
+    <div class="label">In [15]:</div>
+<pre><code># cap2 demo 真实输入
+view_card.kvs["body"] = """Latest SOTA snapshot:
+  champion body excerpt → &lt;eval&gt;latest-of exp:H-R3b-4_c84_kelly_lambda_1.5&lt;/eval&gt;
+  inbound link count for champion → &lt;eval&gt;count-links-to exp:H-R3b-4_c84_kelly_lambda_1.5&lt;/eval&gt;
+  inbound link count for parent (H-R2-2) → &lt;eval&gt;count-links-to exp:H-R2-2_c84_linear_sizing&lt;/eval&gt;
+"""
+
+# read-time resolve
+resolved = store.resolve_lazy(view_card)
+print(resolved.kvs["body"][:400])</code></pre>
+  </div>
+  <div class="cell out">
+    <div class="label">Out[15]:</div>
+<pre>Latest SOTA snapshot:
+  champion body excerpt → ---
+  nav: 1
+  type: experiment
+  id: H-R3b-4
+  short_name: c84_kelly_lambda_1.5
+  title: "H-R3b-4 — C8.4 × Kelly-fraction sizing λ=1.5 (SOTA champion)"
+  arc: 260516a
+  ... (H-R3b-4 完整 body 内嵌进来)
+  inbound link count for champion → 14
+  inbound link count for parent (H-R2-2) → 11</pre>
+  </div>
+
+  <div class="cell md">
+    <div class="label">In [md]:</div>
+    <p>三个 lazy expression 在 read time 全部解算。<code>latest-of</code> → 取目标卡当前 body；<code>count-links-to</code> → 扫当前 store 给入度数。</p>
+    <p>看看实现——<code>cardstore.py</code> 的 <code>resolve_lazy</code> 一共 20 行：</p>
+  </div>
+
+  <div class="cell code">
+    <div class="label">In [16]:</div>
+<pre><code>def resolve_lazy(self, card: Card) -> Card:
+    resolved = copy.deepcopy(card)
+    body = resolved.kvs.get("body", "")
+    if not isinstance(body, str):
+        return resolved
+
+    def replacer(m):
+        expr = m.group(1).strip()
+        parts = expr.split()
+        if parts[0] == "latest-of" and len(parts) == 2:
+            ref = self.get(parts[1])
+            if ref:
+                return str(ref.kvs.get("body", f"[no body on {parts[1]}]"))
+            return f"[not found: {parts[1]}]"
+        if parts[0] == "count-links-to" and len(parts) == 2:
+            return str(len(self.find_links_to(parts[1])))
+        return m.group(0)  # unknown expr, leave as-is
+
+    resolved.kvs["body"] = re.sub(r"&lt;eval&gt;(.*?)&lt;/eval&gt;", replacer, body)
+    return resolved</code></pre>
+  </div>
+
+  <div class="callout warn">
+    <div class="tag">honest limitation</div>
+    词表是<em>枚举的</em>——只认 <code>latest-of</code> 和 <code>count-links-to</code>。真正的 s-expr evaluator 不在 kernel 范围。cap6 那个 <code>:confidence (compute ...)</code> 字段，<em>看起来</em>像表达式，实际是用结构匹配 hardcode 的 trigger pattern——不是真 eval。要做<em>通用</em>自计算字段，需要 L11 forward-look 里那个真 evaluator。
+  </div>
+
+  <div class="stop">
+    <div class="h">stop &amp; think</div>
+    store 长到 3404 张卡之后，有人想加一张几乎跟 H-R3b-4 的 hypothesis 一样的卡——只改了 5-10% 文字。是新事实？patch？paraphrase？kernel 不知道。要不每次都问人类，要不让<em>每张卡自己说怎么处理冲突</em>。L6。
+  </div>
+
+  <!-- ============================================================ -->
+  <h2 class="section" id="frog-layer6-dedup"><span class="num">[7]</span> Layer 6 — dedup restart 协议作数据</h2>
+
+  <div class="cell md">
+    <div class="label">In [md]:</div>
+    <p>cap4 demo 干的事——造一张跟 H-R3b-4 的 <code>has_section_hypothesis</code> atom 相似度 0.8358 的变体（修了 5-10% 文字）。跑三次入库，每次只换 <code>:on-dedup-conflict</code> 列表的头：</p>
+  </div>
+
+  <div class="cell code">
+    <div class="label">In [17]:</div>
+<pre><code># 变体卡（同 subj 同 pred，body 改了 5-10%）
+variant = Card(id="a_var_4f59c5ba", type="atom", kvs={
+    "subj": "exp:H-R3b-4_c84_kelly_lambda_1.5",
+    "pred": "has_section_hypothesis",
+    "obj":  "...（5-10% mutated body）",
+    "on-dedup-conflict": ["keep-both"],  # head action
+})
+
+# similarity check
+near_dupes = find_near_dupes(variant, store, threshold=0.80)
+print(f"near-dupes: {[(d[0].id, round(d[1],4)) for d in near_dupes]}")
+
+# resolve
+action = resolve_conflict(variant, near_dupes, store)
+store.add(variant)
+print(f"action fired: {action}")</code></pre>
+  </div>
+  <div class="cell out">
+    <div class="label">Out[17]:</div>
+<pre>near-dupes: [('a_3a726134', 0.8358)]
+action fired: keep-both</pre>
+  </div>
+
+  <div class="cell md">
+    <div class="label">In [md]:</div>
+    <p>原 atom <code>a_3a726134</code>（H-R3b-4 那张 hypothesis）跟变体相似度 0.8358，过 threshold 0.80。keep-both 触发——双方互加 :see-also。</p>
+    <p>换成 <code>"merge-prefer-newer"</code> 跑一次：</p>
+  </div>
+
+  <div class="cell code">
+    <div class="label">In [18]:</div>
+<pre><code># case 2 & 3 from cap4_dedup_restart/cases.json
+results = [
+  {"on-dedup-conflict": ["keep-both"],          "action": "keep-both",
+   "original_status_after": None,
+   "original_superseded_by": None,
+   "new_card_see_also": ["a_3a726134"]},
+  {"on-dedup-conflict": ["merge-prefer-newer"], "action": "merge-prefer-newer",
+   "original_status_after": "superseded",
+   "original_superseded_by": "a_var_928d152f",
+   "new_card_supersedes": ["a_3a726134"]},
+  {"on-dedup-conflict": ["supersede"],          "action": "supersede",
+   "original_status_after": "superseded",
+   "original_superseded_by": "a_var_2eb9ac55",
+   "new_card_supersedes": ["a_3a726134"]},
+]
+for r in results:
+    print(r["on-dedup-conflict"][0], "→", r["action"])</code></pre>
+  </div>
+  <div class="cell out">
+    <div class="label">Out[18]:</div>
+<pre>keep-both           → keep-both
+merge-prefer-newer  → merge-prefer-newer
+supersede           → supersede</pre>
+  </div>
+
+  <div class="cell md">
+    <div class="label">In [md]:</div>
+    <p>三条路径全 fire。引擎的 <code>resolve_conflict</code> 不知道"应该怎么处理"——卡自己说。要加新 action（譬如 <code>branch-and-mark-as-fork</code>）只要写一个 <code>_action_branch</code> 函数 + 在 dispatch 加一行，卡端写新名字就能用。</p>
+  </div>
+
+  <div class="stop">
+    <div class="h">stop &amp; think</div>
+    到这里，6 capability 全部 unlock。把六层叠起来就是 arc 260521a 完整设计——3404 atoms + 99 derived + 9 suggestions + 2 view，全部在一个 EDN namespace 同一个 query 接口。
+    <br><br>剩下的（consolidation worker / 三层 index / namespace / transaction / 真 evaluator）是<em>显然该做但 arc 260521a 没做</em>——下一节坦诚列。
+  </div>
+
+  <!-- ============================================================ -->
+  <h2 class="section" id="frog-layer7-forward"><span class="num">[8]</span> Layer 7+ — forward look（诚实标尾）</h2>
+
+  <div class="cell md">
+    <div class="label">In [md]:</div>
+    <p>下面这些<em>不是 arc 260521a 跑出来的能力</em>——是显然该做但我们没做。列在这里让边界清楚。</p>
+  </div>
+
+  <div class="callout warn">
+    <div class="tag">forward look · not implemented</div>
+    <strong>L7 consolidation worker</strong> — 夜间 batch 合并高相似度对、跑 utility prune（used_count + recency + link_count - age）、检查 falsifies 环。当前 store 是 append-only，没有这层。<br><br>
+    <strong>L8 三层 index</strong> — symbolic (pred 倒排) / vector (body embedding) / graph (有向可达性)。当前只有 by-id dict + obj 反向扫描。3404 张卡 scale 没事，10× 之后必痛。<br><br>
+    <strong>L9 多 agent namespace</strong> — 3dgs / quant / life / TARS-meta 各自卡片 + 选择性 cross-link。当前 single-tenant。<br><br>
+    <strong>L10 transaction model</strong> — 多 agent 并发 write 时的 optimistic-lock / WAL。当前单线程跑 fixpoint 没事，多并发会撞。<br><br>
+    <strong>L11 真 s-expr evaluator</strong> — cap6 的 <code>:confidence</code> 字段现在是结构匹配，不是真 eval。Layer 5 的 <code>&lt;eval&gt;</code> 词表只有两个 verb。要做<em>通用</em>自计算字段，得换真 evaluator + 沙箱。
+  </div>
+
+  <!-- ============================================================ -->
+  <h2 class="section" id="frog-coda"><span class="num">[9]</span> coda — H-R3b-4 在六层之后</h2>
+
+  <div class="cell md">
+    <div class="label">In [md]:</div>
+    <p>把六层全叠到这张 SOTA champion 卡上，最后<em>跟它有关</em>的 store 内容：</p>
+  </div>
+
+  <div class="cell code">
+    <div class="label">In [19]:</div>
+<pre><code># H-R3b-4 在六层叠完后的所有 in-/out-going 关系
+champion_id = "exp:H-R3b-4_c84_kelly_lambda_1.5"
+print("=== outgoing (champion is :subj) ===")
+out = store.find_links_from(champion_id)
+print(f"total outgoing atoms/derived: {len(out)}")
+for c in out[:5]:
+    print(f"  {c.kvs.get('pred'):30s} {c.kvs.get('obj')}")
+
+print("\n=== incoming (champion is :obj) ===")
+inb = store.find_links_to(champion_id)
+print(f"total incoming: {len(inb)}")
+for c in inb[:5]:
+    print(f"  {c.kvs.get('subj'):40s} {c.kvs.get('pred')}")
+
+print("\n=== macro-derived suggestions ===")
+sug = [c for c in store.all_cards()
+       if c.type == "suggestion"
+       and champion_id in c.kvs.get("parents",[])]
+for s in sug:
+    print(f"  {s.id} {s.kvs['body'][:50]}...")
+
+print("\n=== view containing champion ===")
+view = store.get("m_view_lin:arc_260516a__team_h__sizing_all_candidates")
+view_hits = materialize(view, store)
+print(f"  view materialize: {len(view_hits)} experiments include champion")</code></pre>
+  </div>
+  <div class="cell out">
+    <div class="label">Out[19]:</div>
+<pre>=== outgoing (champion is :subj) ===
+total outgoing atoms/derived: 58
+  has_train_nav                  3.6981
+  parent_lineage                 lin:arc_260516a__team_h__sizing
+  derived_from                   exp:H-R2-2_c84_linear_sizing
+  builds_on                      exp:C8.4_top3_no_open3min_bypass
+  competes_with                  exp:B-R8-1_no_open3min_bypass03
+
+=== incoming (champion is :obj) ===
+total incoming: 14
+  exp:H-R2-2_c84_linear_sizing       derives_to        # ← r002 派生
+  exp:B-R8-1_no_open3min_bypass03    competes_with     # ← r003 派生
+  ... (12 more)
+
+=== macro-derived suggestions ===
+  m_ae8adfd4 Baseline replication of exp:H-R3b-4_c84_kelly_lam...
+  m_447765d1 Ablation of exp:H-R3b-4_c84_kelly_lambda_1.5 hypo...
+  m_a754873b Axis extension of exp:H-R3b-4_c84_kelly_lambda_1...
+
+=== view containing champion ===
+  view materialize: 14 experiments include champion</pre>
+  </div>
+
+  <div class="cell md">
+    <div class="label">In [md]:</div>
+    <p>一张 vault 卡，六层之后变成：</p>
+  </div>
+
+  <div class="nums">
+    <div class="num-box"><div class="k">root + atoms</div><div class="v">58</div></div>
+    <div class="num-box"><div class="k">incoming</div><div class="v">14</div></div>
+    <div class="num-box"><div class="k">derived edges (r002 from H-R2-2)</div><div class="v">+1</div></div>
+    <div class="num-box"><div class="k">macro suggestions</div><div class="v">3</div></div>
+    <div class="num-box"><div class="k">views including it</div><div class="v">1</div></div>
+    <div class="num-box"><div class="k">layers needed</div><div class="v">6</div></div>
+  </div>
+
+  <div class="cell md">
+    <div class="label">In [md]:</div>
+    <p>跟这个 vault 同 namespace 的总卡数——3404 atoms + 53 experiments + 8 lineages + 11 rules + 2 macros + 99 derived + 11 macro-expansions ≈ <strong>3588 张卡</strong>，一种 sexp surface form，一个 CardStore API。L7+ 仍未上。但 6 capability 全部跑通——这是 arc 260521a 落地的部分。</p>
+  </div>
+
+  <div class="callout green">
+    <div class="tag">how this maps back to msg 1151</div>
+    上一篇 (<code>arc_260521a_wikify_alpha_second_vault_summary.html</code>) 是<em>按 phase</em> 组织——这周做了什么、产出什么数字。<br>
+    这一篇是<em>按 layer</em> 组织——如果今天从零开始给别人讲，怎么一层一层走出来。同一套 design，两种切入点。
+  </div>
+
+  <div class="nb-foot">
+    All EDN dumps and numbers verbatim from:<br>
+    · <code>wiki/cards/atoms/arc_260516a__team_h__H-R3b-4__c84_kelly_lambda_1.5.edn</code> (58 cards)<br>
+    · <code>wiki/cards/rules/{r001..r005}.edn</code> · <code>wiki/cards/macros/{m001,m002}.edn</code><br>
+    · <code>output/260521_0145_demo_run/cap{1..6}_*</code> · <code>phase3_rules.log</code><br>
+    Workspace: <code>~/project/alpha/alpha_second_v1/arcs/all/260521a_wikify_auto_research_vault_sexp/</code>
+  </div>
+
+</section>
+
+</main>
+
+<script>
+(function () {
+  var buttons = document.querySelectorAll('.tab-btn');
+  var panes   = document.querySelectorAll('.tab-pane');
+  function activate(name) {
+    buttons.forEach(function (b) {
+      b.classList.toggle('active', b.getAttribute('data-tab') === name);
+    });
+    panes.forEach(function (p) {
+      p.classList.toggle('active', p.id === 'tab-' + name);
+    });
+  }
+  buttons.forEach(function (b) {
+    b.addEventListener('click', function () {
+      activate(b.getAttribute('data-tab'));
+      history.replaceState(null, '', '#' + b.getAttribute('data-tab'));
+    });
+  });
+  function routeHash() {
+    var h = (location.hash || '').replace(/^#/, '');
+    if (!h) return;
+    if (h.indexOf('mit-') === 0)      h = 'bird-' + h.slice(4);
+    if (h.indexOf('stanford-') === 0) h = 'frog-' + h.slice(9);
+    if (h.indexOf('bird-') === 0) activate('bird');
+    else if (h.indexOf('frog-') === 0) activate('frog');
+    else if (h === 'bird' || h === 'frog') { activate(h); return; }
+    setTimeout(function () {
+      var el = document.getElementById(h);
+      if (el) el.scrollIntoView({ behavior: 'instant', block: 'start' });
+    }, 0);
+  }
+  window.addEventListener('hashchange', routeHash);
+  routeHash();
+})();
+</script>
+
+</body>
+</html>

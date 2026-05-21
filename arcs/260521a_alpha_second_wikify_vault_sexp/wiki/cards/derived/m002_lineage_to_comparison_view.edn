@@ -1,0 +1,15 @@
+(card "m_6a2df92f" :type "view"
+  :name "view_lin:arc_260516a__team_h__sizing_all_candidates"
+  :body "All experiments registered under lineage lin:arc_260516a__team_h__sizing. Re-evaluated at read time so newly-ingested candidates surface without macro re-run."
+  :query (:filter_pred "parent_lineage" :filter_obj "lin:arc_260516a__team_h__sizing")
+  :parents ("lin:arc_260516a__team_h__sizing" "m002_lineage_to_comparison_view")
+  :derived_from "m002_lineage_to_comparison_view"
+  :generated_at "2026-05-20T17:40:25.655102+00:00")
+
+(card "m_5ffe4753" :type "view"
+  :name "view_lin:arc_260516a__team_d__blacklist_default_admit_all_candidates"
+  :body "All experiments registered under lineage lin:arc_260516a__team_d__blacklist_default_admit. Re-evaluated at read time so newly-ingested candidates surface without macro re-run."
+  :query (:filter_pred "parent_lineage" :filter_obj "lin:arc_260516a__team_d__blacklist_default_admit")
+  :parents ("lin:arc_260516a__team_d__blacklist_default_admit" "m002_lineage_to_comparison_view")
+  :derived_from "m002_lineage_to_comparison_view"
+  :generated_at "2026-05-20T17:40:25.655113+00:00")

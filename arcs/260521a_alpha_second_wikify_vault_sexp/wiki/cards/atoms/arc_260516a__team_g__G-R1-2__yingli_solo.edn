@@ -1,0 +1,363 @@
+(card "exp:G-R1-2_yingli_solo" :type "experiment"
+  :subj "exp:G-R1-2_yingli_solo"
+  :body "---\nnav: 33\ntype: experiment\nid: G-R1-2_yingli_solo\nshort_name: yingli_solo\ntitle: \"G-R1-2 — 盈立 as primary signal source\"\narc: 260516a\nteam: g\nround: r1\nparent_arc: \"[[arcs/260516a]]\"\nparent_lineage: \"[[lineages/arc_260516a__team_g__source_swap]]\"\ntrain_nav: 1.0096\ntrain_trade_count: 39\ntrain_win_rate: 0.6154\ntrain_sharpe: 0.6331\ntrain_max_drawdown: -0.0147\nval_nav_mean: 0.9994\nval_nav_sigma: 0.0068\nval_window_count: 8\ntest_nav: null\ntest_trade_count: null\ntest_sharpe: null\ntest_win_rate: null\ntest_max_drawdown: null\nanchor_train_nav: 2.1882\nanchor_test_nav: 1.2486\nstatus: demoted\noutcome: no_test_run\nchampion: false\noverfit_score: 1\nleak_audit: clean\naxis: [source_swap]\npast_only_window_days: null\nwarmup_required: null\ncreated: 2026-05-17T01:30:00\nlast_updated: 2026-05-17T05:09:00\ntags: [arc/260516a, team/g, round/r1, axis/source_swap, status/demoted, outcome/no_test_run, leak/clean, size/small]\n---\n\n# G-R1-2 — 盈立 source swap\n\n> **TL;DR** —— 用 `data/TriggerData/盈立.csv` 取代 anchor source。**train NAV 1.01, sharpe 0.63, win 61.5%** —— 几乎不赚。比 [[arc_260516a__team_g__G-R1-1__luoyangchan_solo]] 更差。盈立 source 在 anchor pipeline 下基本无 alpha density。\n\n## 假设 (Hypothesis)\n- 盈立 source 可能藏 alpha，与 anchor source 独立。\n- 实测：39 trade / NAV ~1.01 / val 仅 8 window。\n\n## 实现 (Implementation)\n- 主脚本：`team_g/scripts/round_1_runner.py`; signal source = `盈立.csv`, rest = anchor.\n\n## Past-only window 处理\n- 无 rolling stat. `#leak/clean`.\n\n## 结果 (Results)\n| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 1.0096 | 39 | 0.63 | 61.5% | -1.47% |\n| Val (8w only) | 0.9994 ± 0.007 | - | - | - | - |\n| Test | NOT RUN | - | - | - | - |\n\n## 风险 & overfit 嫌疑\n- overfit_score = 1; sample 极稀.\n\n## Lineage（双链网）\n- **derived_from**: [[arc_260516a__team_anchor__anchor_g2__baseline]]\n- **same_axis_as**: [[arc_260516a__team_g__G-R1-1__luoyangchan_solo]]\n- **alt_source_companion**: [[arc_260516a__team_g__G-R1-3__cross_source_consensus_strict]]\n- **builds against**: [[arc_260516a__team_anchor__anchor_g2__baseline]]\n\n## Reports\n- `team_g/output/cross_round_leaderboard_nav.csv` (G-R1-2)\n- [[arc_260516a__reporter_20260517_0547]]\n\n## Notes / 下次迭代\n- 盈立 source 比洛阳铲更稀, win 61% near random. **不要单独 swap**。下次见 [[arc_260516a__team_g__G-R1-1__luoyangchan_solo]] Notes \"source-swap axis 根本约束\"。\n"
+  :path "experiments/arc_260516a__team_g__G-R1-2__yingli_solo.md"
+  :source_mtime "2026-05-17T10:29:39+08:00"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b274f573" :type "atom"
+  :subj "exp:G-R1-2_yingli_solo"
+  :pred "has_nav"
+  :obj 33
+  :source "experiments/arc_260516a__team_g__G-R1-2__yingli_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d08d52fe" :type "atom"
+  :subj "exp:G-R1-2_yingli_solo"
+  :pred "has_type"
+  :obj "experiment"
+  :source "experiments/arc_260516a__team_g__G-R1-2__yingli_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e0c841d7" :type "atom"
+  :subj "exp:G-R1-2_yingli_solo"
+  :pred "has_id"
+  :obj "G-R1-2_yingli_solo"
+  :source "experiments/arc_260516a__team_g__G-R1-2__yingli_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_328436b2" :type "atom"
+  :subj "exp:G-R1-2_yingli_solo"
+  :pred "has_short_name"
+  :obj "yingli_solo"
+  :source "experiments/arc_260516a__team_g__G-R1-2__yingli_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9b919108" :type "atom"
+  :subj "exp:G-R1-2_yingli_solo"
+  :pred "has_title"
+  :obj "G-R1-2 — 盈立 as primary signal source"
+  :source "experiments/arc_260516a__team_g__G-R1-2__yingli_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_3811514c" :type "atom"
+  :subj "exp:G-R1-2_yingli_solo"
+  :pred "has_arc"
+  :obj "260516a"
+  :source "experiments/arc_260516a__team_g__G-R1-2__yingli_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9afc16b2" :type "atom"
+  :subj "exp:G-R1-2_yingli_solo"
+  :pred "has_team"
+  :obj "g"
+  :source "experiments/arc_260516a__team_g__G-R1-2__yingli_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_4f545326" :type "atom"
+  :subj "exp:G-R1-2_yingli_solo"
+  :pred "has_round"
+  :obj "r1"
+  :source "experiments/arc_260516a__team_g__G-R1-2__yingli_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_bba81689" :type "atom"
+  :subj "exp:G-R1-2_yingli_solo"
+  :pred "parent_arc"
+  :obj "arc:260516a"
+  :source "experiments/arc_260516a__team_g__G-R1-2__yingli_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_26b60a99" :type "atom"
+  :subj "exp:G-R1-2_yingli_solo"
+  :pred "parent_lineage"
+  :obj "lin:arc_260516a__team_g__source_swap"
+  :source "experiments/arc_260516a__team_g__G-R1-2__yingli_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5176c1ed" :type "atom"
+  :subj "exp:G-R1-2_yingli_solo"
+  :pred "has_train_nav"
+  :obj 1.0096
+  :source "experiments/arc_260516a__team_g__G-R1-2__yingli_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_eaa59df2" :type "atom"
+  :subj "exp:G-R1-2_yingli_solo"
+  :pred "has_train_trade_count"
+  :obj 39
+  :source "experiments/arc_260516a__team_g__G-R1-2__yingli_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_46199f37" :type "atom"
+  :subj "exp:G-R1-2_yingli_solo"
+  :pred "has_train_win_rate"
+  :obj 0.6154
+  :source "experiments/arc_260516a__team_g__G-R1-2__yingli_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e9749bcc" :type "atom"
+  :subj "exp:G-R1-2_yingli_solo"
+  :pred "has_train_sharpe"
+  :obj 0.6331
+  :source "experiments/arc_260516a__team_g__G-R1-2__yingli_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_aca3537f" :type "atom"
+  :subj "exp:G-R1-2_yingli_solo"
+  :pred "has_train_max_drawdown"
+  :obj -0.0147
+  :source "experiments/arc_260516a__team_g__G-R1-2__yingli_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c3452811" :type "atom"
+  :subj "exp:G-R1-2_yingli_solo"
+  :pred "has_val_nav_mean"
+  :obj 0.9994
+  :source "experiments/arc_260516a__team_g__G-R1-2__yingli_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b6f747fb" :type "atom"
+  :subj "exp:G-R1-2_yingli_solo"
+  :pred "has_val_nav_sigma"
+  :obj 0.0068
+  :source "experiments/arc_260516a__team_g__G-R1-2__yingli_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_36e640ef" :type "atom"
+  :subj "exp:G-R1-2_yingli_solo"
+  :pred "has_val_window_count"
+  :obj 8
+  :source "experiments/arc_260516a__team_g__G-R1-2__yingli_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_80d74e5a" :type "atom"
+  :subj "exp:G-R1-2_yingli_solo"
+  :pred "has_anchor_train_nav"
+  :obj 2.1882
+  :source "experiments/arc_260516a__team_g__G-R1-2__yingli_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_bb8482d1" :type "atom"
+  :subj "exp:G-R1-2_yingli_solo"
+  :pred "has_anchor_test_nav"
+  :obj 1.2486
+  :source "experiments/arc_260516a__team_g__G-R1-2__yingli_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_45f3ffa3" :type "atom"
+  :subj "exp:G-R1-2_yingli_solo"
+  :pred "has_status"
+  :obj "demoted"
+  :source "experiments/arc_260516a__team_g__G-R1-2__yingli_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_50b41686" :type "atom"
+  :subj "exp:G-R1-2_yingli_solo"
+  :pred "has_outcome"
+  :obj "no_test_run"
+  :source "experiments/arc_260516a__team_g__G-R1-2__yingli_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_8d4ee42a" :type "atom"
+  :subj "exp:G-R1-2_yingli_solo"
+  :pred "has_champion"
+  :obj false
+  :source "experiments/arc_260516a__team_g__G-R1-2__yingli_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_7633f53d" :type "atom"
+  :subj "exp:G-R1-2_yingli_solo"
+  :pred "has_overfit_score"
+  :obj 1
+  :source "experiments/arc_260516a__team_g__G-R1-2__yingli_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_434073ce" :type "atom"
+  :subj "exp:G-R1-2_yingli_solo"
+  :pred "has_leak_audit"
+  :obj "clean"
+  :source "experiments/arc_260516a__team_g__G-R1-2__yingli_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ee9e7a35" :type "atom"
+  :subj "exp:G-R1-2_yingli_solo"
+  :pred "has_axis"
+  :obj "axis:source_swap"
+  :source "experiments/arc_260516a__team_g__G-R1-2__yingli_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5010cba7" :type "atom"
+  :subj "exp:G-R1-2_yingli_solo"
+  :pred "has_axis_list"
+  :obj ("source_swap")
+  :source "experiments/arc_260516a__team_g__G-R1-2__yingli_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f284e42a" :type "atom"
+  :subj "exp:G-R1-2_yingli_solo"
+  :pred "has_created"
+  :obj "2026-05-17 01:30:00"
+  :source "experiments/arc_260516a__team_g__G-R1-2__yingli_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9acba079" :type "atom"
+  :subj "exp:G-R1-2_yingli_solo"
+  :pred "has_last_updated"
+  :obj "2026-05-17 05:09:00"
+  :source "experiments/arc_260516a__team_g__G-R1-2__yingli_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5d7f1b4a" :type "atom"
+  :subj "exp:G-R1-2_yingli_solo"
+  :pred "has_tag"
+  :obj "tag:arc/260516a"
+  :source "experiments/arc_260516a__team_g__G-R1-2__yingli_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_92cf40e6" :type "atom"
+  :subj "exp:G-R1-2_yingli_solo"
+  :pred "has_tag"
+  :obj "tag:team/g"
+  :source "experiments/arc_260516a__team_g__G-R1-2__yingli_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e9f7e3c3" :type "atom"
+  :subj "exp:G-R1-2_yingli_solo"
+  :pred "has_tag"
+  :obj "tag:round/r1"
+  :source "experiments/arc_260516a__team_g__G-R1-2__yingli_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_08c3735b" :type "atom"
+  :subj "exp:G-R1-2_yingli_solo"
+  :pred "has_tag"
+  :obj "tag:axis/source_swap"
+  :source "experiments/arc_260516a__team_g__G-R1-2__yingli_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b4d17b47" :type "atom"
+  :subj "exp:G-R1-2_yingli_solo"
+  :pred "has_tag"
+  :obj "tag:status/demoted"
+  :source "experiments/arc_260516a__team_g__G-R1-2__yingli_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f0eb5c97" :type "atom"
+  :subj "exp:G-R1-2_yingli_solo"
+  :pred "has_tag"
+  :obj "tag:outcome/no_test_run"
+  :source "experiments/arc_260516a__team_g__G-R1-2__yingli_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_97b4aa9c" :type "atom"
+  :subj "exp:G-R1-2_yingli_solo"
+  :pred "has_tag"
+  :obj "tag:leak/clean"
+  :source "experiments/arc_260516a__team_g__G-R1-2__yingli_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_86457b9b" :type "atom"
+  :subj "exp:G-R1-2_yingli_solo"
+  :pred "has_tag"
+  :obj "tag:size/small"
+  :source "experiments/arc_260516a__team_g__G-R1-2__yingli_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_bb3b318e" :type "atom"
+  :subj "exp:G-R1-2_yingli_solo"
+  :pred "has_tl_dr"
+  :obj "用 `data/TriggerData/盈立.csv` 取代 anchor source。**train NAV 1.01, sharpe 0.63, win 61.5%** —— 几乎不赚。比 [[arc_260516a__team_g__G-R1-1__luoyangchan_solo]] 更差。盈立 source 在 anchor pipeline 下基本无 alpha density。"
+  :source "experiments/arc_260516a__team_g__G-R1-2__yingli_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_8c1aa3fb" :type "atom"
+  :subj "exp:G-R1-2_yingli_solo"
+  :pred "has_section_intro"
+  :obj "# G-R1-2 — 盈立 source swap\n\n> **TL;DR** —— 用 `data/TriggerData/盈立.csv` 取代 anchor source。**train NAV 1.01, sharpe 0.63, win 61.5%** —— 几乎不赚。比 [[arc_260516a__team_g__G-R1-1__luoyangchan_solo]] 更差。盈立 source 在 anchor pipeline 下基本无 alpha density。"
+  :source "experiments/arc_260516a__team_g__G-R1-2__yingli_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f9f8bda8" :type "atom"
+  :subj "exp:G-R1-2_yingli_solo"
+  :pred "has_section_hypothesis"
+  :obj "- 盈立 source 可能藏 alpha，与 anchor source 独立。\n- 实测：39 trade / NAV ~1.01 / val 仅 8 window。"
+  :source "experiments/arc_260516a__team_g__G-R1-2__yingli_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_aaf5912c" :type "atom"
+  :subj "exp:G-R1-2_yingli_solo"
+  :pred "has_section_implementation"
+  :obj "- 主脚本：`team_g/scripts/round_1_runner.py`; signal source = `盈立.csv`, rest = anchor."
+  :source "experiments/arc_260516a__team_g__G-R1-2__yingli_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f817d817" :type "atom"
+  :subj "exp:G-R1-2_yingli_solo"
+  :pred "has_section_past_only_window"
+  :obj "- 无 rolling stat. `#leak/clean`."
+  :source "experiments/arc_260516a__team_g__G-R1-2__yingli_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_aaee26bc" :type "atom"
+  :subj "exp:G-R1-2_yingli_solo"
+  :pred "has_section_results"
+  :obj "| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 1.0096 | 39 | 0.63 | 61.5% | -1.47% |\n| Val (8w only) | 0.9994 ± 0.007 | - | - | - | - |\n| Test | NOT RUN | - | - | - | - |"
+  :source "experiments/arc_260516a__team_g__G-R1-2__yingli_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_55035cb0" :type "atom"
+  :subj "exp:G-R1-2_yingli_solo"
+  :pred "has_section_risk_overfit"
+  :obj "- overfit_score = 1; sample 极稀."
+  :source "experiments/arc_260516a__team_g__G-R1-2__yingli_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_92e34ea0" :type "atom"
+  :subj "exp:G-R1-2_yingli_solo"
+  :pred "derived_from"
+  :obj "exp:anchor_g2_baseline"
+  :source "experiments/arc_260516a__team_g__G-R1-2__yingli_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b7b3a726" :type "atom"
+  :subj "exp:G-R1-2_yingli_solo"
+  :pred "same_axis_as"
+  :obj "exp:G-R1-1_luoyangchan_solo"
+  :source "experiments/arc_260516a__team_g__G-R1-2__yingli_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_44913761" :type "atom"
+  :subj "exp:G-R1-2_yingli_solo"
+  :pred "alt_source_companion"
+  :obj "exp:G-R1-3_cross_source_consensus_strict"
+  :source "experiments/arc_260516a__team_g__G-R1-2__yingli_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_30346de4" :type "atom"
+  :subj "exp:G-R1-2_yingli_solo"
+  :pred "builds_against"
+  :obj "exp:anchor_g2_baseline"
+  :source "experiments/arc_260516a__team_g__G-R1-2__yingli_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c853fcb6" :type "atom"
+  :subj "exp:G-R1-2_yingli_solo"
+  :pred "has_section_lineage_links"
+  :obj "- **derived_from**: [[arc_260516a__team_anchor__anchor_g2__baseline]]\n- **same_axis_as**: [[arc_260516a__team_g__G-R1-1__luoyangchan_solo]]\n- **alt_source_companion**: [[arc_260516a__team_g__G-R1-3__cross_source_consensus_strict]]\n- **builds against**: [[arc_260516a__team_anchor__anchor_g2__baseline]]"
+  :source "experiments/arc_260516a__team_g__G-R1-2__yingli_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_160ab645" :type "atom"
+  :subj "exp:G-R1-2_yingli_solo"
+  :pred "has_section_reports"
+  :obj "- `team_g/output/cross_round_leaderboard_nav.csv` (G-R1-2)\n- [[arc_260516a__reporter_20260517_0547]]"
+  :source "experiments/arc_260516a__team_g__G-R1-2__yingli_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_39199d40" :type "atom"
+  :subj "exp:G-R1-2_yingli_solo"
+  :pred "has_section_notes"
+  :obj "- 盈立 source 比洛阳铲更稀, win 61% near random. **不要单独 swap**。下次见 [[arc_260516a__team_g__G-R1-1__luoyangchan_solo]] Notes \"source-swap axis 根本约束\"。"
+  :source "experiments/arc_260516a__team_g__G-R1-2__yingli_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")

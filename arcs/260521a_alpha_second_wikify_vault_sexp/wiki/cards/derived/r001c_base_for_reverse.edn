@@ -1,0 +1,23 @@
+(card "d_80a88a9f" :type "derived"
+  :subj "exp:H-R2-1_c75_linear_sizing"
+  :pred "derived_from"
+  :obj "exp:C7.5_top3_no_open3min"
+  :derived_from "rule:r001c_base_for_reverse"
+  :parents ("a_464f289b")
+  :generated_at "2026-05-20T17:40:25.562818+00:00")
+
+(card "d_703646bf" :type "derived"
+  :subj "exp:H-R2-4_c75_sqrt_damp"
+  :pred "derived_from"
+  :obj "exp:C7.5_top3_no_open3min"
+  :derived_from "rule:r001c_base_for_reverse"
+  :parents ("a_2aa983b6")
+  :generated_at "2026-05-20T17:40:25.562821+00:00")
+
+(card "d_fb178757" :type "derived"
+  :subj "exp:H-R3b-4_c84_kelly_lambda_1.5"
+  :pred "derived_from"
+  :obj "exp:C8.4_top3_no_open3min_bypass"
+  :derived_from "rule:r001c_base_for_reverse"
+  :parents ("a_95af57f1")
+  :generated_at "2026-05-20T17:40:25.562824+00:00")

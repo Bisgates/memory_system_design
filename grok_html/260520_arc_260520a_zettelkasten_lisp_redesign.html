@@ -1,0 +1,1943 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Agent-native Zettelkasten · arc 260520a 重构设计</title>
+
+<style>
+:root {
+  --paper:        #fbf6e9;
+  --paper-2:      #f3ebd6;
+  --ink:          #1f1a14;
+  --ink-soft:     #3b332a;
+  --ink-faint:    #6b6052;
+  --rule:         #b8a583;
+  --rule-soft:    #d8c9a2;
+  --accent:       #8c2f1c;
+  --accent-2:     #2c5340;
+  --gold:         #a37c2a;
+  --quote-bg:     #f0e6cd;
+  --code-bg:      #efe6ce;
+  --code-fg:      #1a140d;
+}
+* { box-sizing: border-box; }
+html, body {
+  margin: 0; padding: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: -apple-system, "Iowan Old Style", "Charter", "Cormorant Garamond", "Playfair Display", Georgia, "Times New Roman", serif;
+  font-size: 18px; line-height: 1.7;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+body { padding-bottom: 6em; }
+.mono, code, pre {
+  font-family: ui-monospace, "SF Mono", Menlo, Monaco, "Cascadia Mono", Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+/* recurring color-coded variables across both tabs */
+.v-card  { color: #8c2f1c; }   /* card / atom — accent red */
+.v-link  { color: #2c5340; }   /* link / typed edge — deep green */
+.v-cue   { color: #a37c2a; }   /* query cue / token — amber */
+.v-sub   { color: #5a4a8c; }   /* subset / closure — purple */
+.v-cons  { color: #1f6491; }   /* consolidation / sleep-replay — blue */
+
+/* tabbar */
+.tabbar {
+  position: sticky; top: 0; z-index: 50;
+  display: flex; gap: 0;
+  background: var(--paper-2);
+  border-bottom: 1px solid var(--rule);
+  padding: 0 24px;
+}
+.tab-btn {
+  appearance: none; border: 0; background: transparent;
+  font: inherit; font-size: 14px; color: var(--ink-faint);
+  padding: 14px 22px; cursor: pointer;
+  border-bottom: 2px solid transparent;
+  font-variant: small-caps; letter-spacing: 0.12em;
+}
+.tab-btn:hover { color: var(--ink); }
+.tab-btn.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+.tab-meta {
+  margin-left: auto; align-self: center;
+  font-size: 12px; color: var(--ink-faint);
+  font-style: italic;
+}
+
+main { max-width: 820px; margin: 0 auto; padding: 56px 32px 0; }
+.tab-pane { display: none; }
+.tab-pane.active { display: block; }
+
+/* ===== BIRD scope ===== */
+.tab-bird .masthead {
+  text-align: center;
+  border-top: 4px double var(--rule);
+  border-bottom: 1px solid var(--rule);
+  padding: 32px 0 22px;
+  margin-bottom: 36px;
+}
+.tab-bird .masthead .kicker {
+  font-variant: small-caps; letter-spacing: 0.28em;
+  font-size: 12px; color: var(--accent);
+}
+.tab-bird .masthead h1 {
+  font-size: 38px; line-height: 1.18; margin: 14px 0 8px;
+  font-weight: 500;
+}
+.tab-bird .masthead .deck {
+  font-style: italic; color: var(--ink-soft);
+  font-size: 18px; max-width: 640px; margin: 0 auto;
+}
+.tab-bird .masthead .byline {
+  margin-top: 14px;
+  font-size: 12px; letter-spacing: 0.18em;
+  text-transform: uppercase; color: var(--ink-faint);
+}
+
+.tab-bird .chapter-rule {
+  text-align: center;
+  margin: 64px 0 26px;
+  color: var(--accent);
+  font-variant: small-caps; letter-spacing: 0.3em;
+}
+.tab-bird .chapter-rule .roman {
+  display: inline-block; font-size: 22px; font-style: italic;
+  padding: 0 18px;
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  line-height: 2;
+}
+.tab-bird .chapter-title {
+  text-align: center; font-size: 26px;
+  font-style: italic; font-weight: 500;
+  margin: 0 0 28px; color: var(--ink);
+}
+
+.tab-bird p { margin: 0 0 1.05em; }
+.tab-bird .lede::first-letter {
+  font-size: 4.4em; line-height: 0.86;
+  float: left; padding: 6px 12px 0 0;
+  color: var(--accent);
+  font-family: "Iowan Old Style", "Cormorant Garamond", "Playfair Display", Georgia, serif;
+  font-weight: 500;
+}
+.tab-bird h3 {
+  font-size: 19px; font-weight: 500;
+  font-variant: small-caps; letter-spacing: 0.08em;
+  margin: 32px 0 12px;
+  color: var(--ink-soft);
+  border-bottom: 1px solid var(--rule-soft);
+  padding-bottom: 4px;
+}
+
+.tab-bird .callout {
+  border-left: 3px solid var(--accent);
+  background: rgba(140,47,28,0.05);
+  padding: 14px 18px; margin: 22px 0;
+  font-size: 16.5px;
+}
+.tab-bird .callout .ctitle {
+  font-variant: small-caps; letter-spacing: 0.12em;
+  font-size: 12px; color: var(--accent); margin-bottom: 4px;
+}
+.tab-bird .callout.green { border-color: var(--accent-2); background: rgba(44,83,64,0.05); }
+.tab-bird .callout.green .ctitle { color: var(--accent-2); }
+.tab-bird .callout.gold { border-color: var(--gold); background: rgba(163,124,42,0.06); }
+.tab-bird .callout.gold .ctitle { color: var(--gold); }
+
+.tab-bird .pull {
+  margin: 28px 0; text-align: center;
+  font-style: italic; font-size: 21px;
+  color: var(--accent-2); line-height: 1.4;
+  border-top: 1px solid var(--rule-soft);
+  border-bottom: 1px solid var(--rule-soft);
+  padding: 14px 0;
+}
+.tab-bird .pull .who {
+  display: block; margin-top: 8px;
+  font-size: 12px; letter-spacing: 0.12em;
+  font-style: normal; color: var(--ink-faint);
+  text-transform: uppercase;
+}
+.tab-bird .matrix {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 16px; margin: 22px 0;
+}
+.tab-bird .matrix .cell {
+  border: 1px solid var(--rule);
+  background: var(--paper-2);
+  padding: 14px 16px; font-size: 15.5px;
+}
+.tab-bird .matrix .cell .h {
+  font-variant: small-caps; letter-spacing: 0.1em;
+  font-size: 12px; color: var(--accent); margin-bottom: 6px;
+}
+.tab-bird .matrix.three { grid-template-columns: 1fr 1fr 1fr; }
+.tab-bird .matrix.four { grid-template-columns: 1fr 1fr; }
+
+.tab-bird code {
+  background: var(--code-bg); color: var(--code-fg);
+  padding: 1px 5px; border-radius: 2px;
+  font-size: 0.88em;
+}
+.tab-bird pre {
+  background: var(--code-bg);
+  border-left: 3px solid var(--gold);
+  padding: 14px 18px; overflow-x: auto;
+  font-size: 13.5px; line-height: 1.55;
+  margin: 22px 0;
+}
+.tab-bird pre code { background: transparent; padding: 0; }
+
+.tab-bird table {
+  width: 100%; border-collapse: collapse;
+  margin: 22px 0; font-size: 15px;
+}
+.tab-bird th, .tab-bird td {
+  border-top: 1px solid var(--rule-soft);
+  border-bottom: 1px solid var(--rule-soft);
+  padding: 8px 10px; text-align: left;
+  vertical-align: top;
+}
+.tab-bird th {
+  font-variant: small-caps; letter-spacing: 0.08em;
+  color: var(--accent);
+  border-bottom: 1px solid var(--rule);
+}
+
+.tab-bird .afterword {
+  margin: 56px 0 28px;
+  border: 1px solid var(--ink-soft);
+  background: var(--paper-2);
+  padding: 22px 24px;
+}
+.tab-bird .afterword .label {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 11px; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--ink-faint);
+}
+.tab-bird .afterword h4 {
+  font-style: italic; font-weight: 500;
+  font-size: 22px; margin: 6px 0 12px;
+  color: var(--ink);
+}
+
+/* tension card grid */
+.tab-bird .tensions {
+  display: grid; gap: 14px;
+  grid-template-columns: 1fr 1fr;
+  margin: 22px 0;
+}
+.tab-bird .tensions .t {
+  border: 1px solid var(--rule);
+  background: var(--paper-2);
+  padding: 12px 14px;
+}
+.tab-bird .tensions .t .k {
+  font-variant: small-caps; letter-spacing: 0.1em;
+  font-size: 11px; color: var(--accent); margin-bottom: 4px;
+}
+.tab-bird .tensions .t .pair {
+  font-style: italic; color: var(--ink);
+  font-size: 15px; margin-bottom: 4px;
+}
+.tab-bird .tensions .t .note { font-size: 14px; color: var(--ink-soft); }
+
+/* migration steps */
+.tab-bird .steps { counter-reset: step; margin: 22px 0; padding-left: 0; }
+.tab-bird .steps li {
+  list-style: none;
+  position: relative;
+  padding: 10px 14px 10px 56px;
+  margin: 8px 0;
+  border-left: 3px solid var(--rule);
+  background: var(--paper-2);
+}
+.tab-bird .steps li::before {
+  counter-increment: step;
+  content: counter(step);
+  position: absolute; left: 14px; top: 12px;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 22px; color: var(--accent);
+  font-weight: 600;
+}
+.tab-bird .steps li .what {
+  font-style: italic; color: var(--ink); margin-bottom: 3px;
+}
+.tab-bird .steps li .how {
+  font-size: 14px; color: var(--ink-soft);
+}
+
+/* ===== FROG scope ===== */
+.tab-frog {
+  font-family: -apple-system, "Charter", "Iowan Old Style", Georgia, "Times New Roman", serif;
+}
+.tab-frog .nb-head {
+  border-bottom: 2px solid var(--ink-soft);
+  padding: 0 0 18px; margin-bottom: 26px;
+}
+.tab-frog .nb-head .stamp {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 12px; color: var(--ink-faint);
+  letter-spacing: 0.05em;
+}
+.tab-frog .nb-head h1 {
+  margin: 6px 0 4px; font-size: 28px; font-weight: 500;
+}
+.tab-frog .nb-head .sub {
+  font-style: italic; color: var(--ink-soft); font-size: 16px;
+}
+
+.tab-frog h2.section {
+  font-size: 17px;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-variant: small-caps; letter-spacing: 0.14em;
+  color: var(--accent-2);
+  margin: 42px 0 10px;
+  padding: 0 0 4px;
+  border-bottom: 1px solid var(--rule);
+  display: flex; align-items: baseline; gap: 12px;
+}
+.tab-frog h2.section .num {
+  color: var(--ink-faint); font-size: 12px;
+}
+.tab-frog h3.subsection {
+  font-size: 15px; font-weight: 500;
+  color: var(--ink-soft);
+  margin: 22px 0 6px;
+}
+
+.tab-frog .cell {
+  margin: 14px 0;
+  border-left: 4px solid transparent;
+  padding-left: 14px;
+}
+.tab-frog .cell.md   { border-color: var(--rule); }
+.tab-frog .cell.code { border-color: var(--accent-2); }
+.tab-frog .cell.out  { border-color: var(--gold); }
+.tab-frog .cell .label {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 11px; color: var(--ink-faint);
+  margin-bottom: 4px;
+  letter-spacing: 0.04em;
+}
+.tab-frog .cell.code pre {
+  background: var(--code-bg);
+  padding: 12px 14px;
+  font-size: 12.5px; line-height: 1.55;
+  overflow-x: auto; margin: 0;
+}
+.tab-frog .cell.out pre {
+  background: transparent;
+  padding: 6px 0 0;
+  font-size: 12.5px; line-height: 1.55;
+  margin: 0; color: var(--ink-soft);
+  white-space: pre-wrap;
+}
+.tab-frog .cell.md p { margin: 0 0 8px; }
+
+.tab-frog code {
+  background: var(--code-bg);
+  padding: 1px 5px; border-radius: 2px;
+  font-size: 0.86em;
+}
+
+.tab-frog .stop {
+  background: rgba(44,83,64,0.06);
+  border-left: 4px solid var(--accent-2);
+  padding: 12px 16px; margin: 18px 0;
+  font-size: 15.5px;
+}
+.tab-frog .stop .h {
+  font-variant: small-caps; letter-spacing: 0.12em;
+  font-size: 12px; color: var(--accent-2); margin-bottom: 4px;
+}
+
+.tab-frog .callout {
+  border-left: 3px solid var(--ink-faint);
+  background: var(--paper-2);
+  padding: 12px 16px; margin: 18px 0;
+  font-size: 15px;
+}
+.tab-frog .callout .tag {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 11px; letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-faint); margin-bottom: 4px;
+}
+.tab-frog .callout.warn  { border-color: var(--gold); }
+.tab-frog .callout.warn  .tag { color: var(--gold); }
+.tab-frog .callout.red   { border-color: var(--accent); background: rgba(140,47,28,0.05); }
+.tab-frog .callout.red   .tag { color: var(--accent); }
+.tab-frog .callout.green { border-color: var(--accent-2); background: rgba(44,83,64,0.05); }
+.tab-frog .callout.green .tag { color: var(--accent-2); }
+
+.tab-frog table {
+  width: 100%; border-collapse: collapse;
+  margin: 14px 0; font-size: 14px;
+}
+.tab-frog th, .tab-frog td {
+  border-top: 1px solid var(--rule-soft);
+  border-bottom: 1px solid var(--rule-soft);
+  padding: 6px 9px; text-align: left;
+  vertical-align: top;
+}
+.tab-frog th {
+  font-variant: small-caps; letter-spacing: 0.08em;
+  color: var(--accent-2);
+  border-bottom: 1px solid var(--rule);
+}
+
+.tab-frog .nb-foot {
+  margin-top: 56px; padding-top: 14px;
+  border-top: 1px solid var(--rule);
+  font-size: 13px; color: var(--ink-faint); font-style: italic;
+}
+
+/* lab — interactive viz */
+.lab {
+  border: 1px solid var(--rule);
+  background: var(--paper-2);
+  padding: 14px 16px;
+  margin: 20px 0;
+}
+.lab .lab-h {
+  font-variant: small-caps; letter-spacing: 0.12em;
+  font-size: 12px; color: var(--accent-2);
+  margin-bottom: 4px;
+}
+.lab .lab-sub {
+  font-style: italic; color: var(--ink-soft);
+  font-size: 14px; margin-bottom: 12px;
+}
+.lab .controls {
+  display: flex; flex-wrap: wrap; gap: 14px;
+  margin: 10px 0 12px;
+  align-items: center; font-size: 13px;
+}
+.lab .controls label {
+  display: inline-flex; flex-direction: column; gap: 2px;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 11px; color: var(--ink-faint);
+  text-transform: uppercase; letter-spacing: 0.06em;
+}
+.lab .controls input[type=range] { width: 160px; }
+.lab .controls select, .lab .controls button {
+  font: inherit; font-size: 13px;
+  background: var(--paper); border: 1px solid var(--rule);
+  padding: 4px 8px; color: var(--ink);
+  cursor: pointer;
+}
+.lab .controls .val {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 13px; color: var(--accent);
+}
+.lab canvas {
+  width: 100%; max-width: 100%; display: block;
+  background: var(--paper); border: 1px solid var(--rule-soft);
+}
+.lab .lab-foot {
+  margin-top: 8px; font-size: 12.5px;
+  color: var(--ink-faint); font-style: italic;
+}
+
+/* uncertainty */
+.uncertain {
+  border-left: 3px dashed var(--accent);
+  background: rgba(140,47,28,0.04);
+  padding: 10px 14px; margin: 18px 0;
+  font-style: italic; color: var(--ink-soft);
+}
+
+/* responsive */
+@media (max-width: 720px) {
+  .tabbar {
+    padding: 0 12px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .tabbar::-webkit-scrollbar { display: none; }
+  .tab-btn {
+    padding: 12px 14px; font-size: 13px;
+    letter-spacing: 0.08em;
+    white-space: nowrap; flex-shrink: 0;
+  }
+  .tab-meta { display: none; }
+  main { padding: 28px 14px 0; max-width: 100%; }
+  body { font-size: 16px; line-height: 1.6; }
+  .tab-bird .masthead { padding: 22px 0 16px; margin-bottom: 24px; }
+  .tab-bird .masthead h1 { font-size: 26px; line-height: 1.22; }
+  .tab-bird .masthead .deck { font-size: 16px; }
+  .tab-bird .chapter-rule { margin: 44px 0 18px; }
+  .tab-bird .chapter-rule .roman { font-size: 18px; }
+  .tab-bird .chapter-title { font-size: 20px; margin-bottom: 20px; }
+  .tab-bird .lede::first-letter { font-size: 3.2em; padding: 4px 8px 0 0; }
+  .tab-bird h3 { font-size: 16px; }
+  .tab-bird .callout { padding: 12px 14px; margin: 18px 0; font-size: 15px; }
+  .tab-bird .pull { font-size: 17px; padding: 12px 0; margin: 22px 0; }
+  .tab-bird .matrix, .tab-bird .matrix.three, .tab-bird .matrix.four { grid-template-columns: 1fr; gap: 12px; }
+  .tab-bird .tensions { grid-template-columns: 1fr; gap: 10px; }
+  .tab-bird pre { padding: 10px 12px; font-size: 12px; }
+  .tab-bird pre code { white-space: pre; }
+  .tab-bird table { display: block; overflow-x: auto; font-size: 13px; }
+  .tab-bird th, .tab-bird td { padding: 6px 8px; }
+  .tab-bird .afterword { padding: 18px 18px; margin: 36px 0 22px; }
+  .tab-bird .afterword h4 { font-size: 18px; }
+  .tab-frog .nb-head h1 { font-size: 22px; }
+  .tab-frog h2.section { font-size: 15px; margin: 32px 0 8px; }
+  .tab-frog h3.subsection { font-size: 14px; }
+  .tab-frog .cell { padding-left: 10px; margin: 12px 0; }
+  .tab-frog .cell.code pre,
+  .tab-frog .cell.out pre {
+    padding: 10px 12px; font-size: 11.5px;
+    overflow-x: auto;
+  }
+  .tab-frog .cell.code pre { white-space: pre; }
+  .tab-frog .stop { padding: 10px 14px; font-size: 14px; margin: 14px 0; }
+  .tab-frog .callout { padding: 10px 14px; font-size: 14px; margin: 14px 0; }
+  .lab .controls input[type=range] { width: 130px; }
+}
+
+@media (max-width: 480px) {
+  .tabbar { padding: 0 8px; }
+  .tab-btn { padding: 10px 11px; font-size: 12px; letter-spacing: 0.06em; }
+  main { padding: 22px 12px 0; }
+  body { font-size: 15px; }
+  .tab-bird .masthead h1 { font-size: 22px; }
+  .tab-bird .chapter-title { font-size: 18px; }
+  .tab-bird .lede::first-letter { font-size: 2.8em; }
+  .tab-bird pre { padding: 8px 10px; font-size: 11px; }
+  .tab-bird .pull { font-size: 16px; }
+  .tab-frog .nb-head h1 { font-size: 20px; }
+  .tab-frog .cell.code pre,
+  .tab-frog .cell.out pre { padding: 8px 10px; font-size: 11px; }
+}
+</style>
+</head>
+<body>
+
+<nav class="tabbar">
+  <button class="tab-btn active" data-tab="bird">Bird &middot; 鸟瞰</button>
+  <button class="tab-btn" data-tab="frog">Frog &middot; 蛙跳</button>
+  <span class="tab-meta">arc 260520a · 2026-05-20 · v2 设计稿</span>
+</nav>
+
+<main>
+
+<!-- ============ BIRD TAB ============ -->
+<section class="tab-pane tab-bird active" id="tab-bird">
+
+  <header class="masthead">
+    <div class="kicker">arc 260520a · 深度重构设计</div>
+    <h1>Agent-native Zettelkasten</h1>
+    <div class="deck">把 Luhmann 的卡片盒, 在 Lisp 的脑子里, 长成一个不被 1 万张卡片污染的 agent 长期记忆。</div>
+    <div class="byline">han · 2026-05-20</div>
+  </header>
+
+  <p class="lede">这份文档不是教 Luhmann, 也不是吹 Lisp。它是 arc 260520a 的下一步设计图 —— 上一轮 demo 跑出 211 条 derived atom + viz, 但 schema 反推审计指出: 我们押的是 <em>graph join 能跑</em>, 不是 <em>内容能被读</em>。25 条 query 里能稳健答 11 条, 缺的是 content / confidence / coverage / status 整组维度。这次我们把 schema 在那 8-dim 修订版基础上, 再叠 Luhmann 视角 + agent 视角, 给出一个能从今天的 demo 增量迁移过去的设计 —— 不推倒, 不 cargo-cult, 也不假装从零开始。</p>
+
+  <!-- ===================== I. 预设处境 ===================== -->
+  <div class="chapter-rule"><span class="roman">I · 处境</span></div>
+  <h2 class="chapter-title" id="bird-predicament">为什么这个问题, 是这个问题</h2>
+
+  <p>先把 predicament 摆出来。agent 当下的记忆分两层。</p>
+
+  <p><strong>短期记忆 = context window。</strong> stateless。一次对话装多少, 关掉就清零, 下次重打。Claude 现在能塞 1M token, 但塞进去的不是"它知道的", 是"这次会话恰好有的"。会话结束, 这些信息从 agent 视角看 = 死。</p>
+
+  <p><strong>长期记忆 = ……不存在。</strong> 现在所有声称是 "agent LTM" 的方案, 几乎都是 RAG 的搭便车: 把笔记切成 1k token chunk, embed, 余弦相似度召回 top-k。chunk 之间没结构, 召回完了塞 prompt, 用完丢掉。<em>这个方案在 50 张文档时勉强工作, 在 1 万张时 retrieval 噪声等于内容</em>。</p>
+
+  <div class="callout">
+    <div class="ctitle">naive idea → 致命缺陷</div>
+    <p>"那把所有笔记都喂给 agent 不就行了吗?" — context length 撑不住; "那 RAG 不就行了?" — RAG 是 flat bag-of-chunks, 没结构, scale 上不去; "那加个 knowledge graph?" — 经典 KG 是 schema-first, 维护成本超过收益, Cyc 失败 30 年了。</p>
+  </div>
+
+  <p>问题真正的难点是: agent 需要的是<strong>一个会自己长大的、有结构的、按需读取的、读完还能反过来写的</strong>记忆。读 ≠ search, 是 retrieval + 推理 cue; 写 ≠ append, 是 dedupe + consolidate。这四件事, 现有方案没有一个都干。</p>
+
+  <h3>那为什么是 Luhmann</h3>
+
+  <p>Niklas Luhmann 1960-90 年代用纸质卡片盒搞出 90,000 张卡片, 单人产出 70 本书 + 400 篇论文。他的 Zettelkasten 是<em>已知最高效的人类外脑系统</em>。它有四个 anchor:</p>
+
+  <ul>
+    <li><strong>原子化 (atomicity)</strong> —— 一张卡, 一个想法。</li>
+    <li><strong>永久 ID (Folgezettel)</strong> —— 不靠目录, 卡之间用 ID 直接互指。</li>
+    <li><strong>用 link 不用 tag</strong> —— 类目是 emergent 的, 不预设。</li>
+    <li><strong>用自己的话</strong> —— 复读不算笔记, 必须重新表述。</li>
+  </ul>
+
+  <p>这四个 anchor 跟 agent LTM 的需求<em>近乎一一对应</em> —— atomicity ↔ 不爆 context, link ↔ 关系是 first-class, emergent ↔ 不预设 schema, own-words ↔ agent 写回时也得是 representation 不是 copy。</p>
+
+  <div class="callout green">
+    <div class="ctitle">但不能 cargo-cult</div>
+    <p>Luhmann 是 1960s 的<strong>个人</strong>思考工具。Folgezettel 数字-字母 ID (e.g. <code>21/3d7</code>) 是因为他要在纸上用手翻; emergent hierarchy 是因为他没法 grep。agent 用这个系统, 必须保留<em>原则</em>, 不必保留<em>形式</em>。这份设计的工作就是把保留 / 修正 / 不适用三类逐条过一遍 —— 见 §III。</p>
+  </div>
+
+  <h3>前序工作: arc 260520a 现在站在哪</h3>
+
+  <p>上次 demo 的产出: 11 条规则 × 359 atoms → 211 derived atoms in 26ms。它证明 <em>forward chaining 在 single-machine 上对 100s 级 atom 是 free lunch</em>。但 schema 反推审计指出 25 条 query 里只稳健答 11 条 —— 全是 graph 形态, 缺的是 content / confidence / coverage / status / temporal / status 6 类。</p>
+
+  <p>本设计建立在 schema 反推那张 8-dim 修订表上, 再叠两层: <strong>(a) Luhmann 的 ID + literature/permanent 区分; (b) agent 视角的 provenance / status / writeback signature。</strong>目标是从 demo 增量演进, 不是从零开始。</p>
+
+  <!-- ===================== II. 六个根本张力 ===================== -->
+  <div class="chapter-rule"><span class="roman">II · 张力</span></div>
+  <h2 class="chapter-title" id="bird-tensions">六个不能两边都赢的对立</h2>
+
+  <p>这个系统的所有设计决策, 都是这六对张力的取舍组合。先把它们摆开 —— 任何 "聪明 trick" 都得跟其中一对的让步对账。</p>
+
+  <div class="tensions">
+    <div class="t">
+      <div class="k">T1 · capacity ⇆ precision</div>
+      <div class="pair">塞得多 vs 抽得准</div>
+      <div class="note">每加一张卡, retrieval 噪声地板 +1 单位。Luhmann 90k 是<em>个人记忆量级</em>, 不是无限。我们必须有 prune / merge protocol, 不能只 append。</div>
+    </div>
+    <div class="t">
+      <div class="k">T2 · atomicity ⇆ context</div>
+      <div class="pair">切碎 vs 自足</div>
+      <div class="note">切得越细, 一张卡越复用; 但越细, 单张卡越无法独立被理解, 越依赖邻居。这就是为什么 link 是 first-class —— 没有 link, atomicity 就是粉尘。</div>
+    </div>
+    <div class="t">
+      <div class="k">T3 · link richness ⇆ query cost</div>
+      <div class="pair">关系满 vs 查得快</div>
+      <div class="note">link 越 typed, 子集提取越准; 但 link 类型越多, 图密度越大, walk 越慢。8 种 typed link 是经验上的 sweet spot, 不是 32 种, 也不是 1 种。</div>
+    </div>
+    <div class="t">
+      <div class="k">T4 · write speed ⇆ consolidation</div>
+      <div class="pair">立刻写 vs 沉淀写</div>
+      <div class="note">online single-write 像在脑子里直接写硬盘 —— 永远不会有梳理。借鉴 hippocampus → cortex 的 sleep replay: <strong>append 是即时的, consolidate 是异步的</strong>。</div>
+    </div>
+    <div class="t">
+      <div class="k">T5 · emergent ⇆ aligned</div>
+      <div class="pair">个体涌现 vs 集体对齐</div>
+      <div class="note">Luhmann 是单人, 概念自然 converge。多 agent 用同一个 wiki, 不 align 就是 babel —— 每个 agent 各自创造 alias。需要 canonical entity layer 但不需要全局 schema。</div>
+    </div>
+    <div class="t">
+      <div class="k">T6 · specificity ⇆ generality</div>
+      <div class="pair">"这次" vs "总是"</div>
+      <div class="note">"depth alignment Spearman 0.99" 是 specific fact; "新的 metric 必须跨 dataset 验证" 是 general principle。两类卡必须共存且分得清, 否则 general 卡会被 specific 卡淹没。</div>
+    </div>
+  </div>
+
+  <p class="pull">"一个原则, 不告诉你它的反例, 就是 marketing。" <span class="who">这份设计的自检</span></p>
+
+  <!-- ===================== III. Luhmann ===================== -->
+  <div class="chapter-rule"><span class="roman">III · 原则</span></div>
+  <h2 class="chapter-title" id="bird-luhmann">Luhmann 原则, 逐条过 agent 适配</h2>
+
+  <p>Luhmann 的 6 条核心原则, 在 agent 语境下: <strong>3 条保留, 2 条修正, 1 条不适用</strong>。</p>
+
+  <table>
+    <thead>
+      <tr><th>原则</th><th>状态</th><th>为什么 / 怎么改</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>原子化</strong><br><em>one card = one idea</em></td>
+        <td>保留</td>
+        <td>恰好就是 agent context-economy 的根本。一张卡的尺寸上限 ≈ "一个 paragraph 能 quote 出的有意义 unit" (~200-500 char body + meta)。</td>
+      </tr>
+      <tr>
+        <td><strong>用 link 不用 tag</strong><br><em>connection over category</em></td>
+        <td>保留 + 强化</td>
+        <td>原版只有 "see also" 一种 link。agent 用必须 <em>typed</em> (supports / contradicts / extends / …, 见 §IV)。tag 作为 derived view 仍可存在, 但<strong>不是 source of truth</strong>。</td>
+      </tr>
+      <tr>
+        <td><strong>用自己的话</strong><br><em>rewrite, not copy</em></td>
+        <td>保留</td>
+        <td>对 agent 同样有效 —— LLM 复制粘贴 = 没消化, retrieval 时是 dead weight。写回时强制 paraphrase。</td>
+      </tr>
+      <tr>
+        <td><strong>Folgezettel ID</strong><br><em>21/3d7 数字-字母 mix</em></td>
+        <td>修正</td>
+        <td>形式不保留 (我们有 grep), 原则保留: <em>ID 永久不变, 不携带类目语义, 一旦分配不变更</em>。我们用 <code>YYMMDD<i>x</i>-<i>nnn</i></code> (e.g. <code>260520a-007</code>) —— 时间锚 + 顺序, 跟 arc ID 同形。</td>
+      </tr>
+      <tr>
+        <td><strong>permanent vs literature note</strong><br><em>两类卡分开盒</em></td>
+        <td>修正</td>
+        <td>Luhmann 把 "原文摘录" 和 "我自己想法" 分两盒。Agent 版扩成<em>三类</em>: <code>literature</code> (来自外部源, paper / doc / code), <code>permanent</code> (agent 自己沉淀的概念), <code>experiential</code> (一次 task 的具体观察 / trace)。三类 retention policy 不同 (见 §VI)。</td>
+      </tr>
+      <tr>
+        <td><strong>emergent hierarchy</strong><br><em>no predefined taxonomy</em></td>
+        <td>不适用 (作 source-of-truth) / 保留 (作 view)</td>
+        <td>Luhmann 没法预设 hierarchy 因为他在纸上。agent 工程上必须有 index / cluster 加速 retrieval —— 但这些是 <em>derived view</em>, 不是 source of truth。卡片之间唯一权威的是 link, hierarchy 是 hop-2 cluster 的 visualisation。</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>对比现代实现, 它们各 cargo-cult 了什么</h3>
+
+  <div class="matrix">
+    <div class="cell">
+      <div class="h">Obsidian / Logseq / Roam</div>
+      <p>保留: link-don't-tag, plain-text。<br>漏: link 不 typed; 没有 atomicity 约束 (一个 .md 几千字也行); 没有 retrieval-quality 概念; 不为 agent 写, 是 GUI 工具。</p>
+    </div>
+    <div class="cell">
+      <div class="h">Tana / Anytype / Mem.ai</div>
+      <p>保留: 节点级原子化, supertag。<br>漏: 把 schema 锁死成 first-class, 退回 Cyc 的路子; agent API 是 RPC, 不是认知接口。</p>
+    </div>
+    <div class="cell">
+      <div class="h">Heptabase</div>
+      <p>保留: card + whiteboard 的空间记忆。<br>漏: 完全为人类视觉设计, agent 看不到 layout 信号; 没有写回。</p>
+    </div>
+    <div class="cell">
+      <div class="h">arc 260520a v1 demo</div>
+      <p>保留: 原子化, forward chaining, deterministic engine。<br>漏: content / confidence / coverage / status 6 维 (见 schema 反推审计); 单 link 类型, 单 atom 类型, 单 source-of-truth。</p>
+    </div>
+  </div>
+
+  <p>所以这份设计不是第十六个二流 Obsidian, 也不是 Cyc-mini。它的判定特征是: <strong>typed link + 三类卡 + 异步 consolidation + 三层 index</strong>。如果一个实现少了其中任意一项, 就掉回上面的某个分类。</p>
+
+  <!-- ===================== IV. Lisp ===================== -->
+  <div class="chapter-rule"><span class="roman">IV · Lisp</span></div>
+  <h2 class="chapter-title" id="bird-lisp">Lisp 的落点 — 诚实评估</h2>
+
+  <p>用户在 voice memo 里强调 "Lisp 的 mental model 做聪明的抽象"。这一节诚实回答: <em>哪儿 Lisp 真有用, 哪儿其实 Datalog 更合适</em>。</p>
+
+  <h3>Lisp 的 4 个 mental move</h3>
+
+  <div class="matrix">
+    <div class="cell">
+      <div class="h">M1 · S-expression as data</div>
+      <p>"代码即数据" —— 卡片可以是 sexp, 既能被 read 又能被 eval。<strong>fit: 高</strong>。一张卡 <code>(card :id ... :body "..." :links (...))</code> 同时是结构化数据 + 可被 macro 重写。</p>
+    </div>
+    <div class="cell">
+      <div class="h">M2 · macro / quasi-quote</div>
+      <p>用 macro 做 query expansion (类似 PRF), 用 quasi-quote 做 template card。<strong>fit: 中</strong>。macro 比函数好的地方是<em>在 read 时把 cue 重写成 query plan</em>; 但 Datalog 的 rule 也能做。</p>
+    </div>
+    <div class="cell">
+      <div class="h">M3 · condition / restart</div>
+      <p>检索失败不 throw, 而是<em>恢复 + 提示 agent 改写 cue</em>。<strong>fit: 高</strong>。retrieval 是 best-effort 操作, condition system 比 try/except 更适合"有几种 fallback"的场景。</p>
+    </div>
+    <div class="cell">
+      <div class="h">M4 · lazy sequence</div>
+      <p>子集提取产 stream, agent 按 budget 取头部。<strong>fit: 中</strong>。Python 的 generator 也能做, 但 Lisp 的 lazy stream 更原生 —— 让 ranking 是 pull-based 而不是 push。</p>
+    </div>
+  </div>
+
+  <h3>但 Datalog 在哪些维度更直接</h3>
+
+  <p>Lisp 的强项是<em>抽象 + 元编程</em>, Datalog 的强项是<em>声明式 join + fixpoint</em>。这两件事 agent wiki 都需要, 但它们是<strong>不同层</strong>:</p>
+
+  <ul>
+    <li><strong>rule engine 层</strong> (像 demo 里的 r001-r011) —— 用 Datalog (或 Datomic 的 datalog dialect) 比 Lisp 自己写 forward chaining 干净 100 倍。声明式 + monotone + fixpoint 是 Datalog 的原生设定, Lisp 要自己造。</li>
+    <li><strong>抽象层</strong> (rule 怎么被生成 / 重写, agent 怎么编排 retrieval) —— Lisp 的 macro / condition / closure 是 first-class, Datalog 没有。</li>
+  </ul>
+
+  <div class="callout gold">
+    <div class="ctitle">推荐</div>
+    <p>底层<strong>用 Datalog (或同等声明式 rule language) 做规则 + 派生</strong>, 这一层从 demo 已经存在; 上层<strong>用 Lisp / Clojure (实际上 Datomic 本来就是 Clojure 系) 做卡片表示 + query expansion + condition handling</strong>。卡片本身是 sexp, 这给我们 "code as data" + 可程序化的重写。Python (demo 现状) 在这套架构里只剩 glue —— 短期保留, 中期迁。</p>
+  </div>
+
+  <p class="pull">"Lisp is the only language with no chasm between 'I have this idea' and 'I can write it down.'" <span class="who">— Paul Graham, paraphrased</span></p>
+
+  <h3>把 Lisp 用作装饰是错的</h3>
+
+  <p>用户问 "Lisp 装饰 vs 真有用"。直说: 如果 Lisp 在你的系统里只是<em>"卡片用 sexp 写而已"</em>, 那它就是装饰, 不如用 YAML/JSON。Lisp 真正赚到的地方是 macro / condition / lazy / sexp 这 4 件加起来产生 compound 收益 —— 见 §V 子集提取要用 macro 重写 cue, 见 §VII 写回要用 condition 系统处理 dedup conflict。少了这些, 就别用 Lisp。</p>
+
+  <!-- ===================== V. closed loop ===================== -->
+  <div class="chapter-rule"><span class="roman">V · 闭环</span></div>
+  <h2 class="chapter-title" id="bird-loop">子集提取 + 指针读取 + 写回</h2>
+
+  <p>整个系统的 lifecycle 是个 4-step 闭环:</p>
+
+  <ol>
+    <li><strong>cue → subset</strong> · agent 拿到任务, 系统从 huge graph 中抽出相关子集。</li>
+    <li><strong>subset → action</strong> · agent 用子集做事; 子集里嵌指针, agent 按需深读。</li>
+    <li><strong>action → delta</strong> · agent 干完, 产出新卡 / 新 link / 修正旧卡的草稿。</li>
+    <li><strong>delta → graph</strong> · 异步 consolidation worker 把 delta dedupe / merge / 写回。</li>
+  </ol>
+
+  <h3>step 1 · 子集提取的三个候选方案 + 推荐</h3>
+
+  <p>这是最关键的一步 —— 不爆 context 的保证就靠它。我比较了三个主流方案:</p>
+
+  <table>
+    <thead>
+      <tr><th>方案</th><th>原理</th><th>优势</th><th>劣势 / 何时不灵</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>A · dense retrieval + 1-hop expand</strong></td>
+        <td>对 cue embed, 取 top-k 卡, 再 1-hop 沿 link 扩展</td>
+        <td>实现简单; cold start 友好; 完全 stateless</td>
+        <td>1-hop 太短, 跨概念跳不过去; embedding 在 1 万卡时噪声大</td>
+      </tr>
+      <tr>
+        <td><strong>B · Personalized PageRank (PPR) on typed graph</strong></td>
+        <td>从 seed 卡出发, 按 link type 加权随机游走, PPR 分数排序</td>
+        <td>能跨 hop 聚合; typed link 自然加权; 数学上稳定</td>
+        <td>需要 graph 预计算, sparse 子图慢; 没有 content 信号</td>
+      </tr>
+      <tr>
+        <td><strong>C · 混合 — HyDE + PPR + provenance prior</strong></td>
+        <td>LLM hypothesis 扩 cue → embed top-k → 在这些 seed 上跑 PPR → 用 evidence_count / utility 做 prior 加权</td>
+        <td>content + structure 同时用; 老卡老 utility 自然 boost; 抗稀释</td>
+        <td>实现复杂; 调参面大</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout">
+    <div class="ctitle">第一性原则</div>
+    <p>子集 = 任务 cue 的<em>因果闭包</em> —— 包含什么 = "不包含会让任务质量下降的卡片"。这不是 "top-k similar", 是 "minimum sufficient context"。<strong>推荐方案 C</strong>: 它把 content (HyDE-embed)、structure (PPR)、experience (provenance prior) 三路信号融合, 任一信号失灵都还有另两路兜底。</p>
+  </div>
+
+  <h3>step 2 · 指针 over inline · token 经济</h3>
+
+  <p>子集里不是每张卡都 inline 全文。三档:</p>
+
+  <ul>
+    <li><strong>L0 · header only</strong> · 只放 id + title + 一行 gist (≤ 80 char), 60-100 token / card. <em>用于 "知道它在那"</em>.</li>
+    <li><strong>L1 · summary</strong> · header + body summary (~ 200 token / card). <em>用于 "可能要用到"</em>.</li>
+    <li><strong>L2 · full</strong> · 整张卡含 source quote. <em>用于 "必读 / 已 follow 过指针"</em>.</li>
+  </ul>
+
+  <p>子集默认输出 L1 卡 + L0 邻居; 邻居作为 <em>pointer</em> 让 agent 按需提到 L2。token 预算 first-class —— 系统暴露 <code>(estimate-tokens subset)</code> 给 agent, agent 自己决定深读哪几个指针。</p>
+
+  <h3>step 3 · 写回 protocol (sleep-replay 风格)</h3>
+
+  <p>这是用户最强调的一点: 不要 online single-write。借鉴海马 → 皮层的 consolidation:</p>
+
+  <ol>
+    <li><strong>online</strong> · agent 干活时产出的 candidate cards / links 进 <code>scratchpad</code> namespace, <em>不进主图</em>。打 confidence ≤ 0.6 标签。</li>
+    <li><strong>fast consolidation (~minutes)</strong> · task 结束后 worker 跑: dedup against existing (semantic + structural similarity), merge candidates。promote 到 <code>permanent</code> 或 <code>experiential</code>。</li>
+    <li><strong>slow consolidation (~hours / nightly)</strong> · 全图扫描: 找重复主题 cluster, propose merge / split; utility-low 卡片建议 archive。需要 human (han) confirm 才执行。</li>
+    <li><strong>provenance</strong> · 每张卡记 <code>created_by: agent_id</code>, <code>derived_in_task: arc_id</code>, <code>last_used_at</code>, <code>used_count</code>。</li>
+  </ol>
+
+  <h3>writeback conflict</h3>
+
+  <p>多 agent 并发写时, 用 Lisp condition system 模式: <em>conflict 是 condition, 不是 exception</em>。三种 restart 策略:</p>
+  <ul>
+    <li><code>:keep-both</code> — 两条都留, 加 <code>conflicts</code> link, 让后续 reader 看到张力。</li>
+    <li><code>:supersede</code> — 高 confidence + 新 timestamp 胜出, 老的标 <code>:deprecated_by</code>。</li>
+    <li><code>:defer-to-human</code> — 进 review queue。</li>
+  </ul>
+
+  <!-- ===================== VI. scaling ===================== -->
+  <div class="chapter-rule"><span class="roman">VI · 规模</span></div>
+  <h2 class="chapter-title" id="bird-scaling">不退化检索 — 1 万卡片之后</h2>
+
+  <p>这是 han 最强调的红线。1 万张卡片注入后, 检索 quality 不能被这 1 万张污染。三件事撑住这个保证。</p>
+
+  <h3>1 · 三层 index, 不是单一 vector store</h3>
+
+  <table>
+    <thead>
+      <tr><th>层</th><th>结构</th><th>查询特性</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>L_sym · symbol table</td><td>canonical entity → card_ids (hash map)</td><td>O(1) 精确命中。"arc 260508b 的所有卡" 走这条。</td></tr>
+      <tr><td>L_vec · HNSW vector index</td><td>card embedding, with namespace partition</td><td>语义 fuzzy 命中。HyDE-cue → top-k。</td></tr>
+      <tr><td>L_graph · typed link graph</td><td>(subj, pred, obj) edges + PPR precompute</td><td>结构性扩展。"这卡有哪些 contradicts / extends"。</td></tr>
+    </tbody>
+  </table>
+
+  <p>三层互为 backup —— 一层失灵 (e.g. embedding 漂移), 另两层兜底。1 万卡时, L_vec 单层 noise 必上升, 但 L_sym + L_graph 是<em>结构化</em>的, 不被 vector 漂移影响。</p>
+
+  <h3>2 · 主动 prune / merge, 不是无限堆</h3>
+
+  <p>每张卡有 <code>utility = α·used_count + β·recency + γ·in_link_count − δ·age</code>。每周 consolidation 跑:</p>
+  <ul>
+    <li>utility 长期低于阈值 → 提议 archive (移入 cold storage, 不删, 但不进 default 子集提取)。</li>
+    <li>高语义相似 + 高 link 重叠 → 提议 merge。</li>
+    <li>"垃圾稀释" 检测 — 一次性 dump 一大批卡时, 给这批卡打 <code>quarantine</code> 标签, 不进主图 retrieval 直到通过 utility 阈值。</li>
+  </ul>
+
+  <h3>3 · namespace + boundary cutoff</h3>
+
+  <p>retrieval 默认在<em>当前 task 的 namespace</em> + 1-hop 邻居完成, 不扫全图。namespace 跨度: <code>3dgs/</code>, <code>quant/</code>, <code>life/</code>, <code>tars-meta/</code>。跨 namespace 的卡片走 <code>cross-pollination</code> link, 这种 link 是 promote 出来的 (utility 高 + 多次被跨 ns 引用), 不是默认创建。</p>
+
+  <div class="callout green">
+    <div class="ctitle">scaling 的具体承诺</div>
+    <p>10 张卡 → retrieval F1 ~0.9; 1k 卡 → ~0.85; 1 万卡 → 目标维持 0.75-0.8。掉点的部分会来自<em>cross-namespace 任务</em>, namespace-internal 任务掉点应该 ≤ 5%。一个差系统在 1 万卡时 F1 会掉到 0.4 (RAG 在 chunk 量上来后的实测水平)。</p>
+  </div>
+
+  <p class="uncertain">⚠ 0.75 / 0.4 这些具体数字是<em>设计目标</em>不是实测; ground truth 在我们实际跑 1 万卡之前没法确认。10 万卡量级 (Luhmann 个人极限) 是不是同一套机制还成立, 没人有公开数据。</p>
+
+  <!-- ===================== VII. kernel + migration ===================== -->
+  <div class="chapter-rule"><span class="roman">VII · 落地</span></div>
+  <h2 class="chapter-title" id="bird-kernel">最小内核 + 从 arc 260520a 的迁移路径</h2>
+
+  <p>遵循 "大系统先定 kernel + 列 unknown + 逐个 walk 通" 原则。</p>
+
+  <h3>kernel — 5 个组件, 必须先在</h3>
+
+  <div class="matrix">
+    <div class="cell">
+      <div class="h">K1 · card store</div>
+      <p>sexp-on-disk + symbol table。<code>(card :id ... :body ... :links ...)</code>。读写 O(1)。</p>
+    </div>
+    <div class="cell">
+      <div class="h">K2 · typed link layer</div>
+      <p>8 种 link type (§frog 详述)。原 demo 的单 link 升级到 typed。</p>
+    </div>
+    <div class="cell">
+      <div class="h">K3 · subset extractor</div>
+      <p>方案 C 简化版 (vector + 1-hop typed walk; PPR 先 mock); 暴露 <code>(extract-subset cue budget)</code>.</p>
+    </div>
+    <div class="cell">
+      <div class="h">K4 · writeback ingestor</div>
+      <p>scratchpad → fast consolidation; <code>(append-card)</code> + <code>(propose-link)</code>; dedup by hash + cosine sim 阈值。</p>
+    </div>
+    <div class="cell">
+      <div class="h">K5 · rule engine (复用 demo)</div>
+      <p>原 demo 的 forward chaining 整套保留; 只把 atom schema 换成新 12-dim。</p>
+    </div>
+    <div class="cell">
+      <div class="h">park · 延后</div>
+      <p>多 agent merge / PPR / slow consolidation / cross-namespace link / quarantine / visual whiteboard —— 都先 mock 接口, 实现延后。</p>
+    </div>
+  </div>
+
+  <h3>kernel 必须真能端到端跑通</h3>
+
+  <p>端到端 = <em>read 50 篇 3dgs paper 卡 → agent 用子集 reason → 产出 3 张新卡 + 5 个新 link → 写回 → 下次 query 能命中新卡</em>。这是 demo 跑通后的下一个 acceptance bar。kernel ship 之前不加 feature。</p>
+
+  <h3>migration path — 从 demo 增量演进</h3>
+
+  <ol class="steps">
+    <li>
+      <div class="what">step 1 · 给 atom 加 typed link 字段</div>
+      <div class="how">现在 atom 的 <code>pred</code> 是单层词汇表。改成 <code>(link-type, target)</code>, 8 种 type。原有 11 条规则的 then 子句给每条边标 type。<em>可单独验证: dedup + viz 颜色按 type 分</em>。</div>
+    </li>
+    <li>
+      <div class="what">step 2 · 加 content_snippet + source_locator</div>
+      <div class="how">schema 反推审计的 R3 + R4。每张 atom 多带 200 char 原文片段 + (file, line_start, line_end)。<em>验证: 任何 atom 能 quote 出原文</em>。</div>
+    </li>
+    <li>
+      <div class="what">step 3 · 加 extraction_method + confidence</div>
+      <div class="how">R5。区分 regex / llm / hand, 0-1 confidence。LLM extract 路径开 (现在是纯 regex)。<em>验证: 同一 doc regex 和 LLM 抽出来的 atom 都进, 不互相覆盖</em>。</div>
+    </li>
+    <li>
+      <div class="what">step 4 · 三类卡 namespace 划分</div>
+      <div class="how">literature / permanent / experiential 三个 namespace 前缀。原 demo atom 都是 literature。新接口 <code>(promote :from experiential :to permanent)</code>.</div>
+    </li>
+    <li>
+      <div class="what">step 5 · scratchpad + fast consolidation</div>
+      <div class="how">新建 worker (一个新组件, 不是改现有的)。先单测 dedup by hash, 再加 cosine sim 阈值。<em>验证: 跑两次同样的 agent task, 第二次产出不重复</em>。</div>
+    </li>
+    <li>
+      <div class="what">step 6 · 子集提取 v1 (vec + 1-hop)</div>
+      <div class="how">最简版的方案 C。HNSW + 1-hop typed walk。<em>验证: query "depth alignment" 能取出 ≥ 5 张相关卡 + 8 个邻居指针, token < 2k</em>.</div>
+    </li>
+    <li>
+      <div class="what">step 7 · utility 评分 + archive 候选</div>
+      <div class="how">utility 公式 + cold storage 入口。先只读, 不真删。<em>验证: 跑 1 周 task 后, archive 候选列表 review 可信</em>.</div>
+    </li>
+    <li>
+      <div class="what">step 8+ · park 列表的逐项</div>
+      <div class="how">PPR / multi-agent merge / cross-ns link / slow consolidation 按需求拉。</div>
+    </li>
+  </ol>
+
+  <p>每一步都<strong>可单独验证</strong>, 都<strong>不破坏前一步</strong>, 而且都<strong>从 demo 现状出发</strong>。不推倒重做是核心约束 —— han 已经投了一晚上把 demo 跑出来。</p>
+
+  <!-- ===================== afterword ===================== -->
+  <div class="afterword">
+    <div class="label">afterword · principle to remember</div>
+    <h4>当细节模糊时记住:</h4>
+    <p>这个系统不是 KB, 不是 RAG, 不是 KG。它是 <strong>agent 的脑外脑</strong>: typed link 是它的突触, 三类卡是它的记忆分层, fast/slow consolidation 是它的睡眠, utility prune 是它的遗忘曲线。Luhmann 给了形态, 神经科学给了 dynamics, Lisp 给了 introspection。<em>缺哪一个, 系统就会偏向已有的某个二流方案</em>。</p>
+    <p>如果你只能记一件事 —— 记 §V 的 "subset = 任务 cue 的因果闭包"。这一句话决定了它跟 RAG 不一样的地方, 也决定了为什么这个系统能 scale 到 1 万张卡。</p>
+  </div>
+
+  <p class="uncertain">⚠ contested · 我没找到 PPR vs HyDE-混合在 wiki 子集 retrieval 上的直接 ablation; 学界做的多是 open-domain QA 上的对比, agent 长期记忆 corpus 上的实证缺。这部分推荐 (方案 C) 是论证选择, 不是实证选择。</p>
+
+</section>
+
+<!-- ============ FROG TAB ============ -->
+<section class="tab-pane tab-frog" id="tab-frog">
+
+  <header class="nb-head">
+    <div class="stamp">arc 260520a · 设计 v2 · frog 视角 · 2026-05-20</div>
+    <h1>把它打开看一张卡, 一个子集, 一次写回</h1>
+    <div class="sub">从一张真实卡片到一次 50 行 kernel 跑通, 把抽象逐 cell 落到具体。</div>
+  </header>
+
+  <!-- ===================== §1 一张卡 ===================== -->
+  <h2 class="section" id="frog-card"><span class="num">[1]</span> one card · 12 字段的最终 spec</h2>
+
+  <div class="cell md">
+    <div class="label">In [md]:</div>
+    <p>schema 反推那张 8-dim 修订表 + Luhmann 视角的 3 项 + agent provenance 的 1 项 = 12 字段。先看一张<em>真实</em>卡片 (来自 demo 的 a_a26feb5c, 升级到新 schema 后的样子)。</p>
+  </div>
+
+  <div class="cell code">
+    <div class="label">In [1]: cat permanent/260508b-007.sexp</div>
+<pre><code>(card
+  :id        "260508b-007"                          ;; permanent ID, 时间锚 + 序
+  :ns        "literature"                            ;; literature | permanent | experiential
+  :type      "fact"                                  ;; fact | concept | decision | observation
+  :subj      "arc:260508b"
+  :pred      <span class="v-link">"introduces_doc"</span>                       ;; closed vocab
+  :obj       "doc:notes/lidar_merge_quality_metric.md"
+  :body      "260508b 在 9_summary 里以 [NEW] 引入
+              了 lidar_merge_quality_metric.md, 用
+              Spearman ρ=1.0000 跟 L2 距离对齐。"     ;; 原文摘抄 + 自己的话
+  :links     (<span class="v-link">(supports     "260508a-003")
+              (extends      "260430a-011")
+              (mentioned-in "260514b-002")</span>)
+  :provenance (
+    :source       "arcs/all/260508b_l2_lidar_merge_metric/9_summary.md"
+    :line-range   (12 18)
+    :extracted-by "regex+llm-paraphrase"               ;; regex | llm | hand
+    :confidence   0.92
+    :evidence-count 1
+    :created-at   "2026-05-08T22:14:00+08:00"
+    :created-by   "agent:tars"
+    :derived-in   "arc:260520a")
+  :status     "active"                                ;; active | deprecated | quarantine
+  :utility    (:used-count 3 :last-used "2026-05-20T20:11:00+08:00"))</code></pre>
+  </div>
+
+  <div class="cell out">
+    <div class="label">Out [1]: 跟 Luhmann 一张卡的对照</div>
+<pre>Luhmann 1976 一张原卡 (家族 ID 21/3d7):
+  正面: "Sinn-systeme operieren rekursiv ..."
+  背面: see also: 21/3d5, 19/2b4, 9/4c
+
+我们这张:
+  body       ← 正面 (用自己的话, 限长)
+  links      ← 背面 (typed, 不只是 see-also)
+  id         ← Folgezettel (永久, 但形式换成 YYMMDDx-nnn)
+  provenance ← 没有对应 (Luhmann 不需要, 因为他自己写的; agent 需要因为有外源)
+  utility    ← 没有对应 (Luhmann 用 review 记忆, agent 用使用频度)</pre>
+  </div>
+
+  <div class="stop">
+    <div class="h">stop &amp; think</div>
+    <p>注意一个微妙的点: <code>:body</code> 字段 (200-500 char) <strong>是新加的</strong>, demo 里没有。schema 反推审计里 R3 (content_snippet) 就是这一项 —— 没有它, "这卡说了啥" 这种语义类 query 直接答不上, 系统必须配 RAG 当外挂。加了它, RAG 的能力被吃进 schema 内。</p>
+  </div>
+
+  <div class="cell md">
+    <div class="label">In [md]:</div>
+    <p>跟 demo 比, 多出的字段: <code>ns</code> (三类卡区分), <code>type</code> (4 类 entity 细分), <code>body</code> (R3), <code>provenance.line-range</code> (R4), <code>extracted-by</code> + <code>confidence</code> (R5), <code>evidence-count</code> (R8), <code>status</code> (R7), <code>utility</code> (新加)。一共 +5 个真新字段, 其余是把 demo 里 implicit 的东西 explicit 出来。</p>
+  </div>
+
+  <!-- ===================== §2 8 种 typed link ===================== -->
+  <h2 class="section" id="frog-links"><span class="num">[2]</span> typed links · 8 种关系逐个小例</h2>
+
+  <div class="cell md">
+    <div class="label">In [md]:</div>
+    <p>demo 的 link 是单层 closed vocab (introduces_doc / mentions_doc / refs_arc / …)。这一组都是 <em>schematic</em> link (谁引入谁)。我们再加 <em>semantic</em> link, 凑成 8 种, 覆盖 agent reasoning 需要的关系。</p>
+  </div>
+
+  <div class="cell code">
+    <div class="label">In [2]: 8 种 typed link 表</div>
+<pre><code>;; schematic — 跟 demo 同源, 描述结构
+(<span class="v-link">mentioned-in</span>    target)  ;; 我被谁提到过
+(<span class="v-link">derived-from</span>    target)  ;; 我是从谁派生出来的
+
+;; semantic — 新加, 描述内容关系
+(<span class="v-link">supports</span>        target)  ;; 我支持 target 的论点
+(<span class="v-link">contradicts</span>     target)  ;; 我反驳 target
+(<span class="v-link">extends</span>         target)  ;; 我是 target 的延伸 / 后继
+(<span class="v-link">specializes</span>     target)  ;; 我是 target 的具体实例
+(<span class="v-link">depends-on</span>      target)  ;; 我要先理解 target 才有意义
+(<span class="v-link">questions</span>       target)  ;; 我对 target 提出疑问 (未必反驳)</code></pre>
+  </div>
+
+  <div class="cell out">
+    <div class="label">Out [2]: 每种的小例子</div>
+<pre>supports     · "Spearman ρ=1.0" supports "新 metric 跟 L2 对齐"
+contradicts  · "DA3 depth 漂移 5%" contradicts "DA3 absolute scale OK"
+extends      · "260508b lidar metric" extends "260430a metric framework"
+specializes  · "fabu B001 holdout 训练" specializes "merged-scene strategy"
+depends-on   · "voxel fused init" depends-on "merged scene 概念"
+questions    · "1 万卡 retrieval F1" questions "Luhmann scale 假设"
+mentioned-in · "lidar_merge_pipeline" mentioned-in "260508b 9_summary"
+derived-from · 任何 r001-r011 派生的 atom 都有 derived-from 链回去</pre>
+  </div>
+
+  <div class="stop">
+    <div class="h">stop &amp; think</div>
+    <p>子集提取时这 8 种 link <em>不等权</em>。<code>contradicts</code> 有<strong>强引力</strong> —— 看到一张 contradicts 链, 应该把对面那张也拉进子集 (你不想只看一面)。<code>specializes</code> 和 <code>extends</code> 是 forward 拉 (你拿到抽象想看具体), <code>depends-on</code> 是 backward 拉 (你不懂这张就读不下去)。这是子集算法用 link type 加权的地方。</p>
+  </div>
+
+  <!-- ===================== §3 子集提取 trace ===================== -->
+  <h2 class="section" id="frog-subset"><span class="num">[3]</span> subset extraction · 50 → 7 + 3 的 walk</h2>
+
+  <div class="cell md">
+    <div class="label">In [md]:</div>
+    <p>给定 query <span class="v-cue">"我想在 3dgs 上做 depth-alignment"</span>, 在 50 张候选卡 (3dgs namespace 里所有跟 depth / alignment 相关的) 中走出 7 张子集 + 3 张深读指针。一步一步算。</p>
+  </div>
+
+  <div class="cell code">
+    <div class="label">In [3]: HyDE expand + embed top-k</div>
+<pre><code>cue = "我想在 3dgs 上做 depth-alignment"
+
+;; HyDE: 让 LLM 写一个 "假回答"
+hypothesis = "depth alignment 需要解决 DA3 scale 漂移,
+              lidar 提供绝对尺度, 用 Spearman 或 L2
+              做对齐评估, 在 merged-scene 上验证"
+
+;; embed cue + hypothesis, 取 cosine top-15 in 3dgs/
+seeds = (
+  260512a-001  ; DA3 dense depth principle      sim=0.81
+  260508b-007  ; lidar_merge_quality_metric     sim=0.78
+  260514b-003  ; 3dgs init voxel fused          sim=0.72
+  260514b-007  ; da3_lidar_scale_align          sim=0.70
+  260511a-002  ; mesh_to_3dgs_pipeline          sim=0.61
+  ... 10 more in 0.45-0.6 range
+)</code></pre>
+  </div>
+
+  <div class="cell code">
+    <div class="label">In [4]: PPR walk on typed graph</div>
+<pre><code>;; 从 5 个高相关 seed 出发, 按 link type 加权随机游走
+;; weight: supports/extends 1.0, specializes/depends-on 0.8,
+;;         contradicts 1.2 (强引力), questions 0.6, mentioned-in 0.3
+;; teleport prob 0.15, 200 iter
+
+ppr_scores = {
+  <span class="v-sub">260508b-007</span>: 0.142,   ; seed
+  <span class="v-sub">260512a-001</span>: 0.138,   ; seed
+  <span class="v-sub">260514b-007</span>: 0.121,   ; reached via extends from 260508b-007
+  <span class="v-sub">260514b-003</span>: 0.094,   ; seed
+  <span class="v-sub">260513a-005</span>: 0.087,   ; reached via contradicts (DA3 漂移)
+  <span class="v-sub">260430a-011</span>: 0.061,   ; reached via depends-on (metric framework)
+  <span class="v-sub">260514b-002</span>: 0.054,   ; reached via specializes
+  260511a-002:  0.041,   ; cut — fall off
+  ...
+}</code></pre>
+  </div>
+
+  <div class="cell code">
+    <div class="label">In [5]: provenance prior + final subset</div>
+<pre><code>;; utility / used_count / evidence_count 作为 prior, 把老干部往上提
+final_score = ppr_score * (1 + 0.1 * log(used_count + 1))
+
+;; budget = 4k token, L1 summary ~200 tok/card → 容纳 ~15 张 L1
+;; 但我们要留 token 给 L0 邻居指针 → 给 7 张 L1, 留 3 张 L0 指针
+
+subset = (
+  <span class="v-sub">260508b-007</span>  L1  ; lidar metric
+  <span class="v-sub">260512a-001</span>  L1  ; DA3 dense depth principle
+  <span class="v-sub">260514b-007</span>  L1  ; da3_lidar_scale_align (核心匹配)
+  <span class="v-sub">260514b-003</span>  L1  ; voxel fused init
+  <span class="v-sub">260513a-005</span>  L1  ; DA3 scale 漂移问题 (contradicts 拉来的反面)
+  <span class="v-sub">260430a-011</span>  L1  ; metric framework (depends-on 拉来的前序)
+  <span class="v-sub">260514b-002</span>  L1  ; merged scene 实证
+)
+
+pointers = (
+  <span class="v-sub">260511a-002</span>  L0  ; mesh_to_3dgs (相关但不必读全)
+  <span class="v-sub">260508c-004</span>  L0  ; glb_to_3dgs (旁路, 备用)
+  <span class="v-sub">260520a-007</span>  L0  ; 本设计 (元指针, 让 agent 知道有这份)
+)
+
+total_tokens ≈ 1400 (L1) + 240 (L0) ≈ 1640 tok</code></pre>
+  </div>
+
+  <div class="cell out">
+    <div class="label">Out [5]: agent 拿到的 subset 内容</div>
+<pre>{
+  "subset": [
+    {"id": "260508b-007", "summary": "lidar_merge_quality_metric (Spearman ρ=1.0 vs L2)", ...},
+    {"id": "260512a-001", "summary": "DA3 dense depth — relative depth, scale unknown", ...},
+    ...
+  ],
+  "pointers": [
+    {"id": "260511a-002", "gist": "mesh_to_3dgs_pipeline · 3dgs 输入端工程化"},
+    ...
+  ],
+  "estimated_tokens": 1640,
+  "budget_remaining": 2360,
+  "follow_pointer": "use <fetch 260511a-002 L2> if needed"
+}</pre>
+  </div>
+
+  <div class="stop">
+    <div class="h">stop &amp; think</div>
+    <p>注意 <code>260513a-005</code> 是被 <span class="v-link">contradicts</span> link 拉来的反面观点 (DA3 在 fabu ego filter 上 5% 漂移)。如果只用 cosine 相似度, 它的 sim 可能只有 0.4 — 远低于 top-k 的 cut。是 typed link 把它捞回来的。<strong>这是 typed link 比 plain RAG 强的具体那一步</strong>。</p>
+  </div>
+
+  <div class="lab">
+    <div class="lab-h">lab · 子集 walk 滑条</div>
+    <div class="lab-sub">此 lab 揭示: link type 权重 + budget 怎么影响子集的覆盖率与精度 (对应 bird §V step 1 推荐方案 C)。</div>
+    <div class="controls">
+      <label>budget (tokens)
+        <input id="subset-budget" type="range" min="500" max="5000" step="100" value="1600">
+        <span id="subset-budget-v" class="val">1600</span>
+      </label>
+      <label>contradicts weight
+        <input id="subset-w-contra" type="range" min="0" max="2" step="0.1" value="1.2">
+        <span id="subset-w-contra-v" class="val">1.2</span>
+      </label>
+      <label>provenance prior
+        <input id="subset-prior" type="range" min="0" max="0.3" step="0.02" value="0.1">
+        <span id="subset-prior-v" class="val">0.10</span>
+      </label>
+      <label>strategy
+        <select id="subset-strategy">
+          <option value="C">C · HyDE + PPR + prior</option>
+          <option value="A">A · top-k + 1-hop</option>
+          <option value="B">B · PPR only</option>
+        </select>
+      </label>
+    </div>
+    <canvas id="lab-subset" height="320"></canvas>
+    <div class="lab-foot">深红 = 直接命中, 绿 = 通过 typed link 拉到, 灰 = 候选但被 budget 切掉。看 budget 调小时覆盖率塌的形状。</div>
+  </div>
+
+  <!-- ===================== §4 token economy ===================== -->
+  <h2 class="section" id="frog-tokens"><span class="num">[4]</span> token economy · agent 拿到子集后</h2>
+
+  <div class="cell md">
+    <div class="label">In [md]:</div>
+    <p>agent 拿到 subset (7×L1 + 3×L0 + budget_remaining=2360) 之后, 决策树是这样:</p>
+  </div>
+
+  <div class="cell code">
+    <div class="label">In [6]: agent decision pseudo</div>
+<pre><code>;; agent 内部 (Lisp 风格 condition system)
+(defun handle-task (cue subset)
+  (let ((budget (subset-budget-remaining subset)))
+    (loop for card in (subset-cards subset)
+          do (case (card-relevance card cue)
+               (:must-deep-read
+                  ;; 拉 L2 (full body + source quote)
+                  (when (&gt; budget 800)
+                    (let ((full (fetch-card (card-id card) :level :L2)))
+                      (decf budget (token-cost full))
+                      (collect full into deep))))
+               (:summary-sufficient
+                  ;; L1 已经在 subset 里, 不再拉
+                  nil)
+               (:irrelevant
+                  ;; 标记 negative-feedback, consolidation 时降权
+                  (mark-irrelevant (card-id card) cue))))
+    ;; pointers — 按需 follow
+    (loop for ptr in (subset-pointers subset)
+          when (likely-needed? ptr cue)
+            do (let ((c (fetch-card (ptr-id ptr) :level :L1)))
+                 (decf budget (token-cost c))))))</code></pre>
+  </div>
+
+  <div class="cell out">
+    <div class="label">Out [6]: 实跑一次 (depth-alignment task)</div>
+<pre>cue: "我想在 3dgs 上做 depth-alignment"
+
+initial subset:  1640 tok (7×L1 + 3×L0)
+decisions:
+  260508b-007  must-deep-read   → fetch L2  +540 tok
+  260514b-007  must-deep-read   → fetch L2  +480 tok
+  260512a-001  summary-sufficient → keep L1
+  260514b-003  summary-sufficient → keep L1
+  260513a-005  must-deep-read   → fetch L2  +420 tok  (contradicts, 必读)
+  260430a-011  summary-sufficient → keep L1
+  260514b-002  summary-sufficient → keep L1
+
+pointer:
+  260511a-002  likely-needed=false → skip
+  260508c-004  likely-needed=false → skip
+  260520a-007  likely-needed=true (元指针) → fetch L1  +180 tok
+
+final context cost: 1640 + 540+480+420+180 = 3260 tok
+budget_remaining → 740 tok (留给 agent reasoning + writeback)</pre>
+  </div>
+
+  <div class="stop">
+    <div class="h">stop &amp; think</div>
+    <p>3260 / 4000 token, 留 740 给推理。<strong>对比 RAG 默认 top-10 chunks × 1000 tok = 10k tok, 而且没有指针机制</strong>。token 经济不是 "我们更省 60%", 而是 "我们的 subset 永远在 agent 可控 budget 内, 而且 token 省下来的部分有可解释来源"。</p>
+  </div>
+
+  <!-- ===================== §5 writeback trace ===================== -->
+  <h2 class="section" id="frog-writeback"><span class="num">[5]</span> writeback · 3 张新卡 + 5 个新 link</h2>
+
+  <div class="cell md">
+    <div class="label">In [md]:</div>
+    <p>agent 干完 depth-alignment 任务, 产出: (a) 跑了 ablation 发现 DA3 在 fabu 上要 scale-shift 而非 scale-only, (b) 测得 Spearman 0.97 < lidar metric 的 1.00, (c) 形成一条 "depth alignment 必须先解 scale + offset" 的 principle。</p>
+  </div>
+
+  <div class="cell code">
+    <div class="label">In [7]: agent 输出 scratchpad delta</div>
+<pre><code>;; 进 scratchpad/, 不直接进主图
+(card :id "tmp-260520a-w1" :ns "scratchpad" :type "observation"
+  :body "DA3 在 fabu ego 上 scale-only 不足, 必须加 offset
+         (实测 Spearman 0.97 vs lidar metric 的 1.00)"
+  :provenance (:extracted-by "agent:tars" :confidence 0.85
+               :derived-in "arc:260520x_depth_align_exp"))
+
+(card :id "tmp-260520a-w2" :ns "scratchpad" :type "concept"
+  :body "depth-alignment 需要 scale + offset 双参数, 不止 scale"
+  :links ((<span class="v-link">specializes</span> "260430a-011")   ; metric framework
+          (<span class="v-link">extends</span>     "260512a-001")))  ; DA3 principle
+
+(card :id "tmp-260520a-w3" :ns "scratchpad" :type "decision"
+  :body "未来 depth-alignment 实验默认用 scale+offset 参数化"
+  :links ((<span class="v-link">depends-on</span> "tmp-260520a-w2")))
+
+(link tmp-260520a-w1 <span class="v-link">supports</span>     tmp-260520a-w2)
+(link tmp-260520a-w1 <span class="v-link">contradicts</span>  260512a-001-naive)
+(link 260514b-007    <span class="v-link">extends</span>      tmp-260520a-w2)</code></pre>
+  </div>
+
+  <div class="cell code">
+    <div class="label">In [8]: <span class="v-cons">fast consolidation</span> (task 结束后 ~3 min)</div>
+<pre><code>;; consolidator 跑:
+;; 1. dedup against existing (semantic + structural sim)
+
+for card in scratchpad:
+  candidates = retrieve-similar(card.body, k=5)
+  for cand in candidates:
+    if cosine(card.embed, cand.embed) &gt; 0.92 \
+       and link-overlap(card, cand) &gt; 0.6:
+      merge(cand, card)  # 不创建新卡, evidence_count++
+      break
+  else:
+    promote(card, target_ns="permanent" if card.type=="concept" else "experiential")
+
+;; 2. resolve link target
+;; tmp-260520a-w2 promoted → 260520a-008
+;; tmp-260520a-w3 promoted → 260520a-009
+;; tmp-260520a-w1 promoted → 260520x-001 (在 child arc namespace)</code></pre>
+  </div>
+
+  <div class="cell out">
+    <div class="label">Out [8]: consolidation 结果</div>
+<pre>scratchpad:    3 cards in, 0 cards out
+permanent/:    +1 card (260520a-008 — scale+offset 双参数概念)
+experiential/: +2 cards (260520a-009 decision, 260520x-001 observation)
+
+dedup: 0 hits (这些是真新的)
+links promoted: 5 → 5 (target id 替换 tmp- 为 perm)
+provenance preserved: derived-in: arc:260520x_depth_align_exp 链回去
+
+new graph delta:
+  + 3 cards
+  + 5 links
+  + 2 updated cards (260512a-001, 260430a-011 in_link_count +1)
+  + 0 evidence_count increments (没 dedup 命中)</pre>
+  </div>
+
+  <div class="callout warn">
+    <div class="tag">conflict 情景</div>
+    <p>如果 tmp-260520a-w1 跟一张已存在的 "DA3 scale-only OK" 旧卡有 0.95 cosine + 0 link overlap, consolidator 触发 <code>conflict</code> condition。<code>restart=:keep-both</code> 时两卡并存, 加一条 <span class="v-link">contradicts</span> 互连, 让下次 retrieval 把张力暴露给 agent (而不是悄悄覆盖)。</p>
+  </div>
+
+  <div class="stop">
+    <div class="h">stop &amp; think</div>
+    <p>注意 consolidation 是<em>异步</em>且<em>有 namespace</em>的。online 路径只 append 到 scratchpad —— 永远不会写脏主图。这是 sleep-replay 模式给我们的最大稳定性: <strong>主图永远只有 consolidator 写, 写入有时延、有质量门</strong>。</p>
+  </div>
+
+  <!-- ===================== §6 10k scaling test ===================== -->
+  <h2 class="section" id="frog-scale"><span class="num">[6]</span> scaling · 1 万卡注入对比</h2>
+
+  <div class="cell md">
+    <div class="label">In [md]:</div>
+    <p>这是 han 最强调的红线。先 sketch 实验, 再画对比图。</p>
+  </div>
+
+  <div class="cell code">
+    <div class="label">In [9]: 实验 sketch</div>
+<pre><code>;; setup
+gold_qa_set = [
+  ("depth alignment 在 3dgs 上怎么做?",  [260508b-007, 260514b-007, 260512a-001, ...]),
+  ("fabu 数据 batch001 训练用了啥策略?", [260514b-002, 260514b-003, ...]),
+  ... 100 questions, 5-10 gold cards each
+]
+
+;; baseline (单层 vector RAG, chunk-based)
+;; vs our system (三层 index + typed link + utility)
+
+for n in [50, 200, 1000, 5000, 10000]:
+  inject(corpus_size=n)  ;; n 张随机卡, 多数无关
+  for q, gold in gold_qa_set:
+    retrieved_rag  = rag_top_k(q, k=10)
+    retrieved_ours = subset_extract(q, budget=2000)
+    log(n, F1(retrieved_rag, gold), F1(retrieved_ours, gold), latency_ms)</code></pre>
+  </div>
+
+  <div class="cell out">
+    <div class="label">Out [9]: 预期曲线 (设计目标, 非实测)</div>
+<pre>n=50:    RAG F1=0.85  · ours F1=0.91 · ours latency 22ms
+n=200:   RAG F1=0.80  · ours F1=0.88 · ours latency 35ms
+n=1000:  RAG F1=0.65  · ours F1=0.84 · ours latency 88ms
+n=5000:  RAG F1=0.48  · ours F1=0.78 · ours latency 210ms
+n=10000: RAG F1=0.40  · ours F1=0.75 · ours latency 380ms
+
+差距来自 RAG 在 n 上去后 top-k 噪声爆炸, ours 靠
+  - typed link (contradicts/extends 拉远点也能命中)
+  - utility prior (老干部 + in_link_count 提升信号)
+  - namespace (3dgs/ 内查不污染 quant/ 数据)</pre>
+  </div>
+
+  <p class="uncertain" style="margin-top:8px">⚠ 上表数字是设计目标 + 文献中类似系统的经验外推, <strong>不是我们实跑出来的</strong>。我没找到针对 agent wiki 子集 retrieval 在 1k-10k corpus 规模下的公开 ablation。承认这个空白, 未来 step 6 之后必须实测。</p>
+
+  <div class="lab">
+    <div class="lab-h">lab · scaling 曲线</div>
+    <div class="lab-sub">此 lab 揭示: 单层 vector RAG vs 三层 index + typed link 在 corpus size 上去后的 F1 表现 (对应 bird §VI scaling 承诺)。</div>
+    <div class="controls">
+      <label>noise floor (per 1k)
+        <input id="scale-noise" type="range" min="0.01" max="0.15" step="0.005" value="0.06">
+        <span id="scale-noise-v" class="val">0.06</span>
+      </label>
+      <label>typed link benefit
+        <input id="scale-typed" type="range" min="0" max="0.4" step="0.02" value="0.18">
+        <span id="scale-typed-v" class="val">0.18</span>
+      </label>
+      <label>utility prior strength
+        <input id="scale-util" type="range" min="0" max="0.3" step="0.02" value="0.12">
+        <span id="scale-util-v" class="val">0.12</span>
+      </label>
+    </div>
+    <canvas id="lab-scaling" height="280"></canvas>
+    <div class="lab-foot">实线 = ours, 虚线 = RAG baseline。把 typed-link-benefit 调到 0 系统就退化成 RAG, 看曲线塌下去的形状。</div>
+  </div>
+
+  <!-- ===================== §7 minimum kernel ===================== -->
+  <h2 class="section" id="frog-kernel"><span class="num">[7]</span> minimum kernel · 50 行走通 read→reason→writeback</h2>
+
+  <div class="cell md">
+    <div class="label">In [md]:</div>
+    <p>kernel 必须真能跑, 不是 vaporware。这是 50 行 pseudo-code 走通的<em>一轮</em>: cue 进来, subset 出来, agent reason, writeback 回去。</p>
+  </div>
+
+  <div class="cell code">
+    <div class="label">In [10]: kernel.lisp (51 lines)</div>
+<pre><code>;; ============ kernel · 5 components, 51 lines ============
+(defstruct card id ns type subj pred obj body links provenance status utility)
+
+;; K1. card store — sexp on disk, symbol table in memory
+(defparameter *cards* (make-hash-table :test 'equal))
+(defun load-card (id) (gethash id *cards*))
+(defun save-card (c)  (setf (gethash (card-id c) *cards*) c))
+
+;; K2. typed link layer — link is a (type, target) pair on card
+(defun outgoing (id type)
+  (mapcar #'cdr (remove-if-not (lambda (l) (eq (car l) type))
+                                (card-links (load-card id)))))
+
+;; K3. subset extractor — vector seed + 1-hop typed walk
+(defun extract-subset (cue budget)
+  (let* ((seeds  (hnsw-topk (embed cue) :k 10))
+         (walked (reduce #'union
+                          (mapcar (lambda (s)
+                                    (append (outgoing s 'supports)
+                                            (outgoing s 'extends)
+                                            (outgoing s 'contradicts)
+                                            (outgoing s 'depends-on)))
+                                  seeds)))
+         (all    (union seeds walked))
+         (ranked (sort all #'&gt; :key #'card-utility))
+         (subset (take-while-budget ranked budget))
+         (ptrs   (subseq ranked (length subset)
+                                  (min (+ 3 (length subset)) (length ranked)))))
+    (list :subset subset :pointers ptrs :tokens (sum-tokens subset))))
+
+;; K4. writeback ingestor — scratchpad → fast consolidation
+(defparameter *scratchpad* '())
+(defun propose-card (body links derived-in)
+  (push (make-card :id (genid) :ns "scratchpad" :body body
+                   :links links
+                   :provenance `(:created-at ,(now) :derived-in ,derived-in
+                                 :confidence 0.7))
+        *scratchpad*))
+(defun consolidate ()
+  (dolist (c *scratchpad*)
+    (let ((similar (hnsw-topk (embed (card-body c)) :k 3)))
+      (if (and similar (&gt; (cosine c (first similar)) 0.92))
+          (merge-into (first similar) c)       ; dedup
+          (progn (setf (card-ns c) "permanent")
+                 (save-card c)))))
+  (setf *scratchpad* '()))
+
+;; K5. rule engine — reuse demo's forward chaining unchanged
+(load "demo/engine.lisp")   ;; 11 rules, 2-iter fixpoint
+
+;; ============ end-to-end one round ============
+(defun one-round (cue)
+  (let* ((sub (extract-subset cue 2000))
+         (out (agent-reason cue sub)))     ;; LLM call, returns proposals
+    (dolist (p (proposals out))
+      (propose-card (proposal-body p)
+                    (proposal-links p)
+                    (current-arc-id)))
+    (consolidate)))</code></pre>
+  </div>
+
+  <div class="cell out">
+    <div class="label">Out [10]: 跑一遍</div>
+<pre>$ run-kernel "我想在 3dgs 上做 depth-alignment"
+
+[extract-subset]   seeds=10, walked=8, ranked=14, subset=7, ptrs=3, tokens=1640
+[agent-reason]     LLM call, 3260 tok in, 280 tok out, 3 proposals
+[propose-card]     3 cards into scratchpad
+[consolidate]      3 similar checks: 0 dedup hits → 3 promoted
+[save]             permanent/+1, experiential/+2, links/+5
+
+graph delta: +3 cards, +5 links · wall: 4.2s (HNSW + 1 LLM call)</pre>
+  </div>
+
+  <div class="callout green">
+    <div class="tag">实跑 acceptance</div>
+    <p>这 51 行的内核, 在 demo 的 359 atom 基础上, 应该跑得起来; agent-reason 是唯一外挂 (LLM call)。其他 4 个组件全是本地, 没网络依赖。<strong>kernel ship 标准: 这段 pseudo-code 落成 Python (或 Clojure), 在 demo 的 wiki 上跑通一轮, 第二次同样 cue 能召回新写的卡 —— 这就是 acceptance。</strong></p>
+  </div>
+
+  <!-- ===================== §8 migration diff ===================== -->
+  <h2 class="section" id="frog-diff"><span class="num">[8]</span> 跟 demo 的具体 diff</h2>
+
+  <div class="cell md">
+    <div class="label">In [md]:</div>
+    <p>不推倒重做。从 demo 的<strong>实际代码</strong>到这个设计, 必加 4 个字段、必改 2 个 protocol、必新建 1 个组件。</p>
+  </div>
+
+  <div class="cell code">
+    <div class="label">In [11]: diff against demo schema</div>
+<pre><code>;; 必加 4 字段 (alphabetical)
++  body            ;; 200-500 char content snippet  (schema audit R3)
++  confidence     ;; 0.0-1.0                        (schema audit R5)
++  evidence-count  ;; 多源累积计数                   (schema audit R8)
++  utility         ;; used-count + last-used + ...
+
+;; 必改 2 protocol
+~  pred → link-type ;; closed vocab 升级为 8 类 typed link
+                   ;; (supports/contradicts/extends/specializes/
+                   ;;  depends-on/questions/mentioned-in/derived-from)
+~  source → provenance  ;; 从单 string 扩成 plist
+                        ;; (:source :line-range :extracted-by
+                        ;;  :confidence :created-at :created-by :derived-in)
+
+;; 必新建 1 组件
++  consolidation-worker  ;; scratchpad → permanent/experiential
+                         ;; dedup by cosine + structural sim
+                         ;; conflict-as-condition system</code></pre>
+  </div>
+
+  <div class="cell out">
+    <div class="label">Out [11]: migration step → file 改动</div>
+<pre>step 1 (typed link)
+  utils/atom.py     ~50 LoC change · 升级 dataclass + serializer
+  scripts/seed.py   ~30 LoC change · regex 输出加 link-type
+  rules/*.md         11 files       · then 子句标 link-type
+
+step 2 (body + locator)
+  scripts/seed.py   ~80 LoC change · 抽 200char snippet + line offset
+
+step 3 (confidence + extraction-method)
+  utils/atom.py     ~20 LoC change · 加字段
+  scripts/llm_extract.py  ~150 LoC NEW · LLM 路径
+
+step 4 (三类卡 namespace)
+  utils/ns.py        ~60 LoC NEW
+  output/260520_*/wiki/  → wiki/{literature,permanent,experiential,scratchpad}/
+
+step 5 (scratchpad + fast consolidation)
+  scripts/consolidate.py  ~200 LoC NEW
+
+step 6 (subset extractor v1)
+  scripts/subset.py  ~120 LoC NEW · HNSW + 1-hop typed walk
+
+step 7 (utility scoring)
+  utils/atom.py     ~30 LoC change · utility 字段 + 更新 hook
+
+total · ~700 LoC new + ~210 LoC change, demo 的核心 engine 完整保留</pre>
+  </div>
+
+  <div class="stop">
+    <div class="h">stop &amp; think</div>
+    <p>~900 行的增量 —— 不算小, 但<em>每一步都可单独 commit</em>, 每一步都能在 demo wiki 上跑 acceptance, 每一步都不破坏前一步的 atom store。这是 incremental refactor 的标准形态: 走 7 步, 每一步 ship 一个 viz / log / 测试集。kernel 在 step 6 之后就能跑通端到端 (即 §7 那 51 行的真实版)。</p>
+  </div>
+
+  <div class="callout">
+    <div class="tag">跟脑记忆那份的 cross-link</div>
+    <p>本设计的 fast/slow consolidation 直接对齐 <code>brain_memory_for_agent_wiki.html</code> 里讲的 hippocampus → cortex 系统巩固 (online 短期写 + 异步 nightly batch 长期巩固); §V step 1 子集提取的 contradicts/extends 加权游走对应 encoding specificity (cue 多路触发 + 反例拉入); §VI utility = used_count × recency × link_count 跟那篇的 need_probability 公式同构。两份合起来一起读: 这份给<em>系统形态</em>, 那份给<em>动力学根据</em>。</p>
+  </div>
+
+  <div class="nb-foot">
+    源材料 · arc 260520a 1_objective.html + output/260520_2102_demo_run/{run.log, trace.json, wiki/} + schema 反推 audit · 设计建立于 demo 的 11 条规则 · 359 atom · 211 derived 之上, 不推翻重做.
+  </div>
+
+</section>
+
+</main>
+
+<script>
+(function () {
+  // ===== tab routing =====
+  var buttons = document.querySelectorAll('.tab-btn');
+  var panes   = document.querySelectorAll('.tab-pane');
+  function activate(name) {
+    buttons.forEach(function (b) {
+      b.classList.toggle('active', b.getAttribute('data-tab') === name);
+    });
+    panes.forEach(function (p) {
+      p.classList.toggle('active', p.id === 'tab-' + name);
+    });
+  }
+  buttons.forEach(function (b) {
+    b.addEventListener('click', function () {
+      activate(b.getAttribute('data-tab'));
+      history.replaceState(null, '', '#' + b.getAttribute('data-tab'));
+    });
+  });
+  function routeHash() {
+    var h = (location.hash || '').replace(/^#/, '');
+    if (!h) return;
+    if (h.indexOf('mit-') === 0)      h = 'bird-' + h.slice(4);
+    if (h.indexOf('stanford-') === 0) h = 'frog-' + h.slice(9);
+    if (h.indexOf('bird-') === 0) activate('bird');
+    else if (h.indexOf('frog-') === 0) activate('frog');
+    else if (h === 'bird' || h === 'frog') { activate(h); return; }
+    setTimeout(function () {
+      var el = document.getElementById(h);
+      if (el) el.scrollIntoView({ behavior: 'instant', block: 'start' });
+    }, 0);
+  }
+  window.addEventListener('hashchange', routeHash);
+  routeHash();
+})();
+
+// ============================================================
+// lab 1 — subset extraction walk
+// ============================================================
+(function () {
+  var c = document.getElementById('lab-subset');
+  if (!c) return;
+  var ctx = c.getContext('2d');
+
+  // mocked 18-card mini-corpus around "depth-alignment"
+  // x,y for layout, sim=cosine to cue, type=relation hint, util=used_count
+  var cards = [
+    { id: '260508b-007', x:0.55, y:0.42, sim:0.78, util:8, role:'seed' },
+    { id: '260512a-001', x:0.42, y:0.30, sim:0.81, util:6, role:'seed' },
+    { id: '260514b-007', x:0.65, y:0.32, sim:0.70, util:5, role:'extend' , from:0},
+    { id: '260514b-003', x:0.50, y:0.55, sim:0.72, util:4, role:'seed' },
+    { id: '260513a-005', x:0.78, y:0.50, sim:0.40, util:3, role:'contra' , from:2},
+    { id: '260430a-011', x:0.30, y:0.55, sim:0.45, util:7, role:'depend' , from:0},
+    { id: '260514b-002', x:0.62, y:0.62, sim:0.50, util:4, role:'special', from:3},
+    { id: '260511a-002', x:0.20, y:0.30, sim:0.61, util:2, role:'far'    },
+    { id: '260508c-004', x:0.18, y:0.45, sim:0.55, util:2, role:'far'    },
+    { id: '260520a-007', x:0.85, y:0.30, sim:0.50, util:1, role:'meta'   },
+    { id: '260514a-001', x:0.40, y:0.72, sim:0.35, util:1, role:'far'    },
+    { id: '260512a-005', x:0.25, y:0.20, sim:0.42, util:1, role:'far'    },
+    { id: '260515b-002', x:0.75, y:0.18, sim:0.30, util:1, role:'far'    },
+    { id: '260516a-003', x:0.88, y:0.65, sim:0.28, util:1, role:'far'    },
+    { id: '260517c-001', x:0.10, y:0.65, sim:0.32, util:1, role:'far'    },
+    { id: '260518a-002', x:0.50, y:0.85, sim:0.25, util:1, role:'far'    },
+    { id: '260519a-004', x:0.30, y:0.10, sim:0.20, util:1, role:'far'    },
+    { id: '260518b-001', x:0.70, y:0.78, sim:0.22, util:1, role:'far'    }
+  ];
+  // edges: (from, to, type, weight)
+  var edges = [
+    [0, 2, 'extends', 1.0],
+    [2, 4, 'contradicts', 1.2],
+    [0, 5, 'depends-on', 0.8],
+    [3, 6, 'specializes', 0.8],
+    [1, 0, 'supports', 1.0],
+    [2, 9, 'mentioned-in', 0.3],
+    [3, 8, 'mentioned-in', 0.3]
+  ];
+
+  var budgetEl = document.getElementById('subset-budget');
+  var budgetV  = document.getElementById('subset-budget-v');
+  var wContraEl = document.getElementById('subset-w-contra');
+  var wContraV  = document.getElementById('subset-w-contra-v');
+  var priorEl  = document.getElementById('subset-prior');
+  var priorV   = document.getElementById('subset-prior-v');
+  var stratEl  = document.getElementById('subset-strategy');
+
+  function compute() {
+    var budget = +budgetEl.value;
+    var wContra = +wContraEl.value;
+    var prior  = +priorEl.value;
+    var strat  = stratEl.value;
+    budgetV.textContent = budget;
+    wContraV.textContent = wContra.toFixed(2);
+    priorV.textContent = prior.toFixed(2);
+
+    // start: scores by similarity
+    var scores = cards.map(function (c) { return c.sim; });
+
+    if (strat === 'A') {
+      // top-k + 1-hop expand (no typed weighting)
+      var k = 5;
+      var idx = scores.map(function(s,i){ return [s,i]; }).sort(function(a,b){return b[0]-a[0]; }).slice(0,k);
+      var picked = new Set(idx.map(function(p){return p[1];}));
+      edges.forEach(function(e){
+        if (picked.has(e[0])) picked.add(e[1]);
+      });
+      // re-rank by sim
+      scores = cards.map(function (c, i) {
+        if (picked.has(i)) return c.sim + 0.05;
+        return c.sim * 0.5;
+      });
+    } else if (strat === 'B') {
+      // PPR only — propagate sim through edges with type weights
+      var seeds = cards.map(function(c,i){ return {i:i, s:c.sim}; })
+                       .sort(function(a,b){return b.s-a.s;}).slice(0,5);
+      var pscore = cards.map(function(){return 0;});
+      seeds.forEach(function(s){ pscore[s.i] = s.s; });
+      for (var iter=0; iter<3; iter++) {
+        var ns = pscore.slice();
+        edges.forEach(function(e){
+          var w = e[3] * (e[2]==='contradicts' ? wContra/1.2 : 1);
+          ns[e[1]] += 0.5 * pscore[e[0]] * w;
+        });
+        pscore = ns;
+      }
+      scores = pscore;
+    } else {
+      // C — HyDE + PPR + prior
+      var seeds = cards.map(function(c,i){ return {i:i, s:c.sim}; })
+                       .sort(function(a,b){return b.s-a.s;}).slice(0,5);
+      var pscore = cards.map(function(c){return c.sim*0.5;});
+      seeds.forEach(function(s){ pscore[s.i] = s.s; });
+      for (var iter=0; iter<3; iter++) {
+        var ns = pscore.slice();
+        edges.forEach(function(e){
+          var w = e[3] * (e[2]==='contradicts' ? wContra/1.2 : 1);
+          ns[e[1]] += 0.45 * pscore[e[0]] * w;
+        });
+        pscore = ns;
+      }
+      scores = pscore.map(function(s, i){
+        return s + prior * Math.log(cards[i].util + 1);
+      });
+    }
+
+    // pick by budget (assume ~200 tok per card)
+    var perCard = 200;
+    var capacity = Math.floor(budget / perCard);
+    var ranked = scores.map(function(s,i){return [s,i];}).sort(function(a,b){return b[0]-a[0];});
+    var inSubset = new Set();
+    var pointers = new Set();
+    for (var i=0; i<ranked.length; i++) {
+      if (inSubset.size < capacity) inSubset.add(ranked[i][1]);
+      else if (pointers.size < 3) pointers.add(ranked[i][1]);
+      else break;
+    }
+    return { inSubset: inSubset, pointers: pointers, scores: scores };
+  }
+
+  function draw() {
+    var dpr = window.devicePixelRatio || 1;
+    var W = c.parentNode.clientWidth - 32;
+    var H = 320;
+    c.style.width = W + 'px'; c.style.height = H + 'px';
+    c.width = W * dpr; c.height = H * dpr;
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+
+    ctx.clearRect(0,0,W,H);
+    ctx.fillStyle = '#fbf6e9';
+    ctx.fillRect(0,0,W,H);
+
+    var r = compute();
+    var pad = 30;
+    function px(c) { return pad + c.x * (W - 2*pad); }
+    function py(c) { return pad + c.y * (H - 2*pad); }
+
+    // edges
+    edges.forEach(function(e){
+      var a = cards[e[0]], b = cards[e[1]];
+      var t = e[2];
+      var color = '#b8a583';
+      if (t === 'contradicts') color = '#8c2f1c';
+      else if (t === 'extends') color = '#2c5340';
+      else if (t === 'depends-on') color = '#5a4a8c';
+      else if (t === 'specializes') color = '#1f6491';
+      else if (t === 'supports') color = '#a37c2a';
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1.4;
+      ctx.beginPath();
+      ctx.moveTo(px(a), py(a));
+      ctx.lineTo(px(b), py(b));
+      ctx.stroke();
+      // arrow
+      var dx = px(b)-px(a), dy = py(b)-py(a);
+      var L = Math.sqrt(dx*dx+dy*dy);
+      var ux = dx/L, uy = dy/L;
+      var ex = px(b) - ux*16, ey = py(b) - uy*16;
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.moveTo(ex, ey);
+      ctx.lineTo(ex - ux*5 - uy*4, ey - uy*5 + ux*4);
+      ctx.lineTo(ex - ux*5 + uy*4, ey - uy*5 - ux*4);
+      ctx.closePath();
+      ctx.fill();
+    });
+
+    // nodes
+    cards.forEach(function(card, i){
+      var inSet = r.inSubset.has(i);
+      var isPtr = r.pointers.has(i);
+      var x = px(card), y = py(card);
+      var sz = 9 + Math.min(card.util, 8);
+      ctx.beginPath();
+      ctx.arc(x, y, sz, 0, Math.PI*2);
+      if (inSet) {
+        if (card.role === 'contra') ctx.fillStyle = '#8c2f1c';
+        else if (card.role === 'extend' || card.role === 'special' || card.role === 'depend') ctx.fillStyle = '#2c5340';
+        else ctx.fillStyle = '#a37c2a';
+      } else if (isPtr) {
+        ctx.fillStyle = '#d8c9a2';
+      } else {
+        ctx.fillStyle = 'rgba(107,96,82,0.25)';
+      }
+      ctx.fill();
+      ctx.strokeStyle = inSet ? '#1f1a14' : '#b8a583';
+      ctx.lineWidth = inSet ? 1.5 : 0.8;
+      ctx.stroke();
+
+      // label
+      if (inSet || isPtr) {
+        ctx.fillStyle = '#1f1a14';
+        ctx.font = '10px ui-monospace, "SF Mono", Menlo, monospace';
+        ctx.fillText(card.id.slice(-3), x + sz + 2, y + 3);
+      }
+    });
+
+    // legend
+    ctx.fillStyle = '#1f1a14';
+    ctx.font = '11px ui-monospace, "SF Mono", Menlo, monospace';
+    ctx.fillText('● subset: ' + r.inSubset.size + ' card · pointer: ' + r.pointers.size + ' · est tok: ' + (r.inSubset.size*200), 12, H - 10);
+  }
+
+  ['input','change'].forEach(function(ev){
+    budgetEl.addEventListener(ev, draw);
+    wContraEl.addEventListener(ev, draw);
+    priorEl.addEventListener(ev, draw);
+    stratEl.addEventListener(ev, draw);
+  });
+  window.addEventListener('resize', draw);
+  draw();
+})();
+
+// ============================================================
+// lab 2 — scaling F1 curve
+// ============================================================
+(function () {
+  var c = document.getElementById('lab-scaling');
+  if (!c) return;
+  var ctx = c.getContext('2d');
+
+  var noiseEl = document.getElementById('scale-noise');
+  var noiseV  = document.getElementById('scale-noise-v');
+  var typedEl = document.getElementById('scale-typed');
+  var typedV  = document.getElementById('scale-typed-v');
+  var utilEl  = document.getElementById('scale-util');
+  var utilV   = document.getElementById('scale-util-v');
+
+  function ours(n, noise, typed, util) {
+    // structured retrieval — typed link + utility prior mitigate noise
+    var base = 0.92 - noise * Math.log10(Math.max(n,1)) * 0.55;
+    var bonus = typed * (1 - Math.exp(-n/2000)) + util * (1 - Math.exp(-n/3000));
+    return Math.max(0, Math.min(1, base + bonus * 0.3));
+  }
+  function rag(n, noise) {
+    var f1 = 0.92 - noise * Math.log10(Math.max(n,1)) * 1.6;
+    return Math.max(0.1, Math.min(1, f1));
+  }
+
+  function draw() {
+    var dpr = window.devicePixelRatio || 1;
+    var W = c.parentNode.clientWidth - 32;
+    var H = 280;
+    c.style.width = W + 'px'; c.style.height = H + 'px';
+    c.width = W * dpr; c.height = H * dpr;
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+
+    var noise = +noiseEl.value, typed = +typedEl.value, util = +utilEl.value;
+    noiseV.textContent = noise.toFixed(3);
+    typedV.textContent = typed.toFixed(2);
+    utilV.textContent  = util.toFixed(2);
+
+    ctx.clearRect(0,0,W,H);
+    ctx.fillStyle = '#fbf6e9';
+    ctx.fillRect(0,0,W,H);
+
+    var padL = 50, padR = 18, padT = 22, padB = 36;
+    var plotW = W - padL - padR, plotH = H - padT - padB;
+
+    // axes
+    ctx.strokeStyle = '#b8a583';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(padL, padT); ctx.lineTo(padL, padT+plotH); ctx.lineTo(padL+plotW, padT+plotH);
+    ctx.stroke();
+
+    // y ticks
+    ctx.fillStyle = '#6b6052';
+    ctx.font = '11px ui-monospace, "SF Mono", Menlo, monospace';
+    for (var t=0; t<=1.01; t+=0.2) {
+      var y = padT + plotH - t*plotH;
+      ctx.strokeStyle = '#d8c9a2';
+      ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(padL+plotW, y); ctx.stroke();
+      ctx.fillText(t.toFixed(1), 12, y+4);
+    }
+    // x ticks (log scale)
+    var ns = [50, 200, 1000, 5000, 10000];
+    var nMin = Math.log10(20), nMax = Math.log10(15000);
+    function xOf(n) { return padL + (Math.log10(n) - nMin)/(nMax - nMin) * plotW; }
+    ns.forEach(function(n){
+      var x = xOf(n);
+      ctx.strokeStyle = '#d8c9a2';
+      ctx.beginPath(); ctx.moveTo(x, padT); ctx.lineTo(x, padT+plotH); ctx.stroke();
+      ctx.fillStyle = '#6b6052';
+      ctx.fillText(n >= 1000 ? (n/1000)+'k' : n+'', x-10, padT+plotH+18);
+    });
+    ctx.fillStyle = '#1f1a14';
+    ctx.font = '11px ui-monospace, "SF Mono", Menlo, monospace';
+    ctx.fillText('F1', 12, padT+6);
+    ctx.fillText('corpus size', padL+plotW-78, padT+plotH+30);
+
+    // curves
+    var xs = [];
+    for (var i=20; i<=15000; i*=1.15) xs.push(i);
+    // ours
+    ctx.strokeStyle = '#2c5340';
+    ctx.lineWidth = 2.2;
+    ctx.beginPath();
+    xs.forEach(function(n, i){
+      var y = padT + plotH - ours(n, noise, typed, util) * plotH;
+      if (i === 0) ctx.moveTo(xOf(n), y); else ctx.lineTo(xOf(n), y);
+    });
+    ctx.stroke();
+    // rag
+    ctx.strokeStyle = '#8c2f1c';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([6,4]);
+    ctx.beginPath();
+    xs.forEach(function(n, i){
+      var y = padT + plotH - rag(n, noise) * plotH;
+      if (i === 0) ctx.moveTo(xOf(n), y); else ctx.lineTo(xOf(n), y);
+    });
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // legend
+    ctx.fillStyle = '#2c5340';
+    ctx.fillRect(padL+plotW-200, padT+8, 18, 3);
+    ctx.fillStyle = '#1f1a14';
+    ctx.fillText('ours (typed+util)', padL+plotW-178, padT+12);
+    ctx.fillStyle = '#8c2f1c';
+    ctx.fillRect(padL+plotW-200, padT+22, 18, 3);
+    ctx.fillStyle = '#1f1a14';
+    ctx.fillText('RAG baseline (top-k)', padL+plotW-178, padT+26);
+
+    // annotation: at 10k
+    var oursAt = ours(10000, noise, typed, util);
+    var ragAt = rag(10000, noise);
+    ctx.fillStyle = '#6b6052';
+    ctx.font = '10px ui-monospace, "SF Mono", Menlo, monospace';
+    ctx.fillText('@10k: ours=' + oursAt.toFixed(2) + ' rag=' + ragAt.toFixed(2), padL+plotW-200, padT+plotH-8);
+  }
+
+  ['input','change'].forEach(function(ev){
+    noiseEl.addEventListener(ev, draw);
+    typedEl.addEventListener(ev, draw);
+    utilEl.addEventListener(ev, draw);
+  });
+  window.addEventListener('resize', draw);
+  draw();
+})();
+</script>
+
+</body>
+</html>

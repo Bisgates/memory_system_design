@@ -1,0 +1,8 @@
+{
+  "target": "rule:r002_derived_from_reverse",
+  "baseline_total_derived": 99,
+  "baseline_target_derived": 53,
+  "paused_total_derived": 46,
+  "paused_target_derived": 0,
+  "delta": 53
+}

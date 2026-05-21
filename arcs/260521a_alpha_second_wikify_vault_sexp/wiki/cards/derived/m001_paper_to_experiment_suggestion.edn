@@ -1,0 +1,80 @@
+(card "m_c244061a" :type "suggestion"
+  :subj "exp:H-R3b-4_c84_kelly_lambda_1.5"
+  :pred "suggests_experiment"
+  :obj "suggestion_baseline_exp:H-R3b-4_c84_kelly_lambda_1.5"
+  :body "Baseline replication of exp:H-R3b-4_c84_kelly_lambda_1.5 — re-run the headline result on the canonical dataset, no hyperparameter change, to confirm reproducibility before any new variant is built on top."
+  :parents ("exp:H-R3b-4_c84_kelly_lambda_1.5" "m001_paper_to_experiment_suggestion")
+  :derived_from "m001_paper_to_experiment_suggestion"
+  :generated_at "2026-05-20T17:40:25.654999+00:00")
+
+(card "m_7464a37d" :type "suggestion"
+  :subj "exp:H-R3b-4_c84_kelly_lambda_1.5"
+  :pred "suggests_experiment"
+  :obj "suggestion_ablation_exp:H-R3b-4_c84_kelly_lambda_1.5"
+  :body "Ablation of exp:H-R3b-4_c84_kelly_lambda_1.5 hypothesis — knock out the single mechanism the paper claims is load-bearing and confirm headline metric drops by a non-trivial margin."
+  :parents ("exp:H-R3b-4_c84_kelly_lambda_1.5" "m001_paper_to_experiment_suggestion")
+  :derived_from "m001_paper_to_experiment_suggestion"
+  :generated_at "2026-05-20T17:40:25.654999+00:00")
+
+(card "m_acc9592b" :type "suggestion"
+  :subj "exp:H-R3b-4_c84_kelly_lambda_1.5"
+  :pred "suggests_experiment"
+  :obj "suggestion_extension_exp:H-R3b-4_c84_kelly_lambda_1.5"
+  :body "Axis extension of exp:H-R3b-4_c84_kelly_lambda_1.5 — take the principal axis the paper varies and probe one neighbouring axis (different bucket, different horizon, different ticker pool) to test the claim's transfer."
+  :parents ("exp:H-R3b-4_c84_kelly_lambda_1.5" "m001_paper_to_experiment_suggestion")
+  :derived_from "m001_paper_to_experiment_suggestion"
+  :generated_at "2026-05-20T17:40:25.654999+00:00")
+
+(card "m_08af8924" :type "suggestion"
+  :subj "exp:C8.4_top3_no_open3min_bypass"
+  :pred "suggests_experiment"
+  :obj "suggestion_baseline_exp:C8.4_top3_no_open3min_bypass"
+  :body "Baseline replication of exp:C8.4_top3_no_open3min_bypass — re-run the headline result on the canonical dataset, no hyperparameter change, to confirm reproducibility before any new variant is built on top."
+  :parents ("exp:C8.4_top3_no_open3min_bypass" "m001_paper_to_experiment_suggestion")
+  :derived_from "m001_paper_to_experiment_suggestion"
+  :generated_at "2026-05-20T17:40:25.655055+00:00")
+
+(card "m_f85c3494" :type "suggestion"
+  :subj "exp:C8.4_top3_no_open3min_bypass"
+  :pred "suggests_experiment"
+  :obj "suggestion_ablation_exp:C8.4_top3_no_open3min_bypass"
+  :body "Ablation of exp:C8.4_top3_no_open3min_bypass hypothesis — knock out the single mechanism the paper claims is load-bearing and confirm headline metric drops by a non-trivial margin."
+  :parents ("exp:C8.4_top3_no_open3min_bypass" "m001_paper_to_experiment_suggestion")
+  :derived_from "m001_paper_to_experiment_suggestion"
+  :generated_at "2026-05-20T17:40:25.655055+00:00")
+
+(card "m_3c3abff0" :type "suggestion"
+  :subj "exp:C8.4_top3_no_open3min_bypass"
+  :pred "suggests_experiment"
+  :obj "suggestion_extension_exp:C8.4_top3_no_open3min_bypass"
+  :body "Axis extension of exp:C8.4_top3_no_open3min_bypass — take the principal axis the paper varies and probe one neighbouring axis (different bucket, different horizon, different ticker pool) to test the claim's transfer."
+  :parents ("exp:C8.4_top3_no_open3min_bypass" "m001_paper_to_experiment_suggestion")
+  :derived_from "m001_paper_to_experiment_suggestion"
+  :generated_at "2026-05-20T17:40:25.655055+00:00")
+
+(card "m_aafc0e16" :type "suggestion"
+  :subj "exp:B-R8-1_no_open3min_bypass03"
+  :pred "suggests_experiment"
+  :obj "suggestion_baseline_exp:B-R8-1_no_open3min_bypass03"
+  :body "Baseline replication of exp:B-R8-1_no_open3min_bypass03 — re-run the headline result on the canonical dataset, no hyperparameter change, to confirm reproducibility before any new variant is built on top."
+  :parents ("exp:B-R8-1_no_open3min_bypass03" "m001_paper_to_experiment_suggestion")
+  :derived_from "m001_paper_to_experiment_suggestion"
+  :generated_at "2026-05-20T17:40:25.655078+00:00")
+
+(card "m_d70d47ea" :type "suggestion"
+  :subj "exp:B-R8-1_no_open3min_bypass03"
+  :pred "suggests_experiment"
+  :obj "suggestion_ablation_exp:B-R8-1_no_open3min_bypass03"
+  :body "Ablation of exp:B-R8-1_no_open3min_bypass03 hypothesis — knock out the single mechanism the paper claims is load-bearing and confirm headline metric drops by a non-trivial margin."
+  :parents ("exp:B-R8-1_no_open3min_bypass03" "m001_paper_to_experiment_suggestion")
+  :derived_from "m001_paper_to_experiment_suggestion"
+  :generated_at "2026-05-20T17:40:25.655078+00:00")
+
+(card "m_3dbcb563" :type "suggestion"
+  :subj "exp:B-R8-1_no_open3min_bypass03"
+  :pred "suggests_experiment"
+  :obj "suggestion_extension_exp:B-R8-1_no_open3min_bypass03"
+  :body "Axis extension of exp:B-R8-1_no_open3min_bypass03 — take the principal axis the paper varies and probe one neighbouring axis (different bucket, different horizon, different ticker pool) to test the claim's transfer."
+  :parents ("exp:B-R8-1_no_open3min_bypass03" "m001_paper_to_experiment_suggestion")
+  :derived_from "m001_paper_to_experiment_suggestion"
+  :generated_at "2026-05-20T17:40:25.655078+00:00")

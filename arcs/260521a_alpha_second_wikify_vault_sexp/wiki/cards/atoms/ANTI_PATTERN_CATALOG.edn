@@ -1,0 +1,720 @@
+(card "doc:anti_pattern_catalog" :type "doc"
+  :subj "doc:anti_pattern_catalog"
+  :body "---\nnav: 1\ntype: anti_pattern_catalog\nstatus: seeded\ncreated: 2026-05-17\nauthor: TARS (anti-pattern sub-agent under arc 260516a)\nparent_arc: 260516a\ntags: [vault/meta, vault/anti_pattern, arc/260516a]\n---\n\n# Anti-Pattern Catalog — Auto Research Experiment Vault\n\n> 这个 catalog 不是为了 blame 任何 lineage 或 team。\n> 它是给**未来设计新候选的 sub-agent** 看的 —— 在派一个新 candidate 上线之前，先 grep 一遍这里，看你脑子里那个 hypothesis 是不是某个 **known failure pattern** 的复刻。\n> 每条 pattern = 触发条件 + 症状 + root cause + 可执行 mitigation + 实战案例双链 + 一句话忠告。\n> 如果一个新 hypothesis 同时撞 2 条以上 pattern，**默认拒派**，把理由写进 candidate doc 再说服 reviewer。\n\n**入口姿势**：\n\n```bash\ngrep -nA 2 \"触发条件\" /Users/han/project/alpha/alpha_second_v1/auto_research_experiment/ANTI_PATTERN_CATALOG.md\n```\n\n或者按关键词找：\n\n```bash\ngrep -nE \"blacklist|sample-size|microstructure|consensus|plateau|source-swap|saturate\" \\\n  /Users/han/project/alpha/alpha_second_v1/auto_research_experiment/ANTI_PATTERN_CATALOG.md\n```\n\n---\n\n## 1. Train-pass-Test-fail 综合症\n\n**触发条件**: 在 train window 上用 sample-size 较小、search-space 较大的 filter / blacklist / threshold 调优。尤其是 stacking 多重 filter 时（\"先 blacklist 高 IV，再 blacklist 低 vol，再 blacklist 早 open\"）。\n\n**症状**:\n- Train NAV 比 anchor +5% ~ +10% lift，看似 free lunch\n- Hold-out / test window 上反而 -2% ~ -5%，甚至比 baseline 还差\n- Train 上看不出任何 red flag（trade 数足、winrate 正常）\n\n**Root cause**: blacklist / filter 的 threshold 在 train 上 fit 到了 sample-specific 的噪声子集 —— 不是真信号，是该 fold 偶然的 outlier 排布。Test fold 噪声重排，filter 反而把 alpha 砍掉。等价于在 train 上做了\"无监督 feature selection\"还不留 hold-out。\n\n**Mitigation / 防御**:\n- [ ] 任何 blacklist / filter 新候选**必须**先在 train fold 做 5 折 bootstrap，给 lift 一个 90% CI\n- [ ] CI 下沿 ≤ 0 (或 ≤ noise band) 直接 disqualify，**不上 test**（省 budget 也省假希望）\n- [ ] stacking ≥ 2 层 filter 时，**强制 hold-out test**，单层 filter 才可以走 train-only screen\n- [ ] candidate doc 必须显式写出：\"filter 触发 N trades / pool N trades = X%\"，X < 5% 的 filter 默认 suspicious\n\n**实战案例**: [[experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple]] —— train +10% / test -3%，三重 blacklist 在 train 上 fit 到 sample-specific 噪声的标志案例。\n\n**给未来 sub-agent**: 下次想在 train 上 stack 第三层 blacklist 前，先跑 bootstrap CI；CI 包含 0 就别浪费 test budget。\n\n---\n\n## 2. Sample-size artefact (同 N trades 同 NAV)\n\n**触发条件**: 在一个 train window 上挂多个 sibling candidate（同 lineage 不同 filter 组合），尤其当 test window 较短（< 100 trades）时。\n\n**症状**:\n- 两个 candidate（例如 C8.4 vs C7.5）在 test 上产出**完全相同**的 trade 数和 NAV\n- 看起来像 \"两种 filter 都没 hurt\"，实际上是\"额外那层 filter 一次都没触发\"\n- Train 上 C8.4 vs C7.5 有区分度，test 上 0 区分度\n\n**Root cause**: 后加的 filter（例如 stricter timing window 或 stricter IV cap）在 short test window 上的触发概率太低，整个 hold-out 期间从未激活 —— candidate 实际跑的是上游 candidate 的退化版。误读成 \"filter 安全\"，下次扩 test window 它一旦激活就崩。\n\n**Mitigation / 防御**:\n- [ ] 同 lineage 多 candidate 上 test 时，**比对 trade-set 重合度**（intersect / union）；重合 > 95% 默认报警\n- [ ] 报告必须列 filter activation count（\"该 filter 在 test 上 dropped 0/87 trades\"）\n- [ ] activation = 0 的 candidate **不计入 lineage 进展**，强制回 train 找能激活的 case 再上 test\n- [ ] 用 Dataview 在 lineage 概览页加一列 `test_filter_activations`，0 的标灰\n\n**实战案例**: [[experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass]] vs C7.5 sibling —— 同 N 同 NAV，揭示新加 filter 在 test 上从未触发。\n\n**给未来 sub-agent**: 看到 sibling candidate test NAV 完全相同，不要欢呼\"稳健\"，先去看 filter activation count。\n\n---\n\n## 3. Admit-set 上 saturate + naïve filter no-op\n\n**触发条件**: 在已经被 anchor pool 高度 filtered 的 admit-set 上叠加一阶 leader / ticker / sector filter。anchor 本身已经是 ratio-ranked、winrate 高的精选池子。\n\n**症状**:\n- 新 filter 的 drop count 极低（0/140、1/200 这种），lift 接近 0\n- Backtest NAV 跟 anchor 重合到小数点后 2 位\n- Sub-agent 报告标题写 \"新 filter validated, marginal positive\" —— 实际是 noise\n\n**Root cause**: anchor 是 saturated alpha pool —— 它本身就已经把 leader 弱、ticker 不活跃、sector 不在风口的 signal 剔除掉了。在它的 top-N 上再加一阶 filter，等于在已经被同维度信号排序过的子集上重复一次排序，必然 no-op。Team E 的 leader/ticker filter 经验证 0/140 dropped 就是这个机制。\n\n**Mitigation / 防御**:\n- [ ] 任何 \"on anchor admit-set + new filter X\" 类候选，**先 dry-run filter 在 anchor pool 上的 drop rate**\n- [ ] drop rate < 2% → 拒派候选（filter 跟 anchor 同信息维度）\n- [ ] 想加新 filter，先证明它跟 anchor 的 ranking signal **正交**（spearman corr < 0.3）\n- [ ] 候选 hypothesis 必须答：\"anchor 现在排序 / filter 用的什么信号？我加的这层信号哪一维它没看？\"\n\n**实战案例**: Team E leader/ticker filter（vault 内无单独 candidate file —— 这个 anti-pattern 本身就是为什么没必要 migrate 它的原因）。参考 [[experiments/arc_260516a__team_anchor__anchor_g2__baseline]] 了解 anchor 已 saturate 哪些维度。\n\n**给未来 sub-agent**: 在 anchor admit-set 上加一阶 filter 前，**问自己 anchor 是不是已经用同信号排过序了**。是的话，去找 anchor 没看的维度（例如 leg notional、microstructure 之外的 sizing）。\n\n---\n\n## 4. Microstructure-as-filter falsification\n\n**触发条件**: 用 raw 微观结构指标（VPIN, OFI, order book imbalance, spread anomaly）做一阶 binary filter，叠加在 anchor pool 之上。\n\n**症状**:\n- 候选 NAV ≤ anchor G2 baseline\n- 微观结构 filter drop rate 看起来\"合理\"（10-30%），但 lift 持平甚至负\n- VPIN 高 / OFI 极端那些 trade，剔除后 portfolio NAV 没改善\n\n**Root cause**: anchor G2 baseline 用的 ratio score（例如 vol-adjusted alpha ratio）**已经隐式 absorb 了大部分微观结构信息** —— spread 宽 / OFI 失衡的 signal 在 ratio 上本就排序靠后，进不了 admit-set。直接用 raw 微观结构再 filter 一次 = duplicate 同一维度排序，alpha 没增量。Team F OFI/VPIN 1 阶 filter 就是这个 case。\n\n**Mitigation / 防御**:\n- [ ] 一阶 raw 微观结构 filter 默认 ban，候选必须先做 **微观指标 vs anchor ratio 的相关性矩阵**\n- [ ] 想用微观结构，做**残差信号**：先 regress out anchor ratio，用残差做 filter\n- [ ] 或者做**条件信号**：只在 anchor ratio 处于某 band 时激活（\"anchor 中等 ratio + OFI 极端 → drop\"），证明它捕到 anchor 没看的子空间\n- [ ] candidate doc 必须答：\"anchor ratio 已经把 spread / volume / order flow 排序到什么程度？我加的这层指标残差还多少 entropy？\"\n\n**实战案例**: [[experiments/arc_260516a__team_f__F-R1-1__ofi_drop_extreme]] —— 一阶 OFI extreme drop filter，alpha 跟 anchor 持平，标志 microstructure-as-naïve-filter 失败模式。\n\n**给未来 sub-agent**: 想做微观结构 filter，先证明 **anchor ratio 没看到这一维**。否则就是把同信号 ranking 跑第二遍。\n\n---\n\n## 5. Source-swap replacement falsification\n\n**触发条件**: 拿一个 alt csv / 替代 signal source（例如某个 leader subset、某个 echo 衍生表）**整体替换**主信号源，期待\"alt 信号更干净，alpha 更强\"。\n\n**症状**:\n- 替换后 signal count 骤降（< main source 的 10-20%）\n- Count gate 直接 fail —— 一周内没几次 trade 触发\n- 即使把 volume cap、count gate 全部放松到 ∞，NAV 仍 < anchor\n- Sub-agent 想\"再放松一层 gate\"，越放松越发现 alt 信号本质上 sparse\n\n**Root cause**: alt source 是主 source 的 **subset / augmentation**，不是 replacement。主 source 的 signal 密度和 coverage 是策略 trade 量的前提。把 alt 当 replacement = 把 funnel 上端的水管换成水滴管，下游再宽 gate 也补不回来。Team G 洛阳铲（alt csv 替换主源）连续 multi-round 验证全部 NAV < anchor。\n\n**Mitigation / 防御**:\n- [ ] 任何 \"alt source 替换主源\" 候选，**先 dry-run alt source 的 signal 密度** vs 主源\n- [ ] 密度 < 30% 主源默认拒派（trade 不够 statistical power 也撑不起 NAV）\n- [ ] alt source 应该当**叠加信号**：与主源 union（增 coverage）或 intersect（增 precision），不替换\n- [ ] candidate doc 必须答：\"alt 信号 N trades/week vs 主源 N trades/week？哪个 sample size 够 backtest？\"\n\n**实战案例**: [[experiments/arc_260516a__team_g__G-R1-1__luoyangchan_solo]] —— alt csv solo 替换主源，count gate 必 fail，volume cap → ∞ 仍 NAV < anchor。标志 source-swap replacement 失败模式。\n\n**给未来 sub-agent**: alt source 是 augmentation 不是 replacement。想换源前先比 signal density，比不过主源的至少做 union 不要 solo。\n\n---\n\n## 6. Lineage plateau (同 axis 连续微调)\n\n**触发条件**: 一个 lineage 在同一改造维度（例如 timing filter threshold、blacklist size、sizing exponent）连续 3+ 轮，每轮 increment < 1%。\n\n**症状**:\n- Round-over-round 增量看起来\"温和稳定\"，但累计 5 轮加起来 lift < 2%\n- Sub-agent 报告里出现\"R8-1 → R8-2 → R8-3 各 +0.5% / +0.3% / +0.2%, lineage 稳健\"这种 framing\n- 同 axis 已经 saturate，剩下的 increment 都在 noise band 里\n\n**Root cause**: 一个 alpha 维度的可改造空间是有限的。同 axis 微调到 3 轮以上 increment 还 < 1%，说明该维度的 alpha 已被基本榨干，剩下的优化在 train 上是 overfit 噪声、在 test 上是 random walk。Team B blacklist 在 R8-R11 连续 5 轮 plateau 就是这个。该转**正交维度** —— Team H 把改造方向从 filter 转到 leg notional sizing，立刻破局。\n\n**Mitigation / 防御**:\n- [ ] 设定 lineage 强制规则：同 axis 3 轮 increment < 1% → **强制 pivot 到正交 axis**\n- [ ] lineage 概览页加 `axis_consecutive_rounds` 字段，>=3 自动标 plateau warning\n- [ ] pivot 前先 grep `#axis/<其他维度>` 看历史哪些维度还没探（sizing / cross_source / regime gating 等）\n- [ ] 不要把 plateau 包装成\"lineage 稳健\"，那是营销话术不是研究判断\n\n**实战案例**: [[lineages/arc_260516a__team_h__sizing]] —— Team H 把 axis 从 filter 转到 leg notional sizing 后立刻破局；对比 Team B blacklist lineage R8-R11 同 axis 连续 5 轮 plateau。参考 [[experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03]] 作 plateau 起点。\n\n**给未来 sub-agent**: 同 axis 3 轮还在 < 1% 抠 increment，立刻 pivot。alpha 维度不是无穷的，但你没探的维度通常还有 3-5 个。\n\n---\n\n## 7. Lineage 内 same-trade 旁支 (train 看像扩展，test 揭示 sample-specific)\n\n**触发条件**: 一个 lineage 在某一轮分裂出多个 candidate（例如 C R6 多个 sub-variant、B-R8 R9-3 / R9-4 兄弟节点）。每个 sub-variant 在 train 上呈现\"独立提升\"。\n\n**症状**:\n- 多个 sub-variant 在 train 上各自 +1% ~ +3%\n- 上 test 后**全部产出同一组 trades 同一个 NAV**\n- 看似 lineage 在 train 上呈\"扇形扩展\"，test 上揭示是同一个 sample-specific filter 在多个 wrapping 下重复\n\n**Root cause**: sub-variant 之间的\"差异\"只在 train fold 的特定 noise 上才显化 —— test fold 上这些差异化触发器（threshold 边界、timing window 边界）都没激活，所以所有 sub-variant 退化成 base variant。本质上是 anti-pattern #1 (train-pass-test-fail) + anti-pattern #2 (sample-size artefact) 的复合形态。\n\n**Mitigation / 防御**:\n- [ ] lineage 分裂出 sub-variant 时，**强制每个 sub-variant 跑 trade-set diff** vs 父节点\n- [ ] sub-variant 之间 trade-set Jaccard > 0.9 → 视为同一 candidate，**不计入 lineage 宽度**\n- [ ] lineage 概览页要画\"实际独立 candidate 数\" vs \"声称 candidate 数\"\n- [ ] candidate doc 在 hypothesis 段必须答：\"我跟父节点 / sibling 的 differentiating trades 是哪些？什么场景才触发我而不触发它？\"\n\n**实战案例**: 参考 [[experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03]]（B-R8 lineage）以及 [[experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass]]（C R6 sub-variant 分裂的 case）。\n\n**给未来 sub-agent**: 看到 lineage \"分叉出 4 个 sub-variant 在 train 上都 +2%\"，先去算 trade-set Jaccard 再庆祝。同 trade 同 NAV 的不是 lineage 进展，是 wrapper 复读。\n\n---\n\n## 8. Cross-source consensus reverse falsification\n\n**触发条件**: 假设\"多源 echo / 多 leader consensus 越多 alpha 越强\"，做 candidate 限定只 trade `lc >= 2`（leader count ≥ 2 echo）的 signal。直觉上\"多人看到 = 更可信\"。\n\n**症状**:\n- Backtest 上 candidate trade 数大幅萎缩\n- 候选 NAV 远低于 anchor，cumulative lift 强负\n- 翻开 trade list 发现 alpha 集中在 `lc=0` 的 cold isolated signal\n\n**Root cause**: 在这个 strategy / 这个 universe 里，**alpha 集中在 cold isolated signal**，consensus 反相关 —— 多 leader echo 的 signal 本身已经被市场 priced in，反而是孤立的 cold signal 还有 edge。\"多人共识 = 强 alpha\" 是普适直觉但在这个 setup 里是反事实。D-R1 candidate 实测 88% trade 来自 lc=0 直接证伪 consensus 假设。\n\n**Mitigation / 防御**:\n- [ ] \"consensus / echo / 多源 confirm\" 类候选，**先做 lc 分布 vs alpha 的散点图**\n- [ ] 看到 alpha 集中在低 lc 区，**反向候选** —— 限定只 trade `lc=0` 或 `lc<=1`\n- [ ] 不要把通用市场直觉（\"多人确认 = 强\"）当成本 universe 的事实，每个 universe 自己实证\n- [ ] candidate doc 必须答：\"在这个 universe 里，lc 越高 alpha 越高吗？数据呢？\"\n\n**实战案例**: D-R1 cross-source consensus 候选（vault 内未单独 migrate；后续 D-R2 系列即为它失败后的转向）。参考 [[experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple]] 作 D 队 lineage 起点理解上下文。\n\n**给未来 sub-agent**: 想做 \"consensus filter\" 之前，先画 lc 分布 vs alpha 的图。这个 universe 里 alpha 在 cold isolated signal，反向才对。\n\n---\n\n## 附录: anti-pattern 复合模式\n\n实战中很少单独触发一条，常见复合形态：\n\n| 复合 | 组合 | 典型表现 |\n|---|---|---|\n| **D-R2 系列** | #1 (train-pass-test-fail) + #5 部分要素 | 多重 blacklist stack，train 美，test 崩 |\n| **C R6 sub-variant** | #2 (sample-size artefact) + #7 (same-trade 旁支) | sibling test NAV 完全相同 |\n| **Team E leader filter** | #3 (admit-set saturate) | 0/140 dropped |\n| **Team F OFI/VPIN** | #3 + #4 (microstructure 同信息) | drop rate 像样但 lift = 0 |\n| **Team G 洛阳铲** | #5 (source-swap) + count gate hard fail | alt source 当 replacement |\n| **Team B R8-R11** | #6 (plateau) | 同 axis 5 轮 < 1% increment |\n| **D-R1 consensus** | #8 + 普适直觉错配 | lc>=2 限定后 alpha 反而消失 |\n\n---\n\n## 维护规则 (给未来更新 catalog 的 sub-agent)\n\n- 新增 anti-pattern 必须有 **≥ 2 个实战 candidate** 做证据（不要把单次失败 promote 成 pattern）\n- 已有 pattern 加新实战案例 → 直接在 \"实战案例\" 行追加 `[[experiments/...]]` 双链，不另开 section\n- pattern 编号**不重排** —— 新加 pattern 拿下一个编号，给已有引用稳定 anchor\n- 命名风格保持\"症状-friendly\"（让 sub-agent grep 症状就能命中），不要写 academic 学术风\n- 修订记录写在文末 changelog\n"
+  :path "ANTI_PATTERN_CATALOG.md"
+  :source_mtime "2026-05-17T10:16:41+08:00"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_381ff5e4" :type "atom"
+  :subj "doc:anti_pattern_catalog"
+  :pred "has_nav"
+  :obj 1
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_56dc5431" :type "atom"
+  :subj "doc:anti_pattern_catalog"
+  :pred "has_type"
+  :obj "anti_pattern_catalog"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_34238656" :type "atom"
+  :subj "doc:anti_pattern_catalog"
+  :pred "has_status"
+  :obj "seeded"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_2e88e6d4" :type "atom"
+  :subj "doc:anti_pattern_catalog"
+  :pred "has_created"
+  :obj "2026-05-17"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c9fdb2de" :type "atom"
+  :subj "doc:anti_pattern_catalog"
+  :pred "has_author"
+  :obj "TARS (anti-pattern sub-agent under arc 260516a)"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c3fa1e3d" :type "atom"
+  :subj "doc:anti_pattern_catalog"
+  :pred "parent_arc"
+  :obj "ref:260516a"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_96415d52" :type "atom"
+  :subj "doc:anti_pattern_catalog"
+  :pred "has_tag"
+  :obj "tag:vault/meta"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_80056e7c" :type "atom"
+  :subj "doc:anti_pattern_catalog"
+  :pred "has_tag"
+  :obj "tag:vault/anti_pattern"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_775a17e1" :type "atom"
+  :subj "doc:anti_pattern_catalog"
+  :pred "has_tag"
+  :obj "tag:arc/260516a"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_dd04a279" :type "atom"
+  :subj "doc:anti_pattern_catalog"
+  :pred "has_section_intro"
+  :obj "# Anti-Pattern Catalog — Auto Research Experiment Vault\n\n> 这个 catalog 不是为了 blame 任何 lineage 或 team。\n> 它是给**未来设计新候选的 sub-agent** 看的 —— 在派一个新 candidate 上线之前，先 grep 一遍这里，看你脑子里那个 hypothesis 是不是某个 **known failure pattern** 的复刻。\n> 每条 pattern = 触发条件 + 症状 + root cause + 可执行 mitigation + 实战案例双链 + 一句话忠告。\n> 如果一个新 hypothesis 同时撞 2 条以上 pattern，**默认拒派**，把理由写进 candidate doc 再说服 reviewer。\n\n**入口姿势**：\n\n```bash\ngrep -nA 2 \"触发条件\" /Users/han/project/alpha/alpha_second_v1/auto_research_experiment/ANTI_PATTERN_CATALOG.md\n```\n\n或者按关键词找：\n\n```bash\ngrep -nE \"blacklist|sample-size|microstructure|consensus|plateau|source-swap|saturate\" \\\n  /Users/han/project/alpha/alpha_second_v1/auto_research_experiment/ANTI_PATTERN_CATALOG.md\n```\n\n---"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_77aa5cb7" :type "atom"
+  :subj "doc:anti_pattern_catalog"
+  :pred "contains_anti_pattern"
+  :obj "ap:1_train_pass_test_fail_综合症"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "ap:1_train_pass_test_fail_综合症" :type "anti_pattern"
+  :subj "ap:1_train_pass_test_fail_综合症"
+  :body "**触发条件**: 在 train window 上用 sample-size 较小、search-space 较大的 filter / blacklist / threshold 调优。尤其是 stacking 多重 filter 时（\"先 blacklist 高 IV，再 blacklist 低 vol，再 blacklist 早 open\"）。\n\n**症状**:\n- Train NAV 比 anchor +5% ~ +10% lift，看似 free lunch\n- Hold-out / test window 上反而 -2% ~ -5%，甚至比 baseline 还差\n- Train 上看不出任何 red flag（trade 数足、winrate 正常）\n\n**Root cause**: blacklist / filter 的 threshold 在 train 上 fit 到了 sample-specific 的噪声子集 —— 不是真信号，是该 fold 偶然的 outlier 排布。Test fold 噪声重排，filter 反而把 alpha 砍掉。等价于在 train 上做了\"无监督 feature selection\"还不留 hold-out。\n\n**Mitigation / 防御**:\n- [ ] 任何 blacklist / filter 新候选**必须**先在 train fold 做 5 折 bootstrap，给 lift 一个 90% CI\n- [ ] CI 下沿 ≤ 0 (或 ≤ noise band) 直接 disqualify，**不上 test**（省 budget 也省假希望）\n- [ ] stacking ≥ 2 层 filter 时，**强制 hold-out test**，单层 filter 才可以走 train-only screen\n- [ ] candidate doc 必须显式写出：\"filter 触发 N trades / pool N trades = X%\"，X < 5% 的 filter 默认 suspicious\n\n**实战案例**: [[experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple]] —— train +10% / test -3%，三重 blacklist 在 train 上 fit 到 sample-specific 噪声的标志案例。\n\n**给未来 sub-agent**: 下次想在 train 上 stack 第三层 blacklist 前，先跑 bootstrap CI；CI 包含 0 就别浪费 test budget。\n\n---"
+  :path "ANTI_PATTERN_CATALOG.md"
+  :source_mtime "2026-05-17T10:16:41+08:00"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_bec6d6a9" :type "atom"
+  :subj "ap:1_train_pass_test_fail_综合症"
+  :pred "has_name"
+  :obj "Train-pass-Test-fail 综合症"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_887eb4ce" :type "atom"
+  :subj "ap:1_train_pass_test_fail_综合症"
+  :pred "has_number"
+  :obj 1
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_35f5be1c" :type "atom"
+  :subj "ap:1_train_pass_test_fail_综合症"
+  :pred "has_trigger"
+  :obj "在 train window 上用 sample-size 较小、search-space 较大的 filter / blacklist / threshold 调优。尤其是 stacking 多重 filter 时（\"先 blacklist 高 IV，再 blacklist 低 vol，再 blacklist 早 open\"）。"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_7938ebbe" :type "atom"
+  :subj "ap:1_train_pass_test_fail_综合症"
+  :pred "has_symptom"
+  :obj "- Train NAV 比 anchor +5% ~ +10% lift，看似 free lunch\n- Hold-out / test window 上反而 -2% ~ -5%，甚至比 baseline 还差\n- Train 上看不出任何 red flag（trade 数足、winrate 正常）"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e51088cf" :type "atom"
+  :subj "ap:1_train_pass_test_fail_综合症"
+  :pred "has_root_cause"
+  :obj "blacklist / filter 的 threshold 在 train 上 fit 到了 sample-specific 的噪声子集 —— 不是真信号，是该 fold 偶然的 outlier 排布。Test fold 噪声重排，filter 反而把 alpha 砍掉。等价于在 train 上做了\"无监督 feature selection\"还不留 hold-out。"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a9f2372c" :type "atom"
+  :subj "ap:1_train_pass_test_fail_综合症"
+  :pred "has_mitigation"
+  :obj "- [ ] 任何 blacklist / filter 新候选**必须**先在 train fold 做 5 折 bootstrap，给 lift 一个 90% CI\n- [ ] CI 下沿 ≤ 0 (或 ≤ noise band) 直接 disqualify，**不上 test**（省 budget 也省假希望）\n- [ ] stacking ≥ 2 层 filter 时，**强制 hold-out test**，单层 filter 才可以走 train-only screen\n- [ ] candidate doc 必须显式写出：\"filter 触发 N trades / pool N trades = X%\"，X < 5% 的 filter 默认 suspicious"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_58780978" :type "atom"
+  :subj "ap:1_train_pass_test_fail_综合症"
+  :pred "has_case_examples"
+  :obj "[[experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple]] —— train +10% / test -3%，三重 blacklist 在 train 上 fit 到 sample-specific 噪声的标志案例。\n\n**给未来 sub-agent**: 下次想在 train 上 stack 第三层 blacklist 前，先跑 bootstrap CI；CI 包含 0 就别浪费 test budget。"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_111e67a7" :type "atom"
+  :subj "ap:1_train_pass_test_fail_综合症"
+  :pred "references_in_case_examples"
+  :obj "exp:D-R2-3_blacklist_stack_triple"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_eb829bb1" :type "atom"
+  :subj "ap:1_train_pass_test_fail_综合症"
+  :pred "has_advice_to_future_subagent"
+  :obj "下次想在 train 上 stack 第三层 blacklist 前，先跑 bootstrap CI；CI 包含 0 就别浪费 test budget。"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b05f8eb4" :type "atom"
+  :subj "doc:anti_pattern_catalog"
+  :pred "contains_anti_pattern"
+  :obj "ap:2_sample_size_artefact_同_n_trades_同_nav"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "ap:2_sample_size_artefact_同_n_trades_同_nav" :type "anti_pattern"
+  :subj "ap:2_sample_size_artefact_同_n_trades_同_nav"
+  :body "**触发条件**: 在一个 train window 上挂多个 sibling candidate（同 lineage 不同 filter 组合），尤其当 test window 较短（< 100 trades）时。\n\n**症状**:\n- 两个 candidate（例如 C8.4 vs C7.5）在 test 上产出**完全相同**的 trade 数和 NAV\n- 看起来像 \"两种 filter 都没 hurt\"，实际上是\"额外那层 filter 一次都没触发\"\n- Train 上 C8.4 vs C7.5 有区分度，test 上 0 区分度\n\n**Root cause**: 后加的 filter（例如 stricter timing window 或 stricter IV cap）在 short test window 上的触发概率太低，整个 hold-out 期间从未激活 —— candidate 实际跑的是上游 candidate 的退化版。误读成 \"filter 安全\"，下次扩 test window 它一旦激活就崩。\n\n**Mitigation / 防御**:\n- [ ] 同 lineage 多 candidate 上 test 时，**比对 trade-set 重合度**（intersect / union）；重合 > 95% 默认报警\n- [ ] 报告必须列 filter activation count（\"该 filter 在 test 上 dropped 0/87 trades\"）\n- [ ] activation = 0 的 candidate **不计入 lineage 进展**，强制回 train 找能激活的 case 再上 test\n- [ ] 用 Dataview 在 lineage 概览页加一列 `test_filter_activations`，0 的标灰\n\n**实战案例**: [[experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass]] vs C7.5 sibling —— 同 N 同 NAV，揭示新加 filter 在 test 上从未触发。\n\n**给未来 sub-agent**: 看到 sibling candidate test NAV 完全相同，不要欢呼\"稳健\"，先去看 filter activation count。\n\n---"
+  :path "ANTI_PATTERN_CATALOG.md"
+  :source_mtime "2026-05-17T10:16:41+08:00"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d59d4f43" :type "atom"
+  :subj "ap:2_sample_size_artefact_同_n_trades_同_nav"
+  :pred "has_name"
+  :obj "Sample-size artefact (同 N trades 同 NAV)"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f0c5421b" :type "atom"
+  :subj "ap:2_sample_size_artefact_同_n_trades_同_nav"
+  :pred "has_number"
+  :obj 2
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_32f7222f" :type "atom"
+  :subj "ap:2_sample_size_artefact_同_n_trades_同_nav"
+  :pred "has_trigger"
+  :obj "在一个 train window 上挂多个 sibling candidate（同 lineage 不同 filter 组合），尤其当 test window 较短（< 100 trades）时。"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a669a068" :type "atom"
+  :subj "ap:2_sample_size_artefact_同_n_trades_同_nav"
+  :pred "has_symptom"
+  :obj "- 两个 candidate（例如 C8.4 vs C7.5）在 test 上产出**完全相同**的 trade 数和 NAV\n- 看起来像 \"两种 filter 都没 hurt\"，实际上是\"额外那层 filter 一次都没触发\"\n- Train 上 C8.4 vs C7.5 有区分度，test 上 0 区分度"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_54772cb7" :type "atom"
+  :subj "ap:2_sample_size_artefact_同_n_trades_同_nav"
+  :pred "has_root_cause"
+  :obj "后加的 filter（例如 stricter timing window 或 stricter IV cap）在 short test window 上的触发概率太低，整个 hold-out 期间从未激活 —— candidate 实际跑的是上游 candidate 的退化版。误读成 \"filter 安全\"，下次扩 test window 它一旦激活就崩。"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_894d8aee" :type "atom"
+  :subj "ap:2_sample_size_artefact_同_n_trades_同_nav"
+  :pred "has_mitigation"
+  :obj "- [ ] 同 lineage 多 candidate 上 test 时，**比对 trade-set 重合度**（intersect / union）；重合 > 95% 默认报警\n- [ ] 报告必须列 filter activation count（\"该 filter 在 test 上 dropped 0/87 trades\"）\n- [ ] activation = 0 的 candidate **不计入 lineage 进展**，强制回 train 找能激活的 case 再上 test\n- [ ] 用 Dataview 在 lineage 概览页加一列 `test_filter_activations`，0 的标灰"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_23476b9e" :type "atom"
+  :subj "ap:2_sample_size_artefact_同_n_trades_同_nav"
+  :pred "has_case_examples"
+  :obj "[[experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass]] vs C7.5 sibling —— 同 N 同 NAV，揭示新加 filter 在 test 上从未触发。\n\n**给未来 sub-agent**: 看到 sibling candidate test NAV 完全相同，不要欢呼\"稳健\"，先去看 filter activation count。"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d1c4ccab" :type "atom"
+  :subj "ap:2_sample_size_artefact_同_n_trades_同_nav"
+  :pred "references_in_case_examples"
+  :obj "exp:C8.4_top3_no_open3min_bypass"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_2a27b86b" :type "atom"
+  :subj "ap:2_sample_size_artefact_同_n_trades_同_nav"
+  :pred "has_advice_to_future_subagent"
+  :obj "看到 sibling candidate test NAV 完全相同，不要欢呼\"稳健\"，先去看 filter activation count。"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f44986e6" :type "atom"
+  :subj "doc:anti_pattern_catalog"
+  :pred "contains_anti_pattern"
+  :obj "ap:3_admit_set_上_saturate_naïve_filter_no_op"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "ap:3_admit_set_上_saturate_naïve_filter_no_op" :type "anti_pattern"
+  :subj "ap:3_admit_set_上_saturate_naïve_filter_no_op"
+  :body "**触发条件**: 在已经被 anchor pool 高度 filtered 的 admit-set 上叠加一阶 leader / ticker / sector filter。anchor 本身已经是 ratio-ranked、winrate 高的精选池子。\n\n**症状**:\n- 新 filter 的 drop count 极低（0/140、1/200 这种），lift 接近 0\n- Backtest NAV 跟 anchor 重合到小数点后 2 位\n- Sub-agent 报告标题写 \"新 filter validated, marginal positive\" —— 实际是 noise\n\n**Root cause**: anchor 是 saturated alpha pool —— 它本身就已经把 leader 弱、ticker 不活跃、sector 不在风口的 signal 剔除掉了。在它的 top-N 上再加一阶 filter，等于在已经被同维度信号排序过的子集上重复一次排序，必然 no-op。Team E 的 leader/ticker filter 经验证 0/140 dropped 就是这个机制。\n\n**Mitigation / 防御**:\n- [ ] 任何 \"on anchor admit-set + new filter X\" 类候选，**先 dry-run filter 在 anchor pool 上的 drop rate**\n- [ ] drop rate < 2% → 拒派候选（filter 跟 anchor 同信息维度）\n- [ ] 想加新 filter，先证明它跟 anchor 的 ranking signal **正交**（spearman corr < 0.3）\n- [ ] 候选 hypothesis 必须答：\"anchor 现在排序 / filter 用的什么信号？我加的这层信号哪一维它没看？\"\n\n**实战案例**: Team E leader/ticker filter（vault 内无单独 candidate file —— 这个 anti-pattern 本身就是为什么没必要 migrate 它的原因）。参考 [[experiments/arc_260516a__team_anchor__anchor_g2__baseline]] 了解 anchor 已 saturate 哪些维度。\n\n**给未来 sub-agent**: 在 anchor admit-set 上加一阶 filter 前，**问自己 anchor 是不是已经用同信号排过序了**。是的话，去找 anchor 没看的维度（例如 leg notional、microstructure 之外的 sizing）。\n\n---"
+  :path "ANTI_PATTERN_CATALOG.md"
+  :source_mtime "2026-05-17T10:16:41+08:00"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_55f7b183" :type "atom"
+  :subj "ap:3_admit_set_上_saturate_naïve_filter_no_op"
+  :pred "has_name"
+  :obj "Admit-set 上 saturate + naïve filter no-op"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_771a56f0" :type "atom"
+  :subj "ap:3_admit_set_上_saturate_naïve_filter_no_op"
+  :pred "has_number"
+  :obj 3
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_6feaa81a" :type "atom"
+  :subj "ap:3_admit_set_上_saturate_naïve_filter_no_op"
+  :pred "has_trigger"
+  :obj "在已经被 anchor pool 高度 filtered 的 admit-set 上叠加一阶 leader / ticker / sector filter。anchor 本身已经是 ratio-ranked、winrate 高的精选池子。"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c5e57e97" :type "atom"
+  :subj "ap:3_admit_set_上_saturate_naïve_filter_no_op"
+  :pred "has_symptom"
+  :obj "- 新 filter 的 drop count 极低（0/140、1/200 这种），lift 接近 0\n- Backtest NAV 跟 anchor 重合到小数点后 2 位\n- Sub-agent 报告标题写 \"新 filter validated, marginal positive\" —— 实际是 noise"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_70d3de71" :type "atom"
+  :subj "ap:3_admit_set_上_saturate_naïve_filter_no_op"
+  :pred "has_root_cause"
+  :obj "anchor 是 saturated alpha pool —— 它本身就已经把 leader 弱、ticker 不活跃、sector 不在风口的 signal 剔除掉了。在它的 top-N 上再加一阶 filter，等于在已经被同维度信号排序过的子集上重复一次排序，必然 no-op。Team E 的 leader/ticker filter 经验证 0/140 dropped 就是这个机制。"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_865d1b43" :type "atom"
+  :subj "ap:3_admit_set_上_saturate_naïve_filter_no_op"
+  :pred "has_mitigation"
+  :obj "- [ ] 任何 \"on anchor admit-set + new filter X\" 类候选，**先 dry-run filter 在 anchor pool 上的 drop rate**\n- [ ] drop rate < 2% → 拒派候选（filter 跟 anchor 同信息维度）\n- [ ] 想加新 filter，先证明它跟 anchor 的 ranking signal **正交**（spearman corr < 0.3）\n- [ ] 候选 hypothesis 必须答：\"anchor 现在排序 / filter 用的什么信号？我加的这层信号哪一维它没看？\""
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f9fcd9dd" :type "atom"
+  :subj "ap:3_admit_set_上_saturate_naïve_filter_no_op"
+  :pred "has_case_examples"
+  :obj "Team E leader/ticker filter（vault 内无单独 candidate file —— 这个 anti-pattern 本身就是为什么没必要 migrate 它的原因）。参考 [[experiments/arc_260516a__team_anchor__anchor_g2__baseline]] 了解 anchor 已 saturate 哪些维度。\n\n**给未来 sub-agent**: 在 anchor admit-set 上加一阶 filter 前，**问自己 anchor 是不是已经用同信号排过序了**。是的话，去找 anchor 没看的维度（例如 leg notional、microstructure 之外的 sizing）。"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_3c64e4ef" :type "atom"
+  :subj "ap:3_admit_set_上_saturate_naïve_filter_no_op"
+  :pred "references_in_case_examples"
+  :obj "exp:anchor_g2_baseline"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_839135fd" :type "atom"
+  :subj "ap:3_admit_set_上_saturate_naïve_filter_no_op"
+  :pred "has_advice_to_future_subagent"
+  :obj "在 anchor admit-set 上加一阶 filter 前，**问自己 anchor 是不是已经用同信号排过序了**。是的话，去找 anchor 没看的维度（例如 leg notional、microstructure 之外的 sizing）。"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_49bd08ee" :type "atom"
+  :subj "doc:anti_pattern_catalog"
+  :pred "contains_anti_pattern"
+  :obj "ap:4_microstructure_as_filter_falsification"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "ap:4_microstructure_as_filter_falsification" :type "anti_pattern"
+  :subj "ap:4_microstructure_as_filter_falsification"
+  :body "**触发条件**: 用 raw 微观结构指标（VPIN, OFI, order book imbalance, spread anomaly）做一阶 binary filter，叠加在 anchor pool 之上。\n\n**症状**:\n- 候选 NAV ≤ anchor G2 baseline\n- 微观结构 filter drop rate 看起来\"合理\"（10-30%），但 lift 持平甚至负\n- VPIN 高 / OFI 极端那些 trade，剔除后 portfolio NAV 没改善\n\n**Root cause**: anchor G2 baseline 用的 ratio score（例如 vol-adjusted alpha ratio）**已经隐式 absorb 了大部分微观结构信息** —— spread 宽 / OFI 失衡的 signal 在 ratio 上本就排序靠后，进不了 admit-set。直接用 raw 微观结构再 filter 一次 = duplicate 同一维度排序，alpha 没增量。Team F OFI/VPIN 1 阶 filter 就是这个 case。\n\n**Mitigation / 防御**:\n- [ ] 一阶 raw 微观结构 filter 默认 ban，候选必须先做 **微观指标 vs anchor ratio 的相关性矩阵**\n- [ ] 想用微观结构，做**残差信号**：先 regress out anchor ratio，用残差做 filter\n- [ ] 或者做**条件信号**：只在 anchor ratio 处于某 band 时激活（\"anchor 中等 ratio + OFI 极端 → drop\"），证明它捕到 anchor 没看的子空间\n- [ ] candidate doc 必须答：\"anchor ratio 已经把 spread / volume / order flow 排序到什么程度？我加的这层指标残差还多少 entropy？\"\n\n**实战案例**: [[experiments/arc_260516a__team_f__F-R1-1__ofi_drop_extreme]] —— 一阶 OFI extreme drop filter，alpha 跟 anchor 持平，标志 microstructure-as-naïve-filter 失败模式。\n\n**给未来 sub-agent**: 想做微观结构 filter，先证明 **anchor ratio 没看到这一维**。否则就是把同信号 ranking 跑第二遍。\n\n---"
+  :path "ANTI_PATTERN_CATALOG.md"
+  :source_mtime "2026-05-17T10:16:41+08:00"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1797288a" :type "atom"
+  :subj "ap:4_microstructure_as_filter_falsification"
+  :pred "has_name"
+  :obj "Microstructure-as-filter falsification"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_35cfd167" :type "atom"
+  :subj "ap:4_microstructure_as_filter_falsification"
+  :pred "has_number"
+  :obj 4
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b440a0b5" :type "atom"
+  :subj "ap:4_microstructure_as_filter_falsification"
+  :pred "has_trigger"
+  :obj "用 raw 微观结构指标（VPIN, OFI, order book imbalance, spread anomaly）做一阶 binary filter，叠加在 anchor pool 之上。"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_3f239604" :type "atom"
+  :subj "ap:4_microstructure_as_filter_falsification"
+  :pred "has_symptom"
+  :obj "- 候选 NAV ≤ anchor G2 baseline\n- 微观结构 filter drop rate 看起来\"合理\"（10-30%），但 lift 持平甚至负\n- VPIN 高 / OFI 极端那些 trade，剔除后 portfolio NAV 没改善"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1620aa06" :type "atom"
+  :subj "ap:4_microstructure_as_filter_falsification"
+  :pred "has_root_cause"
+  :obj "anchor G2 baseline 用的 ratio score（例如 vol-adjusted alpha ratio）**已经隐式 absorb 了大部分微观结构信息** —— spread 宽 / OFI 失衡的 signal 在 ratio 上本就排序靠后，进不了 admit-set。直接用 raw 微观结构再 filter 一次 = duplicate 同一维度排序，alpha 没增量。Team F OFI/VPIN 1 阶 filter 就是这个 case。"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_78637c36" :type "atom"
+  :subj "ap:4_microstructure_as_filter_falsification"
+  :pred "has_mitigation"
+  :obj "- [ ] 一阶 raw 微观结构 filter 默认 ban，候选必须先做 **微观指标 vs anchor ratio 的相关性矩阵**\n- [ ] 想用微观结构，做**残差信号**：先 regress out anchor ratio，用残差做 filter\n- [ ] 或者做**条件信号**：只在 anchor ratio 处于某 band 时激活（\"anchor 中等 ratio + OFI 极端 → drop\"），证明它捕到 anchor 没看的子空间\n- [ ] candidate doc 必须答：\"anchor ratio 已经把 spread / volume / order flow 排序到什么程度？我加的这层指标残差还多少 entropy？\""
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_21b6886f" :type "atom"
+  :subj "ap:4_microstructure_as_filter_falsification"
+  :pred "has_case_examples"
+  :obj "[[experiments/arc_260516a__team_f__F-R1-1__ofi_drop_extreme]] —— 一阶 OFI extreme drop filter，alpha 跟 anchor 持平，标志 microstructure-as-naïve-filter 失败模式。\n\n**给未来 sub-agent**: 想做微观结构 filter，先证明 **anchor ratio 没看到这一维**。否则就是把同信号 ranking 跑第二遍。"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_431d24af" :type "atom"
+  :subj "ap:4_microstructure_as_filter_falsification"
+  :pred "references_in_case_examples"
+  :obj "exp:F-R1-1_ofi_drop_extreme"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_3cf58a4a" :type "atom"
+  :subj "ap:4_microstructure_as_filter_falsification"
+  :pred "has_advice_to_future_subagent"
+  :obj "想做微观结构 filter，先证明 **anchor ratio 没看到这一维**。否则就是把同信号 ranking 跑第二遍。"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_bbc238fe" :type "atom"
+  :subj "doc:anti_pattern_catalog"
+  :pred "contains_anti_pattern"
+  :obj "ap:5_source_swap_replacement_falsification"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "ap:5_source_swap_replacement_falsification" :type "anti_pattern"
+  :subj "ap:5_source_swap_replacement_falsification"
+  :body "**触发条件**: 拿一个 alt csv / 替代 signal source（例如某个 leader subset、某个 echo 衍生表）**整体替换**主信号源，期待\"alt 信号更干净，alpha 更强\"。\n\n**症状**:\n- 替换后 signal count 骤降（< main source 的 10-20%）\n- Count gate 直接 fail —— 一周内没几次 trade 触发\n- 即使把 volume cap、count gate 全部放松到 ∞，NAV 仍 < anchor\n- Sub-agent 想\"再放松一层 gate\"，越放松越发现 alt 信号本质上 sparse\n\n**Root cause**: alt source 是主 source 的 **subset / augmentation**，不是 replacement。主 source 的 signal 密度和 coverage 是策略 trade 量的前提。把 alt 当 replacement = 把 funnel 上端的水管换成水滴管，下游再宽 gate 也补不回来。Team G 洛阳铲（alt csv 替换主源）连续 multi-round 验证全部 NAV < anchor。\n\n**Mitigation / 防御**:\n- [ ] 任何 \"alt source 替换主源\" 候选，**先 dry-run alt source 的 signal 密度** vs 主源\n- [ ] 密度 < 30% 主源默认拒派（trade 不够 statistical power 也撑不起 NAV）\n- [ ] alt source 应该当**叠加信号**：与主源 union（增 coverage）或 intersect（增 precision），不替换\n- [ ] candidate doc 必须答：\"alt 信号 N trades/week vs 主源 N trades/week？哪个 sample size 够 backtest？\"\n\n**实战案例**: [[experiments/arc_260516a__team_g__G-R1-1__luoyangchan_solo]] —— alt csv solo 替换主源，count gate 必 fail，volume cap → ∞ 仍 NAV < anchor。标志 source-swap replacement 失败模式。\n\n**给未来 sub-agent**: alt source 是 augmentation 不是 replacement。想换源前先比 signal density，比不过主源的至少做 union 不要 solo。\n\n---"
+  :path "ANTI_PATTERN_CATALOG.md"
+  :source_mtime "2026-05-17T10:16:41+08:00"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_bb2e5053" :type "atom"
+  :subj "ap:5_source_swap_replacement_falsification"
+  :pred "has_name"
+  :obj "Source-swap replacement falsification"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_dc300237" :type "atom"
+  :subj "ap:5_source_swap_replacement_falsification"
+  :pred "has_number"
+  :obj 5
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b63750a5" :type "atom"
+  :subj "ap:5_source_swap_replacement_falsification"
+  :pred "has_trigger"
+  :obj "拿一个 alt csv / 替代 signal source（例如某个 leader subset、某个 echo 衍生表）**整体替换**主信号源，期待\"alt 信号更干净，alpha 更强\"。"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c9956232" :type "atom"
+  :subj "ap:5_source_swap_replacement_falsification"
+  :pred "has_symptom"
+  :obj "- 替换后 signal count 骤降（< main source 的 10-20%）\n- Count gate 直接 fail —— 一周内没几次 trade 触发\n- 即使把 volume cap、count gate 全部放松到 ∞，NAV 仍 < anchor\n- Sub-agent 想\"再放松一层 gate\"，越放松越发现 alt 信号本质上 sparse"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_188b1e93" :type "atom"
+  :subj "ap:5_source_swap_replacement_falsification"
+  :pred "has_root_cause"
+  :obj "alt source 是主 source 的 **subset / augmentation**，不是 replacement。主 source 的 signal 密度和 coverage 是策略 trade 量的前提。把 alt 当 replacement = 把 funnel 上端的水管换成水滴管，下游再宽 gate 也补不回来。Team G 洛阳铲（alt csv 替换主源）连续 multi-round 验证全部 NAV < anchor。"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e9ed2730" :type "atom"
+  :subj "ap:5_source_swap_replacement_falsification"
+  :pred "has_mitigation"
+  :obj "- [ ] 任何 \"alt source 替换主源\" 候选，**先 dry-run alt source 的 signal 密度** vs 主源\n- [ ] 密度 < 30% 主源默认拒派（trade 不够 statistical power 也撑不起 NAV）\n- [ ] alt source 应该当**叠加信号**：与主源 union（增 coverage）或 intersect（增 precision），不替换\n- [ ] candidate doc 必须答：\"alt 信号 N trades/week vs 主源 N trades/week？哪个 sample size 够 backtest？\""
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_66d126a5" :type "atom"
+  :subj "ap:5_source_swap_replacement_falsification"
+  :pred "has_case_examples"
+  :obj "[[experiments/arc_260516a__team_g__G-R1-1__luoyangchan_solo]] —— alt csv solo 替换主源，count gate 必 fail，volume cap → ∞ 仍 NAV < anchor。标志 source-swap replacement 失败模式。\n\n**给未来 sub-agent**: alt source 是 augmentation 不是 replacement。想换源前先比 signal density，比不过主源的至少做 union 不要 solo。"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c50021b3" :type "atom"
+  :subj "ap:5_source_swap_replacement_falsification"
+  :pred "references_in_case_examples"
+  :obj "exp:G-R1-1_luoyangchan_solo"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e2a6b3f2" :type "atom"
+  :subj "ap:5_source_swap_replacement_falsification"
+  :pred "has_advice_to_future_subagent"
+  :obj "alt source 是 augmentation 不是 replacement。想换源前先比 signal density，比不过主源的至少做 union 不要 solo。"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_8054558c" :type "atom"
+  :subj "doc:anti_pattern_catalog"
+  :pred "contains_anti_pattern"
+  :obj "ap:6_lineage_plateau_同_axis_连续微调"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "ap:6_lineage_plateau_同_axis_连续微调" :type "anti_pattern"
+  :subj "ap:6_lineage_plateau_同_axis_连续微调"
+  :body "**触发条件**: 一个 lineage 在同一改造维度（例如 timing filter threshold、blacklist size、sizing exponent）连续 3+ 轮，每轮 increment < 1%。\n\n**症状**:\n- Round-over-round 增量看起来\"温和稳定\"，但累计 5 轮加起来 lift < 2%\n- Sub-agent 报告里出现\"R8-1 → R8-2 → R8-3 各 +0.5% / +0.3% / +0.2%, lineage 稳健\"这种 framing\n- 同 axis 已经 saturate，剩下的 increment 都在 noise band 里\n\n**Root cause**: 一个 alpha 维度的可改造空间是有限的。同 axis 微调到 3 轮以上 increment 还 < 1%，说明该维度的 alpha 已被基本榨干，剩下的优化在 train 上是 overfit 噪声、在 test 上是 random walk。Team B blacklist 在 R8-R11 连续 5 轮 plateau 就是这个。该转**正交维度** —— Team H 把改造方向从 filter 转到 leg notional sizing，立刻破局。\n\n**Mitigation / 防御**:\n- [ ] 设定 lineage 强制规则：同 axis 3 轮 increment < 1% → **强制 pivot 到正交 axis**\n- [ ] lineage 概览页加 `axis_consecutive_rounds` 字段，>=3 自动标 plateau warning\n- [ ] pivot 前先 grep `#axis/<其他维度>` 看历史哪些维度还没探（sizing / cross_source / regime gating 等）\n- [ ] 不要把 plateau 包装成\"lineage 稳健\"，那是营销话术不是研究判断\n\n**实战案例**: [[lineages/arc_260516a__team_h__sizing]] —— Team H 把 axis 从 filter 转到 leg notional sizing 后立刻破局；对比 Team B blacklist lineage R8-R11 同 axis 连续 5 轮 plateau。参考 [[experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03]] 作 plateau 起点。\n\n**给未来 sub-agent**: 同 axis 3 轮还在 < 1% 抠 increment，立刻 pivot。alpha 维度不是无穷的，但你没探的维度通常还有 3-5 个。\n\n---"
+  :path "ANTI_PATTERN_CATALOG.md"
+  :source_mtime "2026-05-17T10:16:41+08:00"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d3bf4024" :type "atom"
+  :subj "ap:6_lineage_plateau_同_axis_连续微调"
+  :pred "has_name"
+  :obj "Lineage plateau (同 axis 连续微调)"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b689b337" :type "atom"
+  :subj "ap:6_lineage_plateau_同_axis_连续微调"
+  :pred "has_number"
+  :obj 6
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_02ba634d" :type "atom"
+  :subj "ap:6_lineage_plateau_同_axis_连续微调"
+  :pred "has_trigger"
+  :obj "一个 lineage 在同一改造维度（例如 timing filter threshold、blacklist size、sizing exponent）连续 3+ 轮，每轮 increment < 1%。"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e7c29a1b" :type "atom"
+  :subj "ap:6_lineage_plateau_同_axis_连续微调"
+  :pred "has_symptom"
+  :obj "- Round-over-round 增量看起来\"温和稳定\"，但累计 5 轮加起来 lift < 2%\n- Sub-agent 报告里出现\"R8-1 → R8-2 → R8-3 各 +0.5% / +0.3% / +0.2%, lineage 稳健\"这种 framing\n- 同 axis 已经 saturate，剩下的 increment 都在 noise band 里"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ee027c50" :type "atom"
+  :subj "ap:6_lineage_plateau_同_axis_连续微调"
+  :pred "has_root_cause"
+  :obj "一个 alpha 维度的可改造空间是有限的。同 axis 微调到 3 轮以上 increment 还 < 1%，说明该维度的 alpha 已被基本榨干，剩下的优化在 train 上是 overfit 噪声、在 test 上是 random walk。Team B blacklist 在 R8-R11 连续 5 轮 plateau 就是这个。该转**正交维度** —— Team H 把改造方向从 filter 转到 leg notional sizing，立刻破局。"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_0cadbc82" :type "atom"
+  :subj "ap:6_lineage_plateau_同_axis_连续微调"
+  :pred "has_mitigation"
+  :obj "- [ ] 设定 lineage 强制规则：同 axis 3 轮 increment < 1% → **强制 pivot 到正交 axis**\n- [ ] lineage 概览页加 `axis_consecutive_rounds` 字段，>=3 自动标 plateau warning\n- [ ] pivot 前先 grep `#axis/<其他维度>` 看历史哪些维度还没探（sizing / cross_source / regime gating 等）\n- [ ] 不要把 plateau 包装成\"lineage 稳健\"，那是营销话术不是研究判断"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_4d2074e9" :type "atom"
+  :subj "ap:6_lineage_plateau_同_axis_连续微调"
+  :pred "has_case_examples"
+  :obj "[[lineages/arc_260516a__team_h__sizing]] —— Team H 把 axis 从 filter 转到 leg notional sizing 后立刻破局；对比 Team B blacklist lineage R8-R11 同 axis 连续 5 轮 plateau。参考 [[experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03]] 作 plateau 起点。\n\n**给未来 sub-agent**: 同 axis 3 轮还在 < 1% 抠 increment，立刻 pivot。alpha 维度不是无穷的，但你没探的维度通常还有 3-5 个。"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_7d6aaabb" :type "atom"
+  :subj "ap:6_lineage_plateau_同_axis_连续微调"
+  :pred "references_in_case_examples"
+  :obj "lin:arc_260516a__team_h__sizing"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e620904c" :type "atom"
+  :subj "ap:6_lineage_plateau_同_axis_连续微调"
+  :pred "references_in_case_examples"
+  :obj "exp:B-R8-1_no_open3min_bypass03"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9750d4ac" :type "atom"
+  :subj "ap:6_lineage_plateau_同_axis_连续微调"
+  :pred "has_advice_to_future_subagent"
+  :obj "同 axis 3 轮还在 < 1% 抠 increment，立刻 pivot。alpha 维度不是无穷的，但你没探的维度通常还有 3-5 个。"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_00b151d6" :type "atom"
+  :subj "doc:anti_pattern_catalog"
+  :pred "contains_anti_pattern"
+  :obj "ap:7_lineage_内_same_trade_旁支_train_看像扩展_test_揭示_sample_specific"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "ap:7_lineage_内_same_trade_旁支_train_看像扩展_test_揭示_sample_specific" :type "anti_pattern"
+  :subj "ap:7_lineage_内_same_trade_旁支_train_看像扩展_test_揭示_sample_specific"
+  :body "**触发条件**: 一个 lineage 在某一轮分裂出多个 candidate（例如 C R6 多个 sub-variant、B-R8 R9-3 / R9-4 兄弟节点）。每个 sub-variant 在 train 上呈现\"独立提升\"。\n\n**症状**:\n- 多个 sub-variant 在 train 上各自 +1% ~ +3%\n- 上 test 后**全部产出同一组 trades 同一个 NAV**\n- 看似 lineage 在 train 上呈\"扇形扩展\"，test 上揭示是同一个 sample-specific filter 在多个 wrapping 下重复\n\n**Root cause**: sub-variant 之间的\"差异\"只在 train fold 的特定 noise 上才显化 —— test fold 上这些差异化触发器（threshold 边界、timing window 边界）都没激活，所以所有 sub-variant 退化成 base variant。本质上是 anti-pattern #1 (train-pass-test-fail) + anti-pattern #2 (sample-size artefact) 的复合形态。\n\n**Mitigation / 防御**:\n- [ ] lineage 分裂出 sub-variant 时，**强制每个 sub-variant 跑 trade-set diff** vs 父节点\n- [ ] sub-variant 之间 trade-set Jaccard > 0.9 → 视为同一 candidate，**不计入 lineage 宽度**\n- [ ] lineage 概览页要画\"实际独立 candidate 数\" vs \"声称 candidate 数\"\n- [ ] candidate doc 在 hypothesis 段必须答：\"我跟父节点 / sibling 的 differentiating trades 是哪些？什么场景才触发我而不触发它？\"\n\n**实战案例**: 参考 [[experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03]]（B-R8 lineage）以及 [[experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass]]（C R6 sub-variant 分裂的 case）。\n\n**给未来 sub-agent**: 看到 lineage \"分叉出 4 个 sub-variant 在 train 上都 +2%\"，先去算 trade-set Jaccard 再庆祝。同 trade 同 NAV 的不是 lineage 进展，是 wrapper 复读。\n\n---"
+  :path "ANTI_PATTERN_CATALOG.md"
+  :source_mtime "2026-05-17T10:16:41+08:00"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_2e0dfe34" :type "atom"
+  :subj "ap:7_lineage_内_same_trade_旁支_train_看像扩展_test_揭示_sample_specific"
+  :pred "has_name"
+  :obj "Lineage 内 same-trade 旁支 (train 看像扩展，test 揭示 sample-specific)"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_3325ee1c" :type "atom"
+  :subj "ap:7_lineage_内_same_trade_旁支_train_看像扩展_test_揭示_sample_specific"
+  :pred "has_number"
+  :obj 7
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_31263f77" :type "atom"
+  :subj "ap:7_lineage_内_same_trade_旁支_train_看像扩展_test_揭示_sample_specific"
+  :pred "has_trigger"
+  :obj "一个 lineage 在某一轮分裂出多个 candidate（例如 C R6 多个 sub-variant、B-R8 R9-3 / R9-4 兄弟节点）。每个 sub-variant 在 train 上呈现\"独立提升\"。"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_7cbd34c0" :type "atom"
+  :subj "ap:7_lineage_内_same_trade_旁支_train_看像扩展_test_揭示_sample_specific"
+  :pred "has_symptom"
+  :obj "- 多个 sub-variant 在 train 上各自 +1% ~ +3%\n- 上 test 后**全部产出同一组 trades 同一个 NAV**\n- 看似 lineage 在 train 上呈\"扇形扩展\"，test 上揭示是同一个 sample-specific filter 在多个 wrapping 下重复"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b82122c5" :type "atom"
+  :subj "ap:7_lineage_内_same_trade_旁支_train_看像扩展_test_揭示_sample_specific"
+  :pred "has_root_cause"
+  :obj "sub-variant 之间的\"差异\"只在 train fold 的特定 noise 上才显化 —— test fold 上这些差异化触发器（threshold 边界、timing window 边界）都没激活，所以所有 sub-variant 退化成 base variant。本质上是 anti-pattern #1 (train-pass-test-fail) + anti-pattern #2 (sample-size artefact) 的复合形态。"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_abf93669" :type "atom"
+  :subj "ap:7_lineage_内_same_trade_旁支_train_看像扩展_test_揭示_sample_specific"
+  :pred "has_mitigation"
+  :obj "- [ ] lineage 分裂出 sub-variant 时，**强制每个 sub-variant 跑 trade-set diff** vs 父节点\n- [ ] sub-variant 之间 trade-set Jaccard > 0.9 → 视为同一 candidate，**不计入 lineage 宽度**\n- [ ] lineage 概览页要画\"实际独立 candidate 数\" vs \"声称 candidate 数\"\n- [ ] candidate doc 在 hypothesis 段必须答：\"我跟父节点 / sibling 的 differentiating trades 是哪些？什么场景才触发我而不触发它？\""
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5f03c399" :type "atom"
+  :subj "ap:7_lineage_内_same_trade_旁支_train_看像扩展_test_揭示_sample_specific"
+  :pred "has_case_examples"
+  :obj "参考 [[experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03]]（B-R8 lineage）以及 [[experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass]]（C R6 sub-variant 分裂的 case）。\n\n**给未来 sub-agent**: 看到 lineage \"分叉出 4 个 sub-variant 在 train 上都 +2%\"，先去算 trade-set Jaccard 再庆祝。同 trade 同 NAV 的不是 lineage 进展，是 wrapper 复读。"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e57a3968" :type "atom"
+  :subj "ap:7_lineage_内_same_trade_旁支_train_看像扩展_test_揭示_sample_specific"
+  :pred "references_in_case_examples"
+  :obj "exp:B-R8-1_no_open3min_bypass03"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b638c3bb" :type "atom"
+  :subj "ap:7_lineage_内_same_trade_旁支_train_看像扩展_test_揭示_sample_specific"
+  :pred "references_in_case_examples"
+  :obj "exp:C8.4_top3_no_open3min_bypass"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f12c6d11" :type "atom"
+  :subj "ap:7_lineage_内_same_trade_旁支_train_看像扩展_test_揭示_sample_specific"
+  :pred "has_advice_to_future_subagent"
+  :obj "看到 lineage \"分叉出 4 个 sub-variant 在 train 上都 +2%\"，先去算 trade-set Jaccard 再庆祝。同 trade 同 NAV 的不是 lineage 进展，是 wrapper 复读。"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_4daf4b68" :type "atom"
+  :subj "doc:anti_pattern_catalog"
+  :pred "contains_anti_pattern"
+  :obj "ap:8_cross_source_consensus_reverse_falsification"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "ap:8_cross_source_consensus_reverse_falsification" :type "anti_pattern"
+  :subj "ap:8_cross_source_consensus_reverse_falsification"
+  :body "**触发条件**: 假设\"多源 echo / 多 leader consensus 越多 alpha 越强\"，做 candidate 限定只 trade `lc >= 2`（leader count ≥ 2 echo）的 signal。直觉上\"多人看到 = 更可信\"。\n\n**症状**:\n- Backtest 上 candidate trade 数大幅萎缩\n- 候选 NAV 远低于 anchor，cumulative lift 强负\n- 翻开 trade list 发现 alpha 集中在 `lc=0` 的 cold isolated signal\n\n**Root cause**: 在这个 strategy / 这个 universe 里，**alpha 集中在 cold isolated signal**，consensus 反相关 —— 多 leader echo 的 signal 本身已经被市场 priced in，反而是孤立的 cold signal 还有 edge。\"多人共识 = 强 alpha\" 是普适直觉但在这个 setup 里是反事实。D-R1 candidate 实测 88% trade 来自 lc=0 直接证伪 consensus 假设。\n\n**Mitigation / 防御**:\n- [ ] \"consensus / echo / 多源 confirm\" 类候选，**先做 lc 分布 vs alpha 的散点图**\n- [ ] 看到 alpha 集中在低 lc 区，**反向候选** —— 限定只 trade `lc=0` 或 `lc<=1`\n- [ ] 不要把通用市场直觉（\"多人确认 = 强\"）当成本 universe 的事实，每个 universe 自己实证\n- [ ] candidate doc 必须答：\"在这个 universe 里，lc 越高 alpha 越高吗？数据呢？\"\n\n**实战案例**: D-R1 cross-source consensus 候选（vault 内未单独 migrate；后续 D-R2 系列即为它失败后的转向）。参考 [[experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple]] 作 D 队 lineage 起点理解上下文。\n\n**给未来 sub-agent**: 想做 \"consensus filter\" 之前，先画 lc 分布 vs alpha 的图。这个 universe 里 alpha 在 cold isolated signal，反向才对。\n\n---"
+  :path "ANTI_PATTERN_CATALOG.md"
+  :source_mtime "2026-05-17T10:16:41+08:00"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b4665c67" :type "atom"
+  :subj "ap:8_cross_source_consensus_reverse_falsification"
+  :pred "has_name"
+  :obj "Cross-source consensus reverse falsification"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_8dc78fc5" :type "atom"
+  :subj "ap:8_cross_source_consensus_reverse_falsification"
+  :pred "has_number"
+  :obj 8
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ed3cbae4" :type "atom"
+  :subj "ap:8_cross_source_consensus_reverse_falsification"
+  :pred "has_trigger"
+  :obj "假设\"多源 echo / 多 leader consensus 越多 alpha 越强\"，做 candidate 限定只 trade `lc >= 2`（leader count ≥ 2 echo）的 signal。直觉上\"多人看到 = 更可信\"。"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f10570aa" :type "atom"
+  :subj "ap:8_cross_source_consensus_reverse_falsification"
+  :pred "has_symptom"
+  :obj "- Backtest 上 candidate trade 数大幅萎缩\n- 候选 NAV 远低于 anchor，cumulative lift 强负\n- 翻开 trade list 发现 alpha 集中在 `lc=0` 的 cold isolated signal"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_3b8be6df" :type "atom"
+  :subj "ap:8_cross_source_consensus_reverse_falsification"
+  :pred "has_root_cause"
+  :obj "在这个 strategy / 这个 universe 里，**alpha 集中在 cold isolated signal**，consensus 反相关 —— 多 leader echo 的 signal 本身已经被市场 priced in，反而是孤立的 cold signal 还有 edge。\"多人共识 = 强 alpha\" 是普适直觉但在这个 setup 里是反事实。D-R1 candidate 实测 88% trade 来自 lc=0 直接证伪 consensus 假设。"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_71fee6ec" :type "atom"
+  :subj "ap:8_cross_source_consensus_reverse_falsification"
+  :pred "has_mitigation"
+  :obj "- [ ] \"consensus / echo / 多源 confirm\" 类候选，**先做 lc 分布 vs alpha 的散点图**\n- [ ] 看到 alpha 集中在低 lc 区，**反向候选** —— 限定只 trade `lc=0` 或 `lc<=1`\n- [ ] 不要把通用市场直觉（\"多人确认 = 强\"）当成本 universe 的事实，每个 universe 自己实证\n- [ ] candidate doc 必须答：\"在这个 universe 里，lc 越高 alpha 越高吗？数据呢？\""
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9895f697" :type "atom"
+  :subj "ap:8_cross_source_consensus_reverse_falsification"
+  :pred "has_case_examples"
+  :obj "D-R1 cross-source consensus 候选（vault 内未单独 migrate；后续 D-R2 系列即为它失败后的转向）。参考 [[experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple]] 作 D 队 lineage 起点理解上下文。\n\n**给未来 sub-agent**: 想做 \"consensus filter\" 之前，先画 lc 分布 vs alpha 的图。这个 universe 里 alpha 在 cold isolated signal，反向才对。"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e4734c42" :type "atom"
+  :subj "ap:8_cross_source_consensus_reverse_falsification"
+  :pred "references_in_case_examples"
+  :obj "exp:D-R2-3_blacklist_stack_triple"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_01665b6c" :type "atom"
+  :subj "ap:8_cross_source_consensus_reverse_falsification"
+  :pred "has_advice_to_future_subagent"
+  :obj "想做 \"consensus filter\" 之前，先画 lc 分布 vs alpha 的图。这个 universe 里 alpha 在 cold isolated signal，反向才对。"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_97deb4de" :type "atom"
+  :subj "doc:anti_pattern_catalog"
+  :pred "has_section_附录_anti_pattern_复合模式"
+  :obj "实战中很少单独触发一条，常见复合形态：\n\n| 复合 | 组合 | 典型表现 |\n|---|---|---|\n| **D-R2 系列** | #1 (train-pass-test-fail) + #5 部分要素 | 多重 blacklist stack，train 美，test 崩 |\n| **C R6 sub-variant** | #2 (sample-size artefact) + #7 (same-trade 旁支) | sibling test NAV 完全相同 |\n| **Team E leader filter** | #3 (admit-set saturate) | 0/140 dropped |\n| **Team F OFI/VPIN** | #3 + #4 (microstructure 同信息) | drop rate 像样但 lift = 0 |\n| **Team G 洛阳铲** | #5 (source-swap) + count gate hard fail | alt source 当 replacement |\n| **Team B R8-R11** | #6 (plateau) | 同 axis 5 轮 < 1% increment |\n| **D-R1 consensus** | #8 + 普适直觉错配 | lc>=2 限定后 alpha 反而消失 |\n\n---"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_2c961eef" :type "atom"
+  :subj "doc:anti_pattern_catalog"
+  :pred "has_section_维护规则_给未来更新_catalog_的_sub_agent"
+  :obj "- 新增 anti-pattern 必须有 **≥ 2 个实战 candidate** 做证据（不要把单次失败 promote 成 pattern）\n- 已有 pattern 加新实战案例 → 直接在 \"实战案例\" 行追加 `[[experiments/...]]` 双链，不另开 section\n- pattern 编号**不重排** —— 新加 pattern 拿下一个编号，给已有引用稳定 anchor\n- 命名风格保持\"症状-friendly\"（让 sub-agent grep 症状就能命中），不要写 academic 学术风\n- 修订记录写在文末 changelog"
+  :source "ANTI_PATTERN_CATALOG.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")

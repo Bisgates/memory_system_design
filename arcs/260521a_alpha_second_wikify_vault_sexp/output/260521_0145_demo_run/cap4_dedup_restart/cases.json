@@ -1,0 +1,91 @@
+[
+  {
+    "case": 1,
+    "restart_option_used": "keep-both",
+    "action_returned": "keep-both",
+    "before": {
+      "store_size_before": 3404,
+      "original_see_also": [],
+      "original_status": null,
+      "new_card_in_store_before": false
+    },
+    "after": {
+      "store_size_after": 3405,
+      "original_see_also": [
+        "a_var_4f59c5ba"
+      ],
+      "original_status": null,
+      "original_superseded_by": null,
+      "new_card_supersedes": null,
+      "new_card_see_also": [
+        "a_3a726134"
+      ]
+    },
+    "new_card_id": "a_var_4f59c5ba",
+    "original_id": "a_3a726134",
+    "near_dupes": [
+      [
+        "a_3a726134",
+        0.8358
+      ]
+    ]
+  },
+  {
+    "case": 2,
+    "restart_option_used": "merge-prefer-newer",
+    "action_returned": "merge-prefer-newer",
+    "before": {
+      "store_size_before": 3404,
+      "original_see_also": [],
+      "original_status": null,
+      "new_card_in_store_before": false
+    },
+    "after": {
+      "store_size_after": 3405,
+      "original_see_also": [],
+      "original_status": "superseded",
+      "original_superseded_by": "a_var_928d152f",
+      "new_card_supersedes": [
+        "a_3a726134"
+      ],
+      "new_card_see_also": []
+    },
+    "new_card_id": "a_var_928d152f",
+    "original_id": "a_3a726134",
+    "near_dupes": [
+      [
+        "a_3a726134",
+        0.8358
+      ]
+    ]
+  },
+  {
+    "case": 3,
+    "restart_option_used": "supersede",
+    "action_returned": "supersede",
+    "before": {
+      "store_size_before": 3404,
+      "original_see_also": [],
+      "original_status": null,
+      "new_card_in_store_before": false
+    },
+    "after": {
+      "store_size_after": 3405,
+      "original_see_also": [],
+      "original_status": "superseded",
+      "original_superseded_by": "a_var_2eb9ac55",
+      "new_card_supersedes": [
+        "a_3a726134"
+      ],
+      "new_card_see_also": []
+    },
+    "new_card_id": "a_var_2eb9ac55",
+    "original_id": "a_3a726134",
+    "near_dupes": [
+      [
+        "a_3a726134",
+        0.8358
+      ]
+    ]
+  }
+]

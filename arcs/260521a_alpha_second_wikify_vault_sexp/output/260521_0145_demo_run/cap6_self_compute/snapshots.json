@@ -1,0 +1,29 @@
+[
+  {
+    "stage": "a",
+    "supports": 0,
+    "contradicts": 0,
+    "confidence": 0.0
+  },
+  {
+    "stage": "b",
+    "supports": 3,
+    "contradicts": 0,
+    "confidence": 1.0,
+    "added": [
+      "a_cap6_supp_1",
+      "a_cap6_supp_2",
+      "a_cap6_supp_3"
+    ]
+  },
+  {
+    "stage": "c",
+    "supports": 3,
+    "contradicts": 2,
+    "confidence": 0.3333333333333333,
+    "added": [
+      "a_cap6_contr_1",
+      "a_cap6_contr_2"
+    ]
+  }
+]

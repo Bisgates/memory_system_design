@@ -1,0 +1,34 @@
+{
+  "id": "m001_paper_to_experiment_suggestion",
+  "type": "macro",
+  "kvs": {
+    "name": "paper-to-experiment-suggestion",
+    "params": [
+      "?source-paper"
+    ],
+    "body": [
+      {
+        "type": "suggestion",
+        "subj": "?source-paper",
+        "pred": "suggests_experiment",
+        "obj": "suggestion_baseline_?source-paper",
+        "body": "Baseline replication of ?source-paper — re-run the headline result on the canonical dataset, no hyperparameter change, to confirm reproducibility before any new variant is built on top."
+      },
+      {
+        "type": "suggestion",
+        "subj": "?source-paper",
+        "pred": "suggests_experiment",
+        "obj": "suggestion_ablation_?source-paper",
+        "body": "Ablation of ?source-paper hypothesis — knock out the single mechanism the paper claims is load-bearing and confirm headline metric drops by a non-trivial margin."
+      },
+      {
+        "type": "suggestion",
+        "subj": "?source-paper",
+        "pred": "suggests_experiment",
+        "obj": "suggestion_extension_?source-paper",
+        "body": "Axis extension of ?source-paper — take the principal axis the paper varies and probe one neighbouring axis (different bucket, different horizon, different ticker pool) to test the claim's transfer."
+      }
+    ],
+    "status": "active"
+  }
+}

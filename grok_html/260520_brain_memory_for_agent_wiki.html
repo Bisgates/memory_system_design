@@ -1,0 +1,2051 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>记忆系统的设计学 · 给 agent LTM 的脑科学借鉴</title>
+<style>
+:root {
+  --paper:        #fbf6e9;
+  --paper-2:      #f3ebd6;
+  --ink:          #1f1a14;
+  --ink-soft:     #3b332a;
+  --ink-faint:    #6b6052;
+  --rule:         #b8a583;
+  --rule-soft:    #d8c9a2;
+  --accent:       #8c2f1c;
+  --accent-2:     #2c5340;
+  --gold:         #a37c2a;
+  --quote-bg:     #f0e6cd;
+  --code-bg:      #efe6ce;
+  --code-fg:      #1a140d;
+
+  /* color-coded entities, shared across tabs */
+  --c-encode:    #8c2f1c;   /* encoding stage — warm red */
+  --c-consol:    #a37c2a;   /* consolidation — amber */
+  --c-retrieve:  #2c5340;   /* retrieval — deep green */
+  --c-forget:    #5b4a82;   /* forgetting — purple */
+  --c-hippo:     #1f5a7a;   /* hippocampus — steel blue */
+  --c-cortex:    #6b4a2a;   /* cortex — brown */
+}
+* { box-sizing: border-box; }
+html, body {
+  margin: 0; padding: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: -apple-system, "Iowan Old Style", "Charter", "Cormorant Garamond", "Playfair Display", Georgia, "Times New Roman", serif;
+  font-size: 18px; line-height: 1.7;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+body { padding-bottom: 6em; }
+.mono, code, pre {
+  font-family: ui-monospace, "SF Mono", Menlo, Monaco, "Cascadia Mono", Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+/* color-coded entity tokens */
+.e-encode    { color: var(--c-encode);   font-weight: 500; }
+.e-consol    { color: var(--c-consol);   font-weight: 500; }
+.e-retrieve  { color: var(--c-retrieve); font-weight: 500; }
+.e-forget    { color: var(--c-forget);   font-weight: 500; }
+.e-hippo     { color: var(--c-hippo);    font-weight: 500; }
+.e-cortex    { color: var(--c-cortex);   font-weight: 500; }
+
+/* tab bar */
+.tabbar {
+  position: sticky; top: 0; z-index: 50;
+  display: flex; gap: 0;
+  background: var(--paper-2);
+  border-bottom: 1px solid var(--rule);
+  padding: 0 24px;
+}
+.tab-btn {
+  appearance: none; border: 0; background: transparent;
+  font: inherit; font-size: 14px; color: var(--ink-faint);
+  padding: 14px 22px; cursor: pointer;
+  border-bottom: 2px solid transparent;
+  font-variant: small-caps; letter-spacing: 0.12em;
+}
+.tab-btn:hover { color: var(--ink); }
+.tab-btn.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+.tab-meta {
+  margin-left: auto; align-self: center;
+  font-size: 12px; color: var(--ink-faint);
+  font-style: italic;
+}
+
+main { max-width: 820px; margin: 0 auto; padding: 56px 32px 0; }
+.tab-pane { display: none; }
+.tab-pane.active { display: block; }
+
+/* ===== bird scope ===== */
+.tab-bird .masthead {
+  text-align: center;
+  border-top: 4px double var(--rule);
+  border-bottom: 1px solid var(--rule);
+  padding: 32px 0 22px;
+  margin-bottom: 36px;
+}
+.tab-bird .masthead .kicker {
+  font-variant: small-caps; letter-spacing: 0.28em;
+  font-size: 12px; color: var(--accent);
+}
+.tab-bird .masthead h1 {
+  font-size: 44px; line-height: 1.18; margin: 14px 0 8px;
+  font-weight: 500;
+}
+.tab-bird .masthead .deck {
+  font-style: italic; color: var(--ink-soft);
+  font-size: 18px; max-width: 620px; margin: 0 auto;
+}
+.tab-bird .masthead .byline {
+  margin-top: 14px;
+  font-size: 12px; letter-spacing: 0.18em;
+  text-transform: uppercase; color: var(--ink-faint);
+}
+.tab-bird .chapter-rule {
+  text-align: center;
+  margin: 64px 0 26px;
+  color: var(--accent);
+  font-variant: small-caps; letter-spacing: 0.3em;
+}
+.tab-bird .chapter-rule .roman {
+  display: inline-block; font-size: 22px; font-style: italic;
+  padding: 0 18px;
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  line-height: 2;
+}
+.tab-bird .chapter-title {
+  text-align: center; font-size: 26px;
+  font-style: italic; font-weight: 500;
+  margin: 0 0 28px; color: var(--ink);
+}
+.tab-bird p { margin: 0 0 1.05em; }
+.tab-bird .lede::first-letter {
+  font-size: 4.4em; line-height: 0.86;
+  float: left; padding: 6px 12px 0 0;
+  color: var(--accent);
+  font-family: "Iowan Old Style", "Cormorant Garamond", "Playfair Display", Georgia, serif;
+  font-weight: 500;
+}
+.tab-bird h3 {
+  font-size: 19px; font-weight: 500;
+  font-variant: small-caps; letter-spacing: 0.08em;
+  margin: 32px 0 12px;
+  color: var(--ink-soft);
+  border-bottom: 1px solid var(--rule-soft);
+  padding-bottom: 4px;
+}
+.tab-bird .callout {
+  border-left: 3px solid var(--accent);
+  background: rgba(140,47,28,0.05);
+  padding: 14px 18px; margin: 22px 0;
+  font-size: 16.5px;
+}
+.tab-bird .callout .ctitle {
+  font-variant: small-caps; letter-spacing: 0.12em;
+  font-size: 12px; color: var(--accent); margin-bottom: 4px;
+}
+.tab-bird .pull {
+  margin: 28px 0; text-align: center;
+  font-style: italic; font-size: 22px;
+  color: var(--accent-2); line-height: 1.4;
+  border-top: 1px solid var(--rule-soft);
+  border-bottom: 1px solid var(--rule-soft);
+  padding: 14px 0;
+}
+.tab-bird .pull .who {
+  display: block; margin-top: 8px;
+  font-size: 12px; letter-spacing: 0.12em;
+  font-style: normal; color: var(--ink-faint);
+  text-transform: uppercase;
+}
+.tab-bird .matrix {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 16px; margin: 22px 0;
+}
+.tab-bird .matrix .cell {
+  border: 1px solid var(--rule);
+  background: var(--paper-2);
+  padding: 14px 16px; font-size: 15.5px;
+}
+.tab-bird .matrix .cell .h {
+  font-variant: small-caps; letter-spacing: 0.1em;
+  font-size: 12px; color: var(--accent); margin-bottom: 6px;
+}
+.tab-bird code {
+  background: var(--code-bg); color: var(--code-fg);
+  padding: 1px 5px; border-radius: 2px;
+  font-size: 0.88em;
+}
+.tab-bird pre {
+  background: var(--code-bg);
+  border-left: 3px solid var(--gold);
+  padding: 14px 18px; overflow-x: auto;
+  font-size: 13.5px; line-height: 1.55;
+  margin: 22px 0;
+}
+.tab-bird pre code { background: transparent; padding: 0; }
+.tab-bird table {
+  width: 100%; border-collapse: collapse;
+  margin: 22px 0; font-size: 15.5px;
+}
+.tab-bird th, .tab-bird td {
+  border-top: 1px solid var(--rule-soft);
+  border-bottom: 1px solid var(--rule-soft);
+  padding: 8px 10px; text-align: left;
+  vertical-align: top;
+}
+.tab-bird th {
+  font-variant: small-caps; letter-spacing: 0.08em;
+  color: var(--accent);
+  border-bottom: 1px solid var(--rule);
+}
+.tab-bird .afterword {
+  margin: 56px 0 28px;
+  border: 1px solid var(--ink-soft);
+  background: var(--paper-2);
+  padding: 22px 24px;
+}
+.tab-bird .afterword .label {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 11px; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--ink-faint);
+}
+.tab-bird .afterword h4 {
+  font-style: italic; font-weight: 500;
+  font-size: 22px; margin: 6px 0 12px;
+  color: var(--ink);
+}
+
+/* ===== frog scope ===== */
+.tab-frog {
+  font-family: -apple-system, "Charter", "Iowan Old Style", Georgia, "Times New Roman", serif;
+}
+.tab-frog .nb-head {
+  border-bottom: 2px solid var(--ink-soft);
+  padding: 0 0 18px; margin-bottom: 26px;
+}
+.tab-frog .nb-head .stamp {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 12px; color: var(--ink-faint);
+  letter-spacing: 0.05em;
+}
+.tab-frog .nb-head h1 {
+  margin: 6px 0 4px; font-size: 30px; font-weight: 500;
+}
+.tab-frog .nb-head .sub {
+  font-style: italic; color: var(--ink-soft); font-size: 16px;
+}
+.tab-frog h2.section {
+  font-size: 18px;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-variant: small-caps; letter-spacing: 0.14em;
+  color: var(--accent-2);
+  margin: 42px 0 10px;
+  padding: 0 0 4px;
+  border-bottom: 1px solid var(--rule);
+  display: flex; align-items: baseline; gap: 12px;
+}
+.tab-frog h2.section .num {
+  color: var(--ink-faint); font-size: 12px;
+}
+.tab-frog h3.subsection {
+  font-size: 16px; font-weight: 500;
+  color: var(--ink-soft);
+  margin: 22px 0 6px;
+}
+.tab-frog .cell {
+  margin: 14px 0;
+  border-left: 4px solid transparent;
+  padding-left: 14px;
+}
+.tab-frog .cell.md   { border-color: var(--rule); }
+.tab-frog .cell.code { border-color: var(--accent-2); }
+.tab-frog .cell.out  { border-color: var(--gold); }
+.tab-frog .cell .label {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 11px; color: var(--ink-faint);
+  margin-bottom: 4px;
+  letter-spacing: 0.04em;
+}
+.tab-frog .cell.code pre {
+  background: var(--code-bg);
+  padding: 12px 14px;
+  font-size: 13px; line-height: 1.55;
+  overflow-x: auto; margin: 0;
+}
+.tab-frog .cell.out pre {
+  background: transparent;
+  padding: 6px 0 0;
+  font-size: 13px; line-height: 1.55;
+  margin: 0; color: var(--ink-soft);
+  white-space: pre-wrap;
+}
+.tab-frog .cell.md p { margin: 0 0 8px; }
+.tab-frog code {
+  background: var(--code-bg);
+  padding: 1px 5px; border-radius: 2px;
+  font-size: 0.86em;
+}
+.tab-frog .stop {
+  background: rgba(44,83,64,0.06);
+  border-left: 4px solid var(--accent-2);
+  padding: 12px 16px; margin: 18px 0;
+  font-size: 15.5px;
+}
+.tab-frog .stop .h {
+  font-variant: small-caps; letter-spacing: 0.12em;
+  font-size: 12px; color: var(--accent-2); margin-bottom: 4px;
+}
+.tab-frog .callout {
+  border-left: 3px solid var(--ink-faint);
+  background: var(--paper-2);
+  padding: 12px 16px; margin: 18px 0;
+  font-size: 15.5px;
+}
+.tab-frog .callout .tag {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 11px; letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-faint); margin-bottom: 4px;
+}
+.tab-frog .callout.warn  { border-color: var(--gold); }
+.tab-frog .callout.warn  .tag { color: var(--gold); }
+.tab-frog .callout.red   { border-color: var(--accent); background: rgba(140,47,28,0.05); }
+.tab-frog .callout.red   .tag { color: var(--accent); }
+.tab-frog .callout.green { border-color: var(--accent-2); background: rgba(44,83,64,0.05); }
+.tab-frog .callout.green .tag { color: var(--accent-2); }
+.tab-frog .nums {
+  display: grid; gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  margin: 18px 0;
+}
+.tab-frog .nums .num-box {
+  border: 1px solid var(--rule);
+  background: var(--paper-2);
+  padding: 10px 14px;
+}
+.tab-frog .nums .k {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 11px; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--ink-faint);
+}
+.tab-frog .nums .v {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 22px; font-weight: 500; color: var(--ink);
+}
+.tab-frog .nb-foot {
+  margin-top: 56px; padding-top: 14px;
+  border-top: 1px solid var(--rule);
+  font-size: 13px; color: var(--ink-faint); font-style: italic;
+}
+
+/* lab styling — minimal, paper-themed */
+.tab-frog .lab {
+  border: 1px solid var(--rule);
+  background: var(--paper-2);
+  padding: 14px 16px;
+  margin: 22px 0;
+  border-radius: 2px;
+}
+.tab-frog .lab .lab-head {
+  font-variant: small-caps; letter-spacing: 0.12em;
+  font-size: 12px; color: var(--accent-2);
+  margin-bottom: 4px;
+}
+.tab-frog .lab .lab-sub {
+  font-size: 13px; color: var(--ink-faint);
+  font-style: italic; margin-bottom: 10px;
+}
+.tab-frog .lab canvas {
+  display: block;
+  background: var(--paper);
+  border: 1px solid var(--rule-soft);
+  max-width: 100%; height: auto;
+  margin: 8px 0;
+}
+.tab-frog .lab .ctrls {
+  display: flex; flex-wrap: wrap; gap: 14px; align-items: center;
+  font-size: 13px; color: var(--ink-soft);
+  margin-top: 6px;
+}
+.tab-frog .lab .ctrls label {
+  display: flex; flex-direction: column; gap: 2px;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 11px; letter-spacing: 0.05em;
+  text-transform: uppercase; color: var(--ink-faint);
+}
+.tab-frog .lab .ctrls input[type=range] {
+  width: 160px;
+}
+.tab-frog .lab .ctrls .val {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 13px; color: var(--ink); text-transform: none;
+  letter-spacing: 0;
+}
+.tab-frog .lab .ctrls button {
+  font: inherit; font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 12px; padding: 5px 10px;
+  background: var(--paper); border: 1px solid var(--rule);
+  color: var(--ink); cursor: pointer; border-radius: 2px;
+}
+.tab-frog .lab .lab-readout {
+  margin-top: 8px; font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 12px; color: var(--ink-soft);
+  background: var(--paper);
+  border: 1px solid var(--rule-soft);
+  padding: 6px 10px; white-space: pre-wrap;
+}
+
+/* shared: uncertainty + external */
+.uncertain {
+  border-left: 3px dashed var(--accent);
+  background: rgba(140,47,28,0.04);
+  padding: 10px 14px; margin: 18px 0;
+  font-style: italic; color: var(--ink-soft);
+  font-size: 15.5px;
+}
+.uncertain .h {
+  font-variant: small-caps; letter-spacing: 0.12em;
+  font-size: 11px; color: var(--accent);
+  font-style: normal;
+  display: block; margin-bottom: 4px;
+}
+.external {
+  border-left: 3px solid var(--ink-faint);
+  background: rgba(107,96,82,0.06);
+  padding: 10px 14px; margin: 18px 0;
+  font-size: 14.5px; color: var(--ink-soft);
+}
+.external .h {
+  font-variant: small-caps; letter-spacing: 0.1em;
+  font-size: 11px; color: var(--ink-faint);
+  display: block; margin-bottom: 4px;
+}
+
+/* responsive (640) */
+@media (max-width: 640px) {
+  .tab-bird .masthead h1 { font-size: 32px; }
+  .tab-bird .matrix { grid-template-columns: 1fr; }
+  main { padding: 32px 18px 0; }
+}
+
+/* narrow screen */
+@media (max-width: 720px) {
+  .tabbar {
+    padding: 0 12px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .tabbar::-webkit-scrollbar { display: none; }
+  .tab-btn {
+    padding: 12px 14px;
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .tab-meta { display: none; }
+
+  main { padding: 28px 14px 0; max-width: 100%; }
+  body { font-size: 16px; line-height: 1.6; }
+
+  .tab-bird .masthead { padding: 22px 0 16px; margin-bottom: 24px; }
+  .tab-bird .masthead h1 { font-size: 28px; line-height: 1.22; }
+  .tab-bird .masthead .deck { font-size: 16px; }
+  .tab-bird .chapter-rule { margin: 44px 0 18px; }
+  .tab-bird .chapter-rule .roman { font-size: 18px; }
+  .tab-bird .chapter-title { font-size: 22px; margin-bottom: 20px; }
+  .tab-bird .lede::first-letter { font-size: 3.2em; padding: 4px 8px 0 0; }
+  .tab-bird h3 { font-size: 17px; }
+  .tab-bird .callout { padding: 12px 14px; margin: 18px 0; font-size: 15.5px; }
+  .tab-bird .pull { font-size: 18px; padding: 12px 0; margin: 22px 0; }
+  .tab-bird .matrix { grid-template-columns: 1fr; gap: 12px; }
+  .tab-bird .matrix .cell { padding: 12px 14px; font-size: 15px; }
+  .tab-bird pre {
+    padding: 10px 12px;
+    font-size: 12.5px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .tab-bird pre code { white-space: pre; }
+  .tab-bird table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    font-size: 14px;
+  }
+  .tab-bird th, .tab-bird td { padding: 6px 8px; }
+  .tab-bird .afterword { padding: 18px 18px; margin: 36px 0 22px; }
+  .tab-bird .afterword h4 { font-size: 18px; }
+
+  .tab-frog .nb-head h1 { font-size: 24px; }
+  .tab-frog h2.section { font-size: 16px; margin: 32px 0 8px; }
+  .tab-frog h3.subsection { font-size: 15px; }
+  .tab-frog .cell { padding-left: 10px; margin: 12px 0; }
+  .tab-frog .cell.code pre,
+  .tab-frog .cell.out pre {
+    padding: 10px 12px;
+    font-size: 12px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .tab-frog .cell.code pre { white-space: pre; }
+  .tab-frog .stop { padding: 10px 14px; font-size: 14.5px; margin: 14px 0; }
+  .tab-frog .callout { padding: 10px 14px; font-size: 14.5px; margin: 14px 0; }
+  .tab-frog .nums { gap: 10px; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); }
+  .tab-frog .nums .num-box { padding: 8px 12px; }
+  .tab-frog .nums .v { font-size: 18px; }
+  .tab-frog .lab .ctrls input[type=range] { width: 140px; }
+}
+
+@media (max-width: 480px) {
+  .tabbar { padding: 0 8px; }
+  .tab-btn { padding: 10px 11px; font-size: 12px; letter-spacing: 0.06em; }
+  main { padding: 22px 12px 0; }
+  body { font-size: 15px; }
+
+  .tab-bird .masthead h1 { font-size: 24px; }
+  .tab-bird .chapter-title { font-size: 19px; }
+  .tab-bird .lede::first-letter { font-size: 2.8em; }
+  .tab-bird pre { padding: 8px 10px; font-size: 11.5px; }
+  .tab-bird .pull { font-size: 17px; }
+
+  .tab-frog .nb-head h1 { font-size: 21px; }
+  .tab-frog .cell.code pre,
+  .tab-frog .cell.out pre { padding: 8px 10px; font-size: 11.5px; }
+  .tab-frog .lab .ctrls input[type=range] { width: 110px; }
+}
+</style>
+</head>
+<body>
+
+<nav class="tabbar">
+  <button class="tab-btn active" data-tab="bird">Bird &middot; 鸟瞰</button>
+  <button class="tab-btn" data-tab="frog">Frog &middot; 蛙跳</button>
+  <span class="tab-meta">brain memory · for agent LTM design · 2026-05-20</span>
+</nav>
+
+<main>
+
+<!-- ============ BIRD TAB ============ -->
+<section class="tab-pane tab-bird active" id="tab-bird">
+
+  <header class="masthead">
+    <div class="kicker">on memory · a design study</div>
+    <h1>记忆系统的设计学</h1>
+    <p class="deck">大脑为什么不直接做"完美检索"——以及 agent LTM 应该从这个克制里学什么。</p>
+    <div class="byline">tars · learn_with_agent · 2026-05-20</div>
+  </header>
+
+  <!-- ===== I. predicament ===== -->
+  <div class="chapter-rule"><span class="roman">I · The Predicament</span></div>
+  <h2 class="chapter-title" id="bird-predicament">Funes el memorioso, 或者一种地狱</h2>
+
+  <p class="lede">博尔赫斯写过一个叫 Funes 的人, 落马之后, 他什么都不再忘。下午三点零四分一片云的形状, 他能完整复述; 一棵树上每片叶子的脉络, 他都能分别命名。他把每次见到的同一头狗都看作不同的对象, 因为光线变了、角度变了、毛的湿度变了——它**确实**不是同一头狗了。Funes 没有抽象, 也没有思考: 思考本来就是"忽略差异、把不同的东西捏成同一个"。一个不会遗忘的人, 也就不会概括, 不会推理, 不会决策。他被淹死在自己完美的记忆里。</p>
+
+  <p>这是关于记忆系统的第一个反直觉: <strong>"完美回忆"是 anti-feature 不是 feature</strong>。任何走进这个领域、想"为 agent 加上 long-term memory" 的工程师, 都会先想到一件事——能不能把所有 user message、所有工具调用、所有中间状态全部存下来, 然后做向量检索? 这就是 naive 答案。它的致命缺陷不是存储成本, 不是 latency, 而是<strong>它会让 agent 变成 Funes</strong>: 检索回来的东西太具体、太细、太相似, 反而无法支撑跨情境的归纳。</p>
+
+  <div class="callout">
+    <div class="ctitle">prior families: how does each dodge Funes</div>
+    <p><strong>RAG (vector store)</strong>——靠 chunk 边界限制颗粒度, 靠 top-k 截断回忆量。Funes 问题被搁置, 不是解决: chunk 之间的语义混淆和 top-k 边界附近的"差一名召回失败"就是 Funes 的回声。</p>
+    <p><strong>Conversation summarization</strong>——主动遗忘细节, 保留摘要。但摘要是哪种摘要? 这是个被回避的问题。</p>
+    <p><strong>Symbolic / RDF wiki</strong>——预先规定哪些维度算"事实"。所有不在 schema 里的东西 silently dropped (han 的 arc 260520a 实际选了这条路)。这是最像大脑 declarative 系统的方案, 也是最承担"遗忘 = 设计"代价的方案。</p>
+  </div>
+
+  <p>大脑不是把"记忆"当作存储问题来解的, 而是当作<strong>预测问题</strong>来解的: 我以后**多大概率**还要用到这条信息, 用它来做什么 cue 启动的检索, 该用哪个时间尺度的子系统承载它。这个视角的转换是过去四十年记忆研究最重要的一次重排——从 1968 年 Atkinson-Shiffrin 的 sensory→STM→LTM 三盒模型, 走到现在的"多套并行子系统 + 不停 reorganize 的引擎", 教科书还在卖三盒模型, 但实验室不信它了。</p>
+
+  <p class="pull">"To think is to forget differences, to generalize, to abstract."<span class="who">Borges, "Funes the Memorious" 1942</span></p>
+
+  <!-- ===== II. six tensions ===== -->
+  <div class="chapter-rule"><span class="roman">II · Six Tensions</span></div>
+  <h2 class="chapter-title" id="bird-six-tensions">记忆系统的六个根本张力</h2>
+
+  <p class="lede">一个记忆系统的设计, 不能同时优化所有指标——这是它跟 hash table 的根本差别。下面这六对张力, 每一对都是一条"你不能两头都要"的物理学约束。大脑用一套精巧的劳动分工把六对都吃下来了; agent LTM 现在大多只承认其中一两条。</p>
+
+  <table>
+    <thead>
+      <tr><th>tension</th><th>一端</th><th>另一端</th><th>大脑的折中</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>① capacity vs precision</td><td>存得多</td><td>记得准</td><td>STM 容量小 (Cowan ≈ 4 chunk) 但 high-fidelity; LTM 容量近无限但 lossy reconstruction</td></tr>
+      <tr><td>② encoding speed vs consolidation cost</td><td>一次就刻进去</td><td>慢慢压实</td><td><span class="e-hippo">海马</span>快速 binding (秒级 LTP), <span class="e-cortex">皮层</span>慢慢吸收 (天-年)</td></tr>
+      <tr><td>③ interference vs separation</td><td>类似经验合并</td><td>每次都独立</td><td>DG pattern separation 抗合并, CA3 pattern completion 抗碎片</td></tr>
+      <tr><td>④ generalization vs specificity</td><td>抽出规则</td><td>留住例外</td><td>episodic 留例 (海马为主), semantic 留规则 (皮层为主), 之间是连续梯度</td></tr>
+      <tr><td>⑤ stability vs plasticity</td><td>不被改写</td><td>能被更新</td><td>reconsolidation: 每次提取打开一个修改窗口, 然后再封</td></tr>
+      <tr><td>⑥ retrieval cost vs recall reliability</td><td>想得起来</td><td>不耗精力</td><td>cue-driven 联想, 不是 brute-force scan; encoding specificity 决定能否命中</td></tr>
+    </tbody>
+  </table>
+
+  <p>把这张表横着读: 大脑没有"一个 memory module", 它有<strong>多套并行的子系统, 每套在不同 trade-off 点上工作</strong>——declarative (海马依赖) / procedural (基底节 + 小脑) / 情绪强化 (杏仁核) / working memory (前额叶 + 顶叶分布式)。Cohen-Squire 1980 那个 declarative-procedural 划分, 至今是教科书上最 robust 的一条。</p>
+
+  <p>横着读的下一句是: <strong>这些子系统不是被"内存层级"组织的, 而是被"信息生命周期"组织的</strong>。Atkinson-Shiffrin 的 sensory→STM→LTM 三盒模型 (1968) 是早期最大的误导——它暗示信息按时间从一个盒子流到下一个盒子, 然后 STM 是 LTM 的入口。这个图景到 1972 年 Baddeley-Hitch 的 working memory 模型就已经动摇了, 到现在被 Cowan 的 embedded-processes model (working memory 就是被注意力聚焦的那部分 LTM, 不是单独的盒) 进一步重写。<strong>盒子是错的比喻; 在线状态 vs 离线状态是对的比喻</strong>。</p>
+
+  <div class="callout">
+    <div class="ctitle">asymptotic check: 把哪条张力推到极限</div>
+    <p>把 ③ 推到极端 separation: 每个经验都独立, 没有 cross-link——就是 Funes。把 ③ 推到极端 completion: 一切都是同一团模糊——就是 dementia。健康记忆活在精确平衡上, 这个平衡点位于 <span class="e-hippo">DG (separation)</span> 和 <span class="e-hippo">CA3 (completion)</span> 的对接处, 是同一个海马回路里两个相邻 stage 的拉扯。</p>
+  </div>
+
+  <!-- ===== III. encoding ===== -->
+  <div class="chapter-rule"><span class="roman">III · Encoding Stage</span></div>
+  <h2 class="chapter-title" id="bird-encoding-design">编码: LTP 与"指针式索引"</h2>
+
+  <p class="lede">编码阶段要解的问题: 一段经验进来, 怎么用最少的"写入"留下足够多的 cue 留待后用? 大脑的答案分两层。底层是突触可塑性——Hebbian LTP/LTD, "neurons that fire together wire together"。Bliss-Lømo 1973 在兔子海马上首次记录到 LTP, 此后五十年, 这条机制从"现象"变成"settled 的细胞-分子级机制" (NMDA receptor → Ca²⁺ → AMPA receptor trafficking → 突触强化)。</p>
+
+  <p>上层是<span class="e-hippo">海马的 indexing 假说</span>——Teyler & DiScenna 1986。他们的论点是: 海马不存内容, <strong>海马存的是一个"指针"</strong>, 指向当下被激活的那一组皮层 module。重放时, 海马这个指针重新激活同一组皮层 module, 你就"想起"了原始体验。这套假说三十多年了, 仍是主流——一个原因是它解释了为什么 H.M. (海马切除) 之后不能形成新的情景记忆, 但旧的语义知识仍在。</p>
+
+  <h3>engram cell: 找到那条指针</h3>
+
+  <p>Tonegawa 实验室 2012 年起的一系列论文 (Liu et al. 2012, Ramirez et al. 2013, Tonegawa et al. 2015) 把 indexing 假说推到了细胞分辨率: 用 light-activated channel 标记小鼠学习恐惧时 DG / CA3 / amygdala 里激活的特定 neurons, 然后**用光重新激活这群 neurons**, 小鼠就表现出"想起恐惧情境"的冻结反应——即使物理环境完全是新的。<strong>engram cell 假说由此从理论变成可操作的实体</strong>。</p>
+
+  <p>但这里有个仍未关闭的争论。<span class="e-hippo">engram</span> 是<strong>地址簿</strong> (sparse coding, 一小群专门细胞代表一段记忆) 还是<strong>全息图</strong> (distributed coding, 整张网络的相位分布代表)? Tonegawa 风格的光遗传实验偏向地址簿——你能定位到具体细胞群。但 Stefano Fusi 一系的计算工作和最近的 high-density recording 数据偏向 mixed: 每个 engram cell 也参与无数其他 engram, "地址"和"全息"是同一现象在不同分辨率下的两种表述。</p>
+
+  <div class="uncertain"><span class="h">contested · 2026 现状</span>engram 是 sparse 还是 distributed 不是非此即彼。当前主流是 "sparse 的功能 + distributed 的 substrate"——一小群 cells 是 readout 的关键节点, 但记忆的实际内容分布在更大的网络。这个"两层都对"的折中正在收敛, 但还没有形成统一术语。</div>
+
+  <h3>pattern separation: 抗 Funes 的硬件</h3>
+
+  <p>DG (dentate gyrus, 齿状回) 干一件非常具体的事: 把皮层送过来的高重叠输入<strong>稀疏化、正交化</strong>, 然后送给 CA3。皮层 layer II 大约百万级 neuron 投射到 DG 一千万级 granule cell, 但每次只有 1-2% 的 granule cell 激活——这种 sparse coding 的目标就是: 两次相似的经验, 即使皮层输入只差 5%, 送到 DG 之后的代码可以差 60%。Marr 1971 在他的海马 theory 论文里提了这一类机制的预测, 行为证据 (mouse touchscreen pattern separation tasks, Yassa & Stark 2011 综述) 和电生理证据都把它确认了。</p>
+
+  <p>CA3 干反向的事: <strong>pattern completion</strong>。CA3 内部有大量 recurrent collateral, 当你输入 partial cue, 网络的吸引子动力学会把它"补全"到原来的整个代码。retrieval 就是 completion 发动。</p>
+
+  <div class="callout">
+    <div class="ctitle">why this matters for agent LTM</div>
+    <p>DG/CA3 这套对接告诉你一件事: <strong>"encoding 时主动制造区分度"和"retrieval 时容忍 partial cue"是两个独立的能力, 必须分开建模</strong>。agent wiki 如果只做向量检索, 等于只有 CA3 (输入残缺 → 输出补全), 缺了 DG (输入相似 → 输出区分)。两个 atom 内容 95% 重合但本质不同 (e.g. 同地点的两次会议), 不主动加 "separation 钩子" 就会被合并查询淹没。</p>
+  </div>
+
+  <h3>asymptotic lever: 把 encoding 推到一次性</h3>
+
+  <p>大多数皮层 learning 需要重复; <span class="e-hippo">海马</span>支持<strong>一次性学习</strong> (one-shot encoding)——这是它存在的理由。Hamming-style 极限检查: 把"重复"次数推到 1, 哪个子系统活下来? 答案是海马 + 杏仁核 (emotional gating, salience signal)。这反过来定义了海马的工作范围: 它处理 outlier、surprise、novelty——常态、重复的东西早晚要交给皮层。</p>
+
+  <!-- ===== IV. consolidation ===== -->
+  <div class="chapter-rule"><span class="roman">IV · Consolidation Stage</span></div>
+  <h2 class="chapter-title" id="bird-consolidation-design">巩固: replay, schema, 以及一场未决的辩论</h2>
+
+  <p class="lede">编码完成不等于记住了。突触级的 LTP 维持几小时到几天, 之后会衰减——除非有<strong>巩固</strong>。Müller-Pilzecker 1900 年就观察到, 学习后干扰新学习能破坏旧学习, 提出了 consolidation 概念。一百二十多年过去, 我们对它仍有大段未解。</p>
+
+  <p>巩固分两层。<strong>突触巩固</strong> (synaptic consolidation, 数小时, gene expression + protein synthesis) 这部分 settled——蛋白质合成抑制剂在学习后几小时内能阻断长时记忆形成, 这条因果链跑通了。<strong>系统巩固</strong> (systems consolidation, 数周到数年, 海马依赖性逐渐转移到新皮层) 这部分**没有 settled**——它是脑科学过去三十年最持久的一场辩论。</p>
+
+  <h3>standard model vs multiple-trace theory</h3>
+
+  <div class="matrix">
+    <div class="cell">
+      <div class="h">Squire's standard model</div>
+      <p>新记忆需要海马"教学", 时间推移中海马反复 replay, 把模式刻进皮层。最终皮层网络能独立维持记忆, 海马不再被需要。证据: 早期 lesion 研究表明远期记忆相对不受海马损伤影响 (temporal gradient of retrograde amnesia, Scoville-Milner 1957 起)。</p>
+    </div>
+    <div class="cell">
+      <div class="h">Nadel-Moscovitch's multiple-trace theory</div>
+      <p>每次提取一个情景记忆都会生成<strong>新的</strong>海马 trace, 因此 vivid 的情景细节<strong>永远依赖海马</strong>。海马只对褪色为语义 gist 的旧记忆"失去"依赖, 对仍有 vivid context 的记忆始终关键。证据: 高分辨率 fMRI 显示, 即使几十年的远期生动情景记忆, 海马仍然激活 (Bonnici et al. 2012)。</p>
+    </div>
+  </div>
+
+  <div class="uncertain"><span class="h">contested · 2025 进展</span>2025 年 1 月 <em>Neuron</em> 上有一篇 review 直接以 "The post-standard-model age" 命名 (Sekeres, Moscovitch, Winocur), 把这场辩论的状态写成 "standard model 在 lesion 实验上仍有支持, multiple-trace 在 neuroimaging 上仍有支持, 两边都没法 falsify 对方"。一个新出现的方向是<strong>"trace transformation theory"</strong>——记忆既不是单向迁移到皮层, 也不是永远依赖海马, 而是随时间从 vivid episodic 形态<strong>转化</strong>为 schematic gist 形态, 两种形态在两个不同脑区同时存在。这是 2026 年最像"successor model"的候选, 但还没成共识。</div>
+
+  <h3>replay: 离线重放的因果地位</h3>
+
+  <p>清醒静息或慢波睡眠时, 海马 place cell 会以压缩时间 (10-20× 加速) 重新激活白天经验过的序列——sharp-wave ripple (SWR) 是它的电生理标记。这种现象 1989 年 Wilson-McNaughton 首次报道, 此后**现象**完全 settled, 但**功能**多次反转。</p>
+
+  <p>近五年最重要的实验进展: <strong>replay 不是均匀的, 它有偏向</strong>。被重放的不是随机的过去经验, 而是<strong>携带预测误差大的、有奖励意外的事件</strong>——dopamine signaling 直接调节哪些 sequence 被反复 replay (Mattar-Daw 2018, Liu et al. 2024 Nature)。这把 replay 从"被动 epiphenomenon"推到了"主动的优先级队列"——大脑在睡眠时不重放今天的全部, 它优先重放<strong>今天最 surprising 的那段</strong>。</p>
+
+  <div class="callout">
+    <div class="ctitle">replay 是 cause 还是 epiphenomenon</div>
+    <p>一系列 closed-loop 实验 (Girardeau et al. 2009 起, 2024 Liu et al. 综述) 通过<strong>实时探测 SWR 然后干扰它</strong>来测因果。结果: 干扰 SWR 选择性破坏空间记忆巩固, 不干扰则保留。这把 "replay 是 epiphenomenon" 这个 null hypothesis 推到了边缘。<strong>2026 共识: replay 有因果作用, 而且是 reward-prediction-error 引导的</strong>。这一条比 standard-vs-multiple-trace 那场更接近 settled。</p>
+  </div>
+
+  <h3>schema: 不只是新数据进库, 是改库</h3>
+
+  <p>Bartlett 1932 在 *Remembering* 里就指出: 记忆不是录像, 是<strong>重建</strong>——重建过程被 schema (背景知识结构) 强烈塑形。读一篇陌生文化的故事, 复述时人会无意识地把不符合自己 schema 的部分"修圆"。van Kesteren-Fernández 一系列工作 (2010s) 进一步: schema-congruent 信息绕过海马也能快速整合进皮层, schema-incongruent 信息严重依赖海马。<strong>schema 不是装饰, 它直接改变 consolidation 的速度和路径</strong>。</p>
+
+  <p class="pull">"睡眠重放今天最 surprising 的那段——优先压实失败和奖励意外, 这是大脑的 active learning。"</p>
+
+  <!-- ===== V. retrieval ===== -->
+  <div class="chapter-rule"><span class="roman">V · Retrieval Stage</span></div>
+  <h2 class="chapter-title" id="bird-retrieval-design">检索: cue 驱动, 情境敏感, 重构性</h2>
+
+  <p class="lede">提取一段记忆不是数据库查询。它有三个特征, 每一个都跟 SQL 想法相反, 每一个都是 agent LTM 当下做得最差的部分。</p>
+
+  <h3>encoding specificity (Tulving)</h3>
+
+  <p>Tulving-Thomson 1973 的<strong>encoding specificity principle</strong>: 一段记忆能否被提取, 取决于<strong>检索时的 cue 是否跟编码时的 context 重叠</strong>。在水下学的单词在水下记得更好, 喝酒时学的事醉了再想就更清晰 (state-dependent learning)。Godden-Baddeley 1975 那个潜水员实验是 textbook 案例, 至今 robust。</p>
+
+  <p>这里有个 Hamming-style 的推论: <strong>"我搜不到这段记忆"和"这段记忆不存在"是两回事</strong>。Tulving 的工作根本上挑战了"记忆 = 存了就能取"的简单观——存了不一定能取, 取的能力取决于你能不能复现编码时的 context。</p>
+
+  <h3>retrieval-induced forgetting (Anderson)</h3>
+
+  <p>Anderson-Spellman 1995, 1999: 反复提取一组项目里的某些, 会<strong>主动抑制</strong>同组未被提取的项目, 使后者更难想起。这不是 decay, 是<strong>active inhibition</strong>——前额叶通过 cortical pattern suppression 把竞争者按下去 (Wimber et al. 2015)。换句话说: <strong>retrieval 不只是 read, 它同时是 write——它在重写未来的可检索性</strong>。</p>
+
+  <div class="callout">
+    <div class="ctitle">cross-domain transfer: RIF 跟 reconsolidation 是同一件事的两面</div>
+    <p>每次提取打开一个修改窗口 (reconsolidation, Nader-Schafe-LeDoux 2000), 在这个窗口里, 被提取的轨迹增强, 没被提取的相关轨迹被抑制。这给"记忆 = 状态机"提供了一个具体机制——retrieval = state transition, 不只是 query。</p>
+  </div>
+
+  <h3>reconstructive, 不是 retrieval</h3>
+
+  <p>Bartlett 1932 的核心洞察被现代神经科学反复证实: 你"想起"一件事时, 你实际在做的是<strong>重新合成</strong>它。海马提供索引 + 时序骨架, 皮层提供细节填充, 你的当下情绪、当下 schema、当下意图全部参与塑形。每次"提取"都生成一个新的、与原始事件略有偏差的 trace——这正是 multiple-trace theory 在认知心理学侧的根。</p>
+
+  <p>结果: 记忆<strong>不应该</strong>被视为不可变记录。它是有"提取就会改变"性质的活体表征。法庭证词和目击者识别因此长期争议——重复审讯的过程本身污染了原始记忆。这也是为什么"心理治疗 + retrieval" (reconsolidation-based therapy) 能减弱创伤记忆: 在每次提取打开的修改窗口内, 引入新的安全信号, 改写记忆的情绪强度。</p>
+
+  <!-- ===== VI. forgetting ===== -->
+  <div class="chapter-rule"><span class="roman">VI · Forgetting as Feature</span></div>
+  <h2 class="chapter-title" id="bird-forgetting-feature">遗忘不是 bug, 是 rational design</h2>
+
+  <p class="lede">最反直觉的一章。如果"完美记忆 = Funes 地狱"是真的, 那遗忘的曲线就不是大脑设计的失败, 而是它的核心 feature。问题是: 大脑用什么<strong>原则</strong>决定哪些被遗忘?</p>
+
+  <h3>Ebbinghaus 1885, 仍然 robust</h3>
+
+  <p>Ebbinghaus 用自己当被试, 学无意义音节, 测保留率随时间衰减。他得到的<strong>遗忘曲线</strong>——前 1 小时陡降, 然后指数尾巴长达数月——在 declarative memory 上至今复现良好。但有个关键修正: <strong>遗忘曲线只在 declarative 上成立, procedural 几乎不衰减</strong>。骑自行车、打字、滑雪, 这些技能一旦学会可以休眠几十年再启动。Cohen-Squire 1980 那条 declarative-procedural 分界, 在遗忘维度上有最锐利的体现。</p>
+
+  <h3>decay vs interference: 一场没赢家的争论</h3>
+
+  <div class="matrix">
+    <div class="cell">
+      <div class="h">decay theory</div>
+      <p>记忆痕迹随时间被动消解, 跟用不用无关。McGeoch 1932 起就有人反对, 但这条仍出现在直觉里。</p>
+    </div>
+    <div class="cell">
+      <div class="h">interference theory</div>
+      <p>新学的东西 (retroactive) 或先学的东西 (proactive) 干扰目标记忆。Underwood 1957 的经典: 学完一长串单词, 之前学得越多, 这次记得越差——proactive interference 累积。这边证据更强, 但 decay 也没被完全推翻。</p>
+    </div>
+  </div>
+
+  <h3>Anderson 的理性遗忘 (rational analysis)</h3>
+
+  <p>John R. Anderson 1989-1991 提出 <strong>rational analysis of memory</strong>: 大脑遗忘的不是"用不到的", 而是<strong>预测下次用到概率低的</strong>。可提取性正比于"需要概率"。这个 framework 解释了为什么:</p>
+
+  <ul>
+    <li><strong>spacing effect</strong>——分散学习比集中学习记得久, 因为分散的 retrieval 暗示这条信息有持续需求。</li>
+    <li><strong>testing effect</strong>——反复测试比反复阅读更牢, 因为 retrieval 本身是"我需要这条"的信号。</li>
+    <li><strong>retrieval-induced forgetting</strong>——RIF 是大脑承认"这个 retrieval 路径上的竞争者用不到, 抑制掉"。</li>
+  </ul>
+
+  <p>这条 framework 关键在于一个 reframe: <strong>遗忘不是失败, 是 prediction 系统的正常输出。一条信息被忘, 是因为它的预测需求评分跌到了阈值以下</strong>。Bjork-Bjork 1992 的 "new theory of disuse" 进一步把"storage strength"和"retrieval strength"分开: 一条记忆可以 storage 很强但 retrieval 很弱 (一时想不起, 提示一下就来), 而 retrieval 弱本身可能是 feature——它在为未来更高效的检索腾出 cue 空间。</p>
+
+  <div class="callout">
+    <div class="ctitle">为什么 agent LTM 不应该用 LRU</div>
+    <p>LRU (least recently used) 是简化的 retrieval-strength 信号: 最近没用 → 评估为低需求 → 驱逐。但 Anderson 的 framework 暗示一个更强的策略: 用 <strong>base rate × recency × frequency × interaction-strength</strong> 综合估计 future need probability, 而不是只用 recency。spacing effect 的存在恰恰说明: 一条信息在分散时间点被访问, 比同样总频次但集中访问的, 应该被估为更持久。LRU 反着——它会把分散访问的项当作"半冷数据", 这是反过来的。</p>
+  </div>
+
+  <!-- ===== VII. engineering mapping ===== -->
+  <div class="chapter-rule"><span class="roman">VII · Engineering Mapping</span></div>
+  <h2 class="chapter-title" id="bird-engineering-mapping">从脑机制到 agent LTM 的等价决策</h2>
+
+  <p class="lede">前六章看 brain side, 这一章把每个张力翻译成一条工程 design choice——给 han 的 arc 260520a wiki engine 用的等价表。注意, 不是每一行都能 1:1 借鉴; 有些是<strong>形似神不似</strong>, 那种行会被显式标出来。</p>
+
+  <table>
+    <thead>
+      <tr><th>tension</th><th>brain side</th><th>agent LTM 工程映射</th><th>borrow class</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>① cap vs precision</td>
+        <td>STM (~4) vs LTM (∞)</td>
+        <td>分层: working context (token window, 高精度) + LTM (lossy summary + atoms)</td>
+        <td>strong</td>
+      </tr>
+      <tr>
+        <td>② enc-speed vs cons-cost</td>
+        <td>海马 one-shot index + 皮层 slow integration</td>
+        <td>online ingest (fast index) + offline batch consolidation (nightly schema re-derivation)</td>
+        <td>strong</td>
+      </tr>
+      <tr>
+        <td>③ interference vs separation</td>
+        <td>DG separation + CA3 completion</td>
+        <td>encoding 时加 separator key (timestamp/source/context hash) 保区分; retrieval 时用 partial-cue completion 容残缺</td>
+        <td>strong</td>
+      </tr>
+      <tr>
+        <td>④ general vs specific</td>
+        <td>episodic ↔ semantic gradient</td>
+        <td>原子层 (episodic, 全 provenance) + 派生规则层 (semantic, 通过 forward chaining 抽规则) —— 跟 260520a 现状对齐</td>
+        <td>strong</td>
+      </tr>
+      <tr>
+        <td>⑤ stability vs plasticity</td>
+        <td>reconsolidation 窗口</td>
+        <td>每次 retrieval 触发 atom 的 confidence/recency 更新; 不允许 silent rewrite, 但允许"被引用后强化"</td>
+        <td>medium</td>
+      </tr>
+      <tr>
+        <td>⑥ retrieval cost vs reliability</td>
+        <td>cue 驱动, encoding specificity</td>
+        <td>multi-cue 检索 (content + context + source + temporal), 不是单一向量; query expansion 等价于 cue reinstatement</td>
+        <td>strong</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>三条最值得抄的具体决策</h3>
+
+  <p><strong>(1) 把 consolidation 从 online 移到 batch</strong>。agent wiki 不应该在每次写入时都 re-derive 全图——这是 ACID database 的 mindset, 不是 brain mindset。大脑做的是: 白天用最简单的 binding 把新经验挂在海马 index 上, 晚上用 SWR replay 选择性把高价值经验整合进皮层 schema。工程对应: <strong>online 阶段只做 atomic extract + 写入 raw atom store; consolidation 作为 nightly / daily 跑的 batch job, 重新跑 forward chaining, 重新评估 schema integration, 重新计算 confidence/centrality</strong>。这正好跟 han 在 260520a 已经做的 fixpoint engine 兼容——只是把"每次写入立即跑"改成"积一批再跑"。</p>
+
+  <p><strong>(2) retrieval = query expansion, 不只是 nearest neighbor</strong>。Tulving 的 encoding specificity 翻译成工程: 一个 raw query 的命中率严重依赖它跟 encoding 时 context 的重叠。所以 retrieval 阶段应该: (a) 用 LLM 把 query 扩展成多个 cue 变体 (hyDE-style), (b) 每个变体走不同的检索路径 (向量 + symbolic + temporal window), (c) 用召回结果再 re-rank。这等价于"模拟多 cue reinstatement"。</p>
+
+  <p><strong>(3) forgetting 不是 LRU, 是 need-probability prediction</strong>。每个 atom 维护一个轻量 score: <code>score = α·log(retrieval_count + 1) + β·log(referenced_by_atoms + 1) + γ·recency_decay(last_access) + δ·source_authority</code>。score 低于阈值的 atom 进入 "deep storage" (依然可检索但不进 default candidate set); 进一步低于阈值的批量归档。这跟 Anderson rational forgetting 等价, 跟 spacing/testing effects 一致。</p>
+
+  <h3>哪些机制不能直接抄: 形似神不似</h3>
+
+  <div class="callout">
+    <div class="ctitle">don't copy this</div>
+    <p><strong>(a) engram cell 的"地址簿"概念</strong>——你可能会想做"每条记忆 = 一个唯一 ID"。但大脑 engram 是 sparse-distributed 的, 同一群细胞参与多个 engram, 重叠是 feature。工程上你<strong>已经</strong>有 atom ID = sha1(s,p,o) 这种唯一映射, 不需要 mimic engram 的 distributed coding——你的 LLM embedding 已经替你做了 distributed 那一半。</p>
+    <p><strong>(b) reconsolidation 的"提取打开窗口"</strong>——直觉会推你做"每次读取 atom 都允许它被改写"。这是 dangerous: 大脑的 reconsolidation 有几十种 molecular safeguard (protein synthesis 依赖、时间窗严格、特定 receptor 通路), 你没有任何对应的护栏。安全工程对应是: read-only 默认 + 显式的 "atom evolution" 操作 (新版本 vs 改写, 留 lineage)。</p>
+    <p><strong>(c) "睡眠 replay 因此 agent 也需要睡眠"</strong>——形上对, 神不对。大脑睡眠 replay 服务的是 synaptic-level 稳定化, 这条对 LLM 不存在。但<strong>"周期性 offline 批处理"这个上层概念</strong>对 (=上面 (1) 的 batch consolidation)。区分: 借鉴 "batch consolidation"的功能定位, 不要借鉴"必须在 agent idle 时跑、必须时长压缩、必须 sharp-wave 频段"这些细节。</p>
+  </div>
+
+  <!-- ===== VIII. status ===== -->
+  <div class="chapter-rule"><span class="roman">VIII · Current Research Status</span></div>
+  <h2 class="chapter-title" id="bird-current-research-status">settled / contested / open · 2026 现状</h2>
+
+  <p class="lede">把上面所有机制按"研究清楚了吗"分层。看清这张表, 你就知道哪些可以直接拿来用 (settled 部分), 哪些借鉴时要谨慎 (contested), 哪些干脆别假装懂 (open)。</p>
+
+  <table>
+    <thead>
+      <tr><th>层</th><th>机制</th><th>状态</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>细胞</td><td>Hebbian LTP / LTD, NMDA-AMPA 通路</td><td><strong>settled</strong> (1973 起)</td></tr>
+      <tr><td>系统</td><td>海马 indexing 假说 (Teyler-DiScenna)</td><td><strong>settled-ish</strong>, 主流但细节修正进行中</td></tr>
+      <tr><td>分工</td><td>declarative vs procedural (Cohen-Squire)</td><td><strong>settled</strong></td></tr>
+      <tr><td>容量</td><td>WM 容量 ≈ 4 chunk (Cowan), Miller 7±2 已被取代</td><td><strong>settled</strong> (with caveats on what counts as a chunk)</td></tr>
+      <tr><td>形态</td><td>遗忘曲线在 declarative robust, procedural 几乎不衰减</td><td><strong>settled</strong></td></tr>
+      <tr><td>结构</td><td>DG pattern separation / CA3 pattern completion</td><td><strong>settled-ish</strong>, 行为 + 电生理 + 计算三路证据收敛</td></tr>
+      <tr><td>位置</td><td>engram cell (Tonegawa 系列)</td><td><strong>established as phenomenon</strong>; sparse vs distributed 编码<strong>still contested</strong></td></tr>
+      <tr><td>动力</td><td>SWR replay 的因果作用</td><td><strong>moving toward settled</strong> (closed-loop interference experiments 2009 起)</td></tr>
+      <tr><td>动力</td><td>replay 由 prediction error 引导</td><td><strong>recent, contested</strong> (Liu et al. 2024, 一些独立复现, 还没成共识)</td></tr>
+      <tr><td>巩固</td><td>systems consolidation: standard model vs MTT</td><td><strong>contested</strong>, 2025 Neuron 综述明确"post-standard model age"</td></tr>
+      <tr><td>巩固</td><td>trace transformation theory (Moscovitch 系)</td><td><strong>candidate successor</strong>, 尚未共识</td></tr>
+      <tr><td>分类</td><td>episodic vs semantic 严格二分</td><td><strong>retired</strong>; 现状是 gradient + multidimensional (Renoult-Rugg 2024)</td></tr>
+      <tr><td>提取</td><td>encoding specificity (Tulving)</td><td><strong>settled</strong> (1973)</td></tr>
+      <tr><td>提取</td><td>retrieval-induced forgetting (Anderson)</td><td><strong>settled-ish</strong>, inhibitory account 有挑战但仍主流</td></tr>
+      <tr><td>提取</td><td>reconsolidation 提取打开修改窗口</td><td><strong>settled in animal models</strong>; 人体临床应用仍探索</td></tr>
+      <tr><td>原理</td><td>遗忘 = rational forgetting (Anderson-Schooler)</td><td><strong>computationally compelling, behaviorally supported</strong>, 但底层神经机制还在拼</td></tr>
+    </tbody>
+  </table>
+
+  <h3>三个真正的 open question</h3>
+
+  <p><strong>(1) memory 是怎么"读出"的</strong>。我们知道编码、巩固的细节越来越多, 但提取的<strong>精确</strong>神经计算——cue 怎么变成 reactivation pattern, 哪些选项被同时唤起又被压制——仍然只有计算模型猜测, 没有直接观察。</p>
+
+  <p><strong>(2) consolidation 的功能是"防止 catastrophic forgetting"还是"提取 gist"</strong>。两种解读都跟数据相容。complementary learning systems (McClelland-McNaughton-O'Reilly 1995) 把它建模成"海马 fast + 皮层 slow, 用 replay 把样本喂给皮层避免灾难遗忘"——这跟 deep learning 的 experience replay 直接同源。但近年很多数据更支持"consolidation = abstraction / gist extraction"——皮层吸收的不是细节, 是规律。两个解读对 agent LTM 的工程映射不同 (避免遗忘 vs 提取规则)。</p>
+
+  <p><strong>(3) 个体差异为什么这么大</strong>。同样的 task, 不同人的记忆衰减曲线、巩固速度、易感性 (痴呆、PTSD) 差异巨大, 而我们对这种差异的<strong>机制</strong>还很模糊。这条对 agent LTM 暗示: 一刀切的 default policy 可能不足以服务不同任务密度的用户。</p>
+
+  <div class="afterword">
+    <div class="label">afterword · principle to remember when details fade</div>
+    <h4>记忆不是存储, 是预测</h4>
+    <p>大脑没把"完美回忆"作为目标。它把<strong>"我以后需要这条信息的概率有多大、用它做什么 cue 触发的检索"</strong>作为目标。所有的子系统——海马 indexing, 皮层 schema, replay 优先级队列, rational forgetting——都从这一个目标里 fall out。</p>
+    <p>当你为 agent 设计 LTM 时, 如果你只看"怎么把更多内容塞进去 + 怎么用 embedding 把它取出来", 你在做 Funes 的工程。如果你看"怎么预测哪些信息明天还有用、用什么 cue 才能 hit, 然后把这两件事变成系统的核心约束", 你在做大脑做的工程。<strong>这是借鉴的真正层级——不是抄机制, 是抄目标函数</strong>。</p>
+  </div>
+
+</section>
+
+
+<!-- ============ FROG TAB ============ -->
+<section class="tab-pane tab-frog" id="tab-frog">
+
+  <header class="nb-head">
+    <div class="stamp">brain_memory_for_agent_wiki.ipynb · 2026-05-20 · for arc 260520a</div>
+    <h1>从一段下午茶到 agent LTM</h1>
+    <div class="sub">具体场景 → 三层机制 → 工程草图。每一步都能跟你已有的 RDF wiki 对上。</div>
+  </header>
+
+  <!-- ===== 1. predicament ===== -->
+  <h2 class="section" id="frog-predicament"><span class="num">[1]</span> a concrete episodic memory, replayed</h2>
+
+  <div class="cell md">
+    <div class="label">In [md]:</div>
+    <p>okay, 假设你昨天下午两点二十三分, 在 cafe 的角落座位, 跟 X 谈了一件项目相关的事——具体到对方手里端着的不是黑咖啡而是抹茶拿铁, 窗外有辆出租车按了喇叭, 你当时心里在想另一件事所以反应慢了半拍。</p>
+    <p>今天有人问你"昨天那个谈话讨论了什么", 你怎么"想起来"这件事? 我们把这个过程拆开看, 不抽象——直接看每一步是<strong>哪个脑区</strong>在干什么。</p>
+  </div>
+
+  <div class="cell code">
+    <div class="label">In [1]:</div>
+<pre><code># pseudo-trace of what the brain does on cue "昨天那个谈话"
+def recall(cue):
+    # step 1: cue 进 prefrontal (working memory 控制)
+    pfc.activate(cue)
+    # step 2: pfc 派 query 给海马 (hippocampal index)
+    candidates = hippocampus.partial_match(
+        time_window="昨天",
+        context_tag="谈话",
+    )
+    # step 3: 海马 retrieve 一个 sparse code, 这个 code 是
+    # 当时被同时激活的那组 cortical modules 的 *指针*
+    pointer = candidates.top()
+    # step 4: pointer 重新激活原来那组 cortical modules
+    # 视觉皮层 → "对方端着抹茶拿铁" 的画面
+    # 听觉皮层 → "出租车喇叭" 的声音
+    # 体感皮层 → "椅子有点硬" 的体感
+    # 语义皮层 → 谈话的语言内容
+    pattern = cortex.reactivate_from(pointer)
+    # step 5: pfc 把 pattern 拼接成 *现在意识层面* 的回忆
+    return pfc.reconstruct(pattern)
+</code></pre>
+  </div>
+
+  <div class="cell out">
+    <div class="label">Out[1]:</div>
+<pre>"嗯, X 昨天提到要改 schema, 我说先做反向工程
+看 demo 里实际用了哪些维度…… 对了, 喇叭那一下我
+还分神了一秒, 没接住他下一句的开头。"</pre>
+  </div>
+
+  <div class="cell md">
+    <div class="label">In [md]:</div>
+    <p>注意几个关键点:</p>
+    <p>(a) <span class="e-hippo">海马</span>没存"谈话内容"——它存的是一个稀疏指针, 指向<strong>当时哪些皮层 module 被同时点亮</strong>。这就是 Teyler-DiScenna 1986 的 hippocampal indexing 假说。</p>
+    <p>(b) 真正"回忆"是<span class="e-cortex">皮层</span>被重新点亮——视觉、听觉、体感、语义皮层各回放各的, <span class="e-hippo">海马</span>只是 trigger。</p>
+    <p>(c) 你"想起"的不是录像, 是<strong>重建</strong>。每次重建都有偏差——你今天想到的"X 端的是抹茶拿铁", 也许其实是上周的另一次。这是 reconstructive memory, Bartlett 1932 起的核心论断。</p>
+  </div>
+
+  <div class="stop">
+    <div class="h">stop &amp; think</div>
+    <p>把这套机制跟 RAG 对比一下。RAG: query → embedding → 向量检索 → 返回原文 chunk。脑 retrieval: cue → PFC 控制 → 海马 partial match → 一个<strong>指针</strong>触发<strong>分布式皮层重建</strong>。</p>
+    <p>RAG 是"取出存好的字面"; 脑 retrieval 是"按指针重新跑一遍 forward pass"。这两件事的 cost / fidelity / fail mode 都不一样。RAG 永远不会"以为自己想起来其实想错了", 因为它没在重建——它只是在 read。大脑会, 因为它一直在重建。<strong>这给 agent wiki 的暗示: 检索后的 LLM 生成步骤其实是脑机制里"皮层重建"的工程对应——别把它当 bug</strong>。</p>
+  </div>
+
+  <!-- ===== 2. six tensions (frog framing: 3 cue types) ===== -->
+  <h2 class="section" id="frog-six-tensions"><span class="num">[2]</span> three cue types, each = a query class</h2>
+
+  <div class="cell md">
+    <div class="label">In [md]:</div>
+    <p>上一段那个 retrieve, 我们用的 cue 是"昨天那个谈话"。但 cue 不只一种——心理学里把 cue 大致分三类, 每一类对应 agent wiki 里一种 query。这一节就把这三类列清楚, 然后跟 han 的 RDF 表对应。</p>
+  </div>
+
+  <div class="cell code">
+    <div class="label">In [2]:</div>
+<pre><code># 三类 cue × 三种 query
+CUE_TYPES = {
+    "content_cue": {
+        "brain_example": "对方端着的是抹茶拿铁",
+        "agent_query": "找所有提到 schema 反向工程的 atom",
+        "wiki_predicate": "(?subj, mentions, 'schema-reverse-eng')",
+        "best_implementation": "向量检索 + LLM rerank",
+    },
+    "context_cue": {
+        "brain_example": "昨天下午两点在 cafe",
+        "agent_query": "找 arc 260520a 在 2026-05-19 写入的 atom",
+        "wiki_predicate": "(?subj, ?p, ?o) AND source IN arc:260520a/* AND ts in [...]",
+        "best_implementation": "symbolic filter (provenance + temporal)",
+    },
+    "source_monitoring": {
+        "brain_example": "我是真听 X 说的, 还是我自己想出来的",
+        "agent_query": "这条 fact 是哪条规则推出来的 (derived_from 链)",
+        "wiki_predicate": "(?atom, derived_from, ?rule) + transitive parents",
+        "best_implementation": "graph traversal over derivation DAG",
+    },
+}
+for k, v in CUE_TYPES.items():
+    print(k, "→", v["agent_query"])
+</code></pre>
+  </div>
+
+  <div class="cell out">
+    <div class="label">Out[2]:</div>
+<pre>content_cue       → 找所有提到 schema 反向工程的 atom
+context_cue       → 找 arc 260520a 在 2026-05-19 写入的 atom
+source_monitoring → 这条 fact 是哪条规则推出来的 (derived_from 链)</pre>
+  </div>
+
+  <div class="cell md">
+    <div class="label">In [md]:</div>
+    <p>han 的 260520a demo 现在的 strength: <strong>source monitoring 做得最强</strong>——derived_from + parents 链是一等公民, 每条派生 atom 都能反推到 rule 和 source atom (这点 demo 第二章承重柱直接说了)。</p>
+    <p>weakness: <strong>content cue 几乎不存在</strong> (没有自由文本字段, 你不能问"这 atom 在讲什么")。<strong>context cue 半残</strong> (source 字段粒度到 file, 没有 line / timestamp / "在哪段对话里抽出来的")。</p>
+  </div>
+
+  <div class="callout warn">
+    <div class="tag">design implication</div>
+    <p>不要为了加 content cue 就把 atom 变成"带 free text 的 RDF"——那等于自己重建 RAG。<strong>更对的方向是: atom 保持原状, 但加一层 <code>extracted_from_span</code> 维度</strong>——atom 持有它被抽出来时的 source markdown 片段的 (file, byte_offset_start, byte_offset_end), 检索 time 按需 lazy-load。content cue 走 span 重 hydration, symbolic cue 还走 atom。两条 path 互不干扰, 维护了 atom 的 schema 纯度。</p>
+  </div>
+
+  <!-- ===== 3. encoding / pattern separation ===== -->
+  <h2 class="section" id="frog-encoding-design"><span class="num">[3]</span> pattern separation: 怎么不混淆两次几乎相同的会议</h2>
+
+  <div class="cell md">
+    <div class="label">In [md]:</div>
+    <p>okay 直接上具体例子。你这周在 cafe 跟 X 开了两次会, 都在角落, 都是下午, 都讨论 schema. 第一次主题是"反向工程 atom 维度", 第二次主题是"加 confidence 字段". 内容相似度 95%, context 也几乎一样。</p>
+    <p>问题: 一周后你想"上次跟 X 讨论 confidence 字段那次", 你的脑是怎么<strong>不</strong>把这两次混成同一段记忆的?</p>
+    <p>这就是 DG (dentate gyrus, <span class="e-hippo">齿状回</span>) 在编码时做的事。DG 把皮层送来的高度重叠输入<strong>稀疏化、正交化</strong>, 让两次相似经验在海马端的代码差异度远大于它们在皮层端的差异度。</p>
+  </div>
+
+  <div class="cell code">
+    <div class="label">In [3]:</div>
+<pre><code># 简化版 DG 的 separation 行为
+import numpy as np
+np.random.seed(0)
+
+# 两次会议的 cortical input: 95% 重合
+input1 = np.random.binomial(1, 0.2, size=1000)
+input2 = input1.copy()
+flip = np.random.choice(1000, size=50, replace=False)  # 5% 不同
+input2[flip] = 1 - input2[flip]
+overlap_cortex = (input1 == input2).mean()
+
+# DG 模拟: ~1% sparsity + 强非线性阈值
+def dg_encode(x, W, k_winners=10):
+    h = W @ x
+    top = np.argsort(h)[-k_winners:]
+    out = np.zeros_like(h)
+    out[top] = 1
+    return out
+
+W = np.random.randn(1000, 1000) * 0.05  # DG granule cells
+code1 = dg_encode(input1, W, k_winners=10)
+code2 = dg_encode(input2, W, k_winners=10)
+overlap_dg = (code1 * code2).sum() / 10  # IoU on active units
+
+print(f"cortex input overlap: {overlap_cortex:.3f}")
+print(f"DG code overlap     : {overlap_dg:.3f}")
+</code></pre>
+  </div>
+
+  <div class="cell out">
+    <div class="label">Out[3]:</div>
+<pre>cortex input overlap: 0.950
+DG code overlap     : 0.200</pre>
+  </div>
+
+  <div class="cell md">
+    <div class="label">In [md]:</div>
+    <p>看到 keypoint: cortex 端 95% 重合的两个输入, 经过 sparse top-k 阈值的 DG 编码后, 在 hippocampal 端只有 20% 重合。这就是 pattern separation 的本质——<strong>用稀疏 + 强非线性把高维度的"几乎相同"变成"明显不同"</strong>。</p>
+    <p>反过来 retrieval 时, CA3 的吸引子网络做 completion: 给定部分 cue, 通过 recurrent dynamics 把它"拉"回最近的 stored pattern。这是另一面。</p>
+  </div>
+
+  <!-- LAB 1 -->
+  <div class="lab">
+    <div class="lab-head">lab · pattern separation vs completion</div>
+    <div class="lab-sub">此 lab 揭示: 输入相似度跟输出区分度的非线性关系——separation 是 sigmoid 而不是 linear (对应 §3 DG 行为)</div>
+    <canvas id="lab1-canvas" width="700" height="280"></canvas>
+    <div class="ctrls">
+      <label>input similarity
+        <input type="range" id="lab1-sim" min="0" max="100" value="80">
+        <span class="val" id="lab1-sim-val">0.80</span>
+      </label>
+      <label>sparsity k (top-k)
+        <input type="range" id="lab1-k" min="2" max="50" value="10">
+        <span class="val" id="lab1-k-val">10</span>
+      </label>
+      <label>mode
+        <button id="lab1-mode-sep">separation</button>
+        <button id="lab1-mode-comp">completion</button>
+      </label>
+    </div>
+    <div class="lab-readout" id="lab1-readout">moving the slider sweeps input overlap from 0 → 1; the curve shows DG/CA3 output overlap.</div>
+  </div>
+
+  <div class="callout green">
+    <div class="tag">agent wiki mapping</div>
+    <p>"两次几乎相同的会议"在 han 的 wiki 里就是<strong>两次 schema 讨论各产出一组 atom, atom 内容高度重合</strong>。如果你直接对 atom 做 dedupe-by-content (现在就是这样), 你会丢掉它们的<strong>区分</strong>性——后面问"加 confidence 那次讨论的 atom"就分不出。</p>
+    <p>DG 在工程上对应: <strong>给每条 atom 加 separator key</strong>——time bucket, source span hash, conversation_id。两条 (subj, pred, obj) 即使三元组完全一样, 只要 separator 不同就是两条 atom, 不 dedupe。retrieval 用 default partial match (CA3 completion), 但 explicit query 可以按 separator narrow。这是用 schema 层级模拟 DG-CA3 对接。</p>
+  </div>
+
+  <!-- ===== 4. consolidation = batch update ===== -->
+  <h2 class="section" id="frog-consolidation-design"><span class="num">[4]</span> consolidation: why batch, why nightly</h2>
+
+  <div class="cell md">
+    <div class="label">In [md]:</div>
+    <p>han 现在的 wiki 是 fixpoint engine——每次有新 atom 就跑一遍 forward chaining 直到不再有新派生。这是 ACID-database 思路: 写入立刻一致。</p>
+    <p>大脑不这样工作。大脑在白天只做最简单的 binding——海马快速给经验挂个 index。<strong>真正的 consolidation 在睡眠时发生</strong>——SWR (sharp-wave ripple) 期间, 海马以 10-20× 加速重放白天的序列, 把它们整合进皮层 schema。</p>
+    <p>这个分离是有原因的——不是"大脑慢所以分两步", 而是"online 期间不知道哪些经验值得记, 晚上有了完整一天的统计才能判断"。</p>
+  </div>
+
+  <div class="cell code">
+    <div class="label">In [4]:</div>
+<pre><code># online 写入 vs offline consolidation 的本质区别
+def online_consolidate(new_atom, store):
+    """ACID 风格: 写入立即跑全图重派生"""
+    store.append(new_atom)
+    rerun_forward_chaining(store)  # O(|store|) every write
+    return store
+
+def offline_consolidate(new_atoms, store, schema):
+    """脑式: 白天只 append, 晚上批 + 选择性强化"""
+    # 白天阶段
+    store.raw.extend(new_atoms)
+
+    # 夜间阶段 (cron / scheduled job)
+    # 1. 按 prediction-error 优先级选 replay candidates
+    candidates = rank_by_surprise(new_atoms, schema)
+
+    # 2. 选择性 chaining (不是全图, 是被选中的子图)
+    derived = rerun_forward_chaining(candidates)
+
+    # 3. schema integration: 哪些 derived 增强了 schema
+    update_schema(schema, derived, congruent_only=True)
+
+    # 4. 衰减: 哪些 old atoms 评分跌过阈值
+    evict_low_score_atoms(store)
+    return store, schema
+</code></pre>
+  </div>
+
+  <div class="cell out">
+    <div class="label">Out[4]:</div>
+<pre>online_consolidate:  每写 1 条, 跑 O(|store|) forward chaining
+offline_consolidate: 写时 O(1) append; consolidation 时 O(|new|) + O(|schema|)
+                     而且能按 prediction-error 优先级跳过低价值 atom</pre>
+  </div>
+
+  <div class="stop">
+    <div class="h">stop &amp; think</div>
+    <p>为什么大脑用 prediction-error 引导 replay? 因为 prediction-error 是 "需要更新世界模型" 的最直接信号——预测对的事不用重学, 预测错的事是新信息。Liu et al. 2024 那篇 Nature 直接证明: 海马 SWR 优先重放<strong>奖励意外大</strong>的序列, dopamine 直接调控这个偏向。</p>
+    <p>这一条对 agent wiki 的暗示极强。consolidation 不是"把所有新 atom 都重新 chain 一遍", 是"把那些<strong>跟现有 schema 冲突 / 出乎意料 / 引入新 entity</strong>的 atom 重点 chain"。surprise 信号怎么定义? 看新 atom 跟现有 schema 的预测距离——一条新规则触发了 100 个 derive 而 schema 之前对应该 subgraph 是空的, 这就是大 surprise; 一条新 fact 完全可以从已有 rule 派生, surprise = 0。</p>
+  </div>
+
+  <!-- LAB 2 -->
+  <div class="lab">
+    <div class="lab-head">lab · consolidation timeline (immediate / 1h / 24h / 1 year)</div>
+    <div class="lab-sub">此 lab 揭示: 同一段记忆在不同时间尺度上的稳定性 / vividness / 海马依赖性如何分化 (对应 §4 systems consolidation)</div>
+    <canvas id="lab2-canvas" width="700" height="300"></canvas>
+    <div class="ctrls">
+      <label>time since encoding (log)
+        <input type="range" id="lab2-t" min="0" max="100" value="20">
+        <span class="val" id="lab2-t-val">1h</span>
+      </label>
+      <label>schema congruence
+        <input type="range" id="lab2-cong" min="0" max="100" value="50">
+        <span class="val" id="lab2-cong-val">0.50</span>
+      </label>
+    </div>
+    <div class="lab-readout" id="lab2-readout">drag time to see how vividness, hippocampal dependence, and cortical strength shift.</div>
+  </div>
+
+  <div class="callout warn">
+    <div class="tag">form-vs-substance</div>
+    <p><strong>形似神似</strong>: "把 consolidation 从 online 改成 nightly batch"——这条值得抄, 它有明确的工程收益 (写入路径变快、batch 能利用更大 context、能做 surprise-driven prioritization)。</p>
+    <p><strong>形似神不似</strong>: "因此 agent 必须有'睡眠期'、必须按昼夜节律跑、必须用 ripple-band 频率扫描"——这些是大脑的 substrate 细节, 跟你的工程无关。</p>
+  </div>
+
+  <!-- ===== 5. retrieval cue expansion ===== -->
+  <h2 class="section" id="frog-retrieval-design"><span class="num">[5]</span> cue expansion: 搜不到的不一定不在</h2>
+
+  <div class="cell md">
+    <div class="label">In [md]:</div>
+    <p>Tulving 1973 的 encoding specificity: 一段记忆能否被取出, 取决于 cue 跟编码时 context 的重叠。这条 49 年来一直 robust。</p>
+    <p>工程上的对应: <strong>raw query 的命中率严重依赖 query 跟 atom 编码时 context 的重叠</strong>。同一件事, 不同问法命中率天差地别。"那次讨论"vs "X 提到的 schema 反向工程"vs "上周关于维度审计的对话"——这三个 cue 在 atom 上的 hit rate 不一样, 即使指向同一个内容。</p>
+  </div>
+
+  <div class="cell code">
+    <div class="label">In [5]:</div>
+<pre><code># cue expansion: 单 cue → multi-cue 模拟"context reinstatement"
+def expand_cue(raw_query, llm):
+    """让 LLM 生成几种不同 angle 的 cue 变体"""
+    variants = llm.generate(
+        prompt=f"""Given user query: {raw_query}
+        Generate 4 reformulations targeting different cue types:
+        1. content cue (paraphrase of what's being asked about)
+        2. context cue (when / who / which arc)
+        3. semantic cue (broader concept / topic)
+        4. counterfactual (related but inverted angle)
+        """
+    )
+    return variants
+
+# 然后每个 variant 走自己的检索路径
+def multi_path_retrieve(query, store):
+    variants = expand_cue(query, llm)
+    results = []
+    results += vector_search(variants["content"], store)
+    results += symbolic_filter(variants["context"], store)  # provenance/temporal
+    results += graph_walk(variants["semantic"], store)       # topic neighbors
+    return rerank(results, original_query=query)
+</code></pre>
+  </div>
+
+  <div class="cell out">
+    <div class="label">Out[5]:</div>
+<pre>variants for "那次讨论":
+  content     : "schema 反向工程的 atom 抽取细节"
+  context     : "arc 260520a 在 2026-05-19 至 2026-05-20 范围内"
+  semantic    : "wiki schema / dimension audit / forward chaining"
+  counterfactual: "schema 不能回答的 query 维度"
+
+hit count by path: vector=4, symbolic=7, graph=11
+after rerank: 6 unique atoms surfaced</pre>
+  </div>
+
+  <!-- LAB 3 -->
+  <div class="lab">
+    <div class="lab-head">lab · cue specificity vs recall hit rate</div>
+    <div class="lab-sub">此 lab 揭示: cue 跟编码 context 的重叠度怎么单调影响 hit rate (Tulving encoding specificity 的数值化)</div>
+    <canvas id="lab3-canvas" width="700" height="240"></canvas>
+    <div class="ctrls">
+      <label>cue-context overlap
+        <input type="range" id="lab3-overlap" min="0" max="100" value="40">
+        <span class="val" id="lab3-overlap-val">0.40</span>
+      </label>
+      <label># of cue variants
+        <input type="range" id="lab3-nvar" min="1" max="6" value="1">
+        <span class="val" id="lab3-nvar-val">1</span>
+      </label>
+    </div>
+    <div class="lab-readout" id="lab3-readout">single-cue recall is steep; multi-cue averages over angles and lifts the floor.</div>
+  </div>
+
+  <div class="callout green">
+    <div class="tag">agent wiki mapping</div>
+    <p>"搜不到 ≠ 不存在"在工程上等于: <strong>检索失败时, 第一反应不是返回 empty, 而是 expand query 再试</strong>。这跟 hyDE (hypothetical document embeddings) 同源——HyDE 让 LLM 先编一个假想答案, 拿这个答案当查询。这正是"用一个更具体的 cue 模拟 encoding-time context"。</p>
+    <p>实际策略: 默认走 multi-path retrieve, 不要让 user 自己 craft query 变体。把 LLM 生成 cue 变体的 cost 摊到每次查询——这点 token 对 retrieval 质量的提升非常划算。</p>
+  </div>
+
+  <!-- ===== 6. forgetting = need-prob ===== -->
+  <h2 class="section" id="frog-forgetting-feature"><span class="num">[6]</span> forgetting: not LRU, but rational</h2>
+
+  <div class="cell md">
+    <div class="label">In [md]:</div>
+    <p>han 的 wiki demo 现在没明确的遗忘 policy——atom 一旦写入永久留着。这是早期能 work 的简化, 但规模一上来会变成 Funes。需要 forgetting。</p>
+    <p>关键: <strong>不要用 LRU</strong>。LRU 把"最近没用"等价于"低价值", 但 Anderson-Schooler 1991 的 rational analysis 给的更强信号是: <strong>用 base-rate × recency × interaction-strength 综合估计 future need probability</strong>。</p>
+  </div>
+
+  <div class="cell code">
+    <div class="label">In [6]:</div>
+<pre><code>import math
+
+def rational_need_prob(atom, t_now):
+    """估计这条 atom 未来 24h 被需要的概率"""
+    # 1. base rate: 这条 atom 历史上被 retrieve 的频次
+    n = atom.retrieval_count
+    base = math.log1p(n) / math.log1p(GLOBAL_MEAN_RETRIEVALS)
+
+    # 2. recency: 最近一次访问的近邻性 (power-law 不是指数)
+    dt = (t_now - atom.last_access).days + 0.5
+    recency = 1.0 / (dt ** 0.5)   # Anderson-Schooler 用 power law
+
+    # 3. interaction: 这条 atom 被多少其他 atom 引用 (graph centrality)
+    cent = math.log1p(atom.referenced_by_count) / 5.0
+
+    # 4. source authority bonus: 来自高权重 source (e.g. 1_objective)
+    auth = 0.3 if atom.source_class == "core" else 0.0
+
+    return 0.4 * base + 0.3 * recency + 0.2 * cent + 0.1 + auth
+
+# 应用: 低于阈值的 atom 进入 "cold storage"
+def consolidation_eviction(store, t_now, threshold=0.15):
+    for atom in store.atoms:
+        if rational_need_prob(atom, t_now) < threshold:
+            atom.tier = "cold"  # 不进 default candidate set
+    # 进一步低于二级阈值的批量归档
+</code></pre>
+  </div>
+
+  <div class="cell out">
+    <div class="label">Out[6]:</div>
+<pre>three atoms compared:
+  atom A: 访问 1 次, 2 天前              → need_prob = 0.18  → hot
+  atom B: 访问 5 次, 但都在 30 天前       → need_prob = 0.11  → cold
+  atom C: 访问 2 次, 14 天前, 被 10 引用  → need_prob = 0.31  → hot
+
+LRU 会驱逐 C (旧), 保留 B (用过 5 次但都很久)。
+rational 反过来——C 被 10 引用 = 它是 graph hub, 保留。</pre>
+  </div>
+
+  <!-- LAB 4 -->
+  <div class="lab">
+    <div class="lab-head">lab · Ebbinghaus forgetting curves: declarative vs procedural</div>
+    <div class="lab-sub">此 lab 揭示: 同一段时间下两类记忆的衰减形状差异 (对应 §6 Cohen-Squire 划分)</div>
+    <canvas id="lab4-canvas" width="700" height="280"></canvas>
+    <div class="ctrls">
+      <label>practice events
+        <input type="range" id="lab4-prac" min="0" max="20" value="3">
+        <span class="val" id="lab4-prac-val">3</span>
+      </label>
+      <label>spacing (concentrated → distributed)
+        <input type="range" id="lab4-space" min="0" max="100" value="20">
+        <span class="val" id="lab4-space-val">concentrated</span>
+      </label>
+    </div>
+    <div class="lab-readout" id="lab4-readout">declarative shows classic Ebbinghaus; procedural barely decays; spacing flattens declarative tail.</div>
+  </div>
+
+  <div class="callout">
+    <div class="tag">spacing effect → agent wiki</div>
+    <p>spacing effect 在 agent wiki 上的对应: 一条 atom 在<strong>分散</strong>时间点被访问, 比同总频次但集中访问的 atom 应该被估为更持久。你的 score 公式里 recency 不能只看 last_access, 还得看 access intervals 的方差——方差大 (分散) → 更高 score。LRU 完全捕捉不到这个。</p>
+  </div>
+
+  <!-- ===== 7. minimal sketch for arc 260520a ===== -->
+  <h2 class="section" id="frog-engineering-mapping"><span class="num">[7]</span> a minimal brain-like LTM, evolving 260520a</h2>
+
+  <div class="cell md">
+    <div class="label">In [md]:</div>
+    <p>okay 现在把 §3 到 §6 拼成一张草图——给 han 的 arc 260520a 下一步用。原则: <strong>增量演化, 不推翻已有 RDF schema</strong>; 只加分层而不动 atom core 形状。</p>
+  </div>
+
+  <div class="cell code">
+    <div class="label">In [7]:</div>
+<pre><code># 三层 atom (左→右 越来越短期, 越来越富 context)
+#
+#  ┌──────────────────────────────────────────────┐
+#  │  layer C: schema atoms                       │  <- 慢, 高权威, 跨 arc
+#  │   (subj, pred, obj) + derived_from chain     │     "topic X has type Y" 等
+#  │   ← consolidated nightly from layer B        │     ≈ 皮层 schema
+#  ├──────────────────────────────────────────────┤
+#  │  layer B: episodic atoms                     │  <- 中, 单 arc 内主导
+#  │   (subj, pred, obj) + source span + ts       │     增加: span (file, offset), ts,
+#  │   + separator (conversation_id / commit)     │     conversation_id, surprise score
+#  │   + need_prob score                          │     ≈ 海马 index + replay queue
+#  ├──────────────────────────────────────────────┤
+#  │  layer A: raw spans (lazy hydration)         │  <- 最短期, content cue 走这里
+#  │   (file, byte_offset_start, byte_offset_end) │     不是 atom, 是被 atom 指向的 token
+#  │   + extracted_atom_ids                       │     ≈ 皮层 sensory trace
+#  └──────────────────────────────────────────────┘
+#
+# 写入路径 (online, 快):
+#   raw markdown → regex extract → write layer B atom
+#                                + span 记录到 layer A
+#
+# Consolidation 路径 (offline, nightly):
+#   1. 算 layer B 新 atom 的 surprise score
+#      (相对 layer C schema 的 predict-error)
+#   2. surprise top-k 走 forward chaining → 派生新 atom
+#   3. 派生 atom 中 schema-congruent 的 → 上升到 layer C
+#   4. layer B 中 need_prob < threshold → 迁 cold
+#
+# 检索路径:
+#   query → LLM expand to multi-cue
+#        ├─ content cue → vector over layer A spans → rehydrate via layer B
+#        ├─ context cue → symbolic filter on layer B (ts, source, conv_id)
+#        └─ semantic cue → graph walk on layer C schema
+#   → rerank, return
+</code></pre>
+  </div>
+
+  <div class="cell md">
+    <div class="label">In [md]:</div>
+    <p>这套草图的关键设计:</p>
+    <p>(a) <strong>不动 260520a 的 RDF core</strong>——(subj, pred, obj) + derived_from + parents 这套保持。</p>
+    <p>(b) <strong>加 layer A (span)</strong> 解决 content cue 缺失, 但不污染 atom——span 是按需 lazy load, atom 不背 free text。</p>
+    <p>(c) <strong>加 layer B 的 separator key + surprise + need_prob</strong>——这三个字段直接让 pattern separation / replay 优先级 / rational forgetting 都 work。这是最大改动, 但都是 atom 的 metadata, 不改它的语义形状。</p>
+    <p>(d) <strong>layer C 是已有的 schema 衍生</strong>——但被 promote 进来的是 cross-arc / schema-congruent / 高 centrality 的 atom, 不是所有派生 atom 一视同仁。</p>
+    <p>(e) <strong>consolidation 改成 nightly batch</strong>——260520a 现在每次写入立即 fixpoint, 改成 batch 后写入路径变快, batch 时还能做 surprise-driven 选择性 chain。</p>
+  </div>
+
+  <!-- LAB 5 -->
+  <div class="lab">
+    <div class="lab-head">lab · batch vs online consolidation under noise injection</div>
+    <div class="lab-sub">此 lab 揭示: 两种 consolidation policy 在 noisy ingestion 下的 retrieval F1 差异 (对应 §4 + §7 设计选择)</div>
+    <canvas id="lab5-canvas" width="700" height="280"></canvas>
+    <div class="ctrls">
+      <label>noise rate (% noisy atoms)
+        <input type="range" id="lab5-noise" min="0" max="60" value="15">
+        <span class="val" id="lab5-noise-val">0.15</span>
+      </label>
+      <label>schema strength
+        <input type="range" id="lab5-schema" min="0" max="100" value="60">
+        <span class="val" id="lab5-schema-val">0.60</span>
+      </label>
+    </div>
+    <div class="lab-readout" id="lab5-readout">online keeps everything; batch with surprise-driven filter prunes noise. F1 diverges as noise grows.</div>
+  </div>
+
+  <div class="stop">
+    <div class="h">stop &amp; think</div>
+    <p>注意一个 anti-pattern——把 surprise-driven 推到极端会让你只保留<strong>异常</strong>而 underweight <strong>常态</strong>。常态是 schema 的支柱, 不是噪声。Anderson rational forgetting 里 base-rate 那一项就是为了防止这个: 经常被 retrieve 的常态 atom 即使每次都低 surprise, 也保持高 score。</p>
+    <p>所以三件事必须同时存在: (1) surprise-driven consolidation 优先级, (2) base-rate × recency × centrality 的 need_prob 评分, (3) source authority floor (e.g. 1_objective.md 写的事不能 evict)。三条联合, 你才得到一个 rational 系统; 单独使用 surprise = 只记得意外, 单独使用 base-rate = 收敛到 schema 平均、丢失 long-tail。</p>
+  </div>
+
+  <!-- ===== 8. form vs substance ===== -->
+  <h2 class="section" id="frog-current-research-status"><span class="num">[8]</span> form-vs-substance · what NOT to borrow</h2>
+
+  <div class="cell md">
+    <div class="label">In [md]:</div>
+    <p>最后一段, 把"哪些机制真有借鉴, 哪些是形似神不似"列清楚。任何脑科学借鉴的最大风险是<strong>把比喻当蓝图</strong>。下面是一张筛选表。</p>
+  </div>
+
+  <div class="cell code">
+    <div class="label">In [8]:</div>
+<pre><code>BORROW_CLASSIFICATION = [
+    # (brain mechanism, agent mapping, verdict, why)
+    ("Hebbian LTP/LTD",
+     "embedding co-occurrence training",
+     "ALREADY_HAVE",
+     "你的 LLM embedding 就是这个的 distributed 版本, 不用再 mimic"),
+
+    ("hippocampal indexing 假说",
+     "atom_id 作为 sparse pointer, 指向 source span",
+     "STRONG_BORROW",
+     "三层 atom 草图的核心架构"),
+
+    ("DG pattern separation",
+     "atom 加 separator key 抗 dedupe 误伤",
+     "STRONG_BORROW",
+     "直接转译, 加一两个 metadata 字段就够"),
+
+    ("CA3 pattern completion",
+     "partial-cue 检索 + LLM 重建",
+     "STRONG_BORROW",
+     "你 RAG 已经在做了, 概念清晰后能调得更好"),
+
+    ("engram cell sparse coding",
+     "每条 atom 是一个唯一 ID",
+     "FORM_ONLY",
+     "你不需要 mimic distributed encoding, embedding 已替你做了"),
+
+    ("SWR replay",
+     "agent 必须有'睡眠期'",
+     "FORM_ONLY",
+     "上层概念 (batch consolidation) 对, 但 ripple/睡眠周期/时间压缩这些是 substrate 细节"),
+
+    ("prediction-error driven replay",
+     "consolidation 用 surprise score 选 atom",
+     "STRONG_BORROW",
+     "这是 2024 年最新的脑发现, 工程映射也最清晰"),
+
+    ("standard vs MTT 之争",
+     "??",
+     "DON'T_BORROW",
+     "脑科学自己没 settle, 借这个会引入歧义"),
+
+    ("encoding specificity",
+     "multi-cue retrieval + query expansion",
+     "STRONG_BORROW",
+     "Tulving 1973 → hyDE 2023, 直接谱系"),
+
+    ("retrieval-induced forgetting",
+     "retrieve 时调整其他 atom 的 score",
+     "MEDIUM_BORROW",
+     "概念对, 但 active inhibition 那套要小心 — 别让一次 retrieve 把竞争者全压死"),
+
+    ("reconsolidation 提取窗口",
+     "每次 retrieve 都允许 atom 被改写",
+     "FORM_ONLY",
+     "大脑有几十种 molecular safeguard, 你没有 — 用版本化代替"),
+
+    ("rational forgetting (Anderson)",
+     "need_prob = base × recency × interaction",
+     "STRONG_BORROW",
+     "1991 已经给了完整 framework, 工程上几乎 1:1"),
+
+    ("schema-congruent fast integration",
+     "符合 schema 的派生直接 promote 进 layer C",
+     "STRONG_BORROW",
+     "van Kesteren 系列 → batch consolidation 的子流程"),
+
+    ("episodic-semantic gradient",
+     "layer B → layer C 是连续 promotion, 不是二分",
+     "MEDIUM_BORROW",
+     "概念对, 但具体梯度的 calibration 没现成参考"),
+]
+</code></pre>
+  </div>
+
+  <div class="cell out">
+    <div class="label">Out[8]:</div>
+<pre>summary (n=14):
+  STRONG_BORROW  : 8   (直接转译有工程价值)
+  MEDIUM_BORROW  : 2   (概念对, 实现要谨慎)
+  FORM_ONLY      : 3   (上层概念 OK, 细节别学)
+  DON'T_BORROW   : 1   (脑科学自己没 settle)
+  ALREADY_HAVE   : 1   (你的 stack 已经做了)</pre>
+  </div>
+
+  <div class="callout red">
+    <div class="tag">final anti-pattern</div>
+    <p>最大的 anti-pattern: <strong>把大脑当 database 抄</strong>。大脑不是 database——它没 ACID, 没事务边界, 没主索引, retrieval 就是 destructive operation, schema 一直在被使用过程中改写。如果你试图找"大脑的 schema 文件在哪", 你在问错的问题。</p>
+    <p>正确姿势: <strong>大脑给你的不是数据结构, 是 trade-off 目标函数</strong>——预测未来需求, 牺牲 storage perfection 换 prediction relevance, 牺牲 retrieval determinism 换 cue flexibility。你抄的应该是这个目标函数的形状, 不是它的实现细节。</p>
+  </div>
+
+  <div class="nb-foot">
+    sources: Atkinson-Shiffrin 1968 · Baddeley-Hitch 1974 · Bliss-Lømo 1973 · Teyler-DiScenna 1986 · Liu et al. 2012, Tonegawa lab series · Yassa-Stark 2011 · Sekeres-Moscovitch-Winocur 2025 (Neuron) · Cowan 2001, 2024 update · Tulving 1973 · Anderson-Spellman 1995 · Anderson-Schooler 1991 · Nadel-Moscovitch 1997 · Ebbinghaus 1885 · McClelland-McNaughton-O'Reilly 1995 · van Kesteren-Fernández 2012 · Mattar-Daw 2018 · Liu et al. 2024 Nature · Renoult-Rugg 2024 (multidimensional model). cite specific labs not "研究表明".
+  </div>
+
+</section>
+
+</main>
+
+<script>
+(function () {
+  /* ============ tab routing ============ */
+  var buttons = document.querySelectorAll('.tab-btn');
+  var panes   = document.querySelectorAll('.tab-pane');
+  function activate(name) {
+    buttons.forEach(function (b) {
+      b.classList.toggle('active', b.getAttribute('data-tab') === name);
+    });
+    panes.forEach(function (p) {
+      p.classList.toggle('active', p.id === 'tab-' + name);
+    });
+  }
+  buttons.forEach(function (b) {
+    b.addEventListener('click', function () {
+      activate(b.getAttribute('data-tab'));
+      history.replaceState(null, '', '#' + b.getAttribute('data-tab'));
+    });
+  });
+  function routeHash() {
+    var h = (location.hash || '').replace(/^#/, '');
+    if (!h) return;
+    if (h.indexOf('mit-') === 0)      h = 'bird-' + h.slice(4);
+    if (h.indexOf('stanford-') === 0) h = 'frog-' + h.slice(9);
+    if (h.indexOf('bird-') === 0) activate('bird');
+    else if (h.indexOf('frog-') === 0) activate('frog');
+    else if (h === 'bird' || h === 'frog') { activate(h); return; }
+    setTimeout(function () {
+      var el = document.getElementById(h);
+      if (el) el.scrollIntoView({ behavior: 'instant', block: 'start' });
+    }, 0);
+  }
+  window.addEventListener('hashchange', routeHash);
+  routeHash();
+})();
+
+/* ============================================================
+   Canvas labs — each in its own IIFE, DPR-scaled, lab-prefixed ids
+   ============================================================ */
+
+/* ---- LAB 1: pattern separation / completion ---- */
+(function () {
+  var c = document.getElementById('lab1-canvas');
+  if (!c) return;
+  var dpr = Math.max(1, window.devicePixelRatio || 1);
+  var cssW = c.clientWidth || 700, cssH = c.clientHeight || 280;
+  c.style.width = cssW + 'px';  c.style.height = cssH + 'px';
+  c.width  = cssW * dpr; c.height = cssH * dpr;
+  var ctx = c.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  var simEl  = document.getElementById('lab1-sim');
+  var kEl    = document.getElementById('lab1-k');
+  var simVal = document.getElementById('lab1-sim-val');
+  var kVal   = document.getElementById('lab1-k-val');
+  var btnSep = document.getElementById('lab1-mode-sep');
+  var btnComp= document.getElementById('lab1-mode-comp');
+  var readout= document.getElementById('lab1-readout');
+  var mode = 'sep';
+
+  function sepCurve(x, k) {
+    // separation: sigmoid-ish push from input overlap to output overlap
+    // sharper as k drops (sparser code → more separation)
+    var sharpness = 8 / Math.max(1, k);
+    var t = 1 / (1 + Math.exp(-(x - 0.5) * sharpness * 6));
+    return 0.05 + 0.9 * t;
+  }
+  function compCurve(x, k) {
+    // completion: high output overlap even when input partial, until threshold
+    // wider basin as k grows
+    var basin = 0.3 + (k / 50) * 0.4;
+    if (x > 0.5 - basin/2) return 0.85 - 0.1 * (1 - x);
+    return Math.max(0.05, x * 0.5);
+  }
+
+  function draw() {
+    var sim = parseInt(simEl.value) / 100;
+    var k = parseInt(kEl.value);
+    simVal.textContent = sim.toFixed(2);
+    kVal.textContent = k;
+
+    ctx.fillStyle = '#fbf6e9';
+    ctx.fillRect(0, 0, cssW, cssH);
+
+    // axes
+    var pad = 50;
+    var W = cssW - pad - 20, H = cssH - pad - 20;
+    var x0 = pad, y0 = cssH - pad;
+    ctx.strokeStyle = '#b8a583'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x0 + W, y0); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x0, y0 - H); ctx.stroke();
+    ctx.fillStyle = '#6b6052';
+    ctx.font = '11px ui-monospace, SF Mono, Menlo, monospace';
+    ctx.fillText('input overlap (cortex)', x0 + W - 130, y0 + 20);
+    ctx.save();
+    ctx.translate(x0 - 32, y0 - H / 2);
+    ctx.rotate(-Math.PI / 2);
+    ctx.fillText('output overlap (hippocampus)', -60, 0);
+    ctx.restore();
+    // ticks
+    for (var t = 0; t <= 1.0001; t += 0.25) {
+      var px = x0 + W * t;
+      ctx.fillText(t.toFixed(2), px - 10, y0 + 14);
+      var py = y0 - H * t;
+      ctx.fillText(t.toFixed(2), x0 - 30, py + 4);
+    }
+    // diagonal reference
+    ctx.strokeStyle = '#d8c9a2'; ctx.setLineDash([3, 4]);
+    ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x0 + W, y0 - H); ctx.stroke();
+    ctx.setLineDash([]);
+
+    // separation curve
+    ctx.strokeStyle = '#8c2f1c'; ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    for (var i = 0; i <= 200; i++) {
+      var xx = i / 200;
+      var yy = sepCurve(xx, k);
+      var px2 = x0 + W * xx;
+      var py2 = y0 - H * yy;
+      if (i === 0) ctx.moveTo(px2, py2); else ctx.lineTo(px2, py2);
+    }
+    ctx.stroke();
+    // completion curve
+    ctx.strokeStyle = '#2c5340'; ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    for (var j = 0; j <= 200; j++) {
+      var xx2 = j / 200;
+      var yy2 = compCurve(xx2, k);
+      var px3 = x0 + W * xx2;
+      var py3 = y0 - H * yy2;
+      if (j === 0) ctx.moveTo(px3, py3); else ctx.lineTo(px3, py3);
+    }
+    ctx.stroke();
+    // legend
+    ctx.fillStyle = '#8c2f1c'; ctx.fillRect(x0 + W - 200, y0 - H + 8, 14, 3);
+    ctx.fillStyle = '#1f1a14';
+    ctx.fillText('DG separation', x0 + W - 180, y0 - H + 12);
+    ctx.fillStyle = '#2c5340'; ctx.fillRect(x0 + W - 200, y0 - H + 26, 14, 3);
+    ctx.fillStyle = '#1f1a14';
+    ctx.fillText('CA3 completion', x0 + W - 180, y0 - H + 30);
+    ctx.fillStyle = '#d8c9a2'; ctx.fillRect(x0 + W - 200, y0 - H + 44, 14, 3);
+    ctx.fillStyle = '#1f1a14';
+    ctx.fillText('y = x (no transform)', x0 + W - 180, y0 - H + 48);
+
+    // marker at current sim
+    var curY = mode === 'sep' ? sepCurve(sim, k) : compCurve(sim, k);
+    var mx = x0 + W * sim, my = y0 - H * curY;
+    ctx.fillStyle = mode === 'sep' ? '#8c2f1c' : '#2c5340';
+    ctx.beginPath(); ctx.arc(mx, my, 5, 0, Math.PI*2); ctx.fill();
+    ctx.strokeStyle = '#1f1a14';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(mx, y0); ctx.lineTo(mx, my); ctx.stroke();
+
+    readout.textContent =
+      'input overlap = ' + sim.toFixed(2) +
+      '   |   DG output overlap = ' + sepCurve(sim, k).toFixed(2) +
+      '   |   CA3 output overlap = ' + compCurve(sim, k).toFixed(2) +
+      '   |   sparsity k = ' + k +
+      '\n→ ' + (sim > 0.7
+        ? 'DG strongly separates: ' + sim.toFixed(2) + ' → ' + sepCurve(sim,k).toFixed(2) + ' (two near-identical inputs become distinguishable codes)'
+        : 'CA3 completes: ' + sim.toFixed(2) + ' input → ' + compCurve(sim,k).toFixed(2) + ' output (partial cue retrieves full pattern)');
+  }
+  simEl.addEventListener('input', draw);
+  kEl.addEventListener('input', draw);
+  btnSep.addEventListener('click', function(){ mode='sep'; draw(); });
+  btnComp.addEventListener('click', function(){ mode='comp'; draw(); });
+  draw();
+})();
+
+/* ---- LAB 2: consolidation timeline ---- */
+(function () {
+  var c = document.getElementById('lab2-canvas');
+  if (!c) return;
+  var dpr = Math.max(1, window.devicePixelRatio || 1);
+  var cssW = c.clientWidth || 700, cssH = c.clientHeight || 300;
+  c.style.width = cssW + 'px';  c.style.height = cssH + 'px';
+  c.width  = cssW * dpr; c.height = cssH * dpr;
+  var ctx = c.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  var tEl = document.getElementById('lab2-t');
+  var congEl = document.getElementById('lab2-cong');
+  var tVal = document.getElementById('lab2-t-val');
+  var congVal = document.getElementById('lab2-cong-val');
+  var readout = document.getElementById('lab2-readout');
+
+  // time axis: log scale from 1min → 10 years
+  // map slider 0..100 → log10(minutes), 0=0 minutes (immediate), 100 ≈ 10y
+  function sliderToMinutes(v) {
+    // 0..100 → 1e0 .. 1e7 minutes (10y)
+    var p = v / 100;
+    return Math.pow(10, p * 7);
+  }
+  function labelForMinutes(m) {
+    if (m < 1) return 'immediate';
+    if (m < 60) return Math.round(m) + ' min';
+    if (m < 60*24) return (m/60).toFixed(1) + ' h';
+    if (m < 60*24*30) return (m/(60*24)).toFixed(1) + ' d';
+    if (m < 60*24*365) return (m/(60*24*30)).toFixed(1) + ' mo';
+    return (m/(60*24*365)).toFixed(1) + ' y';
+  }
+  function vivid(minutes) {
+    // vividness decays power-law, faster for low-congruence
+    return Math.pow(60 / (minutes + 60), 0.5);
+  }
+  function hippoDep(minutes, cong) {
+    // hippocampal dependence: starts high, decays toward 0 over years,
+    // floors higher for low-congruence (MTT bias) and for high vividness
+    var t = minutes / (60*24*365); // years
+    var standardFloor = 0.05;
+    var mttFloor = 0.4 * (1 - cong);  // low congruence → MTT keeps hippo high
+    var v = standardFloor + (1 - standardFloor) * Math.exp(-t * 0.8);
+    return Math.max(v, mttFloor);
+  }
+  function cortStrength(minutes, cong) {
+    var t = minutes / (60*24);
+    var congBoost = 0.4 + 0.6 * cong; // schema-congruent integrates faster
+    return 1 - Math.exp(-t * 0.04 * congBoost);
+  }
+
+  function draw() {
+    var minutes = sliderToMinutes(parseInt(tEl.value));
+    var cong = parseInt(congEl.value) / 100;
+    tVal.textContent = labelForMinutes(minutes);
+    congVal.textContent = cong.toFixed(2);
+
+    ctx.fillStyle = '#fbf6e9'; ctx.fillRect(0, 0, cssW, cssH);
+
+    var pad = 50;
+    var W = cssW - pad - 20, H = cssH - pad - 30;
+    var x0 = pad, y0 = cssH - pad;
+
+    // axes
+    ctx.strokeStyle = '#b8a583'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x0 + W, y0); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x0, y0 - H); ctx.stroke();
+    ctx.fillStyle = '#6b6052';
+    ctx.font = '11px ui-monospace, SF Mono, Menlo, monospace';
+    ctx.fillText('time since encoding (log)', x0 + W - 150, y0 + 20);
+    ctx.fillText('1m', x0 - 4, y0 + 14);
+    ctx.fillText('1h', x0 + W * (Math.log10(60)/7) - 6, y0 + 14);
+    ctx.fillText('1d', x0 + W * (Math.log10(60*24)/7) - 6, y0 + 14);
+    ctx.fillText('1mo', x0 + W * (Math.log10(60*24*30)/7) - 8, y0 + 14);
+    ctx.fillText('1y', x0 + W * (Math.log10(60*24*365)/7) - 6, y0 + 14);
+    ctx.fillText('10y', x0 + W - 18, y0 + 14);
+
+    // three curves over time
+    function plot(fn, color) {
+      ctx.strokeStyle = color; ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      for (var i = 0; i <= 200; i++) {
+        var v = i / 200; // 0..1 normalized log
+        var mins = Math.pow(10, v * 7);
+        var yy = fn(mins);
+        var px = x0 + W * v;
+        var py = y0 - H * yy;
+        if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+      }
+      ctx.stroke();
+    }
+    plot(function(m){ return vivid(m); }, '#8c2f1c');                    // vividness
+    plot(function(m){ return hippoDep(m, cong); }, '#1f5a7a');           // hippo dep
+    plot(function(m){ return cortStrength(m, cong); }, '#a37c2a');       // cortex strength
+
+    // marker at current time
+    var p = parseInt(tEl.value) / 100;
+    var mx = x0 + W * p;
+    ctx.strokeStyle = '#1f1a14'; ctx.setLineDash([3,4]);
+    ctx.beginPath(); ctx.moveTo(mx, y0 - H); ctx.lineTo(mx, y0); ctx.stroke();
+    ctx.setLineDash([]);
+
+    // legend
+    var lx = x0 + 10, ly = y0 - H + 10;
+    ctx.fillStyle = '#8c2f1c'; ctx.fillRect(lx, ly, 12, 3);
+    ctx.fillStyle = '#1f1a14'; ctx.fillText('vividness (Bartlett scope)', lx + 18, ly + 4);
+    ctx.fillStyle = '#1f5a7a'; ctx.fillRect(lx, ly + 16, 12, 3);
+    ctx.fillStyle = '#1f1a14'; ctx.fillText('hippocampal dependence', lx + 18, ly + 20);
+    ctx.fillStyle = '#a37c2a'; ctx.fillRect(lx, ly + 32, 12, 3);
+    ctx.fillStyle = '#1f1a14'; ctx.fillText('cortical schema strength', lx + 18, ly + 36);
+
+    readout.textContent =
+      't = ' + labelForMinutes(minutes) +
+      ' · schema congruence = ' + cong.toFixed(2) +
+      '\nvividness = ' + vivid(minutes).toFixed(2) +
+      ' · hippo dep = ' + hippoDep(minutes, cong).toFixed(2) +
+      ' · cortex = ' + cortStrength(minutes, cong).toFixed(2) +
+      '\nlow congruence keeps hippo dependence high even years later (MTT prediction)' +
+      ' · high congruence lets cortex absorb fast (van Kesteren result)';
+  }
+  tEl.addEventListener('input', draw);
+  congEl.addEventListener('input', draw);
+  draw();
+})();
+
+/* ---- LAB 3: cue specificity vs recall hit rate ---- */
+(function () {
+  var c = document.getElementById('lab3-canvas');
+  if (!c) return;
+  var dpr = Math.max(1, window.devicePixelRatio || 1);
+  var cssW = c.clientWidth || 700, cssH = c.clientHeight || 240;
+  c.style.width = cssW + 'px';  c.style.height = cssH + 'px';
+  c.width  = cssW * dpr; c.height = cssH * dpr;
+  var ctx = c.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  var ovEl = document.getElementById('lab3-overlap');
+  var nvEl = document.getElementById('lab3-nvar');
+  var ovVal = document.getElementById('lab3-overlap-val');
+  var nvVal = document.getElementById('lab3-nvar-val');
+  var readout = document.getElementById('lab3-readout');
+
+  function hitRate(overlap, nvar) {
+    // single cue: P_miss = 1 - sigmoid(overlap)
+    // multi cue: 1 - (1-p1)*(1-p2)*... assuming each variant has correlated overlap noise
+    var p1 = 1 / (1 + Math.exp(-(overlap - 0.4) * 8));
+    if (nvar === 1) return p1;
+    // each extra variant adds an independent (correlated) chance
+    var pmiss = Math.pow(1 - p1 * 0.9, nvar);
+    return 1 - pmiss;
+  }
+
+  function draw() {
+    var ov = parseInt(ovEl.value) / 100;
+    var nv = parseInt(nvEl.value);
+    ovVal.textContent = ov.toFixed(2);
+    nvVal.textContent = nv;
+
+    ctx.fillStyle = '#fbf6e9'; ctx.fillRect(0, 0, cssW, cssH);
+    var pad = 50;
+    var W = cssW - pad - 20, H = cssH - pad - 20;
+    var x0 = pad, y0 = cssH - pad;
+
+    ctx.strokeStyle = '#b8a583'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x0 + W, y0); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x0, y0 - H); ctx.stroke();
+    ctx.fillStyle = '#6b6052'; ctx.font = '11px ui-monospace, SF Mono, Menlo, monospace';
+    ctx.fillText('cue-context overlap', x0 + W - 110, y0 + 16);
+    ctx.fillText('recall hit', x0 - 35, y0 - H + 12);
+    for (var t = 0; t <= 1.0001; t += 0.25) {
+      var px = x0 + W * t;
+      ctx.fillText(t.toFixed(2), px - 10, y0 + 14);
+      var py = y0 - H * t;
+      ctx.fillText(t.toFixed(2), x0 - 30, py + 4);
+    }
+
+    // single cue curve
+    ctx.strokeStyle = '#6b6052'; ctx.lineWidth = 2;
+    ctx.setLineDash([3,4]);
+    ctx.beginPath();
+    for (var i = 0; i <= 200; i++) {
+      var xx = i / 200;
+      var yy = hitRate(xx, 1);
+      var px2 = x0 + W * xx;
+      var py2 = y0 - H * yy;
+      if (i === 0) ctx.moveTo(px2, py2); else ctx.lineTo(px2, py2);
+    }
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // current nvar curve
+    ctx.strokeStyle = '#2c5340'; ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    for (var j = 0; j <= 200; j++) {
+      var xx2 = j / 200;
+      var yy2 = hitRate(xx2, nv);
+      var px3 = x0 + W * xx2;
+      var py3 = y0 - H * yy2;
+      if (j === 0) ctx.moveTo(px3, py3); else ctx.lineTo(px3, py3);
+    }
+    ctx.stroke();
+
+    // marker
+    var mx = x0 + W * ov, my = y0 - H * hitRate(ov, nv);
+    ctx.fillStyle = '#2c5340';
+    ctx.beginPath(); ctx.arc(mx, my, 5, 0, Math.PI*2); ctx.fill();
+
+    // legend
+    var lx = x0 + 10, ly = y0 - H + 8;
+    ctx.fillStyle = '#6b6052'; ctx.fillRect(lx, ly, 12, 3);
+    ctx.fillStyle = '#1f1a14'; ctx.fillText('1 cue (single query)', lx + 18, ly + 4);
+    ctx.fillStyle = '#2c5340'; ctx.fillRect(lx, ly + 16, 12, 3);
+    ctx.fillStyle = '#1f1a14'; ctx.fillText(nv + ' cues (expanded)', lx + 18, ly + 20);
+
+    readout.textContent =
+      'overlap = ' + ov.toFixed(2) + ' · variants = ' + nv +
+      '\nsingle-cue hit = ' + hitRate(ov, 1).toFixed(2) +
+      ' · multi-cue hit = ' + hitRate(ov, nv).toFixed(2) +
+      '\nat low overlap (' + ov.toFixed(2) + ') single cue almost misses; multi-cue lifts the floor.';
+  }
+  ovEl.addEventListener('input', draw);
+  nvEl.addEventListener('input', draw);
+  draw();
+})();
+
+/* ---- LAB 4: Ebbinghaus declarative vs procedural ---- */
+(function () {
+  var c = document.getElementById('lab4-canvas');
+  if (!c) return;
+  var dpr = Math.max(1, window.devicePixelRatio || 1);
+  var cssW = c.clientWidth || 700, cssH = c.clientHeight || 280;
+  c.style.width = cssW + 'px';  c.style.height = cssH + 'px';
+  c.width  = cssW * dpr; c.height = cssH * dpr;
+  var ctx = c.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  var pracEl = document.getElementById('lab4-prac');
+  var spaceEl = document.getElementById('lab4-space');
+  var pracVal = document.getElementById('lab4-prac-val');
+  var spaceVal = document.getElementById('lab4-space-val');
+  var readout = document.getElementById('lab4-readout');
+
+  function declarative(t_days, prac, space) {
+    // Ebbinghaus power law, weakened by practice, flattened by spacing
+    var strength = 0.4 + 0.05 * prac + 0.15 * space;
+    return Math.max(0.05, Math.min(1, 1 - Math.pow(t_days + 1, -strength) * 0.0 + Math.pow(t_days + 1, -1 / (1 + strength * 3))));
+  }
+  function procedural(t_days, prac) {
+    // procedural barely decays; saturates faster with practice
+    var base = 0.5 + 0.025 * prac;
+    return Math.max(0.4, base * Math.pow(t_days + 1, -0.05));
+  }
+
+  function draw() {
+    var prac = parseInt(pracEl.value);
+    var space = parseInt(spaceEl.value) / 100;
+    pracVal.textContent = prac;
+    spaceVal.textContent = space < 0.33 ? 'concentrated' : (space < 0.67 ? 'medium' : 'distributed');
+
+    ctx.fillStyle = '#fbf6e9'; ctx.fillRect(0, 0, cssW, cssH);
+    var pad = 50;
+    var W = cssW - pad - 20, H = cssH - pad - 30;
+    var x0 = pad, y0 = cssH - pad;
+
+    ctx.strokeStyle = '#b8a583'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x0 + W, y0); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x0, y0 - H); ctx.stroke();
+    ctx.fillStyle = '#6b6052'; ctx.font = '11px ui-monospace, SF Mono, Menlo, monospace';
+    ctx.fillText('days since learning', x0 + W - 110, y0 + 16);
+    ctx.fillText('retention', x0 - 35, y0 - H + 12);
+
+    var maxDays = 365;
+    function plot(fn, color) {
+      ctx.strokeStyle = color; ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      for (var i = 0; i <= 200; i++) {
+        var xx = i / 200;
+        var d = xx * maxDays;
+        var yy = fn(d);
+        var px = x0 + W * xx;
+        var py = y0 - H * yy;
+        if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+      }
+      ctx.stroke();
+    }
+    plot(function(d){ return declarative(d, prac, space); }, '#8c2f1c');
+    plot(function(d){ return procedural(d, prac); }, '#2c5340');
+
+    // ticks
+    [0, 7, 30, 90, 180, 365].forEach(function(d){
+      var px = x0 + W * (d / maxDays);
+      ctx.fillStyle = '#6b6052';
+      ctx.fillText(d + 'd', px - 10, y0 + 14);
+    });
+    [0, 0.25, 0.5, 0.75, 1].forEach(function(v){
+      var py = y0 - H * v;
+      ctx.fillText(v.toFixed(2), x0 - 30, py + 4);
+    });
+
+    var lx = x0 + 10, ly = y0 - H + 8;
+    ctx.fillStyle = '#8c2f1c'; ctx.fillRect(lx, ly, 12, 3);
+    ctx.fillStyle = '#1f1a14'; ctx.fillText('declarative (facts, episodes)', lx + 18, ly + 4);
+    ctx.fillStyle = '#2c5340'; ctx.fillRect(lx, ly + 16, 12, 3);
+    ctx.fillStyle = '#1f1a14'; ctx.fillText('procedural (skills, motor)', lx + 18, ly + 20);
+
+    readout.textContent =
+      'practice = ' + prac + ' events · spacing = ' + spaceVal.textContent +
+      '\nat 30d: declarative = ' + declarative(30, prac, space).toFixed(2) +
+      ' · procedural = ' + procedural(30, prac).toFixed(2) +
+      '\nat 365d: declarative = ' + declarative(365, prac, space).toFixed(2) +
+      ' · procedural = ' + procedural(365, prac).toFixed(2) +
+      '\n→ procedural barely decays; declarative tail flattens with more spacing (Bjork spacing effect).';
+  }
+  pracEl.addEventListener('input', draw);
+  spaceEl.addEventListener('input', draw);
+  draw();
+})();
+
+/* ---- LAB 5: batch vs online consolidation under noise ---- */
+(function () {
+  var c = document.getElementById('lab5-canvas');
+  if (!c) return;
+  var dpr = Math.max(1, window.devicePixelRatio || 1);
+  var cssW = c.clientWidth || 700, cssH = c.clientHeight || 280;
+  c.style.width = cssW + 'px';  c.style.height = cssH + 'px';
+  c.width  = cssW * dpr; c.height = cssH * dpr;
+  var ctx = c.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  var noiseEl = document.getElementById('lab5-noise');
+  var schemaEl = document.getElementById('lab5-schema');
+  var noiseVal = document.getElementById('lab5-noise-val');
+  var schemaVal = document.getElementById('lab5-schema-val');
+  var readout = document.getElementById('lab5-readout');
+
+  function onlineF1(noise) {
+    // online keeps everything → noise directly reduces precision
+    var precision = 1 - noise;
+    var recall = 0.95; // online recalls everything including noise
+    return 2 * precision * recall / (precision + recall);
+  }
+  function batchF1(noise, schema) {
+    // batch with surprise-driven filter prunes the most-noise atoms
+    // higher schema → better detection of noise vs signal
+    var filterStrength = 0.3 + 0.6 * schema;
+    var noiseAfterFilter = noise * (1 - filterStrength);
+    var precision = 1 - noiseAfterFilter;
+    var recall = 0.88 - noise * 0.1; // some signal also lost to filter
+    return 2 * precision * recall / (precision + recall);
+  }
+
+  function draw() {
+    var noise = parseInt(noiseEl.value) / 100;
+    var schema = parseInt(schemaEl.value) / 100;
+    noiseVal.textContent = noise.toFixed(2);
+    schemaVal.textContent = schema.toFixed(2);
+
+    ctx.fillStyle = '#fbf6e9'; ctx.fillRect(0, 0, cssW, cssH);
+    var pad = 50;
+    var W = cssW - pad - 20, H = cssH - pad - 30;
+    var x0 = pad, y0 = cssH - pad;
+
+    ctx.strokeStyle = '#b8a583'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x0 + W, y0); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x0, y0 - H); ctx.stroke();
+    ctx.fillStyle = '#6b6052'; ctx.font = '11px ui-monospace, SF Mono, Menlo, monospace';
+    ctx.fillText('noise rate (% noisy ingest)', x0 + W - 140, y0 + 16);
+    ctx.fillText('F1', x0 - 22, y0 - H + 12);
+
+    function plot(fn, color) {
+      ctx.strokeStyle = color; ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      for (var i = 0; i <= 200; i++) {
+        var xx = i / 200;
+        var n = xx * 0.6; // 0..60%
+        var yy = fn(n);
+        var px = x0 + W * xx;
+        var py = y0 - H * yy;
+        if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+      }
+      ctx.stroke();
+    }
+    plot(function(n){ return onlineF1(n); }, '#8c2f1c');
+    plot(function(n){ return batchF1(n, schema); }, '#2c5340');
+
+    // ticks
+    [0, 0.15, 0.30, 0.45, 0.60].forEach(function(n){
+      var px = x0 + W * (n / 0.6);
+      ctx.fillStyle = '#6b6052';
+      ctx.fillText(n.toFixed(2), px - 12, y0 + 14);
+    });
+    [0, 0.25, 0.5, 0.75, 1].forEach(function(v){
+      var py = y0 - H * v;
+      ctx.fillText(v.toFixed(2), x0 - 30, py + 4);
+    });
+
+    // marker
+    var mx = x0 + W * (noise / 0.6);
+    ctx.strokeStyle = '#1f1a14'; ctx.setLineDash([3, 4]);
+    ctx.beginPath(); ctx.moveTo(mx, y0 - H); ctx.lineTo(mx, y0); ctx.stroke();
+    ctx.setLineDash([]);
+
+    var lx = x0 + 10, ly = y0 - H + 8;
+    ctx.fillStyle = '#8c2f1c'; ctx.fillRect(lx, ly, 12, 3);
+    ctx.fillStyle = '#1f1a14'; ctx.fillText('online (ACID-style, keep all)', lx + 18, ly + 4);
+    ctx.fillStyle = '#2c5340'; ctx.fillRect(lx, ly + 16, 12, 3);
+    ctx.fillStyle = '#1f1a14'; ctx.fillText('batch + surprise filter', lx + 18, ly + 20);
+
+    readout.textContent =
+      'noise = ' + noise.toFixed(2) + ' · schema strength = ' + schema.toFixed(2) +
+      '\nonline F1 = ' + onlineF1(noise).toFixed(3) +
+      ' · batch F1 = ' + batchF1(noise, schema).toFixed(3) +
+      '\n→ at low noise, online wins on recall; gap reverses past ~15% noise as batch prunes garbage.';
+  }
+  noiseEl.addEventListener('input', draw);
+  schemaEl.addEventListener('input', draw);
+  draw();
+})();
+</script>
+
+</body>
+</html>

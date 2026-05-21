@@ -1,0 +1,15 @@
+(card "d_e5015cd2" :type "derived"
+  :subj "exp:B-R8-1_no_open3min_bypass03"
+  :pred "borrowed_by_canonical"
+  :obj "exp:C8.4_top3_no_open3min_bypass"
+  :derived_from "rule:r001a_borrowed_by_keep"
+  :parents ("a_1909a2c8")
+  :generated_at "2026-05-20T17:40:25.557311+00:00")
+
+(card "d_ab61cf8d" :type "derived"
+  :subj "exp:D-R2-2_blacklist_cross_source"
+  :pred "borrowed_by_canonical"
+  :obj "exp:D-R1-3_drop_full_consensus"
+  :derived_from "rule:r001a_borrowed_by_keep"
+  :parents ("a_f5bd9e79")
+  :generated_at "2026-05-20T17:40:25.557539+00:00")

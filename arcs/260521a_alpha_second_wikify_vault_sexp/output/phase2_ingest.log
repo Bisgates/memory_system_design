@@ -1,0 +1,259 @@
+======================================================================
+PHASE 2 VAULT INGEST — 2026-05-21T01:29:42+08:00
+======================================================================
+vault         : /Users/han/project/alpha/alpha_second_v1/auto_research_experiment
+out_dir       : /Users/han/project/alpha/alpha_second_v1/arcs/all/260521a_wikify_auto_research_vault_sexp/wiki/cards/atoms
+elapsed_sec   : 0.13
+total_sources : 65
+total_atoms   : 3404
+
+by source type:
+  experiment                53
+  lineage                   8
+  doc                       2
+  report                    1
+  anti_pattern_catalog      1
+
+frontmatter typed-link counts:
+  parent_arc                55
+  parent_lineage            49
+
+body typed-link counts:
+  builds_against            51
+  derived_from              48
+  competes_with             36
+  builds_on                 11
+  ap_references             10
+  links_to_experiment       9
+  also_explored_by          2
+  shared_axis               1
+  falsifies                 1
+
+body links with unknown label (kept but flagged):
+  dominated_by              11
+  descendants               10
+  team_a_top_picks          6
+  base_for                  6
+  borrows_mechanism_from    4
+  same_lineage              4
+  dominates                 4
+  ablation_control_for      4
+  does_not_compose_with     4
+  same_metrics_as           3
+  same_as                   3
+  antithesis_of             3
+  shares_anti_pattern_with  3
+  inherits_failure_mode     2
+  borrowed_by               2
+  same_round_as             2
+  mechanism_used_by         2
+  same_axis_as              2
+  same_axis                 2
+  alt_to                    2
+  shared_axis_with          2
+  proposed_pivot            2
+  same_pool_as              1
+  synthesizes               1
+  borrowed_by_failed        1
+  descendants_in_team_b     1
+  alt_route_for             1
+  dominated_by_train        1
+  bit_for_bit_same_as       1
+  synthesizes_into          1
+  also_validates            1
+  descendants_in_team_f     1
+  same_team_alt             1
+  descendants_in_team_g     1
+  alt_source_companion      1
+  diagnostic_for            1
+  descendants_via_r3b       1
+  competes_with_failed      1
+  inherits_failure_mode_from 1
+  near_neighbor             1
+  shares_root_cause         1
+  shares_axis_with          1
+  falsifies_subset_of       1
+  proposes_augmentation_with 1
+  shares_findings_with      1
+
+unique tag values: 70
+top tag values:
+  tag:arc/260516a                     63
+  tag:leak/clean                      51
+  tag:size/large                      24
+  tag:size/medium                     21
+  tag:axis/blacklist                  21
+  tag:status/falsified                20
+  tag:outcome/no_test_run             19
+  tag:round/r2                        16
+  tag:axis/sizing                     16
+  tag:status/challenger               15
+  tag:team/h                          15
+  tag:outcome/test_pass               14
+  tag:round/r1                        14
+  tag:outcome/test_fail               12
+  tag:axis/microstructure             10
+  tag:axis/cross_source               10
+  tag:axis/timing_filter              9
+  tag:axis/whitelist                  9
+  tag:outcome/test_marginal           8
+  tag:team/b                          8
+
+warnings:
+  warn: experiments/arc_260516a__team_a__C20__recent_signal_flow_skip.md: unknown body link label 'team_a_top_picks' → arc_260516a__team_a__C7__same_minute_pre_amt
+  warn: experiments/arc_260516a__team_a__C20__recent_signal_flow_skip.md: unknown body link label 'team_a_top_picks' → arc_260516a__team_a__C6__anchor_plus_impact_cap
+  warn: experiments/arc_260516a__team_a__C6__anchor_plus_impact_cap.md: unknown body link label 'team_a_top_picks' → arc_260516a__team_a__C7__same_minute_pre_amt
+  warn: experiments/arc_260516a__team_a__C6__anchor_plus_impact_cap.md: unknown body link label 'team_a_top_picks' → arc_260516a__team_a__C20__recent_signal_flow_skip
+  warn: experiments/arc_260516a__team_a__C7__same_minute_pre_amt.md: unknown body link label 'team_a_top_picks' → arc_260516a__team_a__C20__recent_signal_flow_skip
+  warn: experiments/arc_260516a__team_a__C7__same_minute_pre_amt.md: unknown body link label 'team_a_top_picks' → arc_260516a__team_a__C6__anchor_plus_impact_cap
+  warn: experiments/arc_260516a__team_b__B-R10-0__all_admit_baseline.md: unknown body link label 'same_pool_as' → arc_260516a__team_d__D-R2-1__default_admit_baseline
+  warn: experiments/arc_260516a__team_b__B-R10-0__all_admit_baseline.md: unknown body link label 'base_for' → arc_260516a__team_b__B-R10-2__blacklist_low_amt
+  warn: experiments/arc_260516a__team_b__B-R10-4__blacklist_stack_3.md: unknown body link label 'synthesizes' → arc_260516a__team_b__B-R10-2__blacklist_low_amt
+  warn: experiments/arc_260516a__team_b__B-R10-4__blacklist_stack_3.md: unknown body link label 'inherits_failure_mode' → arc_260516a__team_d__D-R2-3__blacklist_stack_triple
+  warn: experiments/arc_260516a__team_b__B-R10-4__blacklist_stack_3.md: unknown body link label 'base_for' → arc_260516a__team_b__B-R11-2__blacklist_vol_regime_low
+  warn: experiments/arc_260516a__team_b__B-R11-2__blacklist_vol_regime_low.md: unknown body link label 'borrowed_by_failed' → arc_260516a__team_h__H-R3a-1__b_r11_2_sizing
+  warn: experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03.md: unknown body link label 'descendants_in_team_b' → arc_260516a__team_b__B-R9-3__sigma_regime_exit
+  warn: experiments/arc_260516a__team_b__B-R8-1__no_open3min_bypass03.md: unknown body link label 'borrowed_by' → arc_260516a__team_c__C8.4__top3_no_open3min_bypass
+  warn: experiments/arc_260516a__team_b__B-R9-3__sigma_regime_exit.md: unknown body link label 'same_round_as' → arc_260516a__team_b__B-R9-4__confluence_horizon
+  warn: experiments/arc_260516a__team_b__B-R9-4__confluence_horizon.md: unknown body link label 'same_round_as' → arc_260516a__team_b__B-R9-3__sigma_regime_exit
+  warn: experiments/arc_260516a__team_c__C6.4__top3_expand.md: unknown body link label 'same_metrics_as' → arc_260516a__team_c__baseline_C6.4__top3_expand
+  warn: experiments/arc_260516a__team_c__C6.4__top3_expand.md: unknown body link label 'descendants' → arc_260516a__team_c__C7.5__top3_no_open3min
+  warn: experiments/arc_260516a__team_c__C6.4__top3_expand.md: unknown body link label 'descendants' → arc_260516a__team_c__C8.4__top3_no_open3min_bypass
+  warn: experiments/arc_260516a__team_c__C7.3__top3_rolling_baserate.md: unknown body link label 'alt_route_for' → arc_260516a__team_c__C7.5__top3_no_open3min
+  warn: experiments/arc_260516a__team_c__C7.3__top3_rolling_baserate.md: unknown body link label 'dominated_by' → arc_260516a__team_c__C7.5__top3_no_open3min
+  warn: experiments/arc_260516a__team_c__C7.5__top3_no_open3min.md: unknown body link label 'same_metrics_as' → arc_260516a__team_c__baseline_C7.5__top3_no_open3min
+  warn: experiments/arc_260516a__team_c__C7.5__top3_no_open3min.md: unknown body link label 'borrows_mechanism_from' → arc_260516a__team_b__B-R8-1__no_open3min_bypass03
+  warn: experiments/arc_260516a__team_c__C7.5__top3_no_open3min.md: unknown body link label 'dominated_by_train' → arc_260516a__team_c__C8.4__top3_no_open3min_bypass
+  warn: experiments/arc_260516a__team_c__C7.5__top3_no_open3min.md: unknown body link label 'base_for' → arc_260516a__team_h__H-R2-1__c75_linear_sizing
+  warn: experiments/arc_260516a__team_c__C7.5__top3_no_open3min.md: unknown body link label 'base_for' → arc_260516a__team_h__H-R2-4__c75_sqrt_damp
+  warn: experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass.md: unknown body link label 'borrows_mechanism_from' → arc_260516a__team_b__B-R8-1__no_open3min_bypass03
+  warn: experiments/arc_260516a__team_c__C8.4__top3_no_open3min_bypass.md: unknown body link label 'base_for' → arc_260516a__team_h__H-R3b-4__c84_kelly_lambda_1.5
+  warn: experiments/arc_260516a__team_c__baseline_C6.4__top3_expand.md: unknown body link label 'same_as' → arc_260516a__team_c__C6.4__top3_expand
+  warn: experiments/arc_260516a__team_c__baseline_C7.5__top3_no_open3min.md: unknown body link label 'same_as' → arc_260516a__team_c__C7.5__top3_no_open3min
+  warn: experiments/arc_260516a__team_d__D-R1-1__consensus_gte1.md: unknown body link label 'antithesis_of' → arc_260516a__team_d__D-R1-3__drop_full_consensus
+  warn: experiments/arc_260516a__team_d__D-R1-2__isolated_keep.md: unknown body link label 'antithesis_of' → arc_260516a__team_d__D-R1-1__consensus_gte1
+  warn: experiments/arc_260516a__team_d__D-R1-3__drop_full_consensus.md: unknown body link label 'mechanism_used_by' → arc_260516a__team_d__D-R2-3__blacklist_stack_triple
+  warn: experiments/arc_260516a__team_d__D-R1-3__drop_full_consensus.md: unknown body link label 'mechanism_used_by' → arc_260516a__team_d__D-R2-2__blacklist_cross_source
+  warn: experiments/arc_260516a__team_d__D-R2-1__default_admit_baseline.md: unknown body link label 'bit_for_bit_same_as' → arc_260516a__team_b__B-R10-0__all_admit_baseline
+  warn: experiments/arc_260516a__team_d__D-R2-1__default_admit_baseline.md: unknown body link label 'base_for' → arc_260516a__team_d__D-R2-2__blacklist_cross_source
+  warn: experiments/arc_260516a__team_d__D-R2-2__blacklist_cross_source.md: unknown body link label 'synthesizes_into' → arc_260516a__team_d__D-R2-3__blacklist_stack_triple
+  warn: experiments/arc_260516a__team_d__D-R2-2__blacklist_cross_source.md: unknown body link label 'borrowed_by' → arc_260516a__team_d__D-R1-3__drop_full_consensus
+  warn: experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple.md: unknown body link label 'borrows_mechanism_from' → arc_260516a__team_d__D-R1-3__drop_full_consensus
+  warn: experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple.md: unknown body link label 'borrows_mechanism_from' → arc_260516a__team_b__B-R8-1__no_open3min_bypass03
+  warn: experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple.md: unknown body link label 'descendants' → arc_260516a__team_d__D-R2-4__blacklist_stack_quad
+  warn: experiments/arc_260516a__team_d__D-R2-4__blacklist_stack_quad.md: unknown body link label 'also_validates' → arc_260516a__team_b__B-R10-4__blacklist_stack_3
+  warn: experiments/arc_260516a__team_e__E-R1-2__leader_ticker_rolling_q20.md: unknown body link label 'same_lineage' → arc_260516a__team_e__E-R1-1__leader_ratio_bucket
+  warn: experiments/arc_260516a__team_e__E-R1-2__leader_ticker_rolling_q20.md: unknown body link label 'same_lineage' → arc_260516a__team_e__E-R1-3__leader_ticker_mean_ret_pos
+  warn: experiments/arc_260516a__team_e__E-R1-3__leader_ticker_mean_ret_pos.md: unknown body link label 'same_lineage' → arc_260516a__team_e__E-R1-1__leader_ratio_bucket
+  warn: experiments/arc_260516a__team_e__E-R1-3__leader_ticker_mean_ret_pos.md: unknown body link label 'same_lineage' → arc_260516a__team_e__E-R1-2__leader_ticker_rolling_q20
+  warn: experiments/arc_260516a__team_f__F-R1-1__ofi_drop_extreme.md: unknown body link label 'descendants_in_team_f' → arc_260516a__team_f__F-R2-1__vpin_drop_q80_300s
+  warn: experiments/arc_260516a__team_f__F-R1-2__vpin_q80_admit.md: unknown body link label 'antithesis_of' → arc_260516a__team_f__F-R1-1__ofi_drop_extreme
+  warn: experiments/arc_260516a__team_f__F-R1-2__vpin_q80_admit.md: unknown body link label 'same_team_alt' → arc_260516a__team_f__F-R2-1__vpin_drop_q80_300s
+  warn: experiments/arc_260516a__team_f__F-R2-1__vpin_drop_q80_300s.md: unknown body link label 'same_axis_as' → arc_260516a__team_f__F-R1-1__ofi_drop_extreme
+  warn: experiments/arc_260516a__team_f__F-R2-1__vpin_drop_q80_300s.md: unknown body link label 'descendants' → arc_260516a__team_f__F-R2-2__vpin_drop_q70_300s
+  warn: experiments/arc_260516a__team_f__F-R2-1__vpin_drop_q80_300s.md: unknown body link label 'descendants' → arc_260516a__team_f__F-R2-3__vpin_drop_q80_600s
+  warn: experiments/arc_260516a__team_f__F-R2-1__vpin_drop_q80_300s.md: unknown body link label 'descendants' → arc_260516a__team_f__F-R2-4__ofi_dir_align
+  warn: experiments/arc_260516a__team_f__F-R2-4__ofi_dir_align.md: unknown body link label 'same_axis' → arc_260516a__team_f__F-R1-1__ofi_drop_extreme
+  warn: experiments/arc_260516a__team_g__G-R1-1__luoyangchan_solo.md: unknown body link label 'descendants_in_team_g' → arc_260516a__team_g__G-R2-1__luoyangchan_cap26M
+  warn: experiments/arc_260516a__team_g__G-R1-2__yingli_solo.md: unknown body link label 'same_axis_as' → arc_260516a__team_g__G-R1-1__luoyangchan_solo
+  warn: experiments/arc_260516a__team_g__G-R1-2__yingli_solo.md: unknown body link label 'alt_source_companion' → arc_260516a__team_g__G-R1-3__cross_source_consensus_strict
+  warn: experiments/arc_260516a__team_g__G-R1-3__cross_source_consensus_strict.md: unknown body link label 'alt_to' → arc_260516a__team_g__G-R1-1__luoyangchan_solo
+  warn: experiments/arc_260516a__team_g__G-R1-3__cross_source_consensus_strict.md: unknown body link label 'alt_to' → arc_260516a__team_g__G-R1-2__yingli_solo
+  warn: experiments/arc_260516a__team_g__G-R2-2__luoyangchan_cap5M.md: unknown body link label 'same_axis' → arc_260516a__team_g__G-R2-3__luoyangchan_nocap
+  warn: experiments/arc_260516a__team_g__G-R2-3__luoyangchan_nocap.md: unknown body link label 'diagnostic_for' → arc_260516a__team_g__G-R1-1__luoyangchan_solo
+  warn: experiments/arc_260516a__team_h__H-R1-1__rolling_30d_median_solo.md: unknown body link label 'descendants' → arc_260516a__team_h__H-R2-1__c75_linear_sizing
+  warn: experiments/arc_260516a__team_h__H-R1-1__rolling_30d_median_solo.md: unknown body link label 'descendants' → arc_260516a__team_h__H-R2-2__c84_linear_sizing
+  warn: experiments/arc_260516a__team_h__H-R1-1__rolling_30d_median_solo.md: unknown body link label 'descendants' → arc_260516a__team_h__H-R2-3__b_r8_1_sizing
+  warn: experiments/arc_260516a__team_h__H-R1-1__rolling_30d_median_solo.md: unknown body link label 'descendants' → arc_260516a__team_h__H-R2-4__c75_sqrt_damp
+  warn: experiments/arc_260516a__team_h__H-R1-1__rolling_30d_median_solo.md: unknown body link label 'descendants_via_r3b' → arc_260516a__team_h__H-R3b-4__c84_kelly_lambda_1.5
+  warn: experiments/arc_260516a__team_h__H-R1-2__pre_avg_amount_sizing.md: unknown body link label 'competes_with_failed' → arc_260516a__team_h__H-R1-3__ratio_vol_blend
+  warn: experiments/arc_260516a__team_h__H-R1-2__pre_avg_amount_sizing.md: unknown body link label 'dominated_by' → arc_260516a__team_h__H-R1-1__rolling_30d_median_solo
+  warn: experiments/arc_260516a__team_h__H-R1-3__ratio_vol_blend.md: unknown body link label 'dominated_by' → arc_260516a__team_h__H-R1-1__rolling_30d_median_solo
+  warn: experiments/arc_260516a__team_h__H-R2-2__c84_linear_sizing.md: unknown body link label 'dominated_by' → arc_260516a__team_h__H-R3b-4__c84_kelly_lambda_1.5
+  warn: experiments/arc_260516a__team_h__H-R2-2__c84_linear_sizing.md: unknown body link label 'dominates' → arc_260516a__team_h__H-R2-3__b_r8_1_sizing
+  warn: experiments/arc_260516a__team_h__H-R2-3__b_r8_1_sizing.md: unknown body link label 'dominated_by' → arc_260516a__team_h__H-R2-2__c84_linear_sizing
+  warn: experiments/arc_260516a__team_h__H-R2-4__c75_sqrt_damp.md: unknown body link label 'dominated_by' → arc_260516a__team_h__H-R3b-4__c84_kelly_lambda_1.5
+  warn: experiments/arc_260516a__team_h__H-R3a-1__b_r11_2_sizing.md: unknown body link label 'inherits_failure_mode_from' → arc_260516a__team_b__B-R11-2__blacklist_vol_regime_low
+  warn: experiments/arc_260516a__team_h__H-R3a-1__b_r11_2_sizing.md: unknown body link label 'dominated_by' → arc_260516a__team_h__H-R2-2__c84_linear_sizing
+  warn: experiments/arc_260516a__team_h__H-R3a-2__d_r2_3_sizing.md: unknown body link label 'inherits_failure_mode' → arc_260516a__team_d__D-R2-3__blacklist_stack_triple
+  warn: experiments/arc_260516a__team_h__H-R3a-2__d_r2_3_sizing.md: unknown body link label 'dominated_by' → arc_260516a__team_h__H-R2-2__c84_linear_sizing
+  warn: experiments/arc_260516a__team_h__H-R3b-0__c84_binary_baseline.md: unknown body link label 'same_metrics_as' → arc_260516a__team_c__C8.4__top3_no_open3min_bypass
+  warn: experiments/arc_260516a__team_h__H-R3b-0__c84_binary_baseline.md: unknown body link label 'ablation_control_for' → arc_260516a__team_h__H-R3b-4__c84_kelly_lambda_1.5
+  warn: experiments/arc_260516a__team_h__H-R3b-0__c84_binary_baseline.md: unknown body link label 'ablation_control_for' → arc_260516a__team_h__H-R3b-1__c84_kelly_lambda_0.25
+  warn: experiments/arc_260516a__team_h__H-R3b-0__c84_binary_baseline.md: unknown body link label 'ablation_control_for' → arc_260516a__team_h__H-R3b-2__c84_kelly_lambda_0.5
+  warn: experiments/arc_260516a__team_h__H-R3b-0__c84_binary_baseline.md: unknown body link label 'ablation_control_for' → arc_260516a__team_h__H-R3b-3__c84_kelly_lambda_1.0
+  warn: experiments/arc_260516a__team_h__H-R3b-1__c84_kelly_lambda_0.25.md: unknown body link label 'dominated_by' → arc_260516a__team_h__H-R3b-4__c84_kelly_lambda_1.5
+  warn: experiments/arc_260516a__team_h__H-R3b-1__c84_kelly_lambda_0.25.md: unknown body link label 'near_neighbor' → arc_260516a__team_h__H-R3b-0__c84_binary_baseline
+  warn: experiments/arc_260516a__team_h__H-R3b-2__c84_kelly_lambda_0.5.md: unknown body link label 'dominated_by' → arc_260516a__team_h__H-R3b-4__c84_kelly_lambda_1.5
+  warn: experiments/arc_260516a__team_h__H-R3b-2__c84_kelly_lambda_0.5.md: unknown body link label 'dominates' → arc_260516a__team_h__H-R3b-1__c84_kelly_lambda_0.25
+  warn: experiments/arc_260516a__team_h__H-R3b-3__c84_kelly_lambda_1.0.md: unknown body link label 'same_as' → arc_260516a__team_h__H-R2-2__c84_linear_sizing
+  warn: experiments/arc_260516a__team_h__H-R3b-3__c84_kelly_lambda_1.0.md: unknown body link label 'dominated_by' → arc_260516a__team_h__H-R3b-4__c84_kelly_lambda_1.5
+  warn: experiments/arc_260516a__team_h__H-R3b-3__c84_kelly_lambda_1.0.md: unknown body link label 'dominates' → arc_260516a__team_h__H-R3b-2__c84_kelly_lambda_0.5
+  warn: experiments/arc_260516a__team_h__H-R3b-3__c84_kelly_lambda_1.0.md: unknown body link label 'dominates' → arc_260516a__team_h__H-R3b-1__c84_kelly_lambda_0.25
+
+atoms per source (sorted desc):
+    103  ANTI_PATTERN_CATALOG.md
+     64  arc_260516a__team_h__H-R1-1__rolling_30d_median_solo.md
+     63  arc_260516a__team_c__C7.5__top3_no_open3min.md
+     63  arc_260516a__team_d__D-R2-3__blacklist_stack_triple.md
+     63  arc_260516a__team_h__H-R3a-1__b_r11_2_sizing.md
+     63  arc_260516a__team_h__H-R3a-2__d_r2_3_sizing.md
+     62  arc_260516a__team_b__B-R8-1__no_open3min_bypass03.md
+     62  arc_260516a__team_c__C8.4__top3_no_open3min_bypass.md
+     61  arc_260516a__team_d__D-R1-3__drop_full_consensus.md
+     61  arc_260516a__team_f__F-R2-1__vpin_drop_q80_300s.md
+     61  arc_260516a__team_h__H-R2-1__c75_linear_sizing.md
+     61  arc_260516a__team_h__H-R2-3__b_r8_1_sizing.md
+     61  arc_260516a__team_h__H-R2-4__c75_sqrt_damp.md
+     61  arc_260516a__team_h__H-R3b-0__c84_binary_baseline.md
+     61  arc_260516a__team_h__H-R3b-2__c84_kelly_lambda_0.5.md
+     61  arc_260516a__team_h__H-R3b-3__c84_kelly_lambda_1.0.md
+     60  arc_260516a__team_b__B-R9-3__sigma_regime_exit.md
+     60  arc_260516a__team_d__D-R2-4__blacklist_stack_quad.md
+     60  arc_260516a__team_f__F-R1-1__ofi_drop_extreme.md
+     60  arc_260516a__team_h__H-R2-2__c84_linear_sizing.md
+     60  arc_260516a__team_h__H-R3b-1__c84_kelly_lambda_0.25.md
+     59  arc_260516a__team_c__baseline_C7.5__top3_no_open3min.md
+     59  arc_260516a__team_f__F-R2-3__vpin_drop_q80_600s.md
+     58  arc_260516a__team_a__C20__recent_signal_flow_skip.md
+     58  arc_260516a__team_a__C7__same_minute_pre_amt.md
+     58  arc_260516a__team_b__B-R9-4__confluence_horizon.md
+     58  arc_260516a__team_h__H-R3b-4__c84_kelly_lambda_1.5.md
+     57  arc_260516a__team_b__B-R10-0__all_admit_baseline.md
+     57  arc_260516a__team_g__G-R1-1__luoyangchan_solo.md
+     57  arc_260516a__team_g__G-R2-1__luoyangchan_cap26M.md
+     56  arc_260516a__team_a__C6__anchor_plus_impact_cap.md
+     56  arc_260516a__team_e__E-R1-2__leader_ticker_rolling_q20.md
+     56  arc_260516a__team_e__E-R1-3__leader_ticker_mean_ret_pos.md
+     56  arc_260516a__team_g__G-R2-3__luoyangchan_nocap.md
+     55  arc_260516a__team_c__C7.3__top3_rolling_baserate.md
+     55  arc_260516a__team_d__D-R1-1__consensus_gte1.md
+     55  arc_260516a__team_f__F-R1-2__vpin_q80_admit.md
+     54  arc_260516a__team_c__C6.4__top3_expand.md
+     54  arc_260516a__team_d__D-R1-2__isolated_keep.md
+     54  arc_260516a__team_d__D-R2-2__blacklist_cross_source.md
+     54  arc_260516a__team_e__E-R1-1__leader_ratio_bucket.md
+     54  arc_260516a__team_f__F-R2-2__vpin_drop_q70_300s.md
+     54  arc_260516a__team_g__G-R1-3__cross_source_consensus_strict.md
+     54  arc_260516a__team_h__H-R1-3__ratio_vol_blend.md
+     53  arc_260516a__team_b__B-R10-4__blacklist_stack_3.md
+     53  arc_260516a__team_b__B-R11-2__blacklist_vol_regime_low.md
+     53  arc_260516a__team_f__F-R2-4__ofi_dir_align.md
+     52  arc_260516a__team_anchor__anchor_g2__baseline.md
+     52  arc_260516a__team_b__B-R10-2__blacklist_low_amt.md
+     52  arc_260516a__team_c__baseline_C6.4__top3_expand.md
+     52  arc_260516a__team_d__D-R2-1__default_admit_baseline.md
+     52  arc_260516a__team_g__G-R1-2__yingli_solo.md
+     52  arc_260516a__team_h__H-R1-2__pre_avg_amount_sizing.md
+     51  arc_260516a__team_g__G-R2-2__luoyangchan_cap5M.md
+     29  arc_260516a__team_g__alt_csv_source_swap.md
+     28  arc_260516a__team_d__cross_source_consensus.md
+     28  arc_260516a__team_f__microstructure_vpin_ofi.md
+     27  arc_260516a__team_b__blacklist_axis.md
+     27  arc_260516a__team_c__top_k_no_open3min.md
+     27  VAULT_DESIGN.md
+     26  arc_260516a__team_e__leader_profile.md
+     22  arc_260516a__team_a__multi_axis_singleaxis_discipline.md
+     20  arc_260516a__reporter_20260517_0547.md
+     19  arc_260516a__team_h__sizing.md
+     10  README.md

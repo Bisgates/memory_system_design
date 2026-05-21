@@ -1,0 +1,14 @@
+- id: a_df302a23
+  subj: doc:specs/dggt_bev.md
+  pred: has_type
+  obj: type:spec
+  source: SPECS/dggt_bev.md
+  derived_from: null
+  parents: []
+- id: a_1766d742
+  subj: doc:specs/dggt_bev.md
+  pred: has_title
+  obj: DGGT × BEV Data — 4D 场景重建
+  source: SPECS/dggt_bev.md
+  derived_from: null
+  parents: []

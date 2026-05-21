@@ -1,0 +1,139 @@
+(card "report:arc_260516a__reporter_20260517_0547" :type "report"
+  :subj "report:arc_260516a__reporter_20260517_0547"
+  :body "---\ntype: report\ntitle: \"arc 260516a reporter — final cross-team NAV ranking (2026-05-17 05:47)\"\narc: 260516a\ngenerated_at: 2026-05-17T05:47:00\nreport_path: \"/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/output/reporter_20260517_0547.html\"\ntags: [arc/260516a, report]\n---\n\n# arc 260516a reporter — 2026-05-17 05:47\n\n> 这是一个 **stub**：vault 里所有 candidate 文件可双链到这页，避免在每个文件里贴长 URL。\n\n## 报告文件位置\n\n- HTML: `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/output/reporter_20260517_0547.html`\n- 相关数据：\n  - `cross_team_test_nav_ranking_v2.csv`\n  - 各队 `output/cross_round_leaderboard_nav.csv`\n\n## 主要内容（人话摘要）\n\n- Final cross-team NAV ranking（test set 2026-05-01 → 05-15, eff 05-08）\n- Champion: [[arc_260516a__team_h__H-R3b-4__c84_kelly_lambda_1.5]] (test_nav 1.49)\n- staircase + 13-window val NAV 表\n- 每队 top-3 候选的 train/val/test 三段对比\n\n## 链接到的 candidate\n\n- [[arc_260516a__team_h__H-R3b-4__c84_kelly_lambda_1.5]]\n- [[arc_260516a__team_h__H-R2-2__c84_linear_sizing]]\n- [[arc_260516a__team_c__C8.4__top3_no_open3min_bypass]]\n- [[arc_260516a__team_b__B-R8-1__no_open3min_bypass03]]\n- [[arc_260516a__team_d__D-R2-3__blacklist_stack_triple]]\n- [[arc_260516a__team_f__F-R1-1__ofi_drop_extreme]]\n- [[arc_260516a__team_g__G-R1-1__luoyangchan_solo]]\n- [[arc_260516a__team_anchor__anchor_g2__baseline]]\n"
+  :path "reports/arc_260516a__reporter_20260517_0547.md"
+  :source_mtime "2026-05-17T10:04:39+08:00"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_8ab9fda7" :type "atom"
+  :subj "report:arc_260516a__reporter_20260517_0547"
+  :pred "has_type"
+  :obj "report"
+  :source "reports/arc_260516a__reporter_20260517_0547.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f1d48417" :type "atom"
+  :subj "report:arc_260516a__reporter_20260517_0547"
+  :pred "has_title"
+  :obj "arc 260516a reporter — final cross-team NAV ranking (2026-05-17 05:47)"
+  :source "reports/arc_260516a__reporter_20260517_0547.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d7cc60e8" :type "atom"
+  :subj "report:arc_260516a__reporter_20260517_0547"
+  :pred "has_arc"
+  :obj "260516a"
+  :source "reports/arc_260516a__reporter_20260517_0547.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_2242dd98" :type "atom"
+  :subj "report:arc_260516a__reporter_20260517_0547"
+  :pred "has_generated_at"
+  :obj "2026-05-17 05:47:00"
+  :source "reports/arc_260516a__reporter_20260517_0547.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e09a9f8d" :type "atom"
+  :subj "report:arc_260516a__reporter_20260517_0547"
+  :pred "has_report_path"
+  :obj "/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/output/reporter_20260517_0547.html"
+  :source "reports/arc_260516a__reporter_20260517_0547.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_0d60798b" :type "atom"
+  :subj "report:arc_260516a__reporter_20260517_0547"
+  :pred "has_tag"
+  :obj "tag:arc/260516a"
+  :source "reports/arc_260516a__reporter_20260517_0547.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_4c267f0c" :type "atom"
+  :subj "report:arc_260516a__reporter_20260517_0547"
+  :pred "has_tag"
+  :obj "tag:report"
+  :source "reports/arc_260516a__reporter_20260517_0547.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_74e71c4c" :type "atom"
+  :subj "report:arc_260516a__reporter_20260517_0547"
+  :pred "has_section_intro"
+  :obj "# arc 260516a reporter — 2026-05-17 05:47\n\n> 这是一个 **stub**：vault 里所有 candidate 文件可双链到这页，避免在每个文件里贴长 URL。"
+  :source "reports/arc_260516a__reporter_20260517_0547.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_3edc580d" :type "atom"
+  :subj "report:arc_260516a__reporter_20260517_0547"
+  :pred "has_section_报告文件位置"
+  :obj "- HTML: `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/output/reporter_20260517_0547.html`\n- 相关数据：\n  - `cross_team_test_nav_ranking_v2.csv`\n  - 各队 `output/cross_round_leaderboard_nav.csv`"
+  :source "reports/arc_260516a__reporter_20260517_0547.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b9ba739a" :type "atom"
+  :subj "report:arc_260516a__reporter_20260517_0547"
+  :pred "has_section_主要内容_人话摘要"
+  :obj "- Final cross-team NAV ranking（test set 2026-05-01 → 05-15, eff 05-08）\n- Champion: [[arc_260516a__team_h__H-R3b-4__c84_kelly_lambda_1.5]] (test_nav 1.49)\n- staircase + 13-window val NAV 表\n- 每队 top-3 候选的 train/val/test 三段对比"
+  :source "reports/arc_260516a__reporter_20260517_0547.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5c2df3c4" :type "atom"
+  :subj "report:arc_260516a__reporter_20260517_0547"
+  :pred "has_section_链接到的_candidate"
+  :obj "- [[arc_260516a__team_h__H-R3b-4__c84_kelly_lambda_1.5]]\n- [[arc_260516a__team_h__H-R2-2__c84_linear_sizing]]\n- [[arc_260516a__team_c__C8.4__top3_no_open3min_bypass]]\n- [[arc_260516a__team_b__B-R8-1__no_open3min_bypass03]]\n- [[arc_260516a__team_d__D-R2-3__blacklist_stack_triple]]\n- [[arc_260516a__team_f__F-R1-1__ofi_drop_extreme]]\n- [[arc_260516a__team_g__G-R1-1__luoyangchan_solo]]\n- [[arc_260516a__team_anchor__anchor_g2__baseline]]"
+  :source "reports/arc_260516a__reporter_20260517_0547.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_2681933a" :type "atom"
+  :subj "report:arc_260516a__reporter_20260517_0547"
+  :pred "links_to_experiment"
+  :obj "exp:H-R3b-4_c84_kelly_lambda_1.5"
+  :source "reports/arc_260516a__reporter_20260517_0547.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_cadcd159" :type "atom"
+  :subj "report:arc_260516a__reporter_20260517_0547"
+  :pred "links_to_experiment"
+  :obj "exp:H-R2-2_c84_linear_sizing"
+  :source "reports/arc_260516a__reporter_20260517_0547.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_4b2b7762" :type "atom"
+  :subj "report:arc_260516a__reporter_20260517_0547"
+  :pred "links_to_experiment"
+  :obj "exp:C8.4_top3_no_open3min_bypass"
+  :source "reports/arc_260516a__reporter_20260517_0547.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_26fdd5e3" :type "atom"
+  :subj "report:arc_260516a__reporter_20260517_0547"
+  :pred "links_to_experiment"
+  :obj "exp:B-R8-1_no_open3min_bypass03"
+  :source "reports/arc_260516a__reporter_20260517_0547.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b176dfe0" :type "atom"
+  :subj "report:arc_260516a__reporter_20260517_0547"
+  :pred "links_to_experiment"
+  :obj "exp:D-R2-3_blacklist_stack_triple"
+  :source "reports/arc_260516a__reporter_20260517_0547.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_7a5261ed" :type "atom"
+  :subj "report:arc_260516a__reporter_20260517_0547"
+  :pred "links_to_experiment"
+  :obj "exp:F-R1-1_ofi_drop_extreme"
+  :source "reports/arc_260516a__reporter_20260517_0547.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1de91636" :type "atom"
+  :subj "report:arc_260516a__reporter_20260517_0547"
+  :pred "links_to_experiment"
+  :obj "exp:G-R1-1_luoyangchan_solo"
+  :source "reports/arc_260516a__reporter_20260517_0547.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_28ba4ce6" :type "atom"
+  :subj "report:arc_260516a__reporter_20260517_0547"
+  :pred "links_to_experiment"
+  :obj "exp:anchor_g2_baseline"
+  :source "reports/arc_260516a__reporter_20260517_0547.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")

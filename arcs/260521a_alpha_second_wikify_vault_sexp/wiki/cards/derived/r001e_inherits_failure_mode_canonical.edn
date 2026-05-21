@@ -1,0 +1,15 @@
+(card "d_8b705082" :type "derived"
+  :subj "exp:B-R10-4_blacklist_stack_3"
+  :pred "inherits_anti_pattern"
+  :obj "exp:D-R2-3_blacklist_stack_triple"
+  :derived_from "rule:r001e_inherits_failure_mode_canonical"
+  :parents ("a_481ce867")
+  :generated_at "2026-05-20T17:40:25.568134+00:00")
+
+(card "d_8c44dd29" :type "derived"
+  :subj "exp:H-R3a-2_d_r2_3_sizing"
+  :pred "inherits_anti_pattern"
+  :obj "exp:D-R2-3_blacklist_stack_triple"
+  :derived_from "rule:r001e_inherits_failure_mode_canonical"
+  :parents ("a_6c024a4d")
+  :generated_at "2026-05-20T17:40:25.568138+00:00")

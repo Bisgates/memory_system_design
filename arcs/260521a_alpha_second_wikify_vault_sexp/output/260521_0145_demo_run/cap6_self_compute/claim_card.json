@@ -1,0 +1,11 @@
+{
+  "id": "claim:cap6_c21_cross_stack_first_val_gate",
+  "type": "claim",
+  "kvs": {
+    "subj": "claim:cap6_c21_cross_stack_first_val_gate",
+    "body": "C2.1 cross-team stack 是 arc 260516a R5 阶段第一个 val-gate 突破。 H-R3b-4 SOTA champion 在 train/test 双 pass, anchor +0.24 NAV。 反例 risk: 单一 arc 上的结论, 未跨 arc 验证。",
+    "confidence_expr": "(compute (- (count-links-to %self :pred 'supports) (count-links-to %self :pred 'contradicts)) / (max (count-links-to %self :pred 'supports) 1))",
+    "status": "active",
+    "created_at": "2026-05-20T17:55:33+00:00"
+  }
+}

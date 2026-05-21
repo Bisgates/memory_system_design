@@ -1,0 +1,21 @@
+- id: a_cf58ee6f
+  subj: doc:specs/depth_anything3_bev.md
+  pred: has_type
+  obj: type:spec
+  source: SPECS/depth_anything3_bev.md
+  derived_from: null
+  parents: []
+- id: a_d2ecf4ed
+  subj: doc:specs/depth_anything3_bev.md
+  pred: has_title
+  obj: Depth Anything 3 × BEV Data — 深度估计
+  source: SPECS/depth_anything3_bev.md
+  derived_from: null
+  parents: []
+- id: a_b9ed7b26
+  subj: doc:specs/depth_anything3_bev.md
+  pred: mentions_code
+  obj: code:Depth-Anything-3/src/depth_anything_3/api.py
+  source: SPECS/depth_anything3_bev.md
+  derived_from: null
+  parents: []

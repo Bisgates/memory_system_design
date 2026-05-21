@@ -1,0 +1,5 @@
+# arc output may contain large run logs; keep but allow gitignore for future bigfiles
+.DS_Store
+__pycache__/
+*.pyc
+.venv/

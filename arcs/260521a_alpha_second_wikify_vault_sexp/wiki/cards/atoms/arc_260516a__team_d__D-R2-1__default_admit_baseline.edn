@@ -1,0 +1,363 @@
+(card "exp:D-R2-1_default_admit_baseline" :type "experiment"
+  :subj "exp:D-R2-1_default_admit_baseline"
+  :body "---\nnav: 20\ntype: experiment\nid: D-R2-1_default_admit_baseline\nshort_name: default_admit_baseline\ntitle: \"D-R2-1 — default admit (no ratio gate / no volume cap / no open_3min)\"\narc: 260516a\nteam: d\nround: r2\nparent_arc: \"[[arcs/260516a]]\"\nparent_lineage: \"[[lineages/arc_260516a__team_d__blacklist_default_admit]]\"\ntrain_nav: 2.8566\ntrain_trade_count: 214\ntrain_win_rate: 0.8178\ntrain_sharpe: 6.6089\ntrain_max_drawdown: -0.0121\nval_nav_mean: 1.0782\nval_nav_sigma: 0.0763\nval_window_count: 13\ntest_nav: null\ntest_trade_count: null\ntest_sharpe: null\ntest_win_rate: null\ntest_max_drawdown: null\nanchor_train_nav: 2.1882\nanchor_test_nav: 1.2486\nstatus: baseline\noutcome: no_test_run\nchampion: false\noverfit_score: 0\nleak_audit: clean\naxis: [baseline]\npast_only_window_days: null\nwarmup_required: null\ncreated: 2026-05-17T02:00:00\nlast_updated: 2026-05-17T05:09:00\ntags: [arc/260516a, team/d, round/r2, axis/baseline, status/baseline, outcome/no_test_run, leak/clean, size/large]\n---\n\n# D-R2-1 — default admit baseline (214 trades)\n\n> **TL;DR** —— Team D 的 **default-admit baseline**：完全 drop anchor 的 ratio_gate / volume_cap / open_3min，所有 leg 全收 → 214 笔。train NAV 2.86 漂亮但 win_rate 81.8% < anchor 85.7%。**所有 D-R2-x blacklist 候选都以此为 reference**。与 [[arc_260516a__team_b__B-R10-0__all_admit_baseline]] **bit-for-bit 相同**。\n\n## 假设 (Hypothesis)\n- 不是 hypothesis，是 reference baseline。让后续 blacklist 候选可以直接读 \"本 blacklist add 了多少 NAV / 损失了多少 NAV\"。\n\n## 实现 (Implementation)\n- 主脚本：`/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_d/scripts/round_2_runner.py`\n- 步骤：全 drop anchor 的 ratio_gate / volume_cap / open_3min；不加 blacklist。\n- 输出 214 笔。\n\n## Past-only window 处理\n- 无 rolling stat。`#leak/clean`。\n\n## 结果 (Results)\n| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 2.8566 | 214 | 6.61 | 81.8% | -1.21% |\n| Val (rolling 13w) | 1.0782 ± 0.076 | - | - | - | - |\n| Test | NOT RUN (作 reference 不上 test) | - | - | - | - |\n\n## 风险 & overfit 嫌疑\n- N/A (reference baseline)\n- 关键 risk flag：win_rate 81.8% 显著低 anchor 85.7%，max_dd -1.21% 高 anchor -1.01% —— 这 74 笔多收的 leg (vs anchor 140) 整体 quality 差。\n\n## Lineage（双链网）\n- **bit_for_bit_same_as**: [[arc_260516a__team_b__B-R10-0__all_admit_baseline]]\n- **base_for**:\n  - [[arc_260516a__team_d__D-R2-2__blacklist_cross_source]]\n  - [[arc_260516a__team_d__D-R2-3__blacklist_stack_triple]]\n  - [[arc_260516a__team_d__D-R2-4__blacklist_stack_quad]]\n- **competes_with**: [[arc_260516a__team_anchor__anchor_g2__baseline]] (default-admit vs default-drop)\n- **builds against**: [[arc_260516a__team_anchor__anchor_g2__baseline]]\n\n## Reports\n- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_d/output/cross_round_leaderboard_nav.csv` (D-R2-1 row)\n- [[arc_260516a__reporter_20260517_0547]]\n\n## Notes / 下次迭代\n- D-R2-1 / B-R10-0 同一 pool 不同 team 重跑 = sanity check helper 一致性。下次 cross-team baseline 必须用同一 pool reproduce。\n- **核心 lesson**: default-admit baseline train NAV +31% vs anchor 但 win/sharpe/dd 都差 —— 说明多收的 74 笔有大量 \"low-quality leg\"。D 队/B 队后续的 blacklist 努力本质上都在尝试\"把这 74 笔的烂部分砍掉\"，但 hold-out 上 train-fit blacklist 都没法保留这种区分能力。\n"
+  :path "experiments/arc_260516a__team_d__D-R2-1__default_admit_baseline.md"
+  :source_mtime "2026-05-17T10:25:38+08:00"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_239a5aed" :type "atom"
+  :subj "exp:D-R2-1_default_admit_baseline"
+  :pred "has_nav"
+  :obj 20
+  :source "experiments/arc_260516a__team_d__D-R2-1__default_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_0a495bac" :type "atom"
+  :subj "exp:D-R2-1_default_admit_baseline"
+  :pred "has_type"
+  :obj "experiment"
+  :source "experiments/arc_260516a__team_d__D-R2-1__default_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_6a4d7126" :type "atom"
+  :subj "exp:D-R2-1_default_admit_baseline"
+  :pred "has_id"
+  :obj "D-R2-1_default_admit_baseline"
+  :source "experiments/arc_260516a__team_d__D-R2-1__default_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_7a0c1f07" :type "atom"
+  :subj "exp:D-R2-1_default_admit_baseline"
+  :pred "has_short_name"
+  :obj "default_admit_baseline"
+  :source "experiments/arc_260516a__team_d__D-R2-1__default_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_cfce38ca" :type "atom"
+  :subj "exp:D-R2-1_default_admit_baseline"
+  :pred "has_title"
+  :obj "D-R2-1 — default admit (no ratio gate / no volume cap / no open_3min)"
+  :source "experiments/arc_260516a__team_d__D-R2-1__default_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_6e763e1e" :type "atom"
+  :subj "exp:D-R2-1_default_admit_baseline"
+  :pred "has_arc"
+  :obj "260516a"
+  :source "experiments/arc_260516a__team_d__D-R2-1__default_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d9679b92" :type "atom"
+  :subj "exp:D-R2-1_default_admit_baseline"
+  :pred "has_team"
+  :obj "d"
+  :source "experiments/arc_260516a__team_d__D-R2-1__default_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5edd383a" :type "atom"
+  :subj "exp:D-R2-1_default_admit_baseline"
+  :pred "has_round"
+  :obj "r2"
+  :source "experiments/arc_260516a__team_d__D-R2-1__default_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_dd81c32e" :type "atom"
+  :subj "exp:D-R2-1_default_admit_baseline"
+  :pred "parent_arc"
+  :obj "arc:260516a"
+  :source "experiments/arc_260516a__team_d__D-R2-1__default_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ad2b640a" :type "atom"
+  :subj "exp:D-R2-1_default_admit_baseline"
+  :pred "parent_lineage"
+  :obj "lin:arc_260516a__team_d__blacklist_default_admit"
+  :source "experiments/arc_260516a__team_d__D-R2-1__default_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_3f7dbb55" :type "atom"
+  :subj "exp:D-R2-1_default_admit_baseline"
+  :pred "has_train_nav"
+  :obj 2.8566
+  :source "experiments/arc_260516a__team_d__D-R2-1__default_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_076a0570" :type "atom"
+  :subj "exp:D-R2-1_default_admit_baseline"
+  :pred "has_train_trade_count"
+  :obj 214
+  :source "experiments/arc_260516a__team_d__D-R2-1__default_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_aad5a387" :type "atom"
+  :subj "exp:D-R2-1_default_admit_baseline"
+  :pred "has_train_win_rate"
+  :obj 0.8178
+  :source "experiments/arc_260516a__team_d__D-R2-1__default_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9d100f6c" :type "atom"
+  :subj "exp:D-R2-1_default_admit_baseline"
+  :pred "has_train_sharpe"
+  :obj 6.6089
+  :source "experiments/arc_260516a__team_d__D-R2-1__default_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_50feac5e" :type "atom"
+  :subj "exp:D-R2-1_default_admit_baseline"
+  :pred "has_train_max_drawdown"
+  :obj -0.0121
+  :source "experiments/arc_260516a__team_d__D-R2-1__default_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c3612790" :type "atom"
+  :subj "exp:D-R2-1_default_admit_baseline"
+  :pred "has_val_nav_mean"
+  :obj 1.0782
+  :source "experiments/arc_260516a__team_d__D-R2-1__default_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_3d051dc9" :type "atom"
+  :subj "exp:D-R2-1_default_admit_baseline"
+  :pred "has_val_nav_sigma"
+  :obj 0.0763
+  :source "experiments/arc_260516a__team_d__D-R2-1__default_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_94bc25ee" :type "atom"
+  :subj "exp:D-R2-1_default_admit_baseline"
+  :pred "has_val_window_count"
+  :obj 13
+  :source "experiments/arc_260516a__team_d__D-R2-1__default_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_6c01d3b7" :type "atom"
+  :subj "exp:D-R2-1_default_admit_baseline"
+  :pred "has_anchor_train_nav"
+  :obj 2.1882
+  :source "experiments/arc_260516a__team_d__D-R2-1__default_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_83e2f984" :type "atom"
+  :subj "exp:D-R2-1_default_admit_baseline"
+  :pred "has_anchor_test_nav"
+  :obj 1.2486
+  :source "experiments/arc_260516a__team_d__D-R2-1__default_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c46eae6f" :type "atom"
+  :subj "exp:D-R2-1_default_admit_baseline"
+  :pred "has_status"
+  :obj "baseline"
+  :source "experiments/arc_260516a__team_d__D-R2-1__default_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1572f093" :type "atom"
+  :subj "exp:D-R2-1_default_admit_baseline"
+  :pred "has_outcome"
+  :obj "no_test_run"
+  :source "experiments/arc_260516a__team_d__D-R2-1__default_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9edceb59" :type "atom"
+  :subj "exp:D-R2-1_default_admit_baseline"
+  :pred "has_champion"
+  :obj false
+  :source "experiments/arc_260516a__team_d__D-R2-1__default_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f992dbcb" :type "atom"
+  :subj "exp:D-R2-1_default_admit_baseline"
+  :pred "has_overfit_score"
+  :obj 0
+  :source "experiments/arc_260516a__team_d__D-R2-1__default_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_72a93d3e" :type "atom"
+  :subj "exp:D-R2-1_default_admit_baseline"
+  :pred "has_leak_audit"
+  :obj "clean"
+  :source "experiments/arc_260516a__team_d__D-R2-1__default_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d0d32861" :type "atom"
+  :subj "exp:D-R2-1_default_admit_baseline"
+  :pred "has_axis"
+  :obj "axis:baseline"
+  :source "experiments/arc_260516a__team_d__D-R2-1__default_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_39717af2" :type "atom"
+  :subj "exp:D-R2-1_default_admit_baseline"
+  :pred "has_axis_list"
+  :obj ("baseline")
+  :source "experiments/arc_260516a__team_d__D-R2-1__default_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_dc1fe7e0" :type "atom"
+  :subj "exp:D-R2-1_default_admit_baseline"
+  :pred "has_created"
+  :obj "2026-05-17 02:00:00"
+  :source "experiments/arc_260516a__team_d__D-R2-1__default_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ade065fd" :type "atom"
+  :subj "exp:D-R2-1_default_admit_baseline"
+  :pred "has_last_updated"
+  :obj "2026-05-17 05:09:00"
+  :source "experiments/arc_260516a__team_d__D-R2-1__default_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_0695af5c" :type "atom"
+  :subj "exp:D-R2-1_default_admit_baseline"
+  :pred "has_tag"
+  :obj "tag:arc/260516a"
+  :source "experiments/arc_260516a__team_d__D-R2-1__default_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_0302774e" :type "atom"
+  :subj "exp:D-R2-1_default_admit_baseline"
+  :pred "has_tag"
+  :obj "tag:team/d"
+  :source "experiments/arc_260516a__team_d__D-R2-1__default_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d20f3292" :type "atom"
+  :subj "exp:D-R2-1_default_admit_baseline"
+  :pred "has_tag"
+  :obj "tag:round/r2"
+  :source "experiments/arc_260516a__team_d__D-R2-1__default_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_cca71670" :type "atom"
+  :subj "exp:D-R2-1_default_admit_baseline"
+  :pred "has_tag"
+  :obj "tag:axis/baseline"
+  :source "experiments/arc_260516a__team_d__D-R2-1__default_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a92f1648" :type "atom"
+  :subj "exp:D-R2-1_default_admit_baseline"
+  :pred "has_tag"
+  :obj "tag:status/baseline"
+  :source "experiments/arc_260516a__team_d__D-R2-1__default_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9109caff" :type "atom"
+  :subj "exp:D-R2-1_default_admit_baseline"
+  :pred "has_tag"
+  :obj "tag:outcome/no_test_run"
+  :source "experiments/arc_260516a__team_d__D-R2-1__default_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a32f97da" :type "atom"
+  :subj "exp:D-R2-1_default_admit_baseline"
+  :pred "has_tag"
+  :obj "tag:leak/clean"
+  :source "experiments/arc_260516a__team_d__D-R2-1__default_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_98844d34" :type "atom"
+  :subj "exp:D-R2-1_default_admit_baseline"
+  :pred "has_tag"
+  :obj "tag:size/large"
+  :source "experiments/arc_260516a__team_d__D-R2-1__default_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_0a911de1" :type "atom"
+  :subj "exp:D-R2-1_default_admit_baseline"
+  :pred "has_tl_dr"
+  :obj "Team D 的 **default-admit baseline**：完全 drop anchor 的 ratio_gate / volume_cap / open_3min，所有 leg 全收 → 214 笔。train NAV 2.86 漂亮但 win_rate 81.8% < anchor 85.7%。**所有 D-R2-x blacklist 候选都以此为 reference**。与 [[arc_260516a__team_b__B-R10-0__all_admit_baseline]] **bit-for-bit 相同**。"
+  :source "experiments/arc_260516a__team_d__D-R2-1__default_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e30de66e" :type "atom"
+  :subj "exp:D-R2-1_default_admit_baseline"
+  :pred "has_section_intro"
+  :obj "# D-R2-1 — default admit baseline (214 trades)\n\n> **TL;DR** —— Team D 的 **default-admit baseline**：完全 drop anchor 的 ratio_gate / volume_cap / open_3min，所有 leg 全收 → 214 笔。train NAV 2.86 漂亮但 win_rate 81.8% < anchor 85.7%。**所有 D-R2-x blacklist 候选都以此为 reference**。与 [[arc_260516a__team_b__B-R10-0__all_admit_baseline]] **bit-for-bit 相同**。"
+  :source "experiments/arc_260516a__team_d__D-R2-1__default_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_dba607fd" :type "atom"
+  :subj "exp:D-R2-1_default_admit_baseline"
+  :pred "has_section_hypothesis"
+  :obj "- 不是 hypothesis，是 reference baseline。让后续 blacklist 候选可以直接读 \"本 blacklist add 了多少 NAV / 损失了多少 NAV\"。"
+  :source "experiments/arc_260516a__team_d__D-R2-1__default_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9ddb2391" :type "atom"
+  :subj "exp:D-R2-1_default_admit_baseline"
+  :pred "has_section_implementation"
+  :obj "- 主脚本：`/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_d/scripts/round_2_runner.py`\n- 步骤：全 drop anchor 的 ratio_gate / volume_cap / open_3min；不加 blacklist。\n- 输出 214 笔。"
+  :source "experiments/arc_260516a__team_d__D-R2-1__default_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_0acec11f" :type "atom"
+  :subj "exp:D-R2-1_default_admit_baseline"
+  :pred "has_section_past_only_window"
+  :obj "- 无 rolling stat。`#leak/clean`。"
+  :source "experiments/arc_260516a__team_d__D-R2-1__default_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_58fe8624" :type "atom"
+  :subj "exp:D-R2-1_default_admit_baseline"
+  :pred "has_section_results"
+  :obj "| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 2.8566 | 214 | 6.61 | 81.8% | -1.21% |\n| Val (rolling 13w) | 1.0782 ± 0.076 | - | - | - | - |\n| Test | NOT RUN (作 reference 不上 test) | - | - | - | - |"
+  :source "experiments/arc_260516a__team_d__D-R2-1__default_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_3a117d02" :type "atom"
+  :subj "exp:D-R2-1_default_admit_baseline"
+  :pred "has_section_risk_overfit"
+  :obj "- N/A (reference baseline)\n- 关键 risk flag：win_rate 81.8% 显著低 anchor 85.7%，max_dd -1.21% 高 anchor -1.01% —— 这 74 笔多收的 leg (vs anchor 140) 整体 quality 差。"
+  :source "experiments/arc_260516a__team_d__D-R2-1__default_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f7ae329a" :type "atom"
+  :subj "exp:D-R2-1_default_admit_baseline"
+  :pred "bit_for_bit_same_as"
+  :obj "exp:B-R10-0_all_admit_baseline"
+  :source "experiments/arc_260516a__team_d__D-R2-1__default_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a870b590" :type "atom"
+  :subj "exp:D-R2-1_default_admit_baseline"
+  :pred "base_for"
+  :obj "exp:D-R2-2_blacklist_cross_source"
+  :source "experiments/arc_260516a__team_d__D-R2-1__default_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_40864fb7" :type "atom"
+  :subj "exp:D-R2-1_default_admit_baseline"
+  :pred "competes_with"
+  :obj "exp:anchor_g2_baseline"
+  :source "experiments/arc_260516a__team_d__D-R2-1__default_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5422a17d" :type "atom"
+  :subj "exp:D-R2-1_default_admit_baseline"
+  :pred "builds_against"
+  :obj "exp:anchor_g2_baseline"
+  :source "experiments/arc_260516a__team_d__D-R2-1__default_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_750a6452" :type "atom"
+  :subj "exp:D-R2-1_default_admit_baseline"
+  :pred "has_section_lineage_links"
+  :obj "- **bit_for_bit_same_as**: [[arc_260516a__team_b__B-R10-0__all_admit_baseline]]\n- **base_for**:\n  - [[arc_260516a__team_d__D-R2-2__blacklist_cross_source]]\n  - [[arc_260516a__team_d__D-R2-3__blacklist_stack_triple]]\n  - [[arc_260516a__team_d__D-R2-4__blacklist_stack_quad]]\n- **competes_with**: [[arc_260516a__team_anchor__anchor_g2__baseline]] (default-admit vs default-drop)\n- **builds against**: [[arc_260516a__team_anchor__anchor_g2__baseline]]"
+  :source "experiments/arc_260516a__team_d__D-R2-1__default_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1d5ba1f9" :type "atom"
+  :subj "exp:D-R2-1_default_admit_baseline"
+  :pred "has_section_reports"
+  :obj "- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_d/output/cross_round_leaderboard_nav.csv` (D-R2-1 row)\n- [[arc_260516a__reporter_20260517_0547]]"
+  :source "experiments/arc_260516a__team_d__D-R2-1__default_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ece8de82" :type "atom"
+  :subj "exp:D-R2-1_default_admit_baseline"
+  :pred "has_section_notes"
+  :obj "- D-R2-1 / B-R10-0 同一 pool 不同 team 重跑 = sanity check helper 一致性。下次 cross-team baseline 必须用同一 pool reproduce。\n- **核心 lesson**: default-admit baseline train NAV +31% vs anchor 但 win/sharpe/dd 都差 —— 说明多收的 74 笔有大量 \"low-quality leg\"。D 队/B 队后续的 blacklist 努力本质上都在尝试\"把这 74 笔的烂部分砍掉\"，但 hold-out 上 train-fit blacklist 都没法保留这种区分能力。"
+  :source "experiments/arc_260516a__team_d__D-R2-1__default_admit_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")

@@ -1,0 +1,33 @@
+;; m001 — paper → 3 experiment-suggestion cards.
+;;
+;; Given a source experiment / paper card, expand into three follow-up
+;; suggestion cards: baseline-replication, ablation, and extension. Each
+;; suggestion is a fresh card with :parents = [source-id, m001-id] so the
+;; provenance chain back to the macro and the originating source is intact.
+;;
+;; Body templates use the same pair-form the kernel's EDN serializer emits
+;; for dicts:  (:key val :key val ...).  run_rules.py converts each pair
+;; list back into a Python dict before handing to MacroEngine.expand, so the
+;; on-disk representation stays a pure sexp form and the kernel's macro
+;; engine doesn't need to learn a new shape.
+
+(card "m001_paper_to_experiment_suggestion" :type "macro"
+  :name "paper-to-experiment-suggestion"
+  :params ("?source-paper")
+  :body (
+    (:type "suggestion"
+     :subj "?source-paper"
+     :pred "suggests_experiment"
+     :obj "suggestion_baseline_?source-paper"
+     :body "Baseline replication of ?source-paper — re-run the headline result on the canonical dataset, no hyperparameter change, to confirm reproducibility before any new variant is built on top.")
+    (:type "suggestion"
+     :subj "?source-paper"
+     :pred "suggests_experiment"
+     :obj "suggestion_ablation_?source-paper"
+     :body "Ablation of ?source-paper hypothesis — knock out the single mechanism the paper claims is load-bearing and confirm headline metric drops by a non-trivial margin.")
+    (:type "suggestion"
+     :subj "?source-paper"
+     :pred "suggests_experiment"
+     :obj "suggestion_extension_?source-paper"
+     :body "Axis extension of ?source-paper — take the principal axis the paper varies and probe one neighbouring axis (different bucket, different horizon, different ticker pool) to test the claim's transfer."))
+  :status "active")

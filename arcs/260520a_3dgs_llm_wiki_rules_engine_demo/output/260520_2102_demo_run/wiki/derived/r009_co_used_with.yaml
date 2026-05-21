@@ -1,0 +1,36 @@
+- iteration: 1
+  binding:
+    ?D: doc:notes/lidar_merge_quality_metric.md
+    ?B: doc:notes/lidar_merge_pipeline.md
+    ?E: doc:notes/fabu_pose_floor.md
+  parents:
+  - a_065771bf
+  - a_e7436743
+  atom:
+    id: a_0ab2ae20
+    subj: doc:notes/lidar_merge_quality_metric.md
+    pred: co_used_with
+    obj: doc:notes/fabu_pose_floor.md
+    source: ''
+    derived_from: r009_co_used_with
+    parents:
+    - a_065771bf
+    - a_e7436743
+- iteration: 1
+  binding:
+    ?D: doc:notes/fabu_pose_floor.md
+    ?B: doc:notes/lidar_merge_pipeline.md
+    ?E: doc:notes/lidar_merge_quality_metric.md
+  parents:
+  - a_e7436743
+  - a_065771bf
+  atom:
+    id: a_c4b515af
+    subj: doc:notes/fabu_pose_floor.md
+    pred: co_used_with
+    obj: doc:notes/lidar_merge_quality_metric.md
+    source: ''
+    derived_from: r009_co_used_with
+    parents:
+    - a_e7436743
+    - a_065771bf

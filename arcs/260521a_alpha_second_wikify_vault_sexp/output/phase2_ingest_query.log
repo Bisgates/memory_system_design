@@ -1,0 +1,130 @@
+======================================================================
+PHASE 2 INGEST — QUERY VERIFICATION
+======================================================================
+loaded edn files : 65
+total cards      : 3404
+
+Q1: find :type 'experiment' (should equal 53)
+  count = 53
+  sample subj ids: ['exp:C20_recent_signal_flow_skip', 'exp:C6_anchor_plus_impact_cap', 'exp:C7_same_minute_pre_amt', 'exp:anchor_g2_baseline', 'exp:B-R10-0_all_admit_baseline']
+
+Q2: find :pred 'has_tag :obj 'tag:axis/blacklist' (should be > 0)
+  count = 21
+  unique subjects (showing 10): ['exp:B-R10-2_blacklist_low_amt', 'exp:B-R10-4_blacklist_stack_3', 'exp:B-R11-2_blacklist_vol_regime_low', 'exp:B-R8-1_no_open3min_bypass03', 'exp:D-R1-3_drop_full_consensus', 'exp:D-R2-2_blacklist_cross_source', 'exp:D-R2-3_blacklist_stack_triple', 'exp:D-R2-4_blacklist_stack_quad', 'exp:E-R1-1_leader_ratio_bucket', 'exp:E-R1-2_leader_ticker_rolling_q20']
+
+Q3: find :pred 'falsifies (typed link extracted)
+  count = 1
+    (lin:arc_260516a__team_d__cross_source_consensus) --falsifies--> (lin:arc_260516a__team_a__multi_axis_singleaxis_discipline)
+  falsifies_lineage count = 0
+
+Q4: find_links_from('exp:H-R3b-4_c84_kelly_lambda_1.5') — all outgoing predicates from SOTA champion
+  outgoing card count = 58
+    :pred ?                            (1x)  e.g. ['None']
+    :pred builds_on                    (1x)  e.g. ["'exp:C8.4_top3_no_open3min_bypass'"]
+    :pred competes_with                (1x)  e.g. ["'exp:B-R8-1_no_open3min_bypass03'"]
+    :pred derived_from                 (1x)  e.g. ["'exp:H-R2-2_c84_linear_sizing'"]
+    :pred has_anchor_test_nav          (1x)  e.g. ['1.2486']
+    :pred has_anchor_train_nav         (1x)  e.g. ['2.1882']
+    :pred has_arc                      (1x)  e.g. ["'260516a'"]
+    :pred has_axis                     (1x)  e.g. ["'axis:sizing'"]
+    :pred has_axis_list                (1x)  e.g. ["['sizing']"]
+    :pred has_champion                 (1x)  e.g. ['True']
+    :pred has_created                  (1x)  e.g. ["'2026-05-17 03:30:00'"]
+    :pred has_id                       (1x)  e.g. ["'H-R3b-4'"]
+    :pred has_last_updated             (1x)  e.g. ["'2026-05-17 05:09:00'"]
+    :pred has_leak_audit               (1x)  e.g. ["'clean'"]
+    :pred has_nav                      (1x)  e.g. ['1']
+    :pred has_outcome                  (1x)  e.g. ["'test_pass'"]
+    :pred has_overfit_score            (1x)  e.g. ['0']
+    :pred has_past_only_window_days    (1x)  e.g. ['30']
+    :pred has_round                    (1x)  e.g. ["'r3b'"]
+    :pred has_section_hypothesis       (1x)  e.g. ['\'- 在固定 trade-selector (C8.4) 的前提下，**size 应当与信号强度成正比** —— 即当 `ratio` 显著高于其过去 30 天的中位数时，加注；显著低时，减注。\\n- 实现 = 标准 Kelly 心智模型的简化版：不直接估 expected return / variance（数据量不够），而是用 `ratio` 作为 strength proxy。\\n- λ=1.5 是 R3b sweep [0.25, 0.5, 1.0, 1.5] 里的"最激进 clip-飞顶"档：bound 不变（仍 0.5–1.5），但偏离 1.0 时更快撞到 bound，相当于"信号强弱 → size 二极化"。\\n- 预期收益 vs λ=1.0 ([[arc_260516a__team_h__H-R2-2__c84_linear_sizing]])：略高 mean / 略高 std，依旧 monotone 增长 NAV（如果 ratio 确实 informative）。\'']
+    :pred has_section_implementation   (1x)  e.g. ["'- 主脚本：`/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_h/scripts/round_3b_runner.py`\\n- trade selector 来自 base = C8.4：`top-3 + no_open_3min + B-R8-2 high-ratio bypass (ratio>0.40)`，输出 179 笔。\\n- sizing 公式：\\n\\n  $$\\n  \\\\\\text{size}(t) = \\\\\\\\mathrm{clip}\\\\\\\\!\\\\\\\\left(\\\\\\\\lambda \\\\\\\\cdot \\\\\\\\left(\\\\\\\\frac{r_t}{\\\\\\\\widetilde{r}^{\\\\\\\\;\\\\\\text{past-30d}}_{\\\\\\\\,t}} - 1\\\\\\\\right) + 1,\\\\\\\\; 0.5,\\\\\\\\; 1.5\\\\\\\\right), \\\\\\\\quad \\\\\\\\lambda = 1.5\\n  $$\\n\\n  - $r_t$ = 当前 trade 时刻 t 上 leg 的 `ratio`\\n  - $\\\\\\\\widetilde{r}^{\\\\\\\\;\\\\\\text{past-30d}}_{\\\\\\\\,t}$ = `events[event_time < t & event_time >= t - 30d]` 上 `ratio` 列的中位数\\n  - λ=1 时退化为 [[arc_260516a__team_h__H-R2-2__c84_linear_sizing]] 的线性公式\\n  - clip 上下界保留与 R2 一致，确保单笔不爆仓\\n\\n- 关键函数：`rolling_30d_ratio_median()` 和 `size_kelly()`（同一文件）。\\n- mean_size 实测 = 1.191, std_size = 0.387 ⇒ 大量 trade 已撞到 1.5 上界。'"]
+    :pred has_section_intro            (1x)  e.g. ["'# H-R3b-4 — C8.4 × Kelly-fraction sizing λ=1.5\\n\\n> **TL;DR** —— 把 [[arc_260516a__team_c__C8.4__top3_no_open3min_bypass]] 选出的 179 笔 trade 用 **Kelly-fraction 风格 sizing**（按 ratio 相对 30 天历史中位数偏离度，放大 λ=1.5 倍后 clip 到 [0.5, 1.5]）。**train NAV 3.70 / test NAV 1.49**，均严格高于 anchor (2.19 / 1.25)。**当前 arc 260516a SOTA champion**。'"]
+    :pred has_section_lineage_links    (1x)  e.g. ["'- **derived_from**: [[arc_260516a__team_h__H-R2-2__c84_linear_sizing]] —— λ=1 特例的 amplified 版\\n- **builds on**: [[arc_260516a__team_c__C8.4__top3_no_open3min_bypass]] —— trade selector，H 系列 sizing 全部以 C8.4 为 base\\n- **competes_with**: [[arc_260516a__team_b__B-R8-1__no_open3min_bypass03]]（不同 axis 的并行 challenger，blacklist 路线）\\n- **falsifies / dominates**: [[arc_260516a__team_h__H-R2-2__c84_linear_sizing]] (同 base 不同 λ，train NAV 略胜 0.05; test 持平; 取最高)\\n- **builds against (anchor)**: [[arc_260516a__team_anchor__anchor_g2__baseline]]'"]
+    :pred has_section_notes            (1x)  e.g. ['\'- **下一代 sizing**：\\n  1. λ > 1.5 已无意义（mean_size 1.19 已接近上界 1.5）。要继续放大必须先放宽 clip 上界 ([0.5, 2.0] / [0.3, 1.7])，但这会引入"单笔爆仓"风险，需 max_drawdown 配合做 stop。\\n  2. 把 ratio 之外的强度信号 (e.g. 5min OFI sign aligned) 接进 size 公式，做 **multi-factor Kelly** —— 但要警惕 [[arc_260516a__team_f__F-R1-1__ofi_drop_extreme]] 撞过的 microstructure 笔数崩坑。\\n- **sizing axis 通用 lesson**：rolling median window 长度 (30d) 是过往 arc 没探过的维度 —— 下次可 sweep 7d / 14d / 60d，看 mean_size 漂移幅度。\\n- 任何继任 SOTA 候选请记得 anchor cross-comparison 用 cumulative_nav 终值，不是 mean_return per trade（已 deprecated 为辅助指标）。\'']
+    :pred has_section_past_only_window (1x)  e.g. ["'- **严格 past-only**：`rolling_30d_ratio_median` 对每个 trade 时刻 t 取 `events[event_time < t]` 的 [t-30d, t) 半开窗口中位数。\\n- **Warmup**：sub-window 内 event 数 < 10 时回退 `size = 1.0`（即不放大），避免冷启动撞 clip 上界。\\n- critic future-data audit 2026-05-17 pass：grep 过 `>=` / `<=` 边界、确认无 lookahead；events 流加载范围 2025-01-01 → 2026-04-30 (训练上限) 显式截断在 trade t 之前。\\n- 边缘 leak / structural leak 均无 (`#leak/clean`)。'"]
+    :pred has_section_reports          (1x)  e.g. ["'- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/output/reporter_20260517_0547.html`\\n- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/output/comprehensive_evaluation_20260517T0124.html`\\n- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/output/cross_team_test_nav_ranking_v2.csv` (row 1)\\n- [[arc_260516a__reporter_20260517_0547]]'"]
+    :pred has_section_results          (1x)  e.g. ["'| | NAV | Trades | Sharpe | Win | MaxDD |\\n|---|---|---|---|---|---|\\n| Train (seg1+seg2) | **3.6981** | 179 | 7.54 | 87.7% | -0.67% |\\n| Val (rolling 13w mean ± σ) | 1.1020 ± 0.117 | - | - | - | - |\\n| Test (hold-out) | **1.4905** | 31 | 7.37 | 80.6% | -0.43% |\\n| Anchor train | 2.1882 | 140 | 7.70 | 85.7% | -1.01% |\\n| Anchor test | 1.2486 | 20 | 7.15 | 75.0% | -0.53% |\\n| **Δ test NAV vs anchor** | **+0.242** | +11 | +0.22 | +5.6pp | +0.10pp |\\n\\n- train: NAV +1.51 vs anchor（+69%）；笔数 179 落在 anchor ±30% 上沿（gate pass）。\\n- val rolling 13 windows: mean 1.102，全部 13 个 window NAV 严格 > anchor val NAV mean 1.060。\\n- **test**: NAV 1.49 vs anchor 1.25, **+19.4% cumulative**；笔数 31 > anchor 20（test data 在该 arc 内被扩展过，N 改变是预期）。'"]
+    :pred has_section_risk_overfit     (1x)  e.g. ['\'- engineer / critic overfit_score = **0**（最干净档）\\n- 理由：\\n  - λ sweep [0.25, 0.5, 1.0, 1.5] 在 R3b 一次性提交，**不是 test 上反向调** —— 单一 grid，按 train+val 排名。\\n  - val rolling 13 windows 全部 strict beat anchor，单 window 依赖低。\\n  - test NAV / sharpe / win / dd 四项**全部严格优于 anchor**，不存在"靠 trade_count 灌水抬 NAV"嫌疑。\\n- 剩余 risk flag：mean_size 1.19 已接近 clip 上界 1.5，说明 30d median 显著低于近期 ratio 中枢；如果 ratio 分布漂移，size 容易长期顶满 bound，**效果退化为 fixed 1.5x leverage** —— 下次 arc 应监控 mean_size 漂移。\'']
+    :pred has_short_name               (1x)  e.g. ["'c84_kelly_lambda_1.5'"]
+    :pred has_status                   (1x)  e.g. ["'champion'"]
+    :pred has_tag                      (8x)  e.g. ["'tag:arc/260516a'", "'tag:team/h'", "'tag:round/r3b'", "'tag:axis/sizing'", '...(+4)']
+    :pred has_team                     (1x)  e.g. ["'h'"]
+    :pred has_test_max_drawdown        (1x)  e.g. ['-0.0043']
+    :pred has_test_nav                 (1x)  e.g. ['1.4905']
+    :pred has_test_sharpe              (1x)  e.g. ['7.3691']
+    :pred has_test_trade_count         (1x)  e.g. ['31']
+    :pred has_test_win_rate            (1x)  e.g. ['0.8065']
+    :pred has_title                    (1x)  e.g. ["'H-R3b-4 — C8.4 × Kelly-fraction sizing λ=1.5 (SOTA champion)'"]
+    :pred has_tl_dr                    (1x)  e.g. ["'把 [[arc_260516a__team_c__C8.4__top3_no_open3min_bypass]] 选出的 179 笔 trade 用 **Kelly-fraction 风格 sizing**（按 ratio 相对 30 天历史中位数偏离度，放大 λ=1.5 倍后 clip 到 [0.5, 1.5]）。**train NAV 3.70 / test NAV 1.49**，均严格高于 anchor (2.19 / 1.25)。**当前 arc 260516a SOTA champion**。'"]
+    :pred has_train_max_drawdown       (1x)  e.g. ['-0.0067']
+    :pred has_train_nav                (1x)  e.g. ['3.6981']
+    :pred has_train_sharpe             (1x)  e.g. ['7.5409']
+    :pred has_train_trade_count        (1x)  e.g. ['179']
+    :pred has_train_win_rate           (1x)  e.g. ['0.8771']
+    :pred has_type                     (1x)  e.g. ["'experiment'"]
+    :pred has_val_nav_mean             (1x)  e.g. ['1.102']
+    :pred has_val_nav_sigma            (1x)  e.g. ['0.117']
+    :pred has_val_window_count         (1x)  e.g. ['13']
+    :pred has_warmup_required          (1x)  e.g. ['10']
+    :pred parent_arc                   (1x)  e.g. ["'arc:260516a'"]
+    :pred parent_lineage               (1x)  e.g. ["'lin:arc_260516a__team_h__sizing'"]
+
+Q5: reverse lookup — all cards with :pred 'has_tag :obj 'tag:status/falsified'
+  count = 20
+  subjects (20 unique):
+    - exp:B-R10-2_blacklist_low_amt
+    - exp:B-R10-4_blacklist_stack_3
+    - exp:B-R11-2_blacklist_vol_regime_low
+    - exp:D-R1-1_consensus_gte1
+    - exp:D-R1-2_isolated_keep
+    - exp:D-R1-3_drop_full_consensus
+    - exp:D-R2-3_blacklist_stack_triple
+    - exp:D-R2-4_blacklist_stack_quad
+    - exp:F-R1-1_ofi_drop_extreme
+    - exp:F-R1-2_vpin_q80_admit
+    - exp:F-R2-1_vpin_drop_q80_300s
+    - exp:F-R2-2_vpin_drop_q70_300s
+    - exp:F-R2-3_vpin_drop_q80_600s
+    - exp:F-R2-4_ofi_dir_align
+    - exp:H-R1-2_pre_avg_amount_sizing
+    - exp:H-R1-3_ratio_vol_blend
+    - exp:H-R3a-1_b_r11_2_sizing
+    - exp:H-R3a-2_d_r2_3_sizing
+    - lin:arc_260516a__team_f__microstructure_vpin_ofi
+    - lin:arc_260516a__team_g__alt_csv_source_swap
+
+======================================================================
+BONUS STATS
+======================================================================
+  cards of type 'anti_pattern'            8
+  cards of type 'atom'                    3331
+  cards of type 'doc'                     3
+  cards of type 'experiment'              53
+  cards of type 'lineage'                 8
+  cards of type 'report'                  1
+
+  top-20 predicates:
+    has_tag                             519
+    has_axis                            87
+    has_type                            65
+    has_section_intro                   65
+    has_status                          63
+    has_arc                             62
+    has_team                            61
+    has_nav                             56
+    has_created                         56
+    parent_arc                          55
+    has_title                           55
+    has_section_hypothesis              54
+    has_section_implementation          54
+    has_section_past_only_window        54
+    has_section_results                 54
+    has_section_risk_overfit            54
+    has_section_lineage_links           54
+    has_section_reports                 54
+    has_section_notes                   54
+    has_id                              53
+
+VERIFICATION PASSED

@@ -1,0 +1,225 @@
+- iteration: 1
+  binding:
+    ?A: arc:260430a
+    ?D: doc:policy/agents_md_conventions.md
+  parents:
+  - a_c6aa6c96
+  atom:
+    id: a_33e098e0
+    subj: doc:policy/agents_md_conventions.md
+    pred: introduced_by
+    obj: arc:260430a
+    source: ''
+    derived_from: r001_introduces_reverse
+    parents:
+    - a_c6aa6c96
+- iteration: 1
+  binding:
+    ?A: arc:260508b
+    ?D: doc:notes/lidar_merge_quality_metric.md
+  parents:
+  - a_a26feb5c
+  atom:
+    id: a_30d309e0
+    subj: doc:notes/lidar_merge_quality_metric.md
+    pred: introduced_by
+    obj: arc:260508b
+    source: ''
+    derived_from: r001_introduces_reverse
+    parents:
+    - a_a26feb5c
+- iteration: 1
+  binding:
+    ?A: arc:260508b
+    ?D: doc:notes/fabu_pose_floor.md
+  parents:
+  - a_6eff8628
+  atom:
+    id: a_f96e58da
+    subj: doc:notes/fabu_pose_floor.md
+    pred: introduced_by
+    obj: arc:260508b
+    source: ''
+    derived_from: r001_introduces_reverse
+    parents:
+    - a_6eff8628
+- iteration: 1
+  binding:
+    ?A: arc:260508c
+    ?D: doc:notes/glb_to_3dgs_recipe.md
+  parents:
+  - a_c4328fe1
+  atom:
+    id: a_cd91d9a9
+    subj: doc:notes/glb_to_3dgs_recipe.md
+    pred: introduced_by
+    obj: arc:260508c
+    source: ''
+    derived_from: r001_introduces_reverse
+    parents:
+    - a_c4328fe1
+- iteration: 1
+  binding:
+    ?A: arc:260508c
+    ?D: doc:notes/vanilla_3dgs_mask_training_recipe.md
+  parents:
+  - a_c62b0819
+  atom:
+    id: a_e938aedf
+    subj: doc:notes/vanilla_3dgs_mask_training_recipe.md
+    pred: introduced_by
+    obj: arc:260508c
+    source: ''
+    derived_from: r001_introduces_reverse
+    parents:
+    - a_c62b0819
+- iteration: 1
+  binding:
+    ?A: arc:260508c
+    ?D: doc:decisions/photo_vs_glb_for_3dgs_asset.md
+  parents:
+  - a_91444fbb
+  atom:
+    id: a_765d4586
+    subj: doc:decisions/photo_vs_glb_for_3dgs_asset.md
+    pred: introduced_by
+    obj: arc:260508c
+    source: ''
+    derived_from: r001_introduces_reverse
+    parents:
+    - a_91444fbb
+- iteration: 1
+  binding:
+    ?A: arc:260511a
+    ?D: doc:notes/mesh_to_3dgs_pipeline.md
+  parents:
+  - a_6850ac3e
+  atom:
+    id: a_67fc1699
+    subj: doc:notes/mesh_to_3dgs_pipeline.md
+    pred: introduced_by
+    obj: arc:260511a
+    source: ''
+    derived_from: r001_introduces_reverse
+    parents:
+    - a_6850ac3e
+- iteration: 1
+  binding:
+    ?A: arc:260511a
+    ?D: doc:decisions/2026-05-11_glb_to_3dgs_method_selection.md
+  parents:
+  - a_be0fb299
+  atom:
+    id: a_b319ec81
+    subj: doc:decisions/2026-05-11_glb_to_3dgs_method_selection.md
+    pred: introduced_by
+    obj: arc:260511a
+    source: ''
+    derived_from: r001_introduces_reverse
+    parents:
+    - a_be0fb299
+- iteration: 1
+  binding:
+    ?A: arc:260511a
+    ?D: doc:policy/agent_team_research_protocol.md
+  parents:
+  - a_838d88b3
+  atom:
+    id: a_8f7ff965
+    subj: doc:policy/agent_team_research_protocol.md
+    pred: introduced_by
+    obj: arc:260511a
+    source: ''
+    derived_from: r001_introduces_reverse
+    parents:
+    - a_838d88b3
+- iteration: 1
+  binding:
+    ?A: arc:260513a
+    ?D: doc:notes/fabu_ego_filter_recipe.md
+  parents:
+  - a_211acfb2
+  atom:
+    id: a_76700019
+    subj: doc:notes/fabu_ego_filter_recipe.md
+    pred: introduced_by
+    obj: arc:260513a
+    source: ''
+    derived_from: r001_introduces_reverse
+    parents:
+    - a_211acfb2
+- iteration: 1
+  binding:
+    ?A: arc:260513a
+    ?D: doc:decisions/fabu_ego_filter_soft_weight_choice.md
+  parents:
+  - a_531c05ce
+  atom:
+    id: a_6b2a5927
+    subj: doc:decisions/fabu_ego_filter_soft_weight_choice.md
+    pred: introduced_by
+    obj: arc:260513a
+    source: ''
+    derived_from: r001_introduces_reverse
+    parents:
+    - a_531c05ce
+- iteration: 1
+  binding:
+    ?A: arc:260513a
+    ?D: doc:notes/drivestudio_pythonpath_inject_pitfall.md
+  parents:
+  - a_10e615af
+  atom:
+    id: a_eff42428
+    subj: doc:notes/drivestudio_pythonpath_inject_pitfall.md
+    pred: introduced_by
+    obj: arc:260513a
+    source: ''
+    derived_from: r001_introduces_reverse
+    parents:
+    - a_10e615af
+- iteration: 1
+  binding:
+    ?A: arc:260514b
+    ?D: doc:notes/fabu_batch001_merged_holdout.md
+  parents:
+  - a_62d24387
+  atom:
+    id: a_b6bec14f
+    subj: doc:notes/fabu_batch001_merged_holdout.md
+    pred: introduced_by
+    obj: arc:260514b
+    source: ''
+    derived_from: r001_introduces_reverse
+    parents:
+    - a_62d24387
+- iteration: 1
+  binding:
+    ?A: arc:260514b
+    ?D: doc:decisions/3dgs_init_voxel_fused.md
+  parents:
+  - a_2b9dd649
+  atom:
+    id: a_fed47f45
+    subj: doc:decisions/3dgs_init_voxel_fused.md
+    pred: introduced_by
+    obj: arc:260514b
+    source: ''
+    derived_from: r001_introduces_reverse
+    parents:
+    - a_2b9dd649
+- iteration: 1
+  binding:
+    ?A: arc:260514b
+    ?D: doc:notes/da3_lidar_scale_align.md
+  parents:
+  - a_eee587ae
+  atom:
+    id: a_76693e7d
+    subj: doc:notes/da3_lidar_scale_align.md
+    pred: introduced_by
+    obj: arc:260514b
+    source: ''
+    derived_from: r001_introduces_reverse
+    parents:
+    - a_eee587ae

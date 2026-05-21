@@ -1,0 +1,5 @@
+- 在固定 trade-selector (C8.4) 的前提下，**size 应当与信号强度成正比** —— 即当 `ratio` 显著高于其过去 30 天的中位数时，加注；显著低时，减注。
+- 实现 = 标准 Kelly 心智模型的简化版：不直接估 expected return / variance（数据量不够），而是用 `ratio` 作为 strength proxy。
+- λ=1.6 是 R3b sweep [0.25, 0.5, 1.0, 1.5] 里的"最激进 clip-飞顶"档：bound 不变（仍 0.5–1.5），但偏离 1.0 时更快撞到 bound，相当于"信号强弱 → size 二极化"。
+- 预期收益 vs λ=1.0 ([[arc_260516a__team_h__H-R2-2__c84_linear_sizing]])：略高 mean / 略高 std，依旧 monotone 增长 NAV（如果 ratio 确实 informative）。 
+- 备注: 该假设的微调 variant, 用于测试 dedup restart 协议。

@@ -1,0 +1,72 @@
+;; r001 — canonicalize body link labels
+;;
+;; Phase 2 ingest preserved ~45 ad-hoc body-bullet labels that are NOT in the
+;; vault's 6 official typed-link vocabulary (parent_arc / parent_lineage /
+;; derived_from / competes_with / falsifies / reports_to). r001 maps the
+;; most-frequent unknowns to canonical / extended-canonical predicates.
+;;
+;; The rule engine in wiki/lib/rules.py supports exactly one (:when, :then)
+;; pair per rule card, so r001 is implemented as a *family* of micro-rules
+;; (r001a … r001g). They are all stored in this single .edn file so the
+;; canonicalization layer reads as one logical unit.
+;;
+;; Mapping table (from arc 260521a Phase 3 spec):
+;;   borrowed_by                  → borrowed_by               (kept, extended typed-link)
+;;   descendants                  → derived_from (reversed)
+;;   base_for                     → derived_from (reversed)
+;;   same_round_as                → same_round_as             (kept, symmetric — see r001f)
+;;   team_a_top_picks             → top_pick_for              (extended typed-link)
+;;   inherits_failure_mode        → inherits_anti_pattern     (canonicalized)
+;;   inherits_failure_mode_from   → inherits_anti_pattern     (canonicalized)
+;;
+;; Derived atoms reference this rule card via :derived_from so any consumer
+;; can trace the canonical predicate back to the rule that synthesized it.
+
+(card "rule:r001a_borrowed_by_keep" :type "rule"
+  :body "borrowed_by is already canonical in the extended typed-link set; emit a parallel canonical atom so downstream consumers can rely on the extended vocabulary without re-checking the unknown-label flag."
+  :when (("?a" "borrowed_by" "?b"))
+  :then (("?a" "borrowed_by_canonical" "?b"))
+  :status "active"
+  :parents ("r001_canonicalize_body_links"))
+
+(card "rule:r001b_descendants_reverse" :type "rule"
+  :body "A descendants B (read: A has descendant B) implies B derived_from A."
+  :when (("?a" "descendants" "?b"))
+  :then (("?b" "derived_from" "?a"))
+  :status "active"
+  :parents ("r001_canonicalize_body_links"))
+
+(card "rule:r001c_base_for_reverse" :type "rule"
+  :body "A base_for B (read: A is the base for B) implies B derived_from A."
+  :when (("?a" "base_for" "?b"))
+  :then (("?b" "derived_from" "?a"))
+  :status "active"
+  :parents ("r001_canonicalize_body_links"))
+
+(card "rule:r001d_team_top_picks_canonical" :type "rule"
+  :body "team_a_top_picks is a team-internal short-list relation; canonicalize to top_pick_for (subj is the pick; obj is the picker)."
+  :when (("?a" "team_a_top_picks" "?b"))
+  :then (("?a" "top_pick_for" "?b"))
+  :status "active"
+  :parents ("r001_canonicalize_body_links"))
+
+(card "rule:r001e_inherits_failure_mode_canonical" :type "rule"
+  :body "inherits_failure_mode is the verbose form of inherits_anti_pattern; canonicalize to the catalog predicate."
+  :when (("?a" "inherits_failure_mode" "?b"))
+  :then (("?a" "inherits_anti_pattern" "?b"))
+  :status "active"
+  :parents ("r001_canonicalize_body_links"))
+
+(card "rule:r001f_inherits_failure_mode_from_canonical" :type "rule"
+  :body "inherits_failure_mode_from is the directional verbose form; canonicalize to inherits_anti_pattern."
+  :when (("?a" "inherits_failure_mode_from" "?b"))
+  :then (("?a" "inherits_anti_pattern" "?b"))
+  :status "active"
+  :parents ("r001_canonicalize_body_links"))
+
+(card "rule:r001g_same_round_as_symmetric" :type "rule"
+  :body "same_round_as is a symmetric relation; emit the reverse edge so consumers can find both directions in a single hop."
+  :when (("?a" "same_round_as" "?b"))
+  :then (("?b" "same_round_as" "?a"))
+  :status "active"
+  :parents ("r001_canonicalize_body_links"))

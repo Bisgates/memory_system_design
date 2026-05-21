@@ -1,0 +1,363 @@
+(card "exp:B-R10-2_blacklist_low_amt" :type "experiment"
+  :subj "exp:B-R10-2_blacklist_low_amt"
+  :body "---\nnav: 19\ntype: experiment\nid: B-R10-2_blacklist_low_amt\nshort_name: blacklist_low_amt\ntitle: \"B-R10-2 — default-admit ∖ {low pre_amt q10} blacklist\"\narc: 260516a\nteam: b\nround: r10\nparent_arc: \"[[arcs/260516a]]\"\nparent_lineage: \"[[lineages/arc_260516a__team_b__blacklist_evolution]]\"\ntrain_nav: 2.6473\ntrain_trade_count: 199\ntrain_win_rate: null\ntrain_sharpe: null\ntrain_max_drawdown: null\nval_nav_mean: null\nval_nav_sigma: null\nval_window_count: 13\ntest_nav: 1.1725\ntest_trade_count: 25\ntest_sharpe: 5.5008\ntest_win_rate: 0.72\ntest_max_drawdown: -0.0129\nanchor_train_nav: 2.1882\nanchor_test_nav: 1.2486\nstatus: falsified\noutcome: test_fail\nchampion: false\noverfit_score: 0\nleak_audit: clean\naxis: [blacklist]\npast_only_window_days: null\nwarmup_required: null\ncreated: 2026-05-17T01:50:00\nlast_updated: 2026-05-17T05:09:00\ntags: [arc/260516a, team/b, round/r10, axis/blacklist, status/falsified, outcome/test_fail, leak/clean, size/large]\n---\n\n# B-R10-2 — default-admit ∖ {low pre_amt q10}\n\n> **TL;DR** —— R10 系列首条 single-blacklist：从 default-admit 214 笔砍掉 pre-trigger 5min 平均量底部 10%。train 199 笔 / NAV 2.65 看着 ok；**test NAV 1.17 < anchor 1.25** —— 失败。与 D 系列 blacklist 路线在 hold-out 上同步崩塌的另一证据。\n\n## 假设 (Hypothesis)\n- 假设：触发前 5min 平均成交量底部 10% 的 leg 是\"流动性差 → 滑点重 → 大概率亏\"，drop 这些应当抬 win/sharpe。\n- 期待：trade_count 仅降 7%（214→199），NAV 应保持或上升。\n\n## 实现 (Implementation)\n- 主脚本：`/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_b/scripts/round_10_runner.py`\n- 步骤：default-admit (R10-0 base) → drop legs with `pre_avg_amount` 落在 trailing-cum q10。\n- 输出 199 笔。\n\n## Past-only window 处理\n- `pre_avg_amount` 是 trigger 前 5min 内 quantity，结构上 past-only。\n- q10 threshold 用 trailing-cumulative quantile（每个 t 用 t' < t 的历史计算）→ strict past-only。\n- `#leak/clean`。\n\n## 结果 (Results)\n| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 2.6473 | 199 | - | - | - |\n| Val | (gate pass; full numbers in CSV row R10-2) | - | - | - | - |\n| Test | **1.1725** | 25 | 5.50 | 72.0% | -1.29% |\n| **Δ test NAV vs anchor** | **-0.076 (FAIL)** | +5 | -1.65 | -3.0pp | -0.76pp |\n\n砍 15 笔 (low-amt) 后 NAV 比 R10-0 baseline 反而降 0.21；test 直接崩。\n\n## 风险 & overfit 嫌疑\n- overfit_score = 0（gate 都过）但 test 崩 —— 又一个\"train 看着合理、test 完蛋\"的 default-admit blacklist 例。\n- 真实 risk：low pre_amt 的 leg 在 train 上被识别为\"差\"，但 hold-out 上\"低量\"分布漂移（test 期 SPY 整体量更低），blacklist threshold 变成 noise filter。\n\n## Lineage（双链网）\n- **derived_from**: [[arc_260516a__team_b__B-R10-0__all_admit_baseline]]\n- **competes_with**: [[arc_260516a__team_b__B-R10-4__blacklist_stack_3]] (3-stack 更激进)\n- **also_explored_by**: [[arc_260516a__team_d__D-R2-3__blacklist_stack_triple]] (D 队同 axis stack)\n- **builds against**: [[arc_260516a__team_anchor__anchor_g2__baseline]]\n- **inherits_failure_pattern**: default-admit + blacklist 路线（vs sizing 路线）的整体 hold-out 不稳\n\n## Reports\n- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_b/output/cross_round_leaderboard_nav.csv` (R10-2 row)\n- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/output/cross_team_test_nav_ranking_v2.csv` (B-R10-2)\n- [[arc_260516a__reporter_20260517_0547]]\n\n## Notes / 下次迭代\n- **再一条 default-admit blacklist 反例**。下次 sub-agent 想做\"低流动性 leg blacklist\"必须意识到：流动性 threshold (pre_amt / volume) 是非 stationary 的，train 上的 q10 cutoff 在 test 上可能砍掉 wrong leg。\n- 替代设计：用 **per-ticker rolling normalize**（leg pre_amt / ticker 5d 中位数），消除 cross-period 量级漂移。\n"
+  :path "experiments/arc_260516a__team_b__B-R10-2__blacklist_low_amt.md"
+  :source_mtime "2026-05-17T10:21:17+08:00"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b9c933fb" :type "atom"
+  :subj "exp:B-R10-2_blacklist_low_amt"
+  :pred "has_nav"
+  :obj 19
+  :source "experiments/arc_260516a__team_b__B-R10-2__blacklist_low_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_50a2de8f" :type "atom"
+  :subj "exp:B-R10-2_blacklist_low_amt"
+  :pred "has_type"
+  :obj "experiment"
+  :source "experiments/arc_260516a__team_b__B-R10-2__blacklist_low_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_13ec1ced" :type "atom"
+  :subj "exp:B-R10-2_blacklist_low_amt"
+  :pred "has_id"
+  :obj "B-R10-2_blacklist_low_amt"
+  :source "experiments/arc_260516a__team_b__B-R10-2__blacklist_low_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f0587fdc" :type "atom"
+  :subj "exp:B-R10-2_blacklist_low_amt"
+  :pred "has_short_name"
+  :obj "blacklist_low_amt"
+  :source "experiments/arc_260516a__team_b__B-R10-2__blacklist_low_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_157db4fb" :type "atom"
+  :subj "exp:B-R10-2_blacklist_low_amt"
+  :pred "has_title"
+  :obj "B-R10-2 — default-admit ∖ {low pre_amt q10} blacklist"
+  :source "experiments/arc_260516a__team_b__B-R10-2__blacklist_low_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_6d12968f" :type "atom"
+  :subj "exp:B-R10-2_blacklist_low_amt"
+  :pred "has_arc"
+  :obj "260516a"
+  :source "experiments/arc_260516a__team_b__B-R10-2__blacklist_low_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ef852757" :type "atom"
+  :subj "exp:B-R10-2_blacklist_low_amt"
+  :pred "has_team"
+  :obj "b"
+  :source "experiments/arc_260516a__team_b__B-R10-2__blacklist_low_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b7a1bec9" :type "atom"
+  :subj "exp:B-R10-2_blacklist_low_amt"
+  :pred "has_round"
+  :obj "r10"
+  :source "experiments/arc_260516a__team_b__B-R10-2__blacklist_low_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_182c4cbf" :type "atom"
+  :subj "exp:B-R10-2_blacklist_low_amt"
+  :pred "parent_arc"
+  :obj "arc:260516a"
+  :source "experiments/arc_260516a__team_b__B-R10-2__blacklist_low_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c36bb345" :type "atom"
+  :subj "exp:B-R10-2_blacklist_low_amt"
+  :pred "parent_lineage"
+  :obj "lin:arc_260516a__team_b__blacklist_evolution"
+  :source "experiments/arc_260516a__team_b__B-R10-2__blacklist_low_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c82b5ac4" :type "atom"
+  :subj "exp:B-R10-2_blacklist_low_amt"
+  :pred "has_train_nav"
+  :obj 2.6473
+  :source "experiments/arc_260516a__team_b__B-R10-2__blacklist_low_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_8a41f999" :type "atom"
+  :subj "exp:B-R10-2_blacklist_low_amt"
+  :pred "has_train_trade_count"
+  :obj 199
+  :source "experiments/arc_260516a__team_b__B-R10-2__blacklist_low_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ddf0948f" :type "atom"
+  :subj "exp:B-R10-2_blacklist_low_amt"
+  :pred "has_val_window_count"
+  :obj 13
+  :source "experiments/arc_260516a__team_b__B-R10-2__blacklist_low_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_0cd505d3" :type "atom"
+  :subj "exp:B-R10-2_blacklist_low_amt"
+  :pred "has_test_nav"
+  :obj 1.1725
+  :source "experiments/arc_260516a__team_b__B-R10-2__blacklist_low_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_55709242" :type "atom"
+  :subj "exp:B-R10-2_blacklist_low_amt"
+  :pred "has_test_trade_count"
+  :obj 25
+  :source "experiments/arc_260516a__team_b__B-R10-2__blacklist_low_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f85a77ca" :type "atom"
+  :subj "exp:B-R10-2_blacklist_low_amt"
+  :pred "has_test_sharpe"
+  :obj 5.5008
+  :source "experiments/arc_260516a__team_b__B-R10-2__blacklist_low_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_eff934e1" :type "atom"
+  :subj "exp:B-R10-2_blacklist_low_amt"
+  :pred "has_test_win_rate"
+  :obj 0.72
+  :source "experiments/arc_260516a__team_b__B-R10-2__blacklist_low_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_19e6a9e3" :type "atom"
+  :subj "exp:B-R10-2_blacklist_low_amt"
+  :pred "has_test_max_drawdown"
+  :obj -0.0129
+  :source "experiments/arc_260516a__team_b__B-R10-2__blacklist_low_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_463508a7" :type "atom"
+  :subj "exp:B-R10-2_blacklist_low_amt"
+  :pred "has_anchor_train_nav"
+  :obj 2.1882
+  :source "experiments/arc_260516a__team_b__B-R10-2__blacklist_low_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f91180b5" :type "atom"
+  :subj "exp:B-R10-2_blacklist_low_amt"
+  :pred "has_anchor_test_nav"
+  :obj 1.2486
+  :source "experiments/arc_260516a__team_b__B-R10-2__blacklist_low_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f24c9122" :type "atom"
+  :subj "exp:B-R10-2_blacklist_low_amt"
+  :pred "has_status"
+  :obj "falsified"
+  :source "experiments/arc_260516a__team_b__B-R10-2__blacklist_low_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d3f6fa8d" :type "atom"
+  :subj "exp:B-R10-2_blacklist_low_amt"
+  :pred "has_outcome"
+  :obj "test_fail"
+  :source "experiments/arc_260516a__team_b__B-R10-2__blacklist_low_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_48fa6717" :type "atom"
+  :subj "exp:B-R10-2_blacklist_low_amt"
+  :pred "has_champion"
+  :obj false
+  :source "experiments/arc_260516a__team_b__B-R10-2__blacklist_low_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b90c2d99" :type "atom"
+  :subj "exp:B-R10-2_blacklist_low_amt"
+  :pred "has_overfit_score"
+  :obj 0
+  :source "experiments/arc_260516a__team_b__B-R10-2__blacklist_low_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_618b4d90" :type "atom"
+  :subj "exp:B-R10-2_blacklist_low_amt"
+  :pred "has_leak_audit"
+  :obj "clean"
+  :source "experiments/arc_260516a__team_b__B-R10-2__blacklist_low_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_30222319" :type "atom"
+  :subj "exp:B-R10-2_blacklist_low_amt"
+  :pred "has_axis"
+  :obj "axis:blacklist"
+  :source "experiments/arc_260516a__team_b__B-R10-2__blacklist_low_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_407020b9" :type "atom"
+  :subj "exp:B-R10-2_blacklist_low_amt"
+  :pred "has_axis_list"
+  :obj ("blacklist")
+  :source "experiments/arc_260516a__team_b__B-R10-2__blacklist_low_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9ae63d3d" :type "atom"
+  :subj "exp:B-R10-2_blacklist_low_amt"
+  :pred "has_created"
+  :obj "2026-05-17 01:50:00"
+  :source "experiments/arc_260516a__team_b__B-R10-2__blacklist_low_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_da1f9fd2" :type "atom"
+  :subj "exp:B-R10-2_blacklist_low_amt"
+  :pred "has_last_updated"
+  :obj "2026-05-17 05:09:00"
+  :source "experiments/arc_260516a__team_b__B-R10-2__blacklist_low_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_bfd4fc51" :type "atom"
+  :subj "exp:B-R10-2_blacklist_low_amt"
+  :pred "has_tag"
+  :obj "tag:arc/260516a"
+  :source "experiments/arc_260516a__team_b__B-R10-2__blacklist_low_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a91c678d" :type "atom"
+  :subj "exp:B-R10-2_blacklist_low_amt"
+  :pred "has_tag"
+  :obj "tag:team/b"
+  :source "experiments/arc_260516a__team_b__B-R10-2__blacklist_low_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_89023661" :type "atom"
+  :subj "exp:B-R10-2_blacklist_low_amt"
+  :pred "has_tag"
+  :obj "tag:round/r10"
+  :source "experiments/arc_260516a__team_b__B-R10-2__blacklist_low_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_8cede020" :type "atom"
+  :subj "exp:B-R10-2_blacklist_low_amt"
+  :pred "has_tag"
+  :obj "tag:axis/blacklist"
+  :source "experiments/arc_260516a__team_b__B-R10-2__blacklist_low_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f4257225" :type "atom"
+  :subj "exp:B-R10-2_blacklist_low_amt"
+  :pred "has_tag"
+  :obj "tag:status/falsified"
+  :source "experiments/arc_260516a__team_b__B-R10-2__blacklist_low_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_cf51a5e5" :type "atom"
+  :subj "exp:B-R10-2_blacklist_low_amt"
+  :pred "has_tag"
+  :obj "tag:outcome/test_fail"
+  :source "experiments/arc_260516a__team_b__B-R10-2__blacklist_low_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_53c1b38c" :type "atom"
+  :subj "exp:B-R10-2_blacklist_low_amt"
+  :pred "has_tag"
+  :obj "tag:leak/clean"
+  :source "experiments/arc_260516a__team_b__B-R10-2__blacklist_low_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_4c5d7999" :type "atom"
+  :subj "exp:B-R10-2_blacklist_low_amt"
+  :pred "has_tag"
+  :obj "tag:size/large"
+  :source "experiments/arc_260516a__team_b__B-R10-2__blacklist_low_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a2e28ce6" :type "atom"
+  :subj "exp:B-R10-2_blacklist_low_amt"
+  :pred "has_tl_dr"
+  :obj "R10 系列首条 single-blacklist：从 default-admit 214 笔砍掉 pre-trigger 5min 平均量底部 10%。train 199 笔 / NAV 2.65 看着 ok；**test NAV 1.17 < anchor 1.25** —— 失败。与 D 系列 blacklist 路线在 hold-out 上同步崩塌的另一证据。"
+  :source "experiments/arc_260516a__team_b__B-R10-2__blacklist_low_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9811f274" :type "atom"
+  :subj "exp:B-R10-2_blacklist_low_amt"
+  :pred "has_section_intro"
+  :obj "# B-R10-2 — default-admit ∖ {low pre_amt q10}\n\n> **TL;DR** —— R10 系列首条 single-blacklist：从 default-admit 214 笔砍掉 pre-trigger 5min 平均量底部 10%。train 199 笔 / NAV 2.65 看着 ok；**test NAV 1.17 < anchor 1.25** —— 失败。与 D 系列 blacklist 路线在 hold-out 上同步崩塌的另一证据。"
+  :source "experiments/arc_260516a__team_b__B-R10-2__blacklist_low_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_83e921a3" :type "atom"
+  :subj "exp:B-R10-2_blacklist_low_amt"
+  :pred "has_section_hypothesis"
+  :obj "- 假设：触发前 5min 平均成交量底部 10% 的 leg 是\"流动性差 → 滑点重 → 大概率亏\"，drop 这些应当抬 win/sharpe。\n- 期待：trade_count 仅降 7%（214→199），NAV 应保持或上升。"
+  :source "experiments/arc_260516a__team_b__B-R10-2__blacklist_low_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ab9a7592" :type "atom"
+  :subj "exp:B-R10-2_blacklist_low_amt"
+  :pred "has_section_implementation"
+  :obj "- 主脚本：`/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_b/scripts/round_10_runner.py`\n- 步骤：default-admit (R10-0 base) → drop legs with `pre_avg_amount` 落在 trailing-cum q10。\n- 输出 199 笔。"
+  :source "experiments/arc_260516a__team_b__B-R10-2__blacklist_low_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_749a33b2" :type "atom"
+  :subj "exp:B-R10-2_blacklist_low_amt"
+  :pred "has_section_past_only_window"
+  :obj "- `pre_avg_amount` 是 trigger 前 5min 内 quantity，结构上 past-only。\n- q10 threshold 用 trailing-cumulative quantile（每个 t 用 t' < t 的历史计算）→ strict past-only。\n- `#leak/clean`。"
+  :source "experiments/arc_260516a__team_b__B-R10-2__blacklist_low_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_28195cda" :type "atom"
+  :subj "exp:B-R10-2_blacklist_low_amt"
+  :pred "has_section_results"
+  :obj "| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 2.6473 | 199 | - | - | - |\n| Val | (gate pass; full numbers in CSV row R10-2) | - | - | - | - |\n| Test | **1.1725** | 25 | 5.50 | 72.0% | -1.29% |\n| **Δ test NAV vs anchor** | **-0.076 (FAIL)** | +5 | -1.65 | -3.0pp | -0.76pp |\n\n砍 15 笔 (low-amt) 后 NAV 比 R10-0 baseline 反而降 0.21；test 直接崩。"
+  :source "experiments/arc_260516a__team_b__B-R10-2__blacklist_low_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_19028198" :type "atom"
+  :subj "exp:B-R10-2_blacklist_low_amt"
+  :pred "has_section_risk_overfit"
+  :obj "- overfit_score = 0（gate 都过）但 test 崩 —— 又一个\"train 看着合理、test 完蛋\"的 default-admit blacklist 例。\n- 真实 risk：low pre_amt 的 leg 在 train 上被识别为\"差\"，但 hold-out 上\"低量\"分布漂移（test 期 SPY 整体量更低），blacklist threshold 变成 noise filter。"
+  :source "experiments/arc_260516a__team_b__B-R10-2__blacklist_low_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_63a99d37" :type "atom"
+  :subj "exp:B-R10-2_blacklist_low_amt"
+  :pred "derived_from"
+  :obj "exp:B-R10-0_all_admit_baseline"
+  :source "experiments/arc_260516a__team_b__B-R10-2__blacklist_low_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5b840734" :type "atom"
+  :subj "exp:B-R10-2_blacklist_low_amt"
+  :pred "competes_with"
+  :obj "exp:B-R10-4_blacklist_stack_3"
+  :source "experiments/arc_260516a__team_b__B-R10-2__blacklist_low_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_54a3d7e9" :type "atom"
+  :subj "exp:B-R10-2_blacklist_low_amt"
+  :pred "also_explored_by"
+  :obj "exp:D-R2-3_blacklist_stack_triple"
+  :source "experiments/arc_260516a__team_b__B-R10-2__blacklist_low_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e5348ecd" :type "atom"
+  :subj "exp:B-R10-2_blacklist_low_amt"
+  :pred "builds_against"
+  :obj "exp:anchor_g2_baseline"
+  :source "experiments/arc_260516a__team_b__B-R10-2__blacklist_low_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_10adf8b2" :type "atom"
+  :subj "exp:B-R10-2_blacklist_low_amt"
+  :pred "has_section_lineage_links"
+  :obj "- **derived_from**: [[arc_260516a__team_b__B-R10-0__all_admit_baseline]]\n- **competes_with**: [[arc_260516a__team_b__B-R10-4__blacklist_stack_3]] (3-stack 更激进)\n- **also_explored_by**: [[arc_260516a__team_d__D-R2-3__blacklist_stack_triple]] (D 队同 axis stack)\n- **builds against**: [[arc_260516a__team_anchor__anchor_g2__baseline]]\n- **inherits_failure_pattern**: default-admit + blacklist 路线（vs sizing 路线）的整体 hold-out 不稳"
+  :source "experiments/arc_260516a__team_b__B-R10-2__blacklist_low_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_cc260450" :type "atom"
+  :subj "exp:B-R10-2_blacklist_low_amt"
+  :pred "has_section_reports"
+  :obj "- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_b/output/cross_round_leaderboard_nav.csv` (R10-2 row)\n- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/output/cross_team_test_nav_ranking_v2.csv` (B-R10-2)\n- [[arc_260516a__reporter_20260517_0547]]"
+  :source "experiments/arc_260516a__team_b__B-R10-2__blacklist_low_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_90cb4ec3" :type "atom"
+  :subj "exp:B-R10-2_blacklist_low_amt"
+  :pred "has_section_notes"
+  :obj "- **再一条 default-admit blacklist 反例**。下次 sub-agent 想做\"低流动性 leg blacklist\"必须意识到：流动性 threshold (pre_amt / volume) 是非 stationary 的，train 上的 q10 cutoff 在 test 上可能砍掉 wrong leg。\n- 替代设计：用 **per-ticker rolling normalize**（leg pre_amt / ticker 5d 中位数），消除 cross-period 量级漂移。"
+  :source "experiments/arc_260516a__team_b__B-R10-2__blacklist_low_amt.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")

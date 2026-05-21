@@ -1,0 +1,426 @@
+(card "exp:D-R1-3_drop_full_consensus" :type "experiment"
+  :subj "exp:D-R1-3_drop_full_consensus"
+  :body "---\nnav: 24\ntype: experiment\nid: D-R1-3_drop_full_consensus\nshort_name: drop_full_consensus\ntitle: \"D-R1-3 — anchor + post-filter drop lc_48h == 2 (drop full cross-source crowd)\"\narc: 260516a\nteam: d\nround: r1\nparent_arc: \"[[arcs/260516a]]\"\nparent_lineage: \"[[lineages/arc_260516a__team_d__blacklist_default_admit]]\"\ntrain_nav: 2.1011\ntrain_trade_count: 129\ntrain_win_rate: 0.8605\ntrain_sharpe: 7.7581\ntrain_max_drawdown: -0.0101\nval_nav_mean: 1.0574\nval_nav_sigma: 0.0690\nval_window_count: 13\ntest_nav: 1.2117\ntest_trade_count: 16\ntest_sharpe: 7.0792\ntest_win_rate: 0.75\ntest_max_drawdown: -0.0053\nanchor_train_nav: 2.1882\nanchor_test_nav: 1.2486\nstatus: falsified\noutcome: test_fail\nchampion: false\noverfit_score: 0\nleak_audit: clean\naxis: [blacklist, cross_source]\npast_only_window_days: null\nwarmup_required: null\ncreated: 2026-05-17T02:00:00\nlast_updated: 2026-05-17T05:09:00\ntags: [arc/260516a, team/d, round/r1, axis/blacklist, axis/cross_source, status/falsified, outcome/test_fail, leak/clean, size/medium]\n---\n\n# D-R1-3 — anchor + drop lc_48h == 2 (drop full crowd)\n\n> **TL;DR** —— D-R1-3 是 D-R2-3 stack 中 \"lc_48h==2 blacklist\" 单独 component 的 anchor-base 验证。train NAV 2.10 < anchor 2.19, **test 1.21 < anchor 1.25** —— single blacklist 即 hold-out 上失败。验证 lc_48h cross-source crowd 在 anchor pool 上不是 productive blacklist。\n\n## 假设 (Hypothesis)\n- 假设：过去 48h 内同源 cross-source crowd 已 confirm 的 leg → 已被吃 → drop 应当 ↑ NAV。\n- 实测：anchor pool 上砍 11 笔（140→129），train NAV 反降 0.09。\n\n## 实现 (Implementation)\n- 主脚本：`/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_d/scripts/round_1_runner.py`\n- 步骤：anchor G2 → drop leg if `lc_48h == 2`.\n\n## Past-only window 处理\n- `lc_48h` past-only. `#leak/clean`.\n\n## 结果 (Results)\n| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 2.1011 | 129 | 7.76 | 86.0% | -1.01% |\n| Val (rolling 13w) | 1.0574 ± 0.069 | - | - | - | - |\n| Test | 1.2117 | 16 | 7.08 | 75.0% | -0.53% |\n| **Δ test NAV vs anchor** | **-0.037 (FAIL)** | -4 | -0.07 | 0 | 0 |\n\n## 风险 & overfit 嫌疑\n- overfit_score = 0.\n- 真实问题：cross-source crowd 在 anchor pool 上**没区分 ability**。\n- vault contribution: 单独 component 在 anchor base 上 hold-out 失败，但 D-R2-3 把它作 stack 第一条 → **stack 是把 noise 放大，不是把 signal 放大**的反例。\n\n## Lineage（双链网）\n- **derived_from**: [[arc_260516a__team_anchor__anchor_g2__baseline]]\n- **mechanism_used_by**: [[arc_260516a__team_d__D-R2-3__blacklist_stack_triple]] (作 stack 第一条)\n- **mechanism_used_by**: [[arc_260516a__team_d__D-R2-2__blacklist_cross_source]] (default-admit base 同 axis)\n- **competes_with**: [[arc_260516a__team_d__D-R1-1__consensus_gte1]], [[arc_260516a__team_d__D-R1-2__isolated_keep]]\n- **builds against**: [[arc_260516a__team_anchor__anchor_g2__baseline]]\n\n## Reports\n- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_d/output/cross_round_leaderboard_nav.csv` (D-R1-3)\n- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/output/cross_team_test_nav_ranking_v2.csv` (D-R1-3)\n- [[arc_260516a__reporter_20260517_0547]]\n\n## Notes / 下次迭代\n- 重要 lesson: **单 component blacklist 在 anchor base 上 hold-out 失败，但被 stack 进 default-admit baseline 后 train NAV 涨**。这说明 stack 涨的部分是 \"default-admit 引入的弱 leg 被 stack 随机砍掉\" 的统计 noise，不是 mechanism merit。\n- 任何 stack 候选必须 verify **每个 component 在自己 base 上能 strict beat baseline**，否则 stack 是 false positive。D-R2-3 / D-R2-4 都没做这步，付出 hold-out 崩盘代价。\n"
+  :path "experiments/arc_260516a__team_d__D-R1-3__drop_full_consensus.md"
+  :source_mtime "2026-05-17T10:27:39+08:00"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_df663d53" :type "atom"
+  :subj "exp:D-R1-3_drop_full_consensus"
+  :pred "has_nav"
+  :obj 24
+  :source "experiments/arc_260516a__team_d__D-R1-3__drop_full_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f33b00ed" :type "atom"
+  :subj "exp:D-R1-3_drop_full_consensus"
+  :pred "has_type"
+  :obj "experiment"
+  :source "experiments/arc_260516a__team_d__D-R1-3__drop_full_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_2b63b300" :type "atom"
+  :subj "exp:D-R1-3_drop_full_consensus"
+  :pred "has_id"
+  :obj "D-R1-3_drop_full_consensus"
+  :source "experiments/arc_260516a__team_d__D-R1-3__drop_full_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_63ee9f2a" :type "atom"
+  :subj "exp:D-R1-3_drop_full_consensus"
+  :pred "has_short_name"
+  :obj "drop_full_consensus"
+  :source "experiments/arc_260516a__team_d__D-R1-3__drop_full_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_efb05cdc" :type "atom"
+  :subj "exp:D-R1-3_drop_full_consensus"
+  :pred "has_title"
+  :obj "D-R1-3 — anchor + post-filter drop lc_48h == 2 (drop full cross-source crowd)"
+  :source "experiments/arc_260516a__team_d__D-R1-3__drop_full_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_3fb07e95" :type "atom"
+  :subj "exp:D-R1-3_drop_full_consensus"
+  :pred "has_arc"
+  :obj "260516a"
+  :source "experiments/arc_260516a__team_d__D-R1-3__drop_full_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_2bfc7494" :type "atom"
+  :subj "exp:D-R1-3_drop_full_consensus"
+  :pred "has_team"
+  :obj "d"
+  :source "experiments/arc_260516a__team_d__D-R1-3__drop_full_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_955f965c" :type "atom"
+  :subj "exp:D-R1-3_drop_full_consensus"
+  :pred "has_round"
+  :obj "r1"
+  :source "experiments/arc_260516a__team_d__D-R1-3__drop_full_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_694ccbf7" :type "atom"
+  :subj "exp:D-R1-3_drop_full_consensus"
+  :pred "parent_arc"
+  :obj "arc:260516a"
+  :source "experiments/arc_260516a__team_d__D-R1-3__drop_full_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_bb27ee01" :type "atom"
+  :subj "exp:D-R1-3_drop_full_consensus"
+  :pred "parent_lineage"
+  :obj "lin:arc_260516a__team_d__blacklist_default_admit"
+  :source "experiments/arc_260516a__team_d__D-R1-3__drop_full_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_90e4d00d" :type "atom"
+  :subj "exp:D-R1-3_drop_full_consensus"
+  :pred "has_train_nav"
+  :obj 2.1011
+  :source "experiments/arc_260516a__team_d__D-R1-3__drop_full_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_47cf6b52" :type "atom"
+  :subj "exp:D-R1-3_drop_full_consensus"
+  :pred "has_train_trade_count"
+  :obj 129
+  :source "experiments/arc_260516a__team_d__D-R1-3__drop_full_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_fec1f0aa" :type "atom"
+  :subj "exp:D-R1-3_drop_full_consensus"
+  :pred "has_train_win_rate"
+  :obj 0.8605
+  :source "experiments/arc_260516a__team_d__D-R1-3__drop_full_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f370cbc0" :type "atom"
+  :subj "exp:D-R1-3_drop_full_consensus"
+  :pred "has_train_sharpe"
+  :obj 7.7581
+  :source "experiments/arc_260516a__team_d__D-R1-3__drop_full_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ab9ab00c" :type "atom"
+  :subj "exp:D-R1-3_drop_full_consensus"
+  :pred "has_train_max_drawdown"
+  :obj -0.0101
+  :source "experiments/arc_260516a__team_d__D-R1-3__drop_full_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9c90d21a" :type "atom"
+  :subj "exp:D-R1-3_drop_full_consensus"
+  :pred "has_val_nav_mean"
+  :obj 1.0574
+  :source "experiments/arc_260516a__team_d__D-R1-3__drop_full_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_6665faa8" :type "atom"
+  :subj "exp:D-R1-3_drop_full_consensus"
+  :pred "has_val_nav_sigma"
+  :obj 0.069
+  :source "experiments/arc_260516a__team_d__D-R1-3__drop_full_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d37ba340" :type "atom"
+  :subj "exp:D-R1-3_drop_full_consensus"
+  :pred "has_val_window_count"
+  :obj 13
+  :source "experiments/arc_260516a__team_d__D-R1-3__drop_full_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_268eeae8" :type "atom"
+  :subj "exp:D-R1-3_drop_full_consensus"
+  :pred "has_test_nav"
+  :obj 1.2117
+  :source "experiments/arc_260516a__team_d__D-R1-3__drop_full_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c3df43f7" :type "atom"
+  :subj "exp:D-R1-3_drop_full_consensus"
+  :pred "has_test_trade_count"
+  :obj 16
+  :source "experiments/arc_260516a__team_d__D-R1-3__drop_full_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_22081409" :type "atom"
+  :subj "exp:D-R1-3_drop_full_consensus"
+  :pred "has_test_sharpe"
+  :obj 7.0792
+  :source "experiments/arc_260516a__team_d__D-R1-3__drop_full_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d3c811a3" :type "atom"
+  :subj "exp:D-R1-3_drop_full_consensus"
+  :pred "has_test_win_rate"
+  :obj 0.75
+  :source "experiments/arc_260516a__team_d__D-R1-3__drop_full_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_09c268dd" :type "atom"
+  :subj "exp:D-R1-3_drop_full_consensus"
+  :pred "has_test_max_drawdown"
+  :obj -0.0053
+  :source "experiments/arc_260516a__team_d__D-R1-3__drop_full_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1e3e2901" :type "atom"
+  :subj "exp:D-R1-3_drop_full_consensus"
+  :pred "has_anchor_train_nav"
+  :obj 2.1882
+  :source "experiments/arc_260516a__team_d__D-R1-3__drop_full_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d4a1abb5" :type "atom"
+  :subj "exp:D-R1-3_drop_full_consensus"
+  :pred "has_anchor_test_nav"
+  :obj 1.2486
+  :source "experiments/arc_260516a__team_d__D-R1-3__drop_full_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b5c9064f" :type "atom"
+  :subj "exp:D-R1-3_drop_full_consensus"
+  :pred "has_status"
+  :obj "falsified"
+  :source "experiments/arc_260516a__team_d__D-R1-3__drop_full_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d89c2a23" :type "atom"
+  :subj "exp:D-R1-3_drop_full_consensus"
+  :pred "has_outcome"
+  :obj "test_fail"
+  :source "experiments/arc_260516a__team_d__D-R1-3__drop_full_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_7dbbdb67" :type "atom"
+  :subj "exp:D-R1-3_drop_full_consensus"
+  :pred "has_champion"
+  :obj false
+  :source "experiments/arc_260516a__team_d__D-R1-3__drop_full_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_00c8faaa" :type "atom"
+  :subj "exp:D-R1-3_drop_full_consensus"
+  :pred "has_overfit_score"
+  :obj 0
+  :source "experiments/arc_260516a__team_d__D-R1-3__drop_full_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1e036437" :type "atom"
+  :subj "exp:D-R1-3_drop_full_consensus"
+  :pred "has_leak_audit"
+  :obj "clean"
+  :source "experiments/arc_260516a__team_d__D-R1-3__drop_full_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_4079f87e" :type "atom"
+  :subj "exp:D-R1-3_drop_full_consensus"
+  :pred "has_axis"
+  :obj "axis:blacklist"
+  :source "experiments/arc_260516a__team_d__D-R1-3__drop_full_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_550aeae2" :type "atom"
+  :subj "exp:D-R1-3_drop_full_consensus"
+  :pred "has_axis"
+  :obj "axis:cross_source"
+  :source "experiments/arc_260516a__team_d__D-R1-3__drop_full_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b24a0a5f" :type "atom"
+  :subj "exp:D-R1-3_drop_full_consensus"
+  :pred "has_axis_list"
+  :obj ("blacklist" "cross_source")
+  :source "experiments/arc_260516a__team_d__D-R1-3__drop_full_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_36a1e326" :type "atom"
+  :subj "exp:D-R1-3_drop_full_consensus"
+  :pred "has_created"
+  :obj "2026-05-17 02:00:00"
+  :source "experiments/arc_260516a__team_d__D-R1-3__drop_full_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_cc593e06" :type "atom"
+  :subj "exp:D-R1-3_drop_full_consensus"
+  :pred "has_last_updated"
+  :obj "2026-05-17 05:09:00"
+  :source "experiments/arc_260516a__team_d__D-R1-3__drop_full_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_0eed410e" :type "atom"
+  :subj "exp:D-R1-3_drop_full_consensus"
+  :pred "has_tag"
+  :obj "tag:arc/260516a"
+  :source "experiments/arc_260516a__team_d__D-R1-3__drop_full_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_91d0567e" :type "atom"
+  :subj "exp:D-R1-3_drop_full_consensus"
+  :pred "has_tag"
+  :obj "tag:team/d"
+  :source "experiments/arc_260516a__team_d__D-R1-3__drop_full_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e0426f72" :type "atom"
+  :subj "exp:D-R1-3_drop_full_consensus"
+  :pred "has_tag"
+  :obj "tag:round/r1"
+  :source "experiments/arc_260516a__team_d__D-R1-3__drop_full_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_db6c45cc" :type "atom"
+  :subj "exp:D-R1-3_drop_full_consensus"
+  :pred "has_tag"
+  :obj "tag:axis/blacklist"
+  :source "experiments/arc_260516a__team_d__D-R1-3__drop_full_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_94c1a15f" :type "atom"
+  :subj "exp:D-R1-3_drop_full_consensus"
+  :pred "has_tag"
+  :obj "tag:axis/cross_source"
+  :source "experiments/arc_260516a__team_d__D-R1-3__drop_full_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_7658ebd3" :type "atom"
+  :subj "exp:D-R1-3_drop_full_consensus"
+  :pred "has_tag"
+  :obj "tag:status/falsified"
+  :source "experiments/arc_260516a__team_d__D-R1-3__drop_full_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_88ae49a5" :type "atom"
+  :subj "exp:D-R1-3_drop_full_consensus"
+  :pred "has_tag"
+  :obj "tag:outcome/test_fail"
+  :source "experiments/arc_260516a__team_d__D-R1-3__drop_full_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_17c2c7bc" :type "atom"
+  :subj "exp:D-R1-3_drop_full_consensus"
+  :pred "has_tag"
+  :obj "tag:leak/clean"
+  :source "experiments/arc_260516a__team_d__D-R1-3__drop_full_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_abe8391d" :type "atom"
+  :subj "exp:D-R1-3_drop_full_consensus"
+  :pred "has_tag"
+  :obj "tag:size/medium"
+  :source "experiments/arc_260516a__team_d__D-R1-3__drop_full_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d57dcbf4" :type "atom"
+  :subj "exp:D-R1-3_drop_full_consensus"
+  :pred "has_tl_dr"
+  :obj "D-R1-3 是 D-R2-3 stack 中 \"lc_48h==2 blacklist\" 单独 component 的 anchor-base 验证。train NAV 2.10 < anchor 2.19, **test 1.21 < anchor 1.25** —— single blacklist 即 hold-out 上失败。验证 lc_48h cross-source crowd 在 anchor pool 上不是 productive blacklist。"
+  :source "experiments/arc_260516a__team_d__D-R1-3__drop_full_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a7a77ea9" :type "atom"
+  :subj "exp:D-R1-3_drop_full_consensus"
+  :pred "has_section_intro"
+  :obj "# D-R1-3 — anchor + drop lc_48h == 2 (drop full crowd)\n\n> **TL;DR** —— D-R1-3 是 D-R2-3 stack 中 \"lc_48h==2 blacklist\" 单独 component 的 anchor-base 验证。train NAV 2.10 < anchor 2.19, **test 1.21 < anchor 1.25** —— single blacklist 即 hold-out 上失败。验证 lc_48h cross-source crowd 在 anchor pool 上不是 productive blacklist。"
+  :source "experiments/arc_260516a__team_d__D-R1-3__drop_full_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b64ca00c" :type "atom"
+  :subj "exp:D-R1-3_drop_full_consensus"
+  :pred "has_section_hypothesis"
+  :obj "- 假设：过去 48h 内同源 cross-source crowd 已 confirm 的 leg → 已被吃 → drop 应当 ↑ NAV。\n- 实测：anchor pool 上砍 11 笔（140→129），train NAV 反降 0.09。"
+  :source "experiments/arc_260516a__team_d__D-R1-3__drop_full_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_aa929895" :type "atom"
+  :subj "exp:D-R1-3_drop_full_consensus"
+  :pred "has_section_implementation"
+  :obj "- 主脚本：`/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_d/scripts/round_1_runner.py`\n- 步骤：anchor G2 → drop leg if `lc_48h == 2`."
+  :source "experiments/arc_260516a__team_d__D-R1-3__drop_full_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_01366f8c" :type "atom"
+  :subj "exp:D-R1-3_drop_full_consensus"
+  :pred "has_section_past_only_window"
+  :obj "- `lc_48h` past-only. `#leak/clean`."
+  :source "experiments/arc_260516a__team_d__D-R1-3__drop_full_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_350a82ad" :type "atom"
+  :subj "exp:D-R1-3_drop_full_consensus"
+  :pred "has_section_results"
+  :obj "| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 2.1011 | 129 | 7.76 | 86.0% | -1.01% |\n| Val (rolling 13w) | 1.0574 ± 0.069 | - | - | - | - |\n| Test | 1.2117 | 16 | 7.08 | 75.0% | -0.53% |\n| **Δ test NAV vs anchor** | **-0.037 (FAIL)** | -4 | -0.07 | 0 | 0 |"
+  :source "experiments/arc_260516a__team_d__D-R1-3__drop_full_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a457cfa2" :type "atom"
+  :subj "exp:D-R1-3_drop_full_consensus"
+  :pred "has_section_risk_overfit"
+  :obj "- overfit_score = 0.\n- 真实问题：cross-source crowd 在 anchor pool 上**没区分 ability**。\n- vault contribution: 单独 component 在 anchor base 上 hold-out 失败，但 D-R2-3 把它作 stack 第一条 → **stack 是把 noise 放大，不是把 signal 放大**的反例。"
+  :source "experiments/arc_260516a__team_d__D-R1-3__drop_full_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_655b9ca1" :type "atom"
+  :subj "exp:D-R1-3_drop_full_consensus"
+  :pred "derived_from"
+  :obj "exp:anchor_g2_baseline"
+  :source "experiments/arc_260516a__team_d__D-R1-3__drop_full_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_2845937a" :type "atom"
+  :subj "exp:D-R1-3_drop_full_consensus"
+  :pred "mechanism_used_by"
+  :obj "exp:D-R2-3_blacklist_stack_triple"
+  :source "experiments/arc_260516a__team_d__D-R1-3__drop_full_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_55c2662d" :type "atom"
+  :subj "exp:D-R1-3_drop_full_consensus"
+  :pred "mechanism_used_by"
+  :obj "exp:D-R2-2_blacklist_cross_source"
+  :source "experiments/arc_260516a__team_d__D-R1-3__drop_full_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_718e7663" :type "atom"
+  :subj "exp:D-R1-3_drop_full_consensus"
+  :pred "competes_with"
+  :obj "exp:D-R1-1_consensus_gte1"
+  :source "experiments/arc_260516a__team_d__D-R1-3__drop_full_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_8408f4e4" :type "atom"
+  :subj "exp:D-R1-3_drop_full_consensus"
+  :pred "competes_with"
+  :obj "exp:D-R1-2_isolated_keep"
+  :source "experiments/arc_260516a__team_d__D-R1-3__drop_full_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_015dde10" :type "atom"
+  :subj "exp:D-R1-3_drop_full_consensus"
+  :pred "builds_against"
+  :obj "exp:anchor_g2_baseline"
+  :source "experiments/arc_260516a__team_d__D-R1-3__drop_full_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e7154c8c" :type "atom"
+  :subj "exp:D-R1-3_drop_full_consensus"
+  :pred "has_section_lineage_links"
+  :obj "- **derived_from**: [[arc_260516a__team_anchor__anchor_g2__baseline]]\n- **mechanism_used_by**: [[arc_260516a__team_d__D-R2-3__blacklist_stack_triple]] (作 stack 第一条)\n- **mechanism_used_by**: [[arc_260516a__team_d__D-R2-2__blacklist_cross_source]] (default-admit base 同 axis)\n- **competes_with**: [[arc_260516a__team_d__D-R1-1__consensus_gte1]], [[arc_260516a__team_d__D-R1-2__isolated_keep]]\n- **builds against**: [[arc_260516a__team_anchor__anchor_g2__baseline]]"
+  :source "experiments/arc_260516a__team_d__D-R1-3__drop_full_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9a53ed70" :type "atom"
+  :subj "exp:D-R1-3_drop_full_consensus"
+  :pred "has_section_reports"
+  :obj "- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_d/output/cross_round_leaderboard_nav.csv` (D-R1-3)\n- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/output/cross_team_test_nav_ranking_v2.csv` (D-R1-3)\n- [[arc_260516a__reporter_20260517_0547]]"
+  :source "experiments/arc_260516a__team_d__D-R1-3__drop_full_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_bedd6914" :type "atom"
+  :subj "exp:D-R1-3_drop_full_consensus"
+  :pred "has_section_notes"
+  :obj "- 重要 lesson: **单 component blacklist 在 anchor base 上 hold-out 失败，但被 stack 进 default-admit baseline 后 train NAV 涨**。这说明 stack 涨的部分是 \"default-admit 引入的弱 leg 被 stack 随机砍掉\" 的统计 noise，不是 mechanism merit。\n- 任何 stack 候选必须 verify **每个 component 在自己 base 上能 strict beat baseline**，否则 stack 是 false positive。D-R2-3 / D-R2-4 都没做这步，付出 hold-out 崩盘代价。"
+  :source "experiments/arc_260516a__team_d__D-R1-3__drop_full_consensus.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")

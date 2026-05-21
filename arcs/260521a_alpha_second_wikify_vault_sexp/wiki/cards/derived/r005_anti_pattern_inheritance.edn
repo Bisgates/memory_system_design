@@ -1,0 +1,79 @@
+(card "d_c3bc3bd2" :type "derived"
+  :subj "exp:D-R2-3_blacklist_stack_triple"
+  :pred "is_instance_of_anti_pattern"
+  :obj "ap:1_train_pass_test_fail_综合症"
+  :derived_from "rule:r005_anti_pattern_inheritance"
+  :parents ("a_111e67a7")
+  :generated_at "2026-05-20T17:40:25.586399+00:00")
+
+(card "d_18a03c83" :type "derived"
+  :subj "exp:C8.4_top3_no_open3min_bypass"
+  :pred "is_instance_of_anti_pattern"
+  :obj "ap:2_sample_size_artefact_同_n_trades_同_nav"
+  :derived_from "rule:r005_anti_pattern_inheritance"
+  :parents ("a_d1c4ccab")
+  :generated_at "2026-05-20T17:40:25.586403+00:00")
+
+(card "d_2310b045" :type "derived"
+  :subj "exp:anchor_g2_baseline"
+  :pred "is_instance_of_anti_pattern"
+  :obj "ap:3_admit_set_上_saturate_naïve_filter_no_op"
+  :derived_from "rule:r005_anti_pattern_inheritance"
+  :parents ("a_3c64e4ef")
+  :generated_at "2026-05-20T17:40:25.586406+00:00")
+
+(card "d_70a4aa8b" :type "derived"
+  :subj "exp:F-R1-1_ofi_drop_extreme"
+  :pred "is_instance_of_anti_pattern"
+  :obj "ap:4_microstructure_as_filter_falsification"
+  :derived_from "rule:r005_anti_pattern_inheritance"
+  :parents ("a_431d24af")
+  :generated_at "2026-05-20T17:40:25.586409+00:00")
+
+(card "d_6aa409d4" :type "derived"
+  :subj "exp:G-R1-1_luoyangchan_solo"
+  :pred "is_instance_of_anti_pattern"
+  :obj "ap:5_source_swap_replacement_falsification"
+  :derived_from "rule:r005_anti_pattern_inheritance"
+  :parents ("a_c50021b3")
+  :generated_at "2026-05-20T17:40:25.586413+00:00")
+
+(card "d_4cb5f61d" :type "derived"
+  :subj "lin:arc_260516a__team_h__sizing"
+  :pred "is_instance_of_anti_pattern"
+  :obj "ap:6_lineage_plateau_同_axis_连续微调"
+  :derived_from "rule:r005_anti_pattern_inheritance"
+  :parents ("a_7d6aaabb")
+  :generated_at "2026-05-20T17:40:25.586416+00:00")
+
+(card "d_6d3c26a4" :type "derived"
+  :subj "exp:B-R8-1_no_open3min_bypass03"
+  :pred "is_instance_of_anti_pattern"
+  :obj "ap:6_lineage_plateau_同_axis_连续微调"
+  :derived_from "rule:r005_anti_pattern_inheritance"
+  :parents ("a_e620904c")
+  :generated_at "2026-05-20T17:40:25.586419+00:00")
+
+(card "d_ec882f6f" :type "derived"
+  :subj "exp:B-R8-1_no_open3min_bypass03"
+  :pred "is_instance_of_anti_pattern"
+  :obj "ap:7_lineage_内_same_trade_旁支_train_看像扩展_test_揭示_sample_specific"
+  :derived_from "rule:r005_anti_pattern_inheritance"
+  :parents ("a_e57a3968")
+  :generated_at "2026-05-20T17:40:25.586422+00:00")
+
+(card "d_8b58a2c5" :type "derived"
+  :subj "exp:C8.4_top3_no_open3min_bypass"
+  :pred "is_instance_of_anti_pattern"
+  :obj "ap:7_lineage_内_same_trade_旁支_train_看像扩展_test_揭示_sample_specific"
+  :derived_from "rule:r005_anti_pattern_inheritance"
+  :parents ("a_b638c3bb")
+  :generated_at "2026-05-20T17:40:25.586425+00:00")
+
+(card "d_851bfbf5" :type "derived"
+  :subj "exp:D-R2-3_blacklist_stack_triple"
+  :pred "is_instance_of_anti_pattern"
+  :obj "ap:8_cross_source_consensus_reverse_falsification"
+  :derived_from "rule:r005_anti_pattern_inheritance"
+  :parents ("a_e4734c42")
+  :generated_at "2026-05-20T17:40:25.586428+00:00")

@@ -1,0 +1,391 @@
+(card "exp:C6_anchor_plus_impact_cap" :type "experiment"
+  :subj "exp:C6_anchor_plus_impact_cap"
+  :body "---\nnav: 24\ntype: experiment\nid: C6_anchor_plus_impact_cap\nshort_name: anchor_plus_impact_cap\ntitle: \"C6 — anchor + impact cap (Team A top-3 reference)\"\narc: 260516a\nteam: a\nround: r2\nparent_arc: \"[[arcs/260516a]]\"\nparent_lineage: null\ntrain_nav: 2.1977\ntrain_trade_count: 140\ntrain_win_rate: 0.8571\ntrain_sharpe: 7.7307\ntrain_max_drawdown: -0.0101\nval_nav_mean: 1.0642\nval_nav_sigma: 0.0024\nval_window_count: 13\ntest_nav: 1.2486\ntest_trade_count: 20\ntest_sharpe: 7.15\ntest_win_rate: 0.75\ntest_max_drawdown: -0.0053\nanchor_train_nav: 2.1882\nanchor_test_nav: 1.2486\nstatus: challenger\noutcome: test_marginal\nchampion: false\noverfit_score: 0\nleak_audit: clean\naxis: [microstructure]\npast_only_window_days: null\nwarmup_required: null\ncreated: 2026-05-17T01:30:00\nlast_updated: 2026-05-17T05:09:00\ntags: [arc/260516a, team/a, round/r2, axis/microstructure, status/challenger, outcome/test_marginal, leak/clean, size/medium]\n---\n\n# C6 — anchor + impact cap\n\n> **TL;DR** —— Team A C6: anchor base + impact-aware cap (用 pre_amt impact 调整 cap). train NAV 2.20 marginal +0.01 vs anchor, **test NAV 1.249 与 anchor tie**. 几乎完全 NO-OP - impact cap 在该 trade pool 上没有影响.\n\n## 假设 (Hypothesis)\n- 假设：用 pre_amt impact 替代 fixed cap 1.3M 让 cap 自适应每 leg.\n- 实测：trade_count 140 (=anchor), NAV 几乎相同. mechanism 基本 NO-OP.\n\n## 实现 (Implementation)\n- `team_a/scripts/round_2_runner.py`\n- 步骤: anchor + impact-aware cap formula.\n\n## Past-only window 处理\n- pre_amt past-only. `#leak/clean`.\n\n## 结果 (Results)\n| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 2.1977 | 140 | 7.73 | 85.7% | -1.01% |\n| Val (rolling 13w) | 1.0642 ± 0.002 | - | - | - | - |\n| Test | 1.2486 | 20 | 7.15 | 75.0% | -0.53% |\n| **Δ test NAV vs anchor** | 0.000 | 0 | 0 | 0 | 0 |\n\n## 风险 & overfit 嫌疑\n- overfit_score = 0.\n- bit-for-bit anchor on test = mechanism 在 hold-out 上完全没 active leg.\n\n## Lineage（双链网）\n- **derived_from**: [[arc_260516a__team_anchor__anchor_g2__baseline]]\n- **Team A top picks**: [[arc_260516a__team_a__C7__same_minute_pre_amt]], [[arc_260516a__team_a__C20__recent_signal_flow_skip]]\n- **builds against**: [[arc_260516a__team_anchor__anchor_g2__baseline]]\n\n## Reports\n- `team_a/output/cross_round_leaderboard.csv` (C6 row)\n- `cross_team_test_nav_ranking_v2.csv` (C6 test 1.249)\n- [[arc_260516a__reporter_20260517_0547]]\n\n## Notes / 下次迭代\n- \"anchor + impact cap\" 是 conservative refinement, train 上几乎 NO-OP. 留作 reference 给未来 cap-tuning 实验对比.\n- 下次类似 axis 应先做 cap-trigger frequency audit, 若机制触发 < 10% legs, 别再 sweep parameter.\n"
+  :path "experiments/arc_260516a__team_a__C6__anchor_plus_impact_cap.md"
+  :source_mtime "2026-05-17T10:31:48+08:00"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_4ccc78e3" :type "atom"
+  :subj "exp:C6_anchor_plus_impact_cap"
+  :pred "has_nav"
+  :obj 24
+  :source "experiments/arc_260516a__team_a__C6__anchor_plus_impact_cap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9e1c6705" :type "atom"
+  :subj "exp:C6_anchor_plus_impact_cap"
+  :pred "has_type"
+  :obj "experiment"
+  :source "experiments/arc_260516a__team_a__C6__anchor_plus_impact_cap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_8c1d1bc2" :type "atom"
+  :subj "exp:C6_anchor_plus_impact_cap"
+  :pred "has_id"
+  :obj "C6_anchor_plus_impact_cap"
+  :source "experiments/arc_260516a__team_a__C6__anchor_plus_impact_cap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_3ca17e43" :type "atom"
+  :subj "exp:C6_anchor_plus_impact_cap"
+  :pred "has_short_name"
+  :obj "anchor_plus_impact_cap"
+  :source "experiments/arc_260516a__team_a__C6__anchor_plus_impact_cap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_374cc576" :type "atom"
+  :subj "exp:C6_anchor_plus_impact_cap"
+  :pred "has_title"
+  :obj "C6 — anchor + impact cap (Team A top-3 reference)"
+  :source "experiments/arc_260516a__team_a__C6__anchor_plus_impact_cap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_cc799219" :type "atom"
+  :subj "exp:C6_anchor_plus_impact_cap"
+  :pred "has_arc"
+  :obj "260516a"
+  :source "experiments/arc_260516a__team_a__C6__anchor_plus_impact_cap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e084ede5" :type "atom"
+  :subj "exp:C6_anchor_plus_impact_cap"
+  :pred "has_team"
+  :obj "a"
+  :source "experiments/arc_260516a__team_a__C6__anchor_plus_impact_cap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_dc499238" :type "atom"
+  :subj "exp:C6_anchor_plus_impact_cap"
+  :pred "has_round"
+  :obj "r2"
+  :source "experiments/arc_260516a__team_a__C6__anchor_plus_impact_cap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_dae10957" :type "atom"
+  :subj "exp:C6_anchor_plus_impact_cap"
+  :pred "parent_arc"
+  :obj "arc:260516a"
+  :source "experiments/arc_260516a__team_a__C6__anchor_plus_impact_cap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a22acb30" :type "atom"
+  :subj "exp:C6_anchor_plus_impact_cap"
+  :pred "has_train_nav"
+  :obj 2.1977
+  :source "experiments/arc_260516a__team_a__C6__anchor_plus_impact_cap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e568d4a7" :type "atom"
+  :subj "exp:C6_anchor_plus_impact_cap"
+  :pred "has_train_trade_count"
+  :obj 140
+  :source "experiments/arc_260516a__team_a__C6__anchor_plus_impact_cap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_78d21bf5" :type "atom"
+  :subj "exp:C6_anchor_plus_impact_cap"
+  :pred "has_train_win_rate"
+  :obj 0.8571
+  :source "experiments/arc_260516a__team_a__C6__anchor_plus_impact_cap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ee576fe1" :type "atom"
+  :subj "exp:C6_anchor_plus_impact_cap"
+  :pred "has_train_sharpe"
+  :obj 7.7307
+  :source "experiments/arc_260516a__team_a__C6__anchor_plus_impact_cap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9e41095a" :type "atom"
+  :subj "exp:C6_anchor_plus_impact_cap"
+  :pred "has_train_max_drawdown"
+  :obj -0.0101
+  :source "experiments/arc_260516a__team_a__C6__anchor_plus_impact_cap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_341aa510" :type "atom"
+  :subj "exp:C6_anchor_plus_impact_cap"
+  :pred "has_val_nav_mean"
+  :obj 1.0642
+  :source "experiments/arc_260516a__team_a__C6__anchor_plus_impact_cap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_93616331" :type "atom"
+  :subj "exp:C6_anchor_plus_impact_cap"
+  :pred "has_val_nav_sigma"
+  :obj 0.0024
+  :source "experiments/arc_260516a__team_a__C6__anchor_plus_impact_cap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_94ff0811" :type "atom"
+  :subj "exp:C6_anchor_plus_impact_cap"
+  :pred "has_val_window_count"
+  :obj 13
+  :source "experiments/arc_260516a__team_a__C6__anchor_plus_impact_cap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1693906f" :type "atom"
+  :subj "exp:C6_anchor_plus_impact_cap"
+  :pred "has_test_nav"
+  :obj 1.2486
+  :source "experiments/arc_260516a__team_a__C6__anchor_plus_impact_cap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_168be5e2" :type "atom"
+  :subj "exp:C6_anchor_plus_impact_cap"
+  :pred "has_test_trade_count"
+  :obj 20
+  :source "experiments/arc_260516a__team_a__C6__anchor_plus_impact_cap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_6fd6f1dc" :type "atom"
+  :subj "exp:C6_anchor_plus_impact_cap"
+  :pred "has_test_sharpe"
+  :obj 7.15
+  :source "experiments/arc_260516a__team_a__C6__anchor_plus_impact_cap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_fdd2d0d1" :type "atom"
+  :subj "exp:C6_anchor_plus_impact_cap"
+  :pred "has_test_win_rate"
+  :obj 0.75
+  :source "experiments/arc_260516a__team_a__C6__anchor_plus_impact_cap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_4a6432d9" :type "atom"
+  :subj "exp:C6_anchor_plus_impact_cap"
+  :pred "has_test_max_drawdown"
+  :obj -0.0053
+  :source "experiments/arc_260516a__team_a__C6__anchor_plus_impact_cap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a92bb858" :type "atom"
+  :subj "exp:C6_anchor_plus_impact_cap"
+  :pred "has_anchor_train_nav"
+  :obj 2.1882
+  :source "experiments/arc_260516a__team_a__C6__anchor_plus_impact_cap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_2ef0fe2c" :type "atom"
+  :subj "exp:C6_anchor_plus_impact_cap"
+  :pred "has_anchor_test_nav"
+  :obj 1.2486
+  :source "experiments/arc_260516a__team_a__C6__anchor_plus_impact_cap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c0485258" :type "atom"
+  :subj "exp:C6_anchor_plus_impact_cap"
+  :pred "has_status"
+  :obj "challenger"
+  :source "experiments/arc_260516a__team_a__C6__anchor_plus_impact_cap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_88a7023e" :type "atom"
+  :subj "exp:C6_anchor_plus_impact_cap"
+  :pred "has_outcome"
+  :obj "test_marginal"
+  :source "experiments/arc_260516a__team_a__C6__anchor_plus_impact_cap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a38d202c" :type "atom"
+  :subj "exp:C6_anchor_plus_impact_cap"
+  :pred "has_champion"
+  :obj false
+  :source "experiments/arc_260516a__team_a__C6__anchor_plus_impact_cap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_79b96617" :type "atom"
+  :subj "exp:C6_anchor_plus_impact_cap"
+  :pred "has_overfit_score"
+  :obj 0
+  :source "experiments/arc_260516a__team_a__C6__anchor_plus_impact_cap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_596be117" :type "atom"
+  :subj "exp:C6_anchor_plus_impact_cap"
+  :pred "has_leak_audit"
+  :obj "clean"
+  :source "experiments/arc_260516a__team_a__C6__anchor_plus_impact_cap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_95176406" :type "atom"
+  :subj "exp:C6_anchor_plus_impact_cap"
+  :pred "has_axis"
+  :obj "axis:microstructure"
+  :source "experiments/arc_260516a__team_a__C6__anchor_plus_impact_cap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_41740db8" :type "atom"
+  :subj "exp:C6_anchor_plus_impact_cap"
+  :pred "has_axis_list"
+  :obj ("microstructure")
+  :source "experiments/arc_260516a__team_a__C6__anchor_plus_impact_cap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_53dfa596" :type "atom"
+  :subj "exp:C6_anchor_plus_impact_cap"
+  :pred "has_created"
+  :obj "2026-05-17 01:30:00"
+  :source "experiments/arc_260516a__team_a__C6__anchor_plus_impact_cap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9b1b029d" :type "atom"
+  :subj "exp:C6_anchor_plus_impact_cap"
+  :pred "has_last_updated"
+  :obj "2026-05-17 05:09:00"
+  :source "experiments/arc_260516a__team_a__C6__anchor_plus_impact_cap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ad89b35e" :type "atom"
+  :subj "exp:C6_anchor_plus_impact_cap"
+  :pred "has_tag"
+  :obj "tag:arc/260516a"
+  :source "experiments/arc_260516a__team_a__C6__anchor_plus_impact_cap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9eb9293c" :type "atom"
+  :subj "exp:C6_anchor_plus_impact_cap"
+  :pred "has_tag"
+  :obj "tag:team/a"
+  :source "experiments/arc_260516a__team_a__C6__anchor_plus_impact_cap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9d7c9a30" :type "atom"
+  :subj "exp:C6_anchor_plus_impact_cap"
+  :pred "has_tag"
+  :obj "tag:round/r2"
+  :source "experiments/arc_260516a__team_a__C6__anchor_plus_impact_cap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_7e6f9bb5" :type "atom"
+  :subj "exp:C6_anchor_plus_impact_cap"
+  :pred "has_tag"
+  :obj "tag:axis/microstructure"
+  :source "experiments/arc_260516a__team_a__C6__anchor_plus_impact_cap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_4e53889f" :type "atom"
+  :subj "exp:C6_anchor_plus_impact_cap"
+  :pred "has_tag"
+  :obj "tag:status/challenger"
+  :source "experiments/arc_260516a__team_a__C6__anchor_plus_impact_cap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1bb549c5" :type "atom"
+  :subj "exp:C6_anchor_plus_impact_cap"
+  :pred "has_tag"
+  :obj "tag:outcome/test_marginal"
+  :source "experiments/arc_260516a__team_a__C6__anchor_plus_impact_cap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e6d32faa" :type "atom"
+  :subj "exp:C6_anchor_plus_impact_cap"
+  :pred "has_tag"
+  :obj "tag:leak/clean"
+  :source "experiments/arc_260516a__team_a__C6__anchor_plus_impact_cap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b2b7d615" :type "atom"
+  :subj "exp:C6_anchor_plus_impact_cap"
+  :pred "has_tag"
+  :obj "tag:size/medium"
+  :source "experiments/arc_260516a__team_a__C6__anchor_plus_impact_cap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_7b9f4c38" :type "atom"
+  :subj "exp:C6_anchor_plus_impact_cap"
+  :pred "has_tl_dr"
+  :obj "Team A C6: anchor base + impact-aware cap (用 pre_amt impact 调整 cap). train NAV 2.20 marginal +0.01 vs anchor, **test NAV 1.249 与 anchor tie**. 几乎完全 NO-OP - impact cap 在该 trade pool 上没有影响."
+  :source "experiments/arc_260516a__team_a__C6__anchor_plus_impact_cap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_043dcb14" :type "atom"
+  :subj "exp:C6_anchor_plus_impact_cap"
+  :pred "has_section_intro"
+  :obj "# C6 — anchor + impact cap\n\n> **TL;DR** —— Team A C6: anchor base + impact-aware cap (用 pre_amt impact 调整 cap). train NAV 2.20 marginal +0.01 vs anchor, **test NAV 1.249 与 anchor tie**. 几乎完全 NO-OP - impact cap 在该 trade pool 上没有影响."
+  :source "experiments/arc_260516a__team_a__C6__anchor_plus_impact_cap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_82446bce" :type "atom"
+  :subj "exp:C6_anchor_plus_impact_cap"
+  :pred "has_section_hypothesis"
+  :obj "- 假设：用 pre_amt impact 替代 fixed cap 1.3M 让 cap 自适应每 leg.\n- 实测：trade_count 140 (=anchor), NAV 几乎相同. mechanism 基本 NO-OP."
+  :source "experiments/arc_260516a__team_a__C6__anchor_plus_impact_cap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b4d3a2b8" :type "atom"
+  :subj "exp:C6_anchor_plus_impact_cap"
+  :pred "has_section_implementation"
+  :obj "- `team_a/scripts/round_2_runner.py`\n- 步骤: anchor + impact-aware cap formula."
+  :source "experiments/arc_260516a__team_a__C6__anchor_plus_impact_cap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f4bf8360" :type "atom"
+  :subj "exp:C6_anchor_plus_impact_cap"
+  :pred "has_section_past_only_window"
+  :obj "- pre_amt past-only. `#leak/clean`."
+  :source "experiments/arc_260516a__team_a__C6__anchor_plus_impact_cap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_41ddeb15" :type "atom"
+  :subj "exp:C6_anchor_plus_impact_cap"
+  :pred "has_section_results"
+  :obj "| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 2.1977 | 140 | 7.73 | 85.7% | -1.01% |\n| Val (rolling 13w) | 1.0642 ± 0.002 | - | - | - | - |\n| Test | 1.2486 | 20 | 7.15 | 75.0% | -0.53% |\n| **Δ test NAV vs anchor** | 0.000 | 0 | 0 | 0 | 0 |"
+  :source "experiments/arc_260516a__team_a__C6__anchor_plus_impact_cap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1da51547" :type "atom"
+  :subj "exp:C6_anchor_plus_impact_cap"
+  :pred "has_section_risk_overfit"
+  :obj "- overfit_score = 0.\n- bit-for-bit anchor on test = mechanism 在 hold-out 上完全没 active leg."
+  :source "experiments/arc_260516a__team_a__C6__anchor_plus_impact_cap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_8d939c6c" :type "atom"
+  :subj "exp:C6_anchor_plus_impact_cap"
+  :pred "derived_from"
+  :obj "exp:anchor_g2_baseline"
+  :source "experiments/arc_260516a__team_a__C6__anchor_plus_impact_cap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_57e5addd" :type "atom"
+  :subj "exp:C6_anchor_plus_impact_cap"
+  :pred "team_a_top_picks"
+  :obj "exp:C7_same_minute_pre_amt"
+  :source "experiments/arc_260516a__team_a__C6__anchor_plus_impact_cap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_980ecfa3" :type "atom"
+  :subj "exp:C6_anchor_plus_impact_cap"
+  :pred "team_a_top_picks"
+  :obj "exp:C20_recent_signal_flow_skip"
+  :source "experiments/arc_260516a__team_a__C6__anchor_plus_impact_cap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e022824f" :type "atom"
+  :subj "exp:C6_anchor_plus_impact_cap"
+  :pred "builds_against"
+  :obj "exp:anchor_g2_baseline"
+  :source "experiments/arc_260516a__team_a__C6__anchor_plus_impact_cap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_959d0868" :type "atom"
+  :subj "exp:C6_anchor_plus_impact_cap"
+  :pred "has_section_lineage_links"
+  :obj "- **derived_from**: [[arc_260516a__team_anchor__anchor_g2__baseline]]\n- **Team A top picks**: [[arc_260516a__team_a__C7__same_minute_pre_amt]], [[arc_260516a__team_a__C20__recent_signal_flow_skip]]\n- **builds against**: [[arc_260516a__team_anchor__anchor_g2__baseline]]"
+  :source "experiments/arc_260516a__team_a__C6__anchor_plus_impact_cap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f34cbfd9" :type "atom"
+  :subj "exp:C6_anchor_plus_impact_cap"
+  :pred "has_section_reports"
+  :obj "- `team_a/output/cross_round_leaderboard.csv` (C6 row)\n- `cross_team_test_nav_ranking_v2.csv` (C6 test 1.249)\n- [[arc_260516a__reporter_20260517_0547]]"
+  :source "experiments/arc_260516a__team_a__C6__anchor_plus_impact_cap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_daeee0eb" :type "atom"
+  :subj "exp:C6_anchor_plus_impact_cap"
+  :pred "has_section_notes"
+  :obj "- \"anchor + impact cap\" 是 conservative refinement, train 上几乎 NO-OP. 留作 reference 给未来 cap-tuning 实验对比.\n- 下次类似 axis 应先做 cap-trigger frequency audit, 若机制触发 < 10% legs, 别再 sweep parameter."
+  :source "experiments/arc_260516a__team_a__C6__anchor_plus_impact_cap.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")

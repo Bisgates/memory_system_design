@@ -1,0 +1,405 @@
+(card "exp:C20_recent_signal_flow_skip" :type "experiment"
+  :subj "exp:C20_recent_signal_flow_skip"
+  :body "---\nnav: 23\ntype: experiment\nid: C20_recent_signal_flow_skip\nshort_name: recent_signal_flow_skip\ntitle: \"C20 — recent signal flow skip (Team A top-3 reference)\"\narc: 260516a\nteam: a\nround: r6\nparent_arc: \"[[arcs/260516a]]\"\nparent_lineage: null\ntrain_nav: 2.2050\ntrain_trade_count: 131\ntrain_win_rate: 0.855\ntrain_sharpe: 7.9509\ntrain_max_drawdown: -0.0101\nval_nav_mean: 1.0666\nval_nav_sigma: 0.0026\nval_window_count: 13\ntest_nav: 1.2581\ntest_trade_count: 18\ntest_sharpe: 8.2216\ntest_win_rate: 0.8333\ntest_max_drawdown: -0.0038\nanchor_train_nav: 2.1882\nanchor_test_nav: 1.2486\nstatus: challenger\noutcome: test_marginal\nchampion: false\noverfit_score: 0\nleak_audit: clean\naxis: [microstructure, timing_filter]\npast_only_window_days: null\nwarmup_required: null\ncreated: 2026-05-17T01:30:00\nlast_updated: 2026-05-17T05:09:00\ntags: [arc/260516a, team/a, round/r6, axis/microstructure, axis/timing_filter, status/challenger, outcome/test_marginal, leak/clean, size/medium]\n---\n\n# C20 — recent signal flow skip\n\n> **TL;DR** —— Team A C20: 在 anchor base 上加 \"recent signal flow skip\" filter — 当 trigger 时刻附近 raw signal 密度高时 skip (避免 noise 区域). train 2.20 marginal, **test 1.258 vs anchor 1.249 marginal +0.01**. 也是 Team A top-3 test 表现.\n\n## 假设 (Hypothesis)\n- 假设：当 trigger 附近 signal flow 密 (e.g. 多个 noise trigger 集中爆发), trade 的 noise 大 → skip.\n- 期待: trade_count 略降, win/sharpe 升, NAV marginal.\n\n## 实现 (Implementation)\n- `team_a/scripts/round_6_runner.py`\n- 步骤: anchor base + skip leg if past-Xs signal density > threshold.\n\n## Past-only window 处理\n- past signal density past-only. `#leak/clean`.\n\n## 结果 (Results)\n| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 2.2050 | 131 | 7.95 | 85.5% | -1.01% |\n| Val (rolling 13w) | 1.0666 ± 0.003 | - | - | - | - |\n| Test | 1.2581 | 18 | 8.22 | 83.3% | -0.38% |\n| **Δ test NAV vs anchor** | +0.010 | -2 | +1.07 | +8.3pp | +0.15pp |\n\n## 风险 & overfit 嫌疑\n- overfit_score = 0. \n- test sharpe 8.22 / win 83% 实际优秀, NAV 接近 anchor 因 trade_count 少 2 笔.\n\n## Lineage（双链网）\n- **derived_from**: [[arc_260516a__team_anchor__anchor_g2__baseline]]\n- **Team A top picks**: [[arc_260516a__team_a__C7__same_minute_pre_amt]], [[arc_260516a__team_a__C6__anchor_plus_impact_cap]]\n- **builds against**: [[arc_260516a__team_anchor__anchor_g2__baseline]]\n\n## Reports\n- `team_a/output/cross_round_leaderboard.csv` (C20)\n- `cross_team_test_nav_ranking_v2.csv` (C20 test 1.258)\n- [[arc_260516a__reporter_20260517_0547]]\n\n## Notes / 下次迭代\n- Team A 这条 \"signal flow density skip\" 是个 underexplored axis. test win 83% / sharpe 8.22 在 Team A 路线里属顶级 quality, 只是 trade_count 少.\n- 下次类似 axis 可以放宽 density threshold 让 trade_count 升, 看是否 sharpe 保持.\n"
+  :path "experiments/arc_260516a__team_a__C20__recent_signal_flow_skip.md"
+  :source_mtime "2026-05-17T10:31:32+08:00"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d3d91c05" :type "atom"
+  :subj "exp:C20_recent_signal_flow_skip"
+  :pred "has_nav"
+  :obj 23
+  :source "experiments/arc_260516a__team_a__C20__recent_signal_flow_skip.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_fc6e6b59" :type "atom"
+  :subj "exp:C20_recent_signal_flow_skip"
+  :pred "has_type"
+  :obj "experiment"
+  :source "experiments/arc_260516a__team_a__C20__recent_signal_flow_skip.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1aaa20c9" :type "atom"
+  :subj "exp:C20_recent_signal_flow_skip"
+  :pred "has_id"
+  :obj "C20_recent_signal_flow_skip"
+  :source "experiments/arc_260516a__team_a__C20__recent_signal_flow_skip.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_aedfaf5b" :type "atom"
+  :subj "exp:C20_recent_signal_flow_skip"
+  :pred "has_short_name"
+  :obj "recent_signal_flow_skip"
+  :source "experiments/arc_260516a__team_a__C20__recent_signal_flow_skip.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d48e8a85" :type "atom"
+  :subj "exp:C20_recent_signal_flow_skip"
+  :pred "has_title"
+  :obj "C20 — recent signal flow skip (Team A top-3 reference)"
+  :source "experiments/arc_260516a__team_a__C20__recent_signal_flow_skip.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_4e2f72ea" :type "atom"
+  :subj "exp:C20_recent_signal_flow_skip"
+  :pred "has_arc"
+  :obj "260516a"
+  :source "experiments/arc_260516a__team_a__C20__recent_signal_flow_skip.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_799c9594" :type "atom"
+  :subj "exp:C20_recent_signal_flow_skip"
+  :pred "has_team"
+  :obj "a"
+  :source "experiments/arc_260516a__team_a__C20__recent_signal_flow_skip.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_15cb0185" :type "atom"
+  :subj "exp:C20_recent_signal_flow_skip"
+  :pred "has_round"
+  :obj "r6"
+  :source "experiments/arc_260516a__team_a__C20__recent_signal_flow_skip.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_85c5ae1c" :type "atom"
+  :subj "exp:C20_recent_signal_flow_skip"
+  :pred "parent_arc"
+  :obj "arc:260516a"
+  :source "experiments/arc_260516a__team_a__C20__recent_signal_flow_skip.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_608188da" :type "atom"
+  :subj "exp:C20_recent_signal_flow_skip"
+  :pred "has_train_nav"
+  :obj 2.205
+  :source "experiments/arc_260516a__team_a__C20__recent_signal_flow_skip.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e25a8396" :type "atom"
+  :subj "exp:C20_recent_signal_flow_skip"
+  :pred "has_train_trade_count"
+  :obj 131
+  :source "experiments/arc_260516a__team_a__C20__recent_signal_flow_skip.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_53093d10" :type "atom"
+  :subj "exp:C20_recent_signal_flow_skip"
+  :pred "has_train_win_rate"
+  :obj 0.855
+  :source "experiments/arc_260516a__team_a__C20__recent_signal_flow_skip.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_2a576c8e" :type "atom"
+  :subj "exp:C20_recent_signal_flow_skip"
+  :pred "has_train_sharpe"
+  :obj 7.9509
+  :source "experiments/arc_260516a__team_a__C20__recent_signal_flow_skip.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a4ebf42d" :type "atom"
+  :subj "exp:C20_recent_signal_flow_skip"
+  :pred "has_train_max_drawdown"
+  :obj -0.0101
+  :source "experiments/arc_260516a__team_a__C20__recent_signal_flow_skip.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_2d825329" :type "atom"
+  :subj "exp:C20_recent_signal_flow_skip"
+  :pred "has_val_nav_mean"
+  :obj 1.0666
+  :source "experiments/arc_260516a__team_a__C20__recent_signal_flow_skip.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c78ca53e" :type "atom"
+  :subj "exp:C20_recent_signal_flow_skip"
+  :pred "has_val_nav_sigma"
+  :obj 0.0026
+  :source "experiments/arc_260516a__team_a__C20__recent_signal_flow_skip.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d5cc7eb2" :type "atom"
+  :subj "exp:C20_recent_signal_flow_skip"
+  :pred "has_val_window_count"
+  :obj 13
+  :source "experiments/arc_260516a__team_a__C20__recent_signal_flow_skip.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_465b926c" :type "atom"
+  :subj "exp:C20_recent_signal_flow_skip"
+  :pred "has_test_nav"
+  :obj 1.2581
+  :source "experiments/arc_260516a__team_a__C20__recent_signal_flow_skip.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_0330e207" :type "atom"
+  :subj "exp:C20_recent_signal_flow_skip"
+  :pred "has_test_trade_count"
+  :obj 18
+  :source "experiments/arc_260516a__team_a__C20__recent_signal_flow_skip.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_87249b69" :type "atom"
+  :subj "exp:C20_recent_signal_flow_skip"
+  :pred "has_test_sharpe"
+  :obj 8.2216
+  :source "experiments/arc_260516a__team_a__C20__recent_signal_flow_skip.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_0b92b44c" :type "atom"
+  :subj "exp:C20_recent_signal_flow_skip"
+  :pred "has_test_win_rate"
+  :obj 0.8333
+  :source "experiments/arc_260516a__team_a__C20__recent_signal_flow_skip.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d3f7eaf4" :type "atom"
+  :subj "exp:C20_recent_signal_flow_skip"
+  :pred "has_test_max_drawdown"
+  :obj -0.0038
+  :source "experiments/arc_260516a__team_a__C20__recent_signal_flow_skip.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e945a6d3" :type "atom"
+  :subj "exp:C20_recent_signal_flow_skip"
+  :pred "has_anchor_train_nav"
+  :obj 2.1882
+  :source "experiments/arc_260516a__team_a__C20__recent_signal_flow_skip.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_6dfc6c3c" :type "atom"
+  :subj "exp:C20_recent_signal_flow_skip"
+  :pred "has_anchor_test_nav"
+  :obj 1.2486
+  :source "experiments/arc_260516a__team_a__C20__recent_signal_flow_skip.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_056f7360" :type "atom"
+  :subj "exp:C20_recent_signal_flow_skip"
+  :pred "has_status"
+  :obj "challenger"
+  :source "experiments/arc_260516a__team_a__C20__recent_signal_flow_skip.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_4113dca3" :type "atom"
+  :subj "exp:C20_recent_signal_flow_skip"
+  :pred "has_outcome"
+  :obj "test_marginal"
+  :source "experiments/arc_260516a__team_a__C20__recent_signal_flow_skip.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_97687eec" :type "atom"
+  :subj "exp:C20_recent_signal_flow_skip"
+  :pred "has_champion"
+  :obj false
+  :source "experiments/arc_260516a__team_a__C20__recent_signal_flow_skip.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b5cec1e9" :type "atom"
+  :subj "exp:C20_recent_signal_flow_skip"
+  :pred "has_overfit_score"
+  :obj 0
+  :source "experiments/arc_260516a__team_a__C20__recent_signal_flow_skip.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f59e71f8" :type "atom"
+  :subj "exp:C20_recent_signal_flow_skip"
+  :pred "has_leak_audit"
+  :obj "clean"
+  :source "experiments/arc_260516a__team_a__C20__recent_signal_flow_skip.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_6b470f97" :type "atom"
+  :subj "exp:C20_recent_signal_flow_skip"
+  :pred "has_axis"
+  :obj "axis:microstructure"
+  :source "experiments/arc_260516a__team_a__C20__recent_signal_flow_skip.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_923402ee" :type "atom"
+  :subj "exp:C20_recent_signal_flow_skip"
+  :pred "has_axis"
+  :obj "axis:timing_filter"
+  :source "experiments/arc_260516a__team_a__C20__recent_signal_flow_skip.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_02ce909c" :type "atom"
+  :subj "exp:C20_recent_signal_flow_skip"
+  :pred "has_axis_list"
+  :obj ("microstructure" "timing_filter")
+  :source "experiments/arc_260516a__team_a__C20__recent_signal_flow_skip.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d8ecad1a" :type "atom"
+  :subj "exp:C20_recent_signal_flow_skip"
+  :pred "has_created"
+  :obj "2026-05-17 01:30:00"
+  :source "experiments/arc_260516a__team_a__C20__recent_signal_flow_skip.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5ca95082" :type "atom"
+  :subj "exp:C20_recent_signal_flow_skip"
+  :pred "has_last_updated"
+  :obj "2026-05-17 05:09:00"
+  :source "experiments/arc_260516a__team_a__C20__recent_signal_flow_skip.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_8ae13b45" :type "atom"
+  :subj "exp:C20_recent_signal_flow_skip"
+  :pred "has_tag"
+  :obj "tag:arc/260516a"
+  :source "experiments/arc_260516a__team_a__C20__recent_signal_flow_skip.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ce145ddb" :type "atom"
+  :subj "exp:C20_recent_signal_flow_skip"
+  :pred "has_tag"
+  :obj "tag:team/a"
+  :source "experiments/arc_260516a__team_a__C20__recent_signal_flow_skip.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_4523fecc" :type "atom"
+  :subj "exp:C20_recent_signal_flow_skip"
+  :pred "has_tag"
+  :obj "tag:round/r6"
+  :source "experiments/arc_260516a__team_a__C20__recent_signal_flow_skip.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_43f6e274" :type "atom"
+  :subj "exp:C20_recent_signal_flow_skip"
+  :pred "has_tag"
+  :obj "tag:axis/microstructure"
+  :source "experiments/arc_260516a__team_a__C20__recent_signal_flow_skip.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_2246eb29" :type "atom"
+  :subj "exp:C20_recent_signal_flow_skip"
+  :pred "has_tag"
+  :obj "tag:axis/timing_filter"
+  :source "experiments/arc_260516a__team_a__C20__recent_signal_flow_skip.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_671d37e0" :type "atom"
+  :subj "exp:C20_recent_signal_flow_skip"
+  :pred "has_tag"
+  :obj "tag:status/challenger"
+  :source "experiments/arc_260516a__team_a__C20__recent_signal_flow_skip.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1f6f3899" :type "atom"
+  :subj "exp:C20_recent_signal_flow_skip"
+  :pred "has_tag"
+  :obj "tag:outcome/test_marginal"
+  :source "experiments/arc_260516a__team_a__C20__recent_signal_flow_skip.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b1ba53e8" :type "atom"
+  :subj "exp:C20_recent_signal_flow_skip"
+  :pred "has_tag"
+  :obj "tag:leak/clean"
+  :source "experiments/arc_260516a__team_a__C20__recent_signal_flow_skip.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c086b74e" :type "atom"
+  :subj "exp:C20_recent_signal_flow_skip"
+  :pred "has_tag"
+  :obj "tag:size/medium"
+  :source "experiments/arc_260516a__team_a__C20__recent_signal_flow_skip.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_30bef0e7" :type "atom"
+  :subj "exp:C20_recent_signal_flow_skip"
+  :pred "has_tl_dr"
+  :obj "Team A C20: 在 anchor base 上加 \"recent signal flow skip\" filter — 当 trigger 时刻附近 raw signal 密度高时 skip (避免 noise 区域). train 2.20 marginal, **test 1.258 vs anchor 1.249 marginal +0.01**. 也是 Team A top-3 test 表现."
+  :source "experiments/arc_260516a__team_a__C20__recent_signal_flow_skip.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e1f63187" :type "atom"
+  :subj "exp:C20_recent_signal_flow_skip"
+  :pred "has_section_intro"
+  :obj "# C20 — recent signal flow skip\n\n> **TL;DR** —— Team A C20: 在 anchor base 上加 \"recent signal flow skip\" filter — 当 trigger 时刻附近 raw signal 密度高时 skip (避免 noise 区域). train 2.20 marginal, **test 1.258 vs anchor 1.249 marginal +0.01**. 也是 Team A top-3 test 表现."
+  :source "experiments/arc_260516a__team_a__C20__recent_signal_flow_skip.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d23e671f" :type "atom"
+  :subj "exp:C20_recent_signal_flow_skip"
+  :pred "has_section_hypothesis"
+  :obj "- 假设：当 trigger 附近 signal flow 密 (e.g. 多个 noise trigger 集中爆发), trade 的 noise 大 → skip.\n- 期待: trade_count 略降, win/sharpe 升, NAV marginal."
+  :source "experiments/arc_260516a__team_a__C20__recent_signal_flow_skip.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_78529a14" :type "atom"
+  :subj "exp:C20_recent_signal_flow_skip"
+  :pred "has_section_implementation"
+  :obj "- `team_a/scripts/round_6_runner.py`\n- 步骤: anchor base + skip leg if past-Xs signal density > threshold."
+  :source "experiments/arc_260516a__team_a__C20__recent_signal_flow_skip.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c1a07f7e" :type "atom"
+  :subj "exp:C20_recent_signal_flow_skip"
+  :pred "has_section_past_only_window"
+  :obj "- past signal density past-only. `#leak/clean`."
+  :source "experiments/arc_260516a__team_a__C20__recent_signal_flow_skip.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_006270e0" :type "atom"
+  :subj "exp:C20_recent_signal_flow_skip"
+  :pred "has_section_results"
+  :obj "| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 2.2050 | 131 | 7.95 | 85.5% | -1.01% |\n| Val (rolling 13w) | 1.0666 ± 0.003 | - | - | - | - |\n| Test | 1.2581 | 18 | 8.22 | 83.3% | -0.38% |\n| **Δ test NAV vs anchor** | +0.010 | -2 | +1.07 | +8.3pp | +0.15pp |"
+  :source "experiments/arc_260516a__team_a__C20__recent_signal_flow_skip.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5aa5eb99" :type "atom"
+  :subj "exp:C20_recent_signal_flow_skip"
+  :pred "has_section_risk_overfit"
+  :obj "- overfit_score = 0. \n- test sharpe 8.22 / win 83% 实际优秀, NAV 接近 anchor 因 trade_count 少 2 笔."
+  :source "experiments/arc_260516a__team_a__C20__recent_signal_flow_skip.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_7ead88ff" :type "atom"
+  :subj "exp:C20_recent_signal_flow_skip"
+  :pred "derived_from"
+  :obj "exp:anchor_g2_baseline"
+  :source "experiments/arc_260516a__team_a__C20__recent_signal_flow_skip.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ae34dbb2" :type "atom"
+  :subj "exp:C20_recent_signal_flow_skip"
+  :pred "team_a_top_picks"
+  :obj "exp:C7_same_minute_pre_amt"
+  :source "experiments/arc_260516a__team_a__C20__recent_signal_flow_skip.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c7d26dc9" :type "atom"
+  :subj "exp:C20_recent_signal_flow_skip"
+  :pred "team_a_top_picks"
+  :obj "exp:C6_anchor_plus_impact_cap"
+  :source "experiments/arc_260516a__team_a__C20__recent_signal_flow_skip.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ecdca72a" :type "atom"
+  :subj "exp:C20_recent_signal_flow_skip"
+  :pred "builds_against"
+  :obj "exp:anchor_g2_baseline"
+  :source "experiments/arc_260516a__team_a__C20__recent_signal_flow_skip.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_203dc19e" :type "atom"
+  :subj "exp:C20_recent_signal_flow_skip"
+  :pred "has_section_lineage_links"
+  :obj "- **derived_from**: [[arc_260516a__team_anchor__anchor_g2__baseline]]\n- **Team A top picks**: [[arc_260516a__team_a__C7__same_minute_pre_amt]], [[arc_260516a__team_a__C6__anchor_plus_impact_cap]]\n- **builds against**: [[arc_260516a__team_anchor__anchor_g2__baseline]]"
+  :source "experiments/arc_260516a__team_a__C20__recent_signal_flow_skip.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_964e5bd5" :type "atom"
+  :subj "exp:C20_recent_signal_flow_skip"
+  :pred "has_section_reports"
+  :obj "- `team_a/output/cross_round_leaderboard.csv` (C20)\n- `cross_team_test_nav_ranking_v2.csv` (C20 test 1.258)\n- [[arc_260516a__reporter_20260517_0547]]"
+  :source "experiments/arc_260516a__team_a__C20__recent_signal_flow_skip.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_23c5b2d6" :type "atom"
+  :subj "exp:C20_recent_signal_flow_skip"
+  :pred "has_section_notes"
+  :obj "- Team A 这条 \"signal flow density skip\" 是个 underexplored axis. test win 83% / sharpe 8.22 在 Team A 路线里属顶级 quality, 只是 trade_count 少.\n- 下次类似 axis 可以放宽 density threshold 让 trade_count 升, 看是否 sharpe 保持."
+  :source "experiments/arc_260516a__team_a__C20__recent_signal_flow_skip.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")

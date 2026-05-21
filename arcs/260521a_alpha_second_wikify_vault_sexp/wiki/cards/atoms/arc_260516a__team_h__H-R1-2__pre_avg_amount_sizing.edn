@@ -1,0 +1,363 @@
+(card "exp:H-R1-2_pre_avg_amount_sizing" :type "experiment"
+  :subj "exp:H-R1-2_pre_avg_amount_sizing"
+  :body "---\nnav: 14\ntype: experiment\nid: H-R1-2\nshort_name: pre_avg_amount_sizing\ntitle: \"H-R1-2 — size = clip(pre_avg_amount / 1.3M, 0.5, 1.5)\"\narc: 260516a\nteam: h\nround: r1\nparent_arc: \"[[arcs/260516a]]\"\nparent_lineage: \"[[lineages/arc_260516a__team_h__sizing]]\"\ntrain_nav: 1.7561\ntrain_trade_count: 140\ntrain_win_rate: 0.8571\ntrain_sharpe: 6.2057\ntrain_max_drawdown: -0.0066\nval_nav_mean: 1.0408\nval_nav_sigma: 0.0470\nval_window_count: 13\ntest_nav: null\ntest_trade_count: null\ntest_sharpe: null\ntest_win_rate: null\ntest_max_drawdown: null\nanchor_train_nav: 2.1882\nanchor_test_nav: 1.2486\nstatus: falsified\noutcome: no_test_run\nchampion: false\noverfit_score: 0\nleak_audit: clean\naxis: [sizing]\npast_only_window_days: null\nwarmup_required: null\ncreated: 2026-05-17T02:00:00\nlast_updated: 2026-05-17T05:09:00\ntags: [arc/260516a, team/h, round/r1, axis/sizing, status/falsified, outcome/no_test_run, leak/clean, size/medium]\n---\n\n# H-R1-2 — size = clip(pre_avg_amount / 1.3M, 0.5, 1.5)\n\n> **TL;DR** —— H-R1 sweep 第二档：试 \"pre-trigger 5min 平均成交量\"作 size proxy，normalize by anchor cap 1.3M。**train NAV 1.76 << anchor 2.19**（连 train 都没赢），没进 test。**反例**：volume-based size 在该 arc 上不是 productive proxy，反不如 ratio/median 信号干净。\n\n## 假设 (Hypothesis)\n- pre-trigger 平均成交量大 = 流动性好 = 滑点小 = 应当 size 大；反之 size 小。\n- size proxy = `pre_avg_amount / baseline_max_avg (1.3M)`，clip [0.5, 1.5]。\n- 期待：与 ratio/median 提供独立信号 → 两条 sizing axis 可以拼。\n\n## 实现 (Implementation)\n- 主脚本：`/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_h/scripts/round_1_runner.py`\n- trade selector = anchor G2 (140 笔)\n- 公式：\n  $$ \\text{size}(t) = \\mathrm{clip}\\!\\left(\\frac{\\text{pre\\_avg\\_amt}_t}{1{,}300{,}000},\\; 0.5,\\; 1.5\\right) $$\n- mean_size = 0.657（远低于 1，因 anchor pool 大部分 leg pre_avg < 1.3M）。\n\n## Past-only window 处理\n- pre_avg_amount 本身已是 trigger 前 5min 窗口的 quantity，**结构上已 past-only**（不取自当前 leg 之后的数据）。\n- 无 lookahead 风险。`#leak/clean`。\n\n## 结果 (Results)\n| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 1.7561 | 140 | 6.21 | 85.7% | -0.66% |\n| Val (rolling 13w) | 1.0408 ± 0.047 | - | - | - | - |\n| Test | NOT RUN | - | - | - | - |\n| **Δ train NAV vs anchor** | **-0.432 (LOSE)** | 0 | -1.50 | 0 | +0.36pp |\n\ntrain 输 anchor 0.43 → engineer 直接砍 R1-2，未 push hold-out。\n\n## 风险 & overfit 嫌疑\n- overfit_score = 0（gate 都未到 test 阶段）。\n- 真正问题：**proxy 选错** —— mean_size 0.66 说明 size 平均被压到 anchor 的 2/3，等于 systemic deleveraging，NAV 当然降。要让这条 proxy 有意义，必须 normalize by **leg-specific** baseline 而非全 pool 共用 1.3M。\n\n## Lineage（双链网）\n- **derived_from**: [[arc_260516a__team_anchor__anchor_g2__baseline]]\n- **falsified_by**: train NAV 不过 anchor → 直接砍\n- **competes_with_failed**: [[arc_260516a__team_h__H-R1-3__ratio_vol_blend]] (同 R1 sweep, 也输 anchor)\n- **dominated_by**: [[arc_260516a__team_h__H-R1-1__rolling_30d_median_solo]] (R1 唯一胜出档)\n- **builds against**: [[arc_260516a__team_anchor__anchor_g2__baseline]]\n\n## Reports\n- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_h/output/cross_round_leaderboard_nav.csv` (R1-2)\n- [[arc_260516a__reporter_20260517_0547]]\n\n## Notes / 下次迭代\n- **anti-pattern**: 用 **全 pool 共用 normalizer**（这里 1.3M）作 sizing denominator 会把 mean_size 拖偏 → systemic deleveraging。\n- 下次类似 idea 要么：(1) per-ticker 5d 平均量作 normalizer，(2) per-leg 历史 pre_avg quantile 作 normalizer。**绝对不要拿固定常数**。\n- volume-based sizing 在 alpha_second_v1 这套 trade pool 上的\"低 alpha density\"特征下可能本就不 productive —— 因为大部分 trade 是 short-horizon 信号，5min pre-volume 与 NAV 关联弱。如果要复活，建议先 grep 历史 trade 上 `pre_avg_amt` 与 trade NAV 的 spearman corr。\n"
+  :path "experiments/arc_260516a__team_h__H-R1-2__pre_avg_amount_sizing.md"
+  :source_mtime "2026-05-17T10:18:42+08:00"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_09a06637" :type "atom"
+  :subj "exp:H-R1-2_pre_avg_amount_sizing"
+  :pred "has_nav"
+  :obj 14
+  :source "experiments/arc_260516a__team_h__H-R1-2__pre_avg_amount_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_6903dbd7" :type "atom"
+  :subj "exp:H-R1-2_pre_avg_amount_sizing"
+  :pred "has_type"
+  :obj "experiment"
+  :source "experiments/arc_260516a__team_h__H-R1-2__pre_avg_amount_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_71ed6de7" :type "atom"
+  :subj "exp:H-R1-2_pre_avg_amount_sizing"
+  :pred "has_id"
+  :obj "H-R1-2"
+  :source "experiments/arc_260516a__team_h__H-R1-2__pre_avg_amount_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_7b3ffac0" :type "atom"
+  :subj "exp:H-R1-2_pre_avg_amount_sizing"
+  :pred "has_short_name"
+  :obj "pre_avg_amount_sizing"
+  :source "experiments/arc_260516a__team_h__H-R1-2__pre_avg_amount_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_2d54217e" :type "atom"
+  :subj "exp:H-R1-2_pre_avg_amount_sizing"
+  :pred "has_title"
+  :obj "H-R1-2 — size = clip(pre_avg_amount / 1.3M, 0.5, 1.5)"
+  :source "experiments/arc_260516a__team_h__H-R1-2__pre_avg_amount_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_6fd75cab" :type "atom"
+  :subj "exp:H-R1-2_pre_avg_amount_sizing"
+  :pred "has_arc"
+  :obj "260516a"
+  :source "experiments/arc_260516a__team_h__H-R1-2__pre_avg_amount_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_39f70874" :type "atom"
+  :subj "exp:H-R1-2_pre_avg_amount_sizing"
+  :pred "has_team"
+  :obj "h"
+  :source "experiments/arc_260516a__team_h__H-R1-2__pre_avg_amount_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_07b7a09c" :type "atom"
+  :subj "exp:H-R1-2_pre_avg_amount_sizing"
+  :pred "has_round"
+  :obj "r1"
+  :source "experiments/arc_260516a__team_h__H-R1-2__pre_avg_amount_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_568a1344" :type "atom"
+  :subj "exp:H-R1-2_pre_avg_amount_sizing"
+  :pred "parent_arc"
+  :obj "arc:260516a"
+  :source "experiments/arc_260516a__team_h__H-R1-2__pre_avg_amount_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_429b8dc5" :type "atom"
+  :subj "exp:H-R1-2_pre_avg_amount_sizing"
+  :pred "parent_lineage"
+  :obj "lin:arc_260516a__team_h__sizing"
+  :source "experiments/arc_260516a__team_h__H-R1-2__pre_avg_amount_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_adfcf175" :type "atom"
+  :subj "exp:H-R1-2_pre_avg_amount_sizing"
+  :pred "has_train_nav"
+  :obj 1.7561
+  :source "experiments/arc_260516a__team_h__H-R1-2__pre_avg_amount_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c34f3ad2" :type "atom"
+  :subj "exp:H-R1-2_pre_avg_amount_sizing"
+  :pred "has_train_trade_count"
+  :obj 140
+  :source "experiments/arc_260516a__team_h__H-R1-2__pre_avg_amount_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_93374f09" :type "atom"
+  :subj "exp:H-R1-2_pre_avg_amount_sizing"
+  :pred "has_train_win_rate"
+  :obj 0.8571
+  :source "experiments/arc_260516a__team_h__H-R1-2__pre_avg_amount_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_af880c6c" :type "atom"
+  :subj "exp:H-R1-2_pre_avg_amount_sizing"
+  :pred "has_train_sharpe"
+  :obj 6.2057
+  :source "experiments/arc_260516a__team_h__H-R1-2__pre_avg_amount_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_010a6a58" :type "atom"
+  :subj "exp:H-R1-2_pre_avg_amount_sizing"
+  :pred "has_train_max_drawdown"
+  :obj -0.0066
+  :source "experiments/arc_260516a__team_h__H-R1-2__pre_avg_amount_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_cb44ad44" :type "atom"
+  :subj "exp:H-R1-2_pre_avg_amount_sizing"
+  :pred "has_val_nav_mean"
+  :obj 1.0408
+  :source "experiments/arc_260516a__team_h__H-R1-2__pre_avg_amount_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_780b9bc9" :type "atom"
+  :subj "exp:H-R1-2_pre_avg_amount_sizing"
+  :pred "has_val_nav_sigma"
+  :obj 0.047
+  :source "experiments/arc_260516a__team_h__H-R1-2__pre_avg_amount_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a035e77c" :type "atom"
+  :subj "exp:H-R1-2_pre_avg_amount_sizing"
+  :pred "has_val_window_count"
+  :obj 13
+  :source "experiments/arc_260516a__team_h__H-R1-2__pre_avg_amount_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ca6ed761" :type "atom"
+  :subj "exp:H-R1-2_pre_avg_amount_sizing"
+  :pred "has_anchor_train_nav"
+  :obj 2.1882
+  :source "experiments/arc_260516a__team_h__H-R1-2__pre_avg_amount_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_80c92bfd" :type "atom"
+  :subj "exp:H-R1-2_pre_avg_amount_sizing"
+  :pred "has_anchor_test_nav"
+  :obj 1.2486
+  :source "experiments/arc_260516a__team_h__H-R1-2__pre_avg_amount_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c2bf162b" :type "atom"
+  :subj "exp:H-R1-2_pre_avg_amount_sizing"
+  :pred "has_status"
+  :obj "falsified"
+  :source "experiments/arc_260516a__team_h__H-R1-2__pre_avg_amount_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_821930a6" :type "atom"
+  :subj "exp:H-R1-2_pre_avg_amount_sizing"
+  :pred "has_outcome"
+  :obj "no_test_run"
+  :source "experiments/arc_260516a__team_h__H-R1-2__pre_avg_amount_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_20cb92eb" :type "atom"
+  :subj "exp:H-R1-2_pre_avg_amount_sizing"
+  :pred "has_champion"
+  :obj false
+  :source "experiments/arc_260516a__team_h__H-R1-2__pre_avg_amount_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_86dbd626" :type "atom"
+  :subj "exp:H-R1-2_pre_avg_amount_sizing"
+  :pred "has_overfit_score"
+  :obj 0
+  :source "experiments/arc_260516a__team_h__H-R1-2__pre_avg_amount_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_dbe9f363" :type "atom"
+  :subj "exp:H-R1-2_pre_avg_amount_sizing"
+  :pred "has_leak_audit"
+  :obj "clean"
+  :source "experiments/arc_260516a__team_h__H-R1-2__pre_avg_amount_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_7fd4026f" :type "atom"
+  :subj "exp:H-R1-2_pre_avg_amount_sizing"
+  :pred "has_axis"
+  :obj "axis:sizing"
+  :source "experiments/arc_260516a__team_h__H-R1-2__pre_avg_amount_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a57bb3cd" :type "atom"
+  :subj "exp:H-R1-2_pre_avg_amount_sizing"
+  :pred "has_axis_list"
+  :obj ("sizing")
+  :source "experiments/arc_260516a__team_h__H-R1-2__pre_avg_amount_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_684c0ff3" :type "atom"
+  :subj "exp:H-R1-2_pre_avg_amount_sizing"
+  :pred "has_created"
+  :obj "2026-05-17 02:00:00"
+  :source "experiments/arc_260516a__team_h__H-R1-2__pre_avg_amount_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_340094cc" :type "atom"
+  :subj "exp:H-R1-2_pre_avg_amount_sizing"
+  :pred "has_last_updated"
+  :obj "2026-05-17 05:09:00"
+  :source "experiments/arc_260516a__team_h__H-R1-2__pre_avg_amount_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c7324a9c" :type "atom"
+  :subj "exp:H-R1-2_pre_avg_amount_sizing"
+  :pred "has_tag"
+  :obj "tag:arc/260516a"
+  :source "experiments/arc_260516a__team_h__H-R1-2__pre_avg_amount_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_640d69da" :type "atom"
+  :subj "exp:H-R1-2_pre_avg_amount_sizing"
+  :pred "has_tag"
+  :obj "tag:team/h"
+  :source "experiments/arc_260516a__team_h__H-R1-2__pre_avg_amount_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_493404f1" :type "atom"
+  :subj "exp:H-R1-2_pre_avg_amount_sizing"
+  :pred "has_tag"
+  :obj "tag:round/r1"
+  :source "experiments/arc_260516a__team_h__H-R1-2__pre_avg_amount_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_3db2ab09" :type "atom"
+  :subj "exp:H-R1-2_pre_avg_amount_sizing"
+  :pred "has_tag"
+  :obj "tag:axis/sizing"
+  :source "experiments/arc_260516a__team_h__H-R1-2__pre_avg_amount_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5f0914ae" :type "atom"
+  :subj "exp:H-R1-2_pre_avg_amount_sizing"
+  :pred "has_tag"
+  :obj "tag:status/falsified"
+  :source "experiments/arc_260516a__team_h__H-R1-2__pre_avg_amount_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_237252ac" :type "atom"
+  :subj "exp:H-R1-2_pre_avg_amount_sizing"
+  :pred "has_tag"
+  :obj "tag:outcome/no_test_run"
+  :source "experiments/arc_260516a__team_h__H-R1-2__pre_avg_amount_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_344a56fa" :type "atom"
+  :subj "exp:H-R1-2_pre_avg_amount_sizing"
+  :pred "has_tag"
+  :obj "tag:leak/clean"
+  :source "experiments/arc_260516a__team_h__H-R1-2__pre_avg_amount_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_0ca7f1df" :type "atom"
+  :subj "exp:H-R1-2_pre_avg_amount_sizing"
+  :pred "has_tag"
+  :obj "tag:size/medium"
+  :source "experiments/arc_260516a__team_h__H-R1-2__pre_avg_amount_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1206ac3c" :type "atom"
+  :subj "exp:H-R1-2_pre_avg_amount_sizing"
+  :pred "has_tl_dr"
+  :obj "H-R1 sweep 第二档：试 \"pre-trigger 5min 平均成交量\"作 size proxy，normalize by anchor cap 1.3M。**train NAV 1.76 << anchor 2.19**（连 train 都没赢），没进 test。**反例**：volume-based size 在该 arc 上不是 productive proxy，反不如 ratio/median 信号干净。"
+  :source "experiments/arc_260516a__team_h__H-R1-2__pre_avg_amount_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b6f5d093" :type "atom"
+  :subj "exp:H-R1-2_pre_avg_amount_sizing"
+  :pred "has_section_intro"
+  :obj "# H-R1-2 — size = clip(pre_avg_amount / 1.3M, 0.5, 1.5)\n\n> **TL;DR** —— H-R1 sweep 第二档：试 \"pre-trigger 5min 平均成交量\"作 size proxy，normalize by anchor cap 1.3M。**train NAV 1.76 << anchor 2.19**（连 train 都没赢），没进 test。**反例**：volume-based size 在该 arc 上不是 productive proxy，反不如 ratio/median 信号干净。"
+  :source "experiments/arc_260516a__team_h__H-R1-2__pre_avg_amount_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_faba1f74" :type "atom"
+  :subj "exp:H-R1-2_pre_avg_amount_sizing"
+  :pred "has_section_hypothesis"
+  :obj "- pre-trigger 平均成交量大 = 流动性好 = 滑点小 = 应当 size 大；反之 size 小。\n- size proxy = `pre_avg_amount / baseline_max_avg (1.3M)`，clip [0.5, 1.5]。\n- 期待：与 ratio/median 提供独立信号 → 两条 sizing axis 可以拼。"
+  :source "experiments/arc_260516a__team_h__H-R1-2__pre_avg_amount_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_291aafe0" :type "atom"
+  :subj "exp:H-R1-2_pre_avg_amount_sizing"
+  :pred "has_section_implementation"
+  :obj "- 主脚本：`/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_h/scripts/round_1_runner.py`\n- trade selector = anchor G2 (140 笔)\n- 公式：\n  $$ \\text{size}(t) = \\mathrm{clip}\\!\\left(\\frac{\\text{pre\\_avg\\_amt}_t}{1{,}300{,}000},\\; 0.5,\\; 1.5\\right) $$\n- mean_size = 0.657（远低于 1，因 anchor pool 大部分 leg pre_avg < 1.3M）。"
+  :source "experiments/arc_260516a__team_h__H-R1-2__pre_avg_amount_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e94f3992" :type "atom"
+  :subj "exp:H-R1-2_pre_avg_amount_sizing"
+  :pred "has_section_past_only_window"
+  :obj "- pre_avg_amount 本身已是 trigger 前 5min 窗口的 quantity，**结构上已 past-only**（不取自当前 leg 之后的数据）。\n- 无 lookahead 风险。`#leak/clean`。"
+  :source "experiments/arc_260516a__team_h__H-R1-2__pre_avg_amount_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_aa042c4f" :type "atom"
+  :subj "exp:H-R1-2_pre_avg_amount_sizing"
+  :pred "has_section_results"
+  :obj "| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 1.7561 | 140 | 6.21 | 85.7% | -0.66% |\n| Val (rolling 13w) | 1.0408 ± 0.047 | - | - | - | - |\n| Test | NOT RUN | - | - | - | - |\n| **Δ train NAV vs anchor** | **-0.432 (LOSE)** | 0 | -1.50 | 0 | +0.36pp |\n\ntrain 输 anchor 0.43 → engineer 直接砍 R1-2，未 push hold-out。"
+  :source "experiments/arc_260516a__team_h__H-R1-2__pre_avg_amount_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5847243f" :type "atom"
+  :subj "exp:H-R1-2_pre_avg_amount_sizing"
+  :pred "has_section_risk_overfit"
+  :obj "- overfit_score = 0（gate 都未到 test 阶段）。\n- 真正问题：**proxy 选错** —— mean_size 0.66 说明 size 平均被压到 anchor 的 2/3，等于 systemic deleveraging，NAV 当然降。要让这条 proxy 有意义，必须 normalize by **leg-specific** baseline 而非全 pool 共用 1.3M。"
+  :source "experiments/arc_260516a__team_h__H-R1-2__pre_avg_amount_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_4abe66eb" :type "atom"
+  :subj "exp:H-R1-2_pre_avg_amount_sizing"
+  :pred "derived_from"
+  :obj "exp:anchor_g2_baseline"
+  :source "experiments/arc_260516a__team_h__H-R1-2__pre_avg_amount_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a8b78ff8" :type "atom"
+  :subj "exp:H-R1-2_pre_avg_amount_sizing"
+  :pred "competes_with_failed"
+  :obj "exp:H-R1-3_ratio_vol_blend"
+  :source "experiments/arc_260516a__team_h__H-R1-2__pre_avg_amount_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a57be7da" :type "atom"
+  :subj "exp:H-R1-2_pre_avg_amount_sizing"
+  :pred "dominated_by"
+  :obj "exp:H-R1-1_rolling_30d_median_solo"
+  :source "experiments/arc_260516a__team_h__H-R1-2__pre_avg_amount_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_360ac840" :type "atom"
+  :subj "exp:H-R1-2_pre_avg_amount_sizing"
+  :pred "builds_against"
+  :obj "exp:anchor_g2_baseline"
+  :source "experiments/arc_260516a__team_h__H-R1-2__pre_avg_amount_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9248c6ce" :type "atom"
+  :subj "exp:H-R1-2_pre_avg_amount_sizing"
+  :pred "has_section_lineage_links"
+  :obj "- **derived_from**: [[arc_260516a__team_anchor__anchor_g2__baseline]]\n- **falsified_by**: train NAV 不过 anchor → 直接砍\n- **competes_with_failed**: [[arc_260516a__team_h__H-R1-3__ratio_vol_blend]] (同 R1 sweep, 也输 anchor)\n- **dominated_by**: [[arc_260516a__team_h__H-R1-1__rolling_30d_median_solo]] (R1 唯一胜出档)\n- **builds against**: [[arc_260516a__team_anchor__anchor_g2__baseline]]"
+  :source "experiments/arc_260516a__team_h__H-R1-2__pre_avg_amount_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_13aa2570" :type "atom"
+  :subj "exp:H-R1-2_pre_avg_amount_sizing"
+  :pred "has_section_reports"
+  :obj "- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_h/output/cross_round_leaderboard_nav.csv` (R1-2)\n- [[arc_260516a__reporter_20260517_0547]]"
+  :source "experiments/arc_260516a__team_h__H-R1-2__pre_avg_amount_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_97041614" :type "atom"
+  :subj "exp:H-R1-2_pre_avg_amount_sizing"
+  :pred "has_section_notes"
+  :obj "- **anti-pattern**: 用 **全 pool 共用 normalizer**（这里 1.3M）作 sizing denominator 会把 mean_size 拖偏 → systemic deleveraging。\n- 下次类似 idea 要么：(1) per-ticker 5d 平均量作 normalizer，(2) per-leg 历史 pre_avg quantile 作 normalizer。**绝对不要拿固定常数**。\n- volume-based sizing 在 alpha_second_v1 这套 trade pool 上的\"低 alpha density\"特征下可能本就不 productive —— 因为大部分 trade 是 short-horizon 信号，5min pre-volume 与 NAV 关联弱。如果要复活，建议先 grep 历史 trade 上 `pre_avg_amt` 与 trade NAV 的 spearman corr。"
+  :source "experiments/arc_260516a__team_h__H-R1-2__pre_avg_amount_sizing.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")

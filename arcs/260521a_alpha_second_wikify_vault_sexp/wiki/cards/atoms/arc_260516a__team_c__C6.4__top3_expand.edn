@@ -1,0 +1,377 @@
+(card "exp:C6.4_top3_expand" :type "experiment"
+  :subj "exp:C6.4_top3_expand"
+  :body "---\nnav: 15\ntype: experiment\nid: C6.4\nshort_name: top3_expand\ntitle: \"C6.4 — top-3 expand (R6 NAV champion before timing filter)\"\narc: 260516a\nteam: c\nround: r6\nparent_arc: \"[[arcs/260516a]]\"\nparent_lineage: \"[[lineages/arc_260516a__team_c__no_open3min]]\"\ntrain_nav: 2.5108\ntrain_trade_count: 142\ntrain_win_rate: 0.9014\ntrain_sharpe: 9.0539\ntrain_max_drawdown: -0.0047\nval_nav_mean: 1.0760\nval_nav_sigma: 0.0769\nval_window_count: 13\ntest_nav: null\ntest_trade_count: null\ntest_sharpe: null\ntest_win_rate: null\ntest_max_drawdown: null\nanchor_train_nav: 2.1882\nanchor_test_nav: 1.2486\nstatus: champion\noutcome: no_test_run\nchampion: false\noverfit_score: 0\nleak_audit: clean\naxis: [whitelist]\npast_only_window_days: null\nwarmup_required: null\ncreated: 2026-05-17T01:30:00\nlast_updated: 2026-05-17T05:09:00\ntags: [arc/260516a, team/c, round/r6, axis/whitelist, status/champion, outcome/no_test_run, leak/clean, size/medium]\n---\n\n# C6.4 — top-3 expand (R6 NAV champion)\n\n> **TL;DR** —— Team C R6 NAV champion，**Top-N expand 机制的\"3\" 档定型**：每秒同 trigger 接 top-3 leg (vs anchor 默认 top-1)。train NAV 2.51 / 142 笔 / win 90.1% / sharpe 9.05 全部漂亮。test 未单跑（后续 C7.5 / C8.4 在它上面叠 filter 后才上 test）—— vault 留它作为 **top-N expand axis 的 anchor 起点**。\n\n## 假设 (Hypothesis)\n- 假设：anchor 默认 top-1 picker 浪费了同 trigger 的 top-2 / top-3 leg；这些 leg ratio 略低但仍 informative，应当接进 pool。\n- top-3 = R6 sweep [top-2, top-3, top-4, top-5] 里 NAV 最高档（C7.1 top-4 / C7.2 top-5 略低）。\n- 期待：trade_count 翻倍至 280 左右，NAV 升 20-30%。\n- 实测：trade_count 142（仅 +2，因 top-2/3 leg 多数被 volume cap 砍 → 后续 R8 加 bypass 才接进来），NAV 升 +15%。\n\n## 实现 (Implementation)\n- 主脚本：`/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_c/scripts/round_6_runner.py`\n- 步骤：anchor G2 → 每个 trigger 选 top-3 (vs default top-1)\n- 输出 142 笔。\n\n## Past-only window 处理\n- 无 rolling stat。`#leak/clean`。\n\n## 结果 (Results)\n| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 2.5108 | 142 | 9.05 | 90.1% | -0.47% |\n| Val (rolling 13w) | 1.0760 ± 0.077 | - | - | - | - |\n| Test | NOT RUN | - | - | - | - |\n| **Δ train NAV vs anchor** | +0.323 | +2 | +1.36 | +4.4pp | +0.54pp |\n\n注意 win_rate 90.1% / sharpe 9.05 都是 arc 全候选最高之一 —— top-3 expand 没引入新 noise leg，只是恢复了 anchor 没picked 的 strong leg。\n\n## 风险 & overfit 嫌疑\n- overfit_score = 0。\n- 未跑 test 不是因为失败，是因为 C7.5 / C8.4 在它上面叠 filter 后 NAV 更高，直接以后者跑 test。\n\n## Lineage（双链网）\n- **same_metrics_as**: [[arc_260516a__team_c__baseline_C6.4__top3_expand]]\n- **derived_from**: [[arc_260516a__team_anchor__anchor_g2__baseline]] (直接套 anchor + top-3)\n- **descendants**: [[arc_260516a__team_c__C7.5__top3_no_open3min]] (R7 加 no_open_3min), [[arc_260516a__team_c__C8.4__top3_no_open3min_bypass]] (R8 再加 bypass)\n- **competes_with**: [[arc_260516a__team_c__C7.3__top3_rolling_baserate]] (R7 alt 路线)\n- **builds against**: [[arc_260516a__team_anchor__anchor_g2__baseline]]\n\n## Reports\n- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_c/output/cross_round_leaderboard.csv` (C6.4 row)\n- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/output/top3_strategies_explainer_20260517_0015.html`\n- [[arc_260516a__reporter_20260517_0547]]\n\n## Notes / 下次迭代\n- **top-N expand axis** 是 Team C 整个 lineage 的核心 lever。下次 trade selector arc 必须 reuse top-3 起点（top-4 / top-5 已在 C7.1/7.2 验过：略低 NAV，stick with top-3）。\n- 没跑 test 的原因 = \"更强的 descendant 已跑 test\" —— 这种\"剪枝\"决定是合理的，但 vault 仍应留 stub 给 lineage 追溯。\n"
+  :path "experiments/arc_260516a__team_c__C6.4__top3_expand.md"
+  :source_mtime "2026-05-17T10:24:30+08:00"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_dc291a45" :type "atom"
+  :subj "exp:C6.4_top3_expand"
+  :pred "has_nav"
+  :obj 15
+  :source "experiments/arc_260516a__team_c__C6.4__top3_expand.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_56165fb6" :type "atom"
+  :subj "exp:C6.4_top3_expand"
+  :pred "has_type"
+  :obj "experiment"
+  :source "experiments/arc_260516a__team_c__C6.4__top3_expand.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_239982b4" :type "atom"
+  :subj "exp:C6.4_top3_expand"
+  :pred "has_id"
+  :obj "C6.4"
+  :source "experiments/arc_260516a__team_c__C6.4__top3_expand.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f72a1a85" :type "atom"
+  :subj "exp:C6.4_top3_expand"
+  :pred "has_short_name"
+  :obj "top3_expand"
+  :source "experiments/arc_260516a__team_c__C6.4__top3_expand.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_77b5c259" :type "atom"
+  :subj "exp:C6.4_top3_expand"
+  :pred "has_title"
+  :obj "C6.4 — top-3 expand (R6 NAV champion before timing filter)"
+  :source "experiments/arc_260516a__team_c__C6.4__top3_expand.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c260e4c8" :type "atom"
+  :subj "exp:C6.4_top3_expand"
+  :pred "has_arc"
+  :obj "260516a"
+  :source "experiments/arc_260516a__team_c__C6.4__top3_expand.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d57ae04d" :type "atom"
+  :subj "exp:C6.4_top3_expand"
+  :pred "has_team"
+  :obj "c"
+  :source "experiments/arc_260516a__team_c__C6.4__top3_expand.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_589a77ec" :type "atom"
+  :subj "exp:C6.4_top3_expand"
+  :pred "has_round"
+  :obj "r6"
+  :source "experiments/arc_260516a__team_c__C6.4__top3_expand.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_bc711466" :type "atom"
+  :subj "exp:C6.4_top3_expand"
+  :pred "parent_arc"
+  :obj "arc:260516a"
+  :source "experiments/arc_260516a__team_c__C6.4__top3_expand.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c8530c90" :type "atom"
+  :subj "exp:C6.4_top3_expand"
+  :pred "parent_lineage"
+  :obj "lin:arc_260516a__team_c__no_open3min"
+  :source "experiments/arc_260516a__team_c__C6.4__top3_expand.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_6f81a4eb" :type "atom"
+  :subj "exp:C6.4_top3_expand"
+  :pred "has_train_nav"
+  :obj 2.5108
+  :source "experiments/arc_260516a__team_c__C6.4__top3_expand.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e2a33548" :type "atom"
+  :subj "exp:C6.4_top3_expand"
+  :pred "has_train_trade_count"
+  :obj 142
+  :source "experiments/arc_260516a__team_c__C6.4__top3_expand.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_aa5f9e3e" :type "atom"
+  :subj "exp:C6.4_top3_expand"
+  :pred "has_train_win_rate"
+  :obj 0.9014
+  :source "experiments/arc_260516a__team_c__C6.4__top3_expand.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_07df3d27" :type "atom"
+  :subj "exp:C6.4_top3_expand"
+  :pred "has_train_sharpe"
+  :obj 9.0539
+  :source "experiments/arc_260516a__team_c__C6.4__top3_expand.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_03b7263c" :type "atom"
+  :subj "exp:C6.4_top3_expand"
+  :pred "has_train_max_drawdown"
+  :obj -0.0047
+  :source "experiments/arc_260516a__team_c__C6.4__top3_expand.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_cc910183" :type "atom"
+  :subj "exp:C6.4_top3_expand"
+  :pred "has_val_nav_mean"
+  :obj 1.076
+  :source "experiments/arc_260516a__team_c__C6.4__top3_expand.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e440d9e3" :type "atom"
+  :subj "exp:C6.4_top3_expand"
+  :pred "has_val_nav_sigma"
+  :obj 0.0769
+  :source "experiments/arc_260516a__team_c__C6.4__top3_expand.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9bef021c" :type "atom"
+  :subj "exp:C6.4_top3_expand"
+  :pred "has_val_window_count"
+  :obj 13
+  :source "experiments/arc_260516a__team_c__C6.4__top3_expand.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_da49455a" :type "atom"
+  :subj "exp:C6.4_top3_expand"
+  :pred "has_anchor_train_nav"
+  :obj 2.1882
+  :source "experiments/arc_260516a__team_c__C6.4__top3_expand.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5bb7d7c0" :type "atom"
+  :subj "exp:C6.4_top3_expand"
+  :pred "has_anchor_test_nav"
+  :obj 1.2486
+  :source "experiments/arc_260516a__team_c__C6.4__top3_expand.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_7acf47ba" :type "atom"
+  :subj "exp:C6.4_top3_expand"
+  :pred "has_status"
+  :obj "champion"
+  :source "experiments/arc_260516a__team_c__C6.4__top3_expand.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_fa7e3a10" :type "atom"
+  :subj "exp:C6.4_top3_expand"
+  :pred "has_outcome"
+  :obj "no_test_run"
+  :source "experiments/arc_260516a__team_c__C6.4__top3_expand.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a69cc10e" :type "atom"
+  :subj "exp:C6.4_top3_expand"
+  :pred "has_champion"
+  :obj false
+  :source "experiments/arc_260516a__team_c__C6.4__top3_expand.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e689683e" :type "atom"
+  :subj "exp:C6.4_top3_expand"
+  :pred "has_overfit_score"
+  :obj 0
+  :source "experiments/arc_260516a__team_c__C6.4__top3_expand.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_43886870" :type "atom"
+  :subj "exp:C6.4_top3_expand"
+  :pred "has_leak_audit"
+  :obj "clean"
+  :source "experiments/arc_260516a__team_c__C6.4__top3_expand.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9d0d548c" :type "atom"
+  :subj "exp:C6.4_top3_expand"
+  :pred "has_axis"
+  :obj "axis:whitelist"
+  :source "experiments/arc_260516a__team_c__C6.4__top3_expand.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5a30d158" :type "atom"
+  :subj "exp:C6.4_top3_expand"
+  :pred "has_axis_list"
+  :obj ("whitelist")
+  :source "experiments/arc_260516a__team_c__C6.4__top3_expand.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1f99a7e9" :type "atom"
+  :subj "exp:C6.4_top3_expand"
+  :pred "has_created"
+  :obj "2026-05-17 01:30:00"
+  :source "experiments/arc_260516a__team_c__C6.4__top3_expand.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_59afd8b3" :type "atom"
+  :subj "exp:C6.4_top3_expand"
+  :pred "has_last_updated"
+  :obj "2026-05-17 05:09:00"
+  :source "experiments/arc_260516a__team_c__C6.4__top3_expand.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_7be40fa6" :type "atom"
+  :subj "exp:C6.4_top3_expand"
+  :pred "has_tag"
+  :obj "tag:arc/260516a"
+  :source "experiments/arc_260516a__team_c__C6.4__top3_expand.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_88312b7d" :type "atom"
+  :subj "exp:C6.4_top3_expand"
+  :pred "has_tag"
+  :obj "tag:team/c"
+  :source "experiments/arc_260516a__team_c__C6.4__top3_expand.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_131c2c14" :type "atom"
+  :subj "exp:C6.4_top3_expand"
+  :pred "has_tag"
+  :obj "tag:round/r6"
+  :source "experiments/arc_260516a__team_c__C6.4__top3_expand.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ccc9a3dd" :type "atom"
+  :subj "exp:C6.4_top3_expand"
+  :pred "has_tag"
+  :obj "tag:axis/whitelist"
+  :source "experiments/arc_260516a__team_c__C6.4__top3_expand.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_083c5392" :type "atom"
+  :subj "exp:C6.4_top3_expand"
+  :pred "has_tag"
+  :obj "tag:status/champion"
+  :source "experiments/arc_260516a__team_c__C6.4__top3_expand.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_7e659ed8" :type "atom"
+  :subj "exp:C6.4_top3_expand"
+  :pred "has_tag"
+  :obj "tag:outcome/no_test_run"
+  :source "experiments/arc_260516a__team_c__C6.4__top3_expand.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_dee62aae" :type "atom"
+  :subj "exp:C6.4_top3_expand"
+  :pred "has_tag"
+  :obj "tag:leak/clean"
+  :source "experiments/arc_260516a__team_c__C6.4__top3_expand.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_29e5f3bb" :type "atom"
+  :subj "exp:C6.4_top3_expand"
+  :pred "has_tag"
+  :obj "tag:size/medium"
+  :source "experiments/arc_260516a__team_c__C6.4__top3_expand.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f04c1e6f" :type "atom"
+  :subj "exp:C6.4_top3_expand"
+  :pred "has_tl_dr"
+  :obj "Team C R6 NAV champion，**Top-N expand 机制的\"3\" 档定型**：每秒同 trigger 接 top-3 leg (vs anchor 默认 top-1)。train NAV 2.51 / 142 笔 / win 90.1% / sharpe 9.05 全部漂亮。test 未单跑（后续 C7.5 / C8.4 在它上面叠 filter 后才上 test）—— vault 留它作为 **top-N expand axis 的 anchor 起点**。"
+  :source "experiments/arc_260516a__team_c__C6.4__top3_expand.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c63c349e" :type "atom"
+  :subj "exp:C6.4_top3_expand"
+  :pred "has_section_intro"
+  :obj "# C6.4 — top-3 expand (R6 NAV champion)\n\n> **TL;DR** —— Team C R6 NAV champion，**Top-N expand 机制的\"3\" 档定型**：每秒同 trigger 接 top-3 leg (vs anchor 默认 top-1)。train NAV 2.51 / 142 笔 / win 90.1% / sharpe 9.05 全部漂亮。test 未单跑（后续 C7.5 / C8.4 在它上面叠 filter 后才上 test）—— vault 留它作为 **top-N expand axis 的 anchor 起点**。"
+  :source "experiments/arc_260516a__team_c__C6.4__top3_expand.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_caa052ea" :type "atom"
+  :subj "exp:C6.4_top3_expand"
+  :pred "has_section_hypothesis"
+  :obj "- 假设：anchor 默认 top-1 picker 浪费了同 trigger 的 top-2 / top-3 leg；这些 leg ratio 略低但仍 informative，应当接进 pool。\n- top-3 = R6 sweep [top-2, top-3, top-4, top-5] 里 NAV 最高档（C7.1 top-4 / C7.2 top-5 略低）。\n- 期待：trade_count 翻倍至 280 左右，NAV 升 20-30%。\n- 实测：trade_count 142（仅 +2，因 top-2/3 leg 多数被 volume cap 砍 → 后续 R8 加 bypass 才接进来），NAV 升 +15%。"
+  :source "experiments/arc_260516a__team_c__C6.4__top3_expand.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9a1a525f" :type "atom"
+  :subj "exp:C6.4_top3_expand"
+  :pred "has_section_implementation"
+  :obj "- 主脚本：`/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_c/scripts/round_6_runner.py`\n- 步骤：anchor G2 → 每个 trigger 选 top-3 (vs default top-1)\n- 输出 142 笔。"
+  :source "experiments/arc_260516a__team_c__C6.4__top3_expand.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_3cf54836" :type "atom"
+  :subj "exp:C6.4_top3_expand"
+  :pred "has_section_past_only_window"
+  :obj "- 无 rolling stat。`#leak/clean`。"
+  :source "experiments/arc_260516a__team_c__C6.4__top3_expand.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_66684af6" :type "atom"
+  :subj "exp:C6.4_top3_expand"
+  :pred "has_section_results"
+  :obj "| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 2.5108 | 142 | 9.05 | 90.1% | -0.47% |\n| Val (rolling 13w) | 1.0760 ± 0.077 | - | - | - | - |\n| Test | NOT RUN | - | - | - | - |\n| **Δ train NAV vs anchor** | +0.323 | +2 | +1.36 | +4.4pp | +0.54pp |\n\n注意 win_rate 90.1% / sharpe 9.05 都是 arc 全候选最高之一 —— top-3 expand 没引入新 noise leg，只是恢复了 anchor 没picked 的 strong leg。"
+  :source "experiments/arc_260516a__team_c__C6.4__top3_expand.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_40abc9ed" :type "atom"
+  :subj "exp:C6.4_top3_expand"
+  :pred "has_section_risk_overfit"
+  :obj "- overfit_score = 0。\n- 未跑 test 不是因为失败，是因为 C7.5 / C8.4 在它上面叠 filter 后 NAV 更高，直接以后者跑 test。"
+  :source "experiments/arc_260516a__team_c__C6.4__top3_expand.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_8719f7ee" :type "atom"
+  :subj "exp:C6.4_top3_expand"
+  :pred "same_metrics_as"
+  :obj "exp:baseline_C6.4_top3_expand"
+  :source "experiments/arc_260516a__team_c__C6.4__top3_expand.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_024c6074" :type "atom"
+  :subj "exp:C6.4_top3_expand"
+  :pred "derived_from"
+  :obj "exp:anchor_g2_baseline"
+  :source "experiments/arc_260516a__team_c__C6.4__top3_expand.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ec06c746" :type "atom"
+  :subj "exp:C6.4_top3_expand"
+  :pred "descendants"
+  :obj "exp:C7.5_top3_no_open3min"
+  :source "experiments/arc_260516a__team_c__C6.4__top3_expand.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_2f228223" :type "atom"
+  :subj "exp:C6.4_top3_expand"
+  :pred "descendants"
+  :obj "exp:C8.4_top3_no_open3min_bypass"
+  :source "experiments/arc_260516a__team_c__C6.4__top3_expand.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_589e4ec4" :type "atom"
+  :subj "exp:C6.4_top3_expand"
+  :pred "competes_with"
+  :obj "exp:C7.3_top3_rolling_baserate"
+  :source "experiments/arc_260516a__team_c__C6.4__top3_expand.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9adc3b97" :type "atom"
+  :subj "exp:C6.4_top3_expand"
+  :pred "builds_against"
+  :obj "exp:anchor_g2_baseline"
+  :source "experiments/arc_260516a__team_c__C6.4__top3_expand.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_31396447" :type "atom"
+  :subj "exp:C6.4_top3_expand"
+  :pred "has_section_lineage_links"
+  :obj "- **same_metrics_as**: [[arc_260516a__team_c__baseline_C6.4__top3_expand]]\n- **derived_from**: [[arc_260516a__team_anchor__anchor_g2__baseline]] (直接套 anchor + top-3)\n- **descendants**: [[arc_260516a__team_c__C7.5__top3_no_open3min]] (R7 加 no_open_3min), [[arc_260516a__team_c__C8.4__top3_no_open3min_bypass]] (R8 再加 bypass)\n- **competes_with**: [[arc_260516a__team_c__C7.3__top3_rolling_baserate]] (R7 alt 路线)\n- **builds against**: [[arc_260516a__team_anchor__anchor_g2__baseline]]"
+  :source "experiments/arc_260516a__team_c__C6.4__top3_expand.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ffc3f5f1" :type "atom"
+  :subj "exp:C6.4_top3_expand"
+  :pred "has_section_reports"
+  :obj "- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_c/output/cross_round_leaderboard.csv` (C6.4 row)\n- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/output/top3_strategies_explainer_20260517_0015.html`\n- [[arc_260516a__reporter_20260517_0547]]"
+  :source "experiments/arc_260516a__team_c__C6.4__top3_expand.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_867d8605" :type "atom"
+  :subj "exp:C6.4_top3_expand"
+  :pred "has_section_notes"
+  :obj "- **top-N expand axis** 是 Team C 整个 lineage 的核心 lever。下次 trade selector arc 必须 reuse top-3 起点（top-4 / top-5 已在 C7.1/7.2 验过：略低 NAV，stick with top-3）。\n- 没跑 test 的原因 = \"更强的 descendant 已跑 test\" —— 这种\"剪枝\"决定是合理的，但 vault 仍应留 stub 给 lineage 追溯。"
+  :source "experiments/arc_260516a__team_c__C6.4__top3_expand.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")

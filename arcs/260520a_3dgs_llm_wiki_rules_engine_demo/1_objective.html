@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>1_objective — arc 260520a</title>
+
+<style>
+:root {
+  --paper:        #fbf6e9;
+  --paper-2:      #f3ebd6;
+  --ink:          #1f1a14;
+  --ink-soft:     #3b332a;
+  --ink-faint:    #6b6052;
+  --rule:         #b8a583;
+  --rule-soft:    #d8c9a2;
+  --accent:       #8c2f1c;
+  --accent-2:     #2c5340;
+  --gold:         #a37c2a;
+  --quote-bg:     #f0e6cd;
+  --code-bg:      #efe6ce;
+  --code-fg:      #1a140d;
+}
+* { box-sizing: border-box; }
+html, body {
+  margin: 0; padding: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: -apple-system, "Iowan Old Style", "Charter", "Cormorant Garamond", "Playfair Display", Georgia, "Times New Roman", serif;
+  font-size: 18px; line-height: 1.7;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+body { padding-bottom: 5em; }
+.mono, code, pre {
+  font-family: ui-monospace, "SF Mono", Menlo, Monaco, "Cascadia Mono", Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+main { max-width: 760px; margin: 0 auto; padding: 56px 32px 0; }
+
+.masthead {
+  text-align: center;
+  border-top: 4px double var(--rule);
+  border-bottom: 1px solid var(--rule);
+  padding: 30px 0 22px;
+  margin-bottom: 32px;
+}
+.masthead .kicker {
+  font-variant: small-caps;
+  letter-spacing: 0.28em;
+  font-size: 12px;
+  color: var(--accent);
+}
+.masthead h1 {
+  font-size: 40px; line-height: 1.18; margin: 12px 0 8px;
+  font-weight: 500;
+}
+.masthead .deck {
+  font-style: italic; color: var(--ink-soft);
+  font-size: 18px; max-width: 600px; margin: 0 auto;
+}
+
+.chapter-rule {
+  text-align: center;
+  margin: 56px 0 22px;
+  color: var(--accent);
+  font-variant: small-caps;
+  letter-spacing: 0.3em;
+}
+.chapter-rule .roman {
+  display: inline-block;
+  font-size: 20px;
+  font-style: italic;
+  padding: 0 16px;
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  line-height: 2;
+}
+.chapter-title {
+  text-align: center;
+  font-size: 24px;
+  font-style: italic;
+  font-weight: 500;
+  margin: 0 0 24px;
+  color: var(--ink);
+}
+
+section p { margin: 0 0 1em; color: var(--ink); }
+.lede { font-size: 1.08rem; color: var(--ink-soft); }
+.lede::first-letter {
+  float: left;
+  font-size: 4.2em; line-height: 0.9;
+  padding: 0.08em 0.1em 0 0;
+  color: var(--accent);
+  font-weight: 500;
+}
+.conclusion { color: var(--ink-soft); font-style: italic; }
+
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 18px;
+  margin: 24px 0;
+}
+.metric {
+  background: var(--paper-2);
+  border: 1px solid var(--rule-soft);
+  padding: 18px 20px;
+}
+.metric .num {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-weight: 600;
+  font-size: 2rem; line-height: 1;
+  color: var(--ink);
+}
+.metric .lbl {
+  color: var(--ink-faint);
+  font-size: 0.72rem; letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-top: 8px;
+}
+.metric .delta { font-size: 0.78rem; margin-top: 6px; }
+.metric .delta-up { color: var(--accent-2); }
+.metric .delta-down { color: var(--accent); }
+.metric .baseline { color: var(--ink-faint); font-size: 0.78rem; margin-top: 6px; }
+
+.callout {
+  background: var(--paper-2);
+  border-left: 3px solid var(--accent);
+  padding: 14px 18px;
+  margin: 18px 0;
+}
+.callout .ctitle {
+  font-variant: small-caps;
+  letter-spacing: 0.12em;
+  color: var(--accent);
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+.callout p { margin: 0; }
+
+.boundary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin: 16px 0;
+}
+.boundary.stacked { grid-template-columns: 1fr; }
+.boundary > div {
+  background: var(--paper-2);
+  border: 1px solid var(--rule-soft);
+  padding: 14px 18px;
+}
+.boundary h3 {
+  margin: 0 0 8px;
+  font-size: 0.78rem;
+  font-variant: small-caps;
+  letter-spacing: 0.12em;
+  font-weight: 500;
+  color: var(--accent);
+}
+.boundary ul { margin: 0; padding-left: 1.2em; }
+.boundary li { margin: 0.3em 0; }
+@media (max-width: 560px) {
+  .boundary { grid-template-columns: 1fr; }
+}
+
+table.inputs {
+  width: 100%; border-collapse: collapse;
+  font-size: 0.95rem;
+  margin: 16px 0;
+}
+table.inputs th,
+table.inputs td {
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--rule-soft);
+  vertical-align: top;
+}
+table.inputs th {
+  font-variant: small-caps;
+  letter-spacing: 0.06em;
+  font-weight: 500;
+  color: var(--accent);
+  font-size: 0.78rem;
+  border-bottom: 1px solid var(--rule);
+  width: 22%;
+}
+table.inputs code { background: transparent; padding: 0; color: var(--ink-soft); }
+
+code {
+  font-size: 0.88em;
+  background: var(--code-bg);
+  color: var(--code-fg);
+  padding: 0.05rem 0.32rem;
+  border-radius: 3px;
+}
+pre {
+  background: var(--code-bg);
+  color: var(--code-fg);
+  border-left: 3px solid var(--gold);
+  padding: 14px 16px;
+  overflow-x: auto;
+  font-size: 0.92rem;
+  margin: 16px 0;
+}
+pre code { background: transparent; padding: 0; }
+a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+ul, ol { padding-left: 1.4em; }
+ul li, ol li { margin: 0.35em 0; }
+
+footer.colophon {
+  max-width: 760px; margin: 56px auto 0; padding: 18px 32px 0;
+  border-top: 1px solid var(--rule);
+  display: flex; justify-content: space-between;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 12px; letter-spacing: 0.06em;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+}
+</style>
+</head>
+<body>
+
+<main>
+
+  <header class="masthead">
+    <div class="kicker">arc 260520a · objective · locked 2026-05-20</div>
+    <h1>LLM-Wiki 规则引擎最小可运行原型</h1>
+    <div class="deck">用明确规则让 wiki 对 agent 的效益指数增长</div>
+  </header>
+
+  <section>
+    <div class="chapter-rule"><span class="roman">I · 目标</span></div>
+
+    <p class="lede">在本 arc 内造一个最小可运行的 rule-engine wiki 原型：从 3dgs 现有 markdown sources（arc summaries / SPECS / notes / paper reads / decisions）确定性抽取 atoms，由人手撰写的若干条 <code>pattern → action</code> rules 自动派生新关系（cross-ref / supersede / contradiction-lint 等），用 forward chaining 跑到 fixpoint，并测量第 N+1 条 rule 加入时的边际 derivation 数，验证 "rules × sources" 是否真出现超线性增长。</p>
+    <p>本 arc 不接管项目实际 wiki — 只是把抽象 down 到可运行代码，让"规则可写、连接可派生、增长可度量"三件事被实证地证明或证伪。</p>
+  </section>
+
+  <section>
+    <div class="chapter-rule"><span class="roman">II · 边界</span></div>
+
+    <div class="boundary stacked">
+      <div>
+        <h3>In-scope</h3>
+        <ul>
+          <li>atom schema（YAML，带 <code>id / subj / pred / obj / source / derived_from</code> provenance 字段）</li>
+          <li>rule DSL（每条 rule 是一份 markdown，frontmatter 写 pattern 字段，body 写说明 + action template）</li>
+          <li>forward-chaining 引擎（≤ 200 行 Python，apply rules to fixpoint）</li>
+          <li>ingest pipeline（deterministic 抽取：title / id / [NEW] [UPDATE] 行 / 路径引用 / 跨 arc 链接 — 不调 LLM）</li>
+          <li>10 条手写 seed rules + 1 条第 11 ablation rule（用于测边际增益）</li>
+          <li>单页 viz HTML：atoms 表 + rules 表 + derivation 反向链</li>
+          <li>跑通 + 输出指标</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Non-goals</h3>
+        <ul>
+          <li>让 LLM 写 rules（留给后续 arc）</li>
+          <li>接入项目主 <code>wiki/</code> 目录（本 arc 的产物全部在 <code>output/&lt;ts&gt;/wiki/</code> 沙箱里）</li>
+          <li>BM25 / vector search / embedding / qmd</li>
+          <li>多用户 / web UI / Obsidian plugin</li>
+          <li>conversation-time 增量维护（这是 batch 离线 demo）</li>
+          <li>gpu7 / 长跑 GPU 任务</li>
+          <li>把 rule DSL 设计成图灵完备（够用就停）</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="chapter-rule"><span class="roman">III · 验收</span></div>
+
+    <div class="metrics">
+      <div class="metric">
+        <div class="num">≥ 50</div>
+        <div class="lbl">Derived atoms (10 rules)</div>
+        <div class="baseline">on ~30 sources</div>
+      </div>
+      <div class="metric">
+        <div class="num">≥ 5</div>
+        <div class="lbl">Marginal yield (rule 11)</div>
+        <div class="baseline">指数微分；&lt; 2 即判失败</div>
+      </div>
+      <div class="metric">
+        <div class="num">≥ 30%</div>
+        <div class="lbl">Spot-check 有效率</div>
+        <div class="baseline">人工抽 20 条 derivations</div>
+      </div>
+      <div class="metric">
+        <div class="num">&lt; 5 s</div>
+        <div class="lbl">Engine 运行时间</div>
+        <div class="baseline">Mac local, batch 全跑</div>
+      </div>
+    </div>
+
+    <div class="callout">
+      <div class="ctitle">L2 · 视觉 / 证据</div>
+      <ul>
+        <li><code>output/&lt;ts&gt;/viz.html</code> — atoms 表 + rules 表 + derivation log 带 rule-id 反向链</li>
+        <li><code>output/&lt;ts&gt;/wiki/</code> 完整快照：<code>atoms/</code> + <code>rules/</code> + <code>derived/</code></li>
+        <li><code>output/&lt;ts&gt;/run.log</code> — 10-rule vs 11-rule 边际对照数据</li>
+        <li><code>_tmp/report_notes.md</code> — load-bearing 决策与失败模式</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <div class="chapter-rule"><span class="roman">V · 输入 / 依赖</span></div>
+
+    <table class="inputs">
+      <tbody>
+        <tr><th>Data</th><td>
+          <code>arcs/all/*/9_summary.md</code>（8 篇 done arc 摘要）<br>
+          <code>docs/paper_read/*.md</code>（freesim 等）<br>
+          <code>docs/notes/*.md</code>（~17 篇 runbook）<br>
+          <code>docs/decisions/*.md</code>（3 篇 ADR）<br>
+          <code>SPECS/*.md</code>（5 篇 BEV/fabu spec）
+        </td></tr>
+        <tr><th>Upstream arc</th><td>无</td></tr>
+        <tr><th>Main-project code</th><td>无 — 本 demo 是独立 Python 脚本，不引主项目模块</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <div class="chapter-rule"><span class="roman">VI · 风险</span></div>
+    <ul>
+      <li><strong>规则之间不组合</strong>（每条 rule 处理独立模式，链式触发不发生）→ 增长退化成线性。检测信号：第 11 条 rule 的边际 derivation 数 &lt; 2。若命中此风险，本 arc 的结论是 "claim 抽象 falsified，需要重新设计"。</li>
+      <li><strong>atom 抽取太脏</strong>（regex 在富 markdown 上误抓）→ 大量 false-positive derivations 污染 spot-check 率。Mitigation：先小规模 smoke 检查抽取质量，必要时收紧 schema。</li>
+      <li><strong>30 个 source 不够看出统计差异</strong> → 单次 run 的边际增益噪声大。Mitigation：跑 5 种 rule 加入顺序，取边际增益的中位数。</li>
+    </ul>
+  </section>
+
+</main>
+
+<footer class="colophon">
+  <span>arc 260520a · objective</span>
+  <span>locked 2026-05-20</span>
+</footer>
+
+</body>
+</html>

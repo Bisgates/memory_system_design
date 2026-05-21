@@ -1,0 +1,21 @@
+- id: a_737a0b50
+  subj: arc:260512a
+  pred: has_type
+  obj: type:arc
+  source: arcs/all/260512a_dense_depth_da3/9_summary.md
+  derived_from: null
+  parents: []
+- id: a_77ae93d7
+  subj: arc:260512a
+  pred: has_title
+  obj: 9_summary — dense_depth_da3
+  source: arcs/all/260512a_dense_depth_da3/9_summary.md
+  derived_from: null
+  parents: []
+- id: a_16ce902c
+  subj: arc:260512a
+  pred: mentions_code
+  obj: code:scripts/apply_drivestudio_patch.py
+  source: arcs/all/260512a_dense_depth_da3/9_summary.md
+  derived_from: null
+  parents: []

@@ -1,0 +1,440 @@
+(card "exp:D-R2-3_blacklist_stack_triple" :type "experiment"
+  :subj "exp:D-R2-3_blacklist_stack_triple"
+  :body "---\nnav: 25\ntype: experiment\nid: D-R2-3_blacklist_stack_triple\nshort_name: blacklist_stack_triple\ntitle: \"D-R2-3 — default admit ∖ {lc_48h==2 ∪ open_3min ∪ low pre_amt q10}\"\narc: 260516a\nteam: d\nround: r2\nparent_arc: \"[[arcs/260516a]]\"\nparent_lineage: \"[[lineages/arc_260516a__team_d__blacklist_default_admit]]\"\ntrain_nav: 2.4235\ntrain_trade_count: 171\ntrain_win_rate: 0.8187\ntrain_sharpe: 7.1446\ntrain_max_drawdown: -0.0101\nval_nav_mean: 1.0659\nval_nav_sigma: 0.0678\nval_window_count: 13\ntest_nav: 1.1158\ntest_trade_count: 18\ntest_sharpe: 4.7857\ntest_win_rate: 0.7222\ntest_max_drawdown: -0.0117\nanchor_train_nav: 2.1882\nanchor_test_nav: 1.2486\nstatus: falsified\noutcome: test_fail\nchampion: false\noverfit_score: 0\nleak_audit: clean\naxis: [blacklist, cross_source, timing_filter]\npast_only_window_days: null\nwarmup_required: null\ncreated: 2026-05-17T02:00:00\nlast_updated: 2026-05-17T05:09:00\ntags: [arc/260516a, team/d, round/r2, axis/blacklist, axis/cross_source, status/falsified, outcome/test_fail, leak/clean, size/large]\n---\n\n# D-R2-3 — default admit ∖ {lc_48h==2 ∪ open_3min ∪ low pre_amt q10}\n\n> **TL;DR** —— Team D 的代表作：**完全反向 anchor 思路 —— default 全 admit，再叠 3-stack blacklist**（drop 同源 cross-source crowd / 开盘 3min / pre_trigger amount 底部 10%）。train NAV 2.42 漂亮，**test NAV 1.12 < anchor 1.25** —— 在 hold-out 上**被证伪**。Team D blacklist 路线整体在 test 上崩塌的标志性 case。\n\n## 假设 (Hypothesis)\n- 反向 anchor 的 whitelist 路线：默认所有 lag/signal 都 admit，只通过 blacklist 形式剔除明确\"坏\"的 pattern。\n- 选三条 stack：\n  1. **lc_48h == 2** (cross-source crowd, 48h 内有 2 个同源 signal echo) —— [[arc_260516a__team_d__D-R1-3__drop_full_consensus]] 验过单独贡献\n  2. **open_3min** —— 借自 [[arc_260516a__team_b__B-R8-1__no_open3min_bypass03]] 的 lesson\n  3. **pre_trigger_avg 底部 10%** —— 假设：触发前 5min 平均成交量太低的 leg 是 \"dead signal\"\n- 假设：三个 dimension 相互独立 → stack 后 win/sharpe 一齐升，NAV 上一台阶。\n\n## 实现 (Implementation)\n- 主脚本：`/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_d/scripts/round_2_runner.py`\n- 步骤：\n  1. 完全 drop anchor 的 ratio_gate / volume_cap / open_3min / 任何 whitelist (`D-R2-1_default_admit_baseline`)\n  2. drop legs with `lc_48h == 2`\n  3. drop legs in open 3min\n  4. drop legs in pre_trigger_avg q10 (bottom decile)\n- 输出 171 笔（vs anchor 140；vs default-admit baseline D-R2-1 的 214 笔）。\n\n## Past-only window 处理\n- `lc_48h` 是过去 48h 窗口的 cross-source count —— **必须 strict past-only**（critic 已审），不能数到当前 leg 自身或之后的 echo。critic 2026-05-17 audit pass。\n- `pre_trigger_avg` 是 trigger 前 5min 的成交量平均 —— 也 strict past-only。\n- 无 leak 嫌疑 (`#leak/clean`)。\n\n## 结果 (Results)\n| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 2.4235 | 171 | 7.14 | 81.9% | -1.01% |\n| Val (rolling 13w) | 1.0659 ± 0.068 | - | - | - | - |\n| Test | **1.1158** | 18 | **4.79** | 72.2% | -1.17% |\n| Anchor train | 2.1882 | 140 | 7.70 | 85.7% | -1.01% |\n| Anchor test | 1.2486 | 20 | 7.15 | 75.0% | -0.53% |\n| **Δ test NAV vs anchor** | **-0.133 (FAIL)** | -2 | **-2.36** | -2.8pp | -0.64pp |\n\n- train 看起来漂亮：NAV +0.24 vs anchor，count 在 gate 内。\n- **test 完全崩** —— NAV 1.12 vs anchor 1.25, Sharpe 砍半 (7.15 → 4.79), max_drawdown 翻倍。\n- 同 lineage 的 [[arc_260516a__team_d__D-R2-4__blacklist_stack_quad]] 多叠一条 (crowd≥4) 后更差，test NAV 1.01。\n\n## 风险 & overfit 嫌疑\n- engineer overfit_score = 0（gate 都过；count 在 ±30%；val 13 windows mean beat anchor）—— **但 test 数据狠狠打脸了**。\n- 真实 risk：default-admit baseline (D-R2-1) 把 214 笔全收进来，再叠 3-stack 砍到 171 —— 这 43 笔差额里包含了**很多 train 期专有的弱 signal**，hold-out 上分布漂移后 stack 没有 mechanism-level 韧性。\n- 这是 vault 里 \"**train_nav > anchor 但 test_nav 崩盘**\" 最干净的 case，**未来 sub-agent 应当反复读这一行**。\n\n## Lineage（双链网）\n- **derived_from**: [[arc_260516a__team_d__D-R2-1__default_admit_baseline]] (D-R2-1 是 default-admit 的根 baseline，214 笔)\n- **borrows_mechanism_from**: [[arc_260516a__team_d__D-R1-3__drop_full_consensus]] (lc_48h==2 lesson)、[[arc_260516a__team_b__B-R8-1__no_open3min_bypass03]] (open_3min lesson)\n- **descendants**:\n  - [[arc_260516a__team_d__D-R2-4__blacklist_stack_quad]] (再叠 crowd≥4 —— test 更差)\n- **also_explored_by**: [[arc_260516a__team_h__H-R3a-2__d_r2_3_sizing]] (H 队用 D-R2-3 当 base 加 sizing —— train 2.77 但 H 队选择放弃这条 base，因为 C8.4 base 显著更强)\n- **competes_with**: [[arc_260516a__team_h__H-R3b-4__c84_kelly_lambda_1.5]] (同 arc SOTA challenger, 不同 axis)\n- **builds against**: [[arc_260516a__team_anchor__anchor_g2__baseline]]\n- **falsified_by**: hold-out 2026-05-01 → 05-15 test (`#status/falsified`)\n\n## Reports\n- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_d/output/cross_round_leaderboard_nav.csv` (row 3)\n- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/output/cross_team_test_nav_ranking_v2.csv` (D-R2-3 row, test_nav 1.116)\n- [[arc_260516a__reporter_20260517_0547]]\n\n## Notes / 下次迭代\n- **重大 anti-pattern**: 在 default-admit baseline 上叠 N-stack blacklist，**train 上越叠越好看，test 上越叠越崩**。下次 sub-agent 想做 blacklist axis 时**必读本节**。\n- 推测机理：default-admit 把全部弱 signal 收进来抬 trade_count → blacklist 砍掉 train-time identifiable 的烂 leg → train NAV 看着升，但 hold-out 上分布变了，blacklist 自己变成 noise → win/sharpe 崩。\n- 替代路线建议：\n  1. 不要从 default-admit 开始，从 anchor whitelist 出发，blacklist 当 **additive layer**（如 Team B R8 的做法）。\n  2. blacklist stack 数 ≤ 2，**不要 3-stack**，stack 互相会 noise-amplify。\n  3. 若一定要 default-admit，必加 sizing layer 来吸收弱 leg 的 loss（[[arc_260516a__team_h__H-R3b-4__c84_kelly_lambda_1.5]] 路线证明 sizing 比 blacklist 在 test 上更稳）。\n"
+  :path "experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple.md"
+  :source_mtime "2026-05-17T10:02:20+08:00"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a3e78d50" :type "atom"
+  :subj "exp:D-R2-3_blacklist_stack_triple"
+  :pred "has_nav"
+  :obj 25
+  :source "experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_dfb7508f" :type "atom"
+  :subj "exp:D-R2-3_blacklist_stack_triple"
+  :pred "has_type"
+  :obj "experiment"
+  :source "experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b4c85820" :type "atom"
+  :subj "exp:D-R2-3_blacklist_stack_triple"
+  :pred "has_id"
+  :obj "D-R2-3_blacklist_stack_triple"
+  :source "experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_612094f2" :type "atom"
+  :subj "exp:D-R2-3_blacklist_stack_triple"
+  :pred "has_short_name"
+  :obj "blacklist_stack_triple"
+  :source "experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_430f0ab6" :type "atom"
+  :subj "exp:D-R2-3_blacklist_stack_triple"
+  :pred "has_title"
+  :obj "D-R2-3 — default admit ∖ {lc_48h==2 ∪ open_3min ∪ low pre_amt q10}"
+  :source "experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_8adddc85" :type "atom"
+  :subj "exp:D-R2-3_blacklist_stack_triple"
+  :pred "has_arc"
+  :obj "260516a"
+  :source "experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5f9023f1" :type "atom"
+  :subj "exp:D-R2-3_blacklist_stack_triple"
+  :pred "has_team"
+  :obj "d"
+  :source "experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9c02a165" :type "atom"
+  :subj "exp:D-R2-3_blacklist_stack_triple"
+  :pred "has_round"
+  :obj "r2"
+  :source "experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e0285247" :type "atom"
+  :subj "exp:D-R2-3_blacklist_stack_triple"
+  :pred "parent_arc"
+  :obj "arc:260516a"
+  :source "experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ad9c67d2" :type "atom"
+  :subj "exp:D-R2-3_blacklist_stack_triple"
+  :pred "parent_lineage"
+  :obj "lin:arc_260516a__team_d__blacklist_default_admit"
+  :source "experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_251f7862" :type "atom"
+  :subj "exp:D-R2-3_blacklist_stack_triple"
+  :pred "has_train_nav"
+  :obj 2.4235
+  :source "experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5fbe4d06" :type "atom"
+  :subj "exp:D-R2-3_blacklist_stack_triple"
+  :pred "has_train_trade_count"
+  :obj 171
+  :source "experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_fd676864" :type "atom"
+  :subj "exp:D-R2-3_blacklist_stack_triple"
+  :pred "has_train_win_rate"
+  :obj 0.8187
+  :source "experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b0c3bfd7" :type "atom"
+  :subj "exp:D-R2-3_blacklist_stack_triple"
+  :pred "has_train_sharpe"
+  :obj 7.1446
+  :source "experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_53476f45" :type "atom"
+  :subj "exp:D-R2-3_blacklist_stack_triple"
+  :pred "has_train_max_drawdown"
+  :obj -0.0101
+  :source "experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_bb0a0f41" :type "atom"
+  :subj "exp:D-R2-3_blacklist_stack_triple"
+  :pred "has_val_nav_mean"
+  :obj 1.0659
+  :source "experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_3b3fbad6" :type "atom"
+  :subj "exp:D-R2-3_blacklist_stack_triple"
+  :pred "has_val_nav_sigma"
+  :obj 0.0678
+  :source "experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ae422939" :type "atom"
+  :subj "exp:D-R2-3_blacklist_stack_triple"
+  :pred "has_val_window_count"
+  :obj 13
+  :source "experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_60a95a59" :type "atom"
+  :subj "exp:D-R2-3_blacklist_stack_triple"
+  :pred "has_test_nav"
+  :obj 1.1158
+  :source "experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_3d459ed4" :type "atom"
+  :subj "exp:D-R2-3_blacklist_stack_triple"
+  :pred "has_test_trade_count"
+  :obj 18
+  :source "experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c54ff6c6" :type "atom"
+  :subj "exp:D-R2-3_blacklist_stack_triple"
+  :pred "has_test_sharpe"
+  :obj 4.7857
+  :source "experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_24042b3e" :type "atom"
+  :subj "exp:D-R2-3_blacklist_stack_triple"
+  :pred "has_test_win_rate"
+  :obj 0.7222
+  :source "experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_2da99f64" :type "atom"
+  :subj "exp:D-R2-3_blacklist_stack_triple"
+  :pred "has_test_max_drawdown"
+  :obj -0.0117
+  :source "experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f1be974b" :type "atom"
+  :subj "exp:D-R2-3_blacklist_stack_triple"
+  :pred "has_anchor_train_nav"
+  :obj 2.1882
+  :source "experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9cb08307" :type "atom"
+  :subj "exp:D-R2-3_blacklist_stack_triple"
+  :pred "has_anchor_test_nav"
+  :obj 1.2486
+  :source "experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9fbd62ec" :type "atom"
+  :subj "exp:D-R2-3_blacklist_stack_triple"
+  :pred "has_status"
+  :obj "falsified"
+  :source "experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_af606088" :type "atom"
+  :subj "exp:D-R2-3_blacklist_stack_triple"
+  :pred "has_outcome"
+  :obj "test_fail"
+  :source "experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_cde497c4" :type "atom"
+  :subj "exp:D-R2-3_blacklist_stack_triple"
+  :pred "has_champion"
+  :obj false
+  :source "experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_aea636f9" :type "atom"
+  :subj "exp:D-R2-3_blacklist_stack_triple"
+  :pred "has_overfit_score"
+  :obj 0
+  :source "experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b4d58603" :type "atom"
+  :subj "exp:D-R2-3_blacklist_stack_triple"
+  :pred "has_leak_audit"
+  :obj "clean"
+  :source "experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f354c639" :type "atom"
+  :subj "exp:D-R2-3_blacklist_stack_triple"
+  :pred "has_axis"
+  :obj "axis:blacklist"
+  :source "experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_03d7229f" :type "atom"
+  :subj "exp:D-R2-3_blacklist_stack_triple"
+  :pred "has_axis"
+  :obj "axis:cross_source"
+  :source "experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ecdd48fb" :type "atom"
+  :subj "exp:D-R2-3_blacklist_stack_triple"
+  :pred "has_axis"
+  :obj "axis:timing_filter"
+  :source "experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d1c9f3cd" :type "atom"
+  :subj "exp:D-R2-3_blacklist_stack_triple"
+  :pred "has_axis_list"
+  :obj ("blacklist" "cross_source" "timing_filter")
+  :source "experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_10ff1186" :type "atom"
+  :subj "exp:D-R2-3_blacklist_stack_triple"
+  :pred "has_created"
+  :obj "2026-05-17 02:00:00"
+  :source "experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_8d3a2cd4" :type "atom"
+  :subj "exp:D-R2-3_blacklist_stack_triple"
+  :pred "has_last_updated"
+  :obj "2026-05-17 05:09:00"
+  :source "experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_0a43f788" :type "atom"
+  :subj "exp:D-R2-3_blacklist_stack_triple"
+  :pred "has_tag"
+  :obj "tag:arc/260516a"
+  :source "experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5c2491f1" :type "atom"
+  :subj "exp:D-R2-3_blacklist_stack_triple"
+  :pred "has_tag"
+  :obj "tag:team/d"
+  :source "experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c8cbf667" :type "atom"
+  :subj "exp:D-R2-3_blacklist_stack_triple"
+  :pred "has_tag"
+  :obj "tag:round/r2"
+  :source "experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_7fbc7ae3" :type "atom"
+  :subj "exp:D-R2-3_blacklist_stack_triple"
+  :pred "has_tag"
+  :obj "tag:axis/blacklist"
+  :source "experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_cb69cf97" :type "atom"
+  :subj "exp:D-R2-3_blacklist_stack_triple"
+  :pred "has_tag"
+  :obj "tag:axis/cross_source"
+  :source "experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d31729ce" :type "atom"
+  :subj "exp:D-R2-3_blacklist_stack_triple"
+  :pred "has_tag"
+  :obj "tag:status/falsified"
+  :source "experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_92a7aabb" :type "atom"
+  :subj "exp:D-R2-3_blacklist_stack_triple"
+  :pred "has_tag"
+  :obj "tag:outcome/test_fail"
+  :source "experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_6616090d" :type "atom"
+  :subj "exp:D-R2-3_blacklist_stack_triple"
+  :pred "has_tag"
+  :obj "tag:leak/clean"
+  :source "experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_0e12c9c7" :type "atom"
+  :subj "exp:D-R2-3_blacklist_stack_triple"
+  :pred "has_tag"
+  :obj "tag:size/large"
+  :source "experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c814bd4b" :type "atom"
+  :subj "exp:D-R2-3_blacklist_stack_triple"
+  :pred "has_tl_dr"
+  :obj "Team D 的代表作：**完全反向 anchor 思路 —— default 全 admit，再叠 3-stack blacklist**（drop 同源 cross-source crowd / 开盘 3min / pre_trigger amount 底部 10%）。train NAV 2.42 漂亮，**test NAV 1.12 < anchor 1.25** —— 在 hold-out 上**被证伪**。Team D blacklist 路线整体在 test 上崩塌的标志性 case。"
+  :source "experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e2c4b5c2" :type "atom"
+  :subj "exp:D-R2-3_blacklist_stack_triple"
+  :pred "has_section_intro"
+  :obj "# D-R2-3 — default admit ∖ {lc_48h==2 ∪ open_3min ∪ low pre_amt q10}\n\n> **TL;DR** —— Team D 的代表作：**完全反向 anchor 思路 —— default 全 admit，再叠 3-stack blacklist**（drop 同源 cross-source crowd / 开盘 3min / pre_trigger amount 底部 10%）。train NAV 2.42 漂亮，**test NAV 1.12 < anchor 1.25** —— 在 hold-out 上**被证伪**。Team D blacklist 路线整体在 test 上崩塌的标志性 case。"
+  :source "experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d37dc3fd" :type "atom"
+  :subj "exp:D-R2-3_blacklist_stack_triple"
+  :pred "has_section_hypothesis"
+  :obj "- 反向 anchor 的 whitelist 路线：默认所有 lag/signal 都 admit，只通过 blacklist 形式剔除明确\"坏\"的 pattern。\n- 选三条 stack：\n  1. **lc_48h == 2** (cross-source crowd, 48h 内有 2 个同源 signal echo) —— [[arc_260516a__team_d__D-R1-3__drop_full_consensus]] 验过单独贡献\n  2. **open_3min** —— 借自 [[arc_260516a__team_b__B-R8-1__no_open3min_bypass03]] 的 lesson\n  3. **pre_trigger_avg 底部 10%** —— 假设：触发前 5min 平均成交量太低的 leg 是 \"dead signal\"\n- 假设：三个 dimension 相互独立 → stack 后 win/sharpe 一齐升，NAV 上一台阶。"
+  :source "experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_471b4c7b" :type "atom"
+  :subj "exp:D-R2-3_blacklist_stack_triple"
+  :pred "has_section_implementation"
+  :obj "- 主脚本：`/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_d/scripts/round_2_runner.py`\n- 步骤：\n  1. 完全 drop anchor 的 ratio_gate / volume_cap / open_3min / 任何 whitelist (`D-R2-1_default_admit_baseline`)\n  2. drop legs with `lc_48h == 2`\n  3. drop legs in open 3min\n  4. drop legs in pre_trigger_avg q10 (bottom decile)\n- 输出 171 笔（vs anchor 140；vs default-admit baseline D-R2-1 的 214 笔）。"
+  :source "experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1b69faf1" :type "atom"
+  :subj "exp:D-R2-3_blacklist_stack_triple"
+  :pred "has_section_past_only_window"
+  :obj "- `lc_48h` 是过去 48h 窗口的 cross-source count —— **必须 strict past-only**（critic 已审），不能数到当前 leg 自身或之后的 echo。critic 2026-05-17 audit pass。\n- `pre_trigger_avg` 是 trigger 前 5min 的成交量平均 —— 也 strict past-only。\n- 无 leak 嫌疑 (`#leak/clean`)。"
+  :source "experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ea5b60c4" :type "atom"
+  :subj "exp:D-R2-3_blacklist_stack_triple"
+  :pred "has_section_results"
+  :obj "| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 2.4235 | 171 | 7.14 | 81.9% | -1.01% |\n| Val (rolling 13w) | 1.0659 ± 0.068 | - | - | - | - |\n| Test | **1.1158** | 18 | **4.79** | 72.2% | -1.17% |\n| Anchor train | 2.1882 | 140 | 7.70 | 85.7% | -1.01% |\n| Anchor test | 1.2486 | 20 | 7.15 | 75.0% | -0.53% |\n| **Δ test NAV vs anchor** | **-0.133 (FAIL)** | -2 | **-2.36** | -2.8pp | -0.64pp |\n\n- train 看起来漂亮：NAV +0.24 vs anchor，count 在 gate 内。\n- **test 完全崩** —— NAV 1.12 vs anchor 1.25, Sharpe 砍半 (7.15 → 4.79), max_drawdown 翻倍。\n- 同 lineage 的 [[arc_260516a__team_d__D-R2-4__blacklist_stack_quad]] 多叠一条 (crowd≥4) 后更差，test NAV 1.01。"
+  :source "experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_00dfcd27" :type "atom"
+  :subj "exp:D-R2-3_blacklist_stack_triple"
+  :pred "has_section_risk_overfit"
+  :obj "- engineer overfit_score = 0（gate 都过；count 在 ±30%；val 13 windows mean beat anchor）—— **但 test 数据狠狠打脸了**。\n- 真实 risk：default-admit baseline (D-R2-1) 把 214 笔全收进来，再叠 3-stack 砍到 171 —— 这 43 笔差额里包含了**很多 train 期专有的弱 signal**，hold-out 上分布漂移后 stack 没有 mechanism-level 韧性。\n- 这是 vault 里 \"**train_nav > anchor 但 test_nav 崩盘**\" 最干净的 case，**未来 sub-agent 应当反复读这一行**。"
+  :source "experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d27ef2b2" :type "atom"
+  :subj "exp:D-R2-3_blacklist_stack_triple"
+  :pred "derived_from"
+  :obj "exp:D-R2-1_default_admit_baseline"
+  :source "experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_50e1018b" :type "atom"
+  :subj "exp:D-R2-3_blacklist_stack_triple"
+  :pred "borrows_mechanism_from"
+  :obj "exp:D-R1-3_drop_full_consensus"
+  :source "experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_614ae2bb" :type "atom"
+  :subj "exp:D-R2-3_blacklist_stack_triple"
+  :pred "borrows_mechanism_from"
+  :obj "exp:B-R8-1_no_open3min_bypass03"
+  :source "experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_bed2041d" :type "atom"
+  :subj "exp:D-R2-3_blacklist_stack_triple"
+  :pred "descendants"
+  :obj "exp:D-R2-4_blacklist_stack_quad"
+  :source "experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_0c3b9706" :type "atom"
+  :subj "exp:D-R2-3_blacklist_stack_triple"
+  :pred "also_explored_by"
+  :obj "exp:H-R3a-2_d_r2_3_sizing"
+  :source "experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ea40ec03" :type "atom"
+  :subj "exp:D-R2-3_blacklist_stack_triple"
+  :pred "competes_with"
+  :obj "exp:H-R3b-4_c84_kelly_lambda_1.5"
+  :source "experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_54ae7625" :type "atom"
+  :subj "exp:D-R2-3_blacklist_stack_triple"
+  :pred "builds_against"
+  :obj "exp:anchor_g2_baseline"
+  :source "experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5ba0de21" :type "atom"
+  :subj "exp:D-R2-3_blacklist_stack_triple"
+  :pred "has_section_lineage_links"
+  :obj "- **derived_from**: [[arc_260516a__team_d__D-R2-1__default_admit_baseline]] (D-R2-1 是 default-admit 的根 baseline，214 笔)\n- **borrows_mechanism_from**: [[arc_260516a__team_d__D-R1-3__drop_full_consensus]] (lc_48h==2 lesson)、[[arc_260516a__team_b__B-R8-1__no_open3min_bypass03]] (open_3min lesson)\n- **descendants**:\n  - [[arc_260516a__team_d__D-R2-4__blacklist_stack_quad]] (再叠 crowd≥4 —— test 更差)\n- **also_explored_by**: [[arc_260516a__team_h__H-R3a-2__d_r2_3_sizing]] (H 队用 D-R2-3 当 base 加 sizing —— train 2.77 但 H 队选择放弃这条 base，因为 C8.4 base 显著更强)\n- **competes_with**: [[arc_260516a__team_h__H-R3b-4__c84_kelly_lambda_1.5]] (同 arc SOTA challenger, 不同 axis)\n- **builds against**: [[arc_260516a__team_anchor__anchor_g2__baseline]]\n- **falsified_by**: hold-out 2026-05-01 → 05-15 test (`#status/falsified`)"
+  :source "experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_92118eda" :type "atom"
+  :subj "exp:D-R2-3_blacklist_stack_triple"
+  :pred "has_section_reports"
+  :obj "- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_d/output/cross_round_leaderboard_nav.csv` (row 3)\n- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/output/cross_team_test_nav_ranking_v2.csv` (D-R2-3 row, test_nav 1.116)\n- [[arc_260516a__reporter_20260517_0547]]"
+  :source "experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_7de55c7b" :type "atom"
+  :subj "exp:D-R2-3_blacklist_stack_triple"
+  :pred "has_section_notes"
+  :obj "- **重大 anti-pattern**: 在 default-admit baseline 上叠 N-stack blacklist，**train 上越叠越好看，test 上越叠越崩**。下次 sub-agent 想做 blacklist axis 时**必读本节**。\n- 推测机理：default-admit 把全部弱 signal 收进来抬 trade_count → blacklist 砍掉 train-time identifiable 的烂 leg → train NAV 看着升，但 hold-out 上分布变了，blacklist 自己变成 noise → win/sharpe 崩。\n- 替代路线建议：\n  1. 不要从 default-admit 开始，从 anchor whitelist 出发，blacklist 当 **additive layer**（如 Team B R8 的做法）。\n  2. blacklist stack 数 ≤ 2，**不要 3-stack**，stack 互相会 noise-amplify。\n  3. 若一定要 default-admit，必加 sizing layer 来吸收弱 leg 的 loss（[[arc_260516a__team_h__H-R3b-4__c84_kelly_lambda_1.5]] 路线证明 sizing 比 blacklist 在 test 上更稳）。"
+  :source "experiments/arc_260516a__team_d__D-R2-3__blacklist_stack_triple.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")

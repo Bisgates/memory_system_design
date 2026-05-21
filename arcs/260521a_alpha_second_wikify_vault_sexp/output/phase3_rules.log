@@ -1,0 +1,93 @@
+======================================================================
+PHASE 3 RULES + MACROS RUN — 2026-05-21T01:40:25
+======================================================================
+
+[1] Load atom store from Phase 2
+  atoms      : 3331
+  src cards  : 73  (experiment / lineage / doc / report / anti_pattern_catalog)
+  total      : 3404
+  hardened   : 53 list-typed (subj|pred|obj) slots → tuple (in-memory only)
+
+[2] Load rule cards from disk
+  rule cards in store: 11 (was 0, new 11)
+  registered with RuleEngine: 11
+  rule ids:
+    rule:r001a_borrowed_by_keep  when=[['?a', 'borrowed_by', '?b']]  →  then=[['?a', 'borrowed_by_canonical', '?b']]
+    rule:r001b_descendants_reverse  when=[['?a', 'descendants', '?b']]  →  then=[['?b', 'derived_from', '?a']]
+    rule:r001c_base_for_reverse  when=[['?a', 'base_for', '?b']]  →  then=[['?b', 'derived_from', '?a']]
+    rule:r001d_team_top_picks_canonical  when=[['?a', 'team_a_top_picks', '?b']]  →  then=[['?a', 'top_pick_for', '?b']]
+    rule:r001e_inherits_failure_mode_canonical  when=[['?a', 'inherits_failure_mode', '?b']]  →  then=[['?a', 'inherits_anti_pattern', '?b']]
+    rule:r001f_inherits_failure_mode_from_canonical  when=[['?a', 'inherits_failure_mode_from', '?b']]  →  then=[['?a', 'inherits_anti_pattern', '?b']]
+    rule:r001g_same_round_as_symmetric  when=[['?a', 'same_round_as', '?b']]  →  then=[['?b', 'same_round_as', '?a']]
+    rule:r002_derived_from_reverse  when=[['?a', 'derived_from', '?b']]  →  then=[['?b', 'derives_to', '?a']]
+    rule:r003_competes_with_symmetry  when=[['?a', 'competes_with', '?b']]  →  then=[['?b', 'competes_with', '?a']]
+    rule:r004_falsifies_cluster  when=[['?a', 'falsifies', '?b'], ['?b', 'falsifies', '?c']]  →  then=[['?a', 'inherits_falsification', '?c']]
+    rule:r005_anti_pattern_inheritance  when=[['?ap', 'references_in_case_examples', '?exp']]  →  then=[['?exp', 'is_instance_of_anti_pattern', '?ap']]
+
+[3] Forward-chain rules to fixpoint
+  iter  1:    94 new derived cards
+  iter  2:     5 new derived cards
+  iter  3:     0 new derived cards
+  fixpoint reached after 3 iterations
+  total derived from rules : 99
+  rule fixpoint elapsed_sec: 0.100
+  per-rule fire counts:
+    rule:r001a_borrowed_by_keep                                      2
+    rule:r001b_descendants_reverse                                   2
+    rule:r001c_base_for_reverse                                      3
+    rule:r001d_team_top_picks_canonical                              6
+    rule:r001e_inherits_failure_mode_canonical                       2
+    rule:r001f_inherits_failure_mode_from_canonical                  1
+    rule:r002_derived_from_reverse                                  53
+    rule:r003_competes_with_symmetry                                20
+    rule:r005_anti_pattern_inheritance                              10
+  (subj,pred,obj) dupe count after fixpoint: 0  (expect 0)
+
+[4] Load macro cards and dispatch demos
+  macro cards in store: 2
+  registered macro names: ['lineage-to-comparison-view', 'paper-to-experiment-suggestion']
+
+  m001 paper-to-experiment-suggestion dispatch:
+    expanded exp:H-R3b-4_c84_kelly_lambda_1.5 → 3 suggestion cards
+    expanded exp:C8.4_top3_no_open3min_bypass → 3 suggestion cards
+    expanded exp:B-R8-1_no_open3min_bypass03 → 3 suggestion cards
+
+  m002 lineage-to-comparison-view dispatch:
+    expanded lin:arc_260516a__team_h__sizing → 1 view card(s)
+    expanded lin:arc_260516a__team_d__blacklist_default_admit → 1 view card(s)
+
+  total macro-expanded cards : 11
+
+  m002 view materialization spot-check:
+    view_lin:arc_260516a__team_h__sizing_all_candidates → 14 cards (14 atoms via parent_lineage)
+    view_lin:arc_260516a__team_d__blacklist_default_admit_all_candidates → 7 cards (7 atoms via parent_lineage)
+
+[5] Write derived atoms to disk
+  derived files written under: 260521a_wikify_auto_research_vault_sexp/wiki/cards/derived
+    m001_paper_to_experiment_suggestion                              9 cards
+    m002_lineage_to_comparison_view                                  2 cards
+    rule:r001a_borrowed_by_keep                                      2 cards
+    rule:r001b_descendants_reverse                                   2 cards
+    rule:r001c_base_for_reverse                                      3 cards
+    rule:r001d_team_top_picks_canonical                              6 cards
+    rule:r001e_inherits_failure_mode_canonical                       2 cards
+    rule:r001f_inherits_failure_mode_from_canonical                  1 cards
+    rule:r002_derived_from_reverse                                  53 cards
+    rule:r003_competes_with_symmetry                                20 cards
+    rule:r005_anti_pattern_inheritance                              10 cards
+
+======================================================================
+SUMMARY
+======================================================================
+  initial atom count           : 3331
+  rules registered             : 11
+  macros registered            : 2
+  rule fires (total derived)   : 99
+  fixpoint iterations          : 2  ([94, 5, 0])
+  macro expansions (m001+m002) : 11  (m001=9 m002=2)
+  derived card files on disk   : 11
+  store total cards            : 3527
+  dedup invariant ok           : True
+  rule fixpoint elapsed_sec    : 0.100
+  total elapsed_sec            : 0.190
+======================================================================

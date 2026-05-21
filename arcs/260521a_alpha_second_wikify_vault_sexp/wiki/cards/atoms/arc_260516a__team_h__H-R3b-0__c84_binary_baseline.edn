@@ -1,0 +1,426 @@
+(card "exp:H-R3b-0_c84_binary_baseline" :type "experiment"
+  :subj "exp:H-R3b-0_c84_binary_baseline"
+  :body "---\nnav: 9\ntype: experiment\nid: H-R3b-0-binary\nshort_name: c84_binary_baseline\ntitle: \"H-R3b-0 — C8.4 × size=1.0 (binary baseline, λ=0)\"\narc: 260516a\nteam: h\nround: r3b\nparent_arc: \"[[arcs/260516a]]\"\nparent_lineage: \"[[lineages/arc_260516a__team_h__sizing]]\"\ntrain_nav: 3.1544\ntrain_trade_count: 179\ntrain_win_rate: 0.8771\ntrain_sharpe: 8.3351\ntrain_max_drawdown: -0.0047\nval_nav_mean: 1.0887\nval_nav_sigma: 0.0902\nval_window_count: 13\ntest_nav: 1.4058\ntest_trade_count: 31\ntest_sharpe: 7.7042\ntest_win_rate: 0.8065\ntest_max_drawdown: -0.0029\nanchor_train_nav: 2.1882\nanchor_test_nav: 1.2486\nstatus: baseline\noutcome: test_pass\nchampion: false\noverfit_score: 0\nleak_audit: clean\naxis: [sizing, baseline]\npast_only_window_days: null\nwarmup_required: null\ncreated: 2026-05-17T03:30:00\nlast_updated: 2026-05-17T05:09:00\ntags: [arc/260516a, team/h, round/r3b, axis/sizing, axis/baseline, status/baseline, outcome/test_pass, leak/clean, size/large]\n---\n\n# H-R3b-0 — C8.4 × size=1.0 (binary baseline, λ=0)\n\n> **TL;DR** —— H 系列 sizing 的 λ=0 reference baseline：**C8.4 trade selector + 固定 size 1.0**，等价于直接跑 C8.4 不加任何 sizing。NAV/sharpe/dd 与 [[arc_260516a__team_c__C8.4__top3_no_open3min_bypass]] **bit-for-bit 相同**，留在 R3b sweep 里专门给 sizing-axis ablation 用：sizing 贡献 = R3b-4 − R3b-0 = 0.55 train NAV。\n\n## 假设 (Hypothesis)\n- 不是 hypothesis，是 **ablation control**：让 sizing 公式 = constant 1.0，验证后续 R3b sweep 的 NAV gain 是否真来自 sizing 而非 sample noise。\n- 如果 λ=0 已经 beat anchor，说明 NAV gain 主要来自 C8.4 selector；若 λ>0 才 beat，说明 sizing 是关键。R3b-0 NAV 3.15 已 >> anchor 2.19，**说明 NAV gain 主体来自 selector，sizing 只在边际加成**。\n\n## 实现 (Implementation)\n- 主脚本：`/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_h/scripts/round_3b_runner.py`\n- 公式：\n  $$ \\text{size}(t) = 1.0 \\quad \\forall t $$\n- mean_size = 1.0, std_size = 0.0.\n\n## Past-only window 处理\n- 不用任何 rolling stat（size 是常数）。**无 lookahead 风险**。\n- 注意：H-R3b-0 本身不需要 warmup，但 R3b 其它档需要 → engineer 还是跑 rolling helper 但 size 输出固定 1.0，保证 trade pool 完全一致。\n\n## 结果 (Results)\n| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 3.1544 | 179 | 8.34 | 87.7% | -0.47% |\n| Val (rolling 13w) | 1.0887 ± 0.090 | - | - | - | - |\n| Test | 1.4058 | 31 | 7.70 | 80.6% | -0.29% |\n| **Δ test NAV vs anchor** | +0.157 | +11 | +0.55 | +5.6pp | +0.24pp |\n| **Δ R3b-4 vs R3b-0 (sizing contribution)** | +0.085 train NAV / +0.085 test NAV | - | - | - | - |\n\n注意 R3b-0 sharpe 8.34 是 R3b sweep 最高（size=1 单笔波动最小）。\n\n## 风险 & overfit 嫌疑\n- overfit_score = 0（baseline 不存在 overfit 概念）。\n- nav_champion=False 是因为 R3b 同 round 内被 λ>0 档超越。\n\n## Lineage（双链网）\n- **same_metrics_as**: [[arc_260516a__team_c__C8.4__top3_no_open3min_bypass]] (bit-for-bit)\n- **ablation_control_for**: [[arc_260516a__team_h__H-R3b-4__c84_kelly_lambda_1.5]], [[arc_260516a__team_h__H-R3b-1__c84_kelly_lambda_0.25]], [[arc_260516a__team_h__H-R3b-2__c84_kelly_lambda_0.5]], [[arc_260516a__team_h__H-R3b-3__c84_kelly_lambda_1.0]]\n- **builds against**: [[arc_260516a__team_anchor__anchor_g2__baseline]]\n\n## Reports\n- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_h/output/cross_round_leaderboard_nav.csv` (R3b-0)\n- [[arc_260516a__reporter_20260517_0547]]\n\n## Notes / 下次迭代\n- **方法论 lesson**：任何 sizing-axis 实验必须包含 λ=0 / size=const baseline，否则没法判断 sizing add 了多少。R3b 系列做对了这条 —— 下次 arc 必须沿用。\n- R3b-0 vs C8.4 数字一致是 sanity，但**当 sizing helper 引入 bug 时**，R3b-0 会与 C8.4 不一致 —— 这是 vault 留它的另一个理由：可作 regression test reference。\n"
+  :path "experiments/arc_260516a__team_h__H-R3b-0__c84_binary_baseline.md"
+  :source_mtime "2026-05-17T10:16:12+08:00"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1a058849" :type "atom"
+  :subj "exp:H-R3b-0_c84_binary_baseline"
+  :pred "has_nav"
+  :obj 9
+  :source "experiments/arc_260516a__team_h__H-R3b-0__c84_binary_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1dd57c55" :type "atom"
+  :subj "exp:H-R3b-0_c84_binary_baseline"
+  :pred "has_type"
+  :obj "experiment"
+  :source "experiments/arc_260516a__team_h__H-R3b-0__c84_binary_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c7937661" :type "atom"
+  :subj "exp:H-R3b-0_c84_binary_baseline"
+  :pred "has_id"
+  :obj "H-R3b-0-binary"
+  :source "experiments/arc_260516a__team_h__H-R3b-0__c84_binary_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_345d9565" :type "atom"
+  :subj "exp:H-R3b-0_c84_binary_baseline"
+  :pred "has_short_name"
+  :obj "c84_binary_baseline"
+  :source "experiments/arc_260516a__team_h__H-R3b-0__c84_binary_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b72daab0" :type "atom"
+  :subj "exp:H-R3b-0_c84_binary_baseline"
+  :pred "has_title"
+  :obj "H-R3b-0 — C8.4 × size=1.0 (binary baseline, λ=0)"
+  :source "experiments/arc_260516a__team_h__H-R3b-0__c84_binary_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_aa4e4951" :type "atom"
+  :subj "exp:H-R3b-0_c84_binary_baseline"
+  :pred "has_arc"
+  :obj "260516a"
+  :source "experiments/arc_260516a__team_h__H-R3b-0__c84_binary_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_0278f429" :type "atom"
+  :subj "exp:H-R3b-0_c84_binary_baseline"
+  :pred "has_team"
+  :obj "h"
+  :source "experiments/arc_260516a__team_h__H-R3b-0__c84_binary_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f93721bf" :type "atom"
+  :subj "exp:H-R3b-0_c84_binary_baseline"
+  :pred "has_round"
+  :obj "r3b"
+  :source "experiments/arc_260516a__team_h__H-R3b-0__c84_binary_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1a4f11cf" :type "atom"
+  :subj "exp:H-R3b-0_c84_binary_baseline"
+  :pred "parent_arc"
+  :obj "arc:260516a"
+  :source "experiments/arc_260516a__team_h__H-R3b-0__c84_binary_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_60539f49" :type "atom"
+  :subj "exp:H-R3b-0_c84_binary_baseline"
+  :pred "parent_lineage"
+  :obj "lin:arc_260516a__team_h__sizing"
+  :source "experiments/arc_260516a__team_h__H-R3b-0__c84_binary_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_3b5a9ccf" :type "atom"
+  :subj "exp:H-R3b-0_c84_binary_baseline"
+  :pred "has_train_nav"
+  :obj 3.1544
+  :source "experiments/arc_260516a__team_h__H-R3b-0__c84_binary_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_8770d219" :type "atom"
+  :subj "exp:H-R3b-0_c84_binary_baseline"
+  :pred "has_train_trade_count"
+  :obj 179
+  :source "experiments/arc_260516a__team_h__H-R3b-0__c84_binary_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_648a8887" :type "atom"
+  :subj "exp:H-R3b-0_c84_binary_baseline"
+  :pred "has_train_win_rate"
+  :obj 0.8771
+  :source "experiments/arc_260516a__team_h__H-R3b-0__c84_binary_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_fa2e620f" :type "atom"
+  :subj "exp:H-R3b-0_c84_binary_baseline"
+  :pred "has_train_sharpe"
+  :obj 8.3351
+  :source "experiments/arc_260516a__team_h__H-R3b-0__c84_binary_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_651e06b3" :type "atom"
+  :subj "exp:H-R3b-0_c84_binary_baseline"
+  :pred "has_train_max_drawdown"
+  :obj -0.0047
+  :source "experiments/arc_260516a__team_h__H-R3b-0__c84_binary_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_cf9213a8" :type "atom"
+  :subj "exp:H-R3b-0_c84_binary_baseline"
+  :pred "has_val_nav_mean"
+  :obj 1.0887
+  :source "experiments/arc_260516a__team_h__H-R3b-0__c84_binary_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a8a789bc" :type "atom"
+  :subj "exp:H-R3b-0_c84_binary_baseline"
+  :pred "has_val_nav_sigma"
+  :obj 0.0902
+  :source "experiments/arc_260516a__team_h__H-R3b-0__c84_binary_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_3cf504b9" :type "atom"
+  :subj "exp:H-R3b-0_c84_binary_baseline"
+  :pred "has_val_window_count"
+  :obj 13
+  :source "experiments/arc_260516a__team_h__H-R3b-0__c84_binary_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_bbb0fbcb" :type "atom"
+  :subj "exp:H-R3b-0_c84_binary_baseline"
+  :pred "has_test_nav"
+  :obj 1.4058
+  :source "experiments/arc_260516a__team_h__H-R3b-0__c84_binary_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_7561d4a4" :type "atom"
+  :subj "exp:H-R3b-0_c84_binary_baseline"
+  :pred "has_test_trade_count"
+  :obj 31
+  :source "experiments/arc_260516a__team_h__H-R3b-0__c84_binary_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5391e6d9" :type "atom"
+  :subj "exp:H-R3b-0_c84_binary_baseline"
+  :pred "has_test_sharpe"
+  :obj 7.7042
+  :source "experiments/arc_260516a__team_h__H-R3b-0__c84_binary_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a73af86a" :type "atom"
+  :subj "exp:H-R3b-0_c84_binary_baseline"
+  :pred "has_test_win_rate"
+  :obj 0.8065
+  :source "experiments/arc_260516a__team_h__H-R3b-0__c84_binary_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_3d1fb86a" :type "atom"
+  :subj "exp:H-R3b-0_c84_binary_baseline"
+  :pred "has_test_max_drawdown"
+  :obj -0.0029
+  :source "experiments/arc_260516a__team_h__H-R3b-0__c84_binary_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b059b61c" :type "atom"
+  :subj "exp:H-R3b-0_c84_binary_baseline"
+  :pred "has_anchor_train_nav"
+  :obj 2.1882
+  :source "experiments/arc_260516a__team_h__H-R3b-0__c84_binary_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_7641edf6" :type "atom"
+  :subj "exp:H-R3b-0_c84_binary_baseline"
+  :pred "has_anchor_test_nav"
+  :obj 1.2486
+  :source "experiments/arc_260516a__team_h__H-R3b-0__c84_binary_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_688aadfa" :type "atom"
+  :subj "exp:H-R3b-0_c84_binary_baseline"
+  :pred "has_status"
+  :obj "baseline"
+  :source "experiments/arc_260516a__team_h__H-R3b-0__c84_binary_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_97662f90" :type "atom"
+  :subj "exp:H-R3b-0_c84_binary_baseline"
+  :pred "has_outcome"
+  :obj "test_pass"
+  :source "experiments/arc_260516a__team_h__H-R3b-0__c84_binary_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9b92f30e" :type "atom"
+  :subj "exp:H-R3b-0_c84_binary_baseline"
+  :pred "has_champion"
+  :obj false
+  :source "experiments/arc_260516a__team_h__H-R3b-0__c84_binary_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_0fa5f4ed" :type "atom"
+  :subj "exp:H-R3b-0_c84_binary_baseline"
+  :pred "has_overfit_score"
+  :obj 0
+  :source "experiments/arc_260516a__team_h__H-R3b-0__c84_binary_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c160c47f" :type "atom"
+  :subj "exp:H-R3b-0_c84_binary_baseline"
+  :pred "has_leak_audit"
+  :obj "clean"
+  :source "experiments/arc_260516a__team_h__H-R3b-0__c84_binary_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_39b2847e" :type "atom"
+  :subj "exp:H-R3b-0_c84_binary_baseline"
+  :pred "has_axis"
+  :obj "axis:sizing"
+  :source "experiments/arc_260516a__team_h__H-R3b-0__c84_binary_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d58621b2" :type "atom"
+  :subj "exp:H-R3b-0_c84_binary_baseline"
+  :pred "has_axis"
+  :obj "axis:baseline"
+  :source "experiments/arc_260516a__team_h__H-R3b-0__c84_binary_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_2f2802a6" :type "atom"
+  :subj "exp:H-R3b-0_c84_binary_baseline"
+  :pred "has_axis_list"
+  :obj ("sizing" "baseline")
+  :source "experiments/arc_260516a__team_h__H-R3b-0__c84_binary_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_15621e3d" :type "atom"
+  :subj "exp:H-R3b-0_c84_binary_baseline"
+  :pred "has_created"
+  :obj "2026-05-17 03:30:00"
+  :source "experiments/arc_260516a__team_h__H-R3b-0__c84_binary_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_0658d0b2" :type "atom"
+  :subj "exp:H-R3b-0_c84_binary_baseline"
+  :pred "has_last_updated"
+  :obj "2026-05-17 05:09:00"
+  :source "experiments/arc_260516a__team_h__H-R3b-0__c84_binary_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_8e32288f" :type "atom"
+  :subj "exp:H-R3b-0_c84_binary_baseline"
+  :pred "has_tag"
+  :obj "tag:arc/260516a"
+  :source "experiments/arc_260516a__team_h__H-R3b-0__c84_binary_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_3a9bf834" :type "atom"
+  :subj "exp:H-R3b-0_c84_binary_baseline"
+  :pred "has_tag"
+  :obj "tag:team/h"
+  :source "experiments/arc_260516a__team_h__H-R3b-0__c84_binary_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_2fd17cfd" :type "atom"
+  :subj "exp:H-R3b-0_c84_binary_baseline"
+  :pred "has_tag"
+  :obj "tag:round/r3b"
+  :source "experiments/arc_260516a__team_h__H-R3b-0__c84_binary_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_7a7ca194" :type "atom"
+  :subj "exp:H-R3b-0_c84_binary_baseline"
+  :pred "has_tag"
+  :obj "tag:axis/sizing"
+  :source "experiments/arc_260516a__team_h__H-R3b-0__c84_binary_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_dbb4c612" :type "atom"
+  :subj "exp:H-R3b-0_c84_binary_baseline"
+  :pred "has_tag"
+  :obj "tag:axis/baseline"
+  :source "experiments/arc_260516a__team_h__H-R3b-0__c84_binary_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_56315b43" :type "atom"
+  :subj "exp:H-R3b-0_c84_binary_baseline"
+  :pred "has_tag"
+  :obj "tag:status/baseline"
+  :source "experiments/arc_260516a__team_h__H-R3b-0__c84_binary_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b21a62e2" :type "atom"
+  :subj "exp:H-R3b-0_c84_binary_baseline"
+  :pred "has_tag"
+  :obj "tag:outcome/test_pass"
+  :source "experiments/arc_260516a__team_h__H-R3b-0__c84_binary_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_6e26ecb1" :type "atom"
+  :subj "exp:H-R3b-0_c84_binary_baseline"
+  :pred "has_tag"
+  :obj "tag:leak/clean"
+  :source "experiments/arc_260516a__team_h__H-R3b-0__c84_binary_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c242b560" :type "atom"
+  :subj "exp:H-R3b-0_c84_binary_baseline"
+  :pred "has_tag"
+  :obj "tag:size/large"
+  :source "experiments/arc_260516a__team_h__H-R3b-0__c84_binary_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_0d6fc15d" :type "atom"
+  :subj "exp:H-R3b-0_c84_binary_baseline"
+  :pred "has_tl_dr"
+  :obj "H 系列 sizing 的 λ=0 reference baseline：**C8.4 trade selector + 固定 size 1.0**，等价于直接跑 C8.4 不加任何 sizing。NAV/sharpe/dd 与 [[arc_260516a__team_c__C8.4__top3_no_open3min_bypass]] **bit-for-bit 相同**，留在 R3b sweep 里专门给 sizing-axis ablation 用：sizing 贡献 = R3b-4 − R3b-0 = 0.55 train NAV。"
+  :source "experiments/arc_260516a__team_h__H-R3b-0__c84_binary_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_3d19438a" :type "atom"
+  :subj "exp:H-R3b-0_c84_binary_baseline"
+  :pred "has_section_intro"
+  :obj "# H-R3b-0 — C8.4 × size=1.0 (binary baseline, λ=0)\n\n> **TL;DR** —— H 系列 sizing 的 λ=0 reference baseline：**C8.4 trade selector + 固定 size 1.0**，等价于直接跑 C8.4 不加任何 sizing。NAV/sharpe/dd 与 [[arc_260516a__team_c__C8.4__top3_no_open3min_bypass]] **bit-for-bit 相同**，留在 R3b sweep 里专门给 sizing-axis ablation 用：sizing 贡献 = R3b-4 − R3b-0 = 0.55 train NAV。"
+  :source "experiments/arc_260516a__team_h__H-R3b-0__c84_binary_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_4c19da7a" :type "atom"
+  :subj "exp:H-R3b-0_c84_binary_baseline"
+  :pred "has_section_hypothesis"
+  :obj "- 不是 hypothesis，是 **ablation control**：让 sizing 公式 = constant 1.0，验证后续 R3b sweep 的 NAV gain 是否真来自 sizing 而非 sample noise。\n- 如果 λ=0 已经 beat anchor，说明 NAV gain 主要来自 C8.4 selector；若 λ>0 才 beat，说明 sizing 是关键。R3b-0 NAV 3.15 已 >> anchor 2.19，**说明 NAV gain 主体来自 selector，sizing 只在边际加成**。"
+  :source "experiments/arc_260516a__team_h__H-R3b-0__c84_binary_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_0bfb51b9" :type "atom"
+  :subj "exp:H-R3b-0_c84_binary_baseline"
+  :pred "has_section_implementation"
+  :obj "- 主脚本：`/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_h/scripts/round_3b_runner.py`\n- 公式：\n  $$ \\text{size}(t) = 1.0 \\quad \\forall t $$\n- mean_size = 1.0, std_size = 0.0."
+  :source "experiments/arc_260516a__team_h__H-R3b-0__c84_binary_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_efcc28bc" :type "atom"
+  :subj "exp:H-R3b-0_c84_binary_baseline"
+  :pred "has_section_past_only_window"
+  :obj "- 不用任何 rolling stat（size 是常数）。**无 lookahead 风险**。\n- 注意：H-R3b-0 本身不需要 warmup，但 R3b 其它档需要 → engineer 还是跑 rolling helper 但 size 输出固定 1.0，保证 trade pool 完全一致。"
+  :source "experiments/arc_260516a__team_h__H-R3b-0__c84_binary_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_6af790e9" :type "atom"
+  :subj "exp:H-R3b-0_c84_binary_baseline"
+  :pred "has_section_results"
+  :obj "| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 3.1544 | 179 | 8.34 | 87.7% | -0.47% |\n| Val (rolling 13w) | 1.0887 ± 0.090 | - | - | - | - |\n| Test | 1.4058 | 31 | 7.70 | 80.6% | -0.29% |\n| **Δ test NAV vs anchor** | +0.157 | +11 | +0.55 | +5.6pp | +0.24pp |\n| **Δ R3b-4 vs R3b-0 (sizing contribution)** | +0.085 train NAV / +0.085 test NAV | - | - | - | - |\n\n注意 R3b-0 sharpe 8.34 是 R3b sweep 最高（size=1 单笔波动最小）。"
+  :source "experiments/arc_260516a__team_h__H-R3b-0__c84_binary_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_3dcd0b78" :type "atom"
+  :subj "exp:H-R3b-0_c84_binary_baseline"
+  :pred "has_section_risk_overfit"
+  :obj "- overfit_score = 0（baseline 不存在 overfit 概念）。\n- nav_champion=False 是因为 R3b 同 round 内被 λ>0 档超越。"
+  :source "experiments/arc_260516a__team_h__H-R3b-0__c84_binary_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9b3e5050" :type "atom"
+  :subj "exp:H-R3b-0_c84_binary_baseline"
+  :pred "same_metrics_as"
+  :obj "exp:C8.4_top3_no_open3min_bypass"
+  :source "experiments/arc_260516a__team_h__H-R3b-0__c84_binary_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_2924c923" :type "atom"
+  :subj "exp:H-R3b-0_c84_binary_baseline"
+  :pred "ablation_control_for"
+  :obj "exp:H-R3b-4_c84_kelly_lambda_1.5"
+  :source "experiments/arc_260516a__team_h__H-R3b-0__c84_binary_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e75dc967" :type "atom"
+  :subj "exp:H-R3b-0_c84_binary_baseline"
+  :pred "ablation_control_for"
+  :obj "exp:H-R3b-1_c84_kelly_lambda_0.25"
+  :source "experiments/arc_260516a__team_h__H-R3b-0__c84_binary_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c806e09e" :type "atom"
+  :subj "exp:H-R3b-0_c84_binary_baseline"
+  :pred "ablation_control_for"
+  :obj "exp:H-R3b-2_c84_kelly_lambda_0.5"
+  :source "experiments/arc_260516a__team_h__H-R3b-0__c84_binary_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_6b3c8dfb" :type "atom"
+  :subj "exp:H-R3b-0_c84_binary_baseline"
+  :pred "ablation_control_for"
+  :obj "exp:H-R3b-3_c84_kelly_lambda_1.0"
+  :source "experiments/arc_260516a__team_h__H-R3b-0__c84_binary_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f52aa0ce" :type "atom"
+  :subj "exp:H-R3b-0_c84_binary_baseline"
+  :pred "builds_against"
+  :obj "exp:anchor_g2_baseline"
+  :source "experiments/arc_260516a__team_h__H-R3b-0__c84_binary_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_6f246c5e" :type "atom"
+  :subj "exp:H-R3b-0_c84_binary_baseline"
+  :pred "has_section_lineage_links"
+  :obj "- **same_metrics_as**: [[arc_260516a__team_c__C8.4__top3_no_open3min_bypass]] (bit-for-bit)\n- **ablation_control_for**: [[arc_260516a__team_h__H-R3b-4__c84_kelly_lambda_1.5]], [[arc_260516a__team_h__H-R3b-1__c84_kelly_lambda_0.25]], [[arc_260516a__team_h__H-R3b-2__c84_kelly_lambda_0.5]], [[arc_260516a__team_h__H-R3b-3__c84_kelly_lambda_1.0]]\n- **builds against**: [[arc_260516a__team_anchor__anchor_g2__baseline]]"
+  :source "experiments/arc_260516a__team_h__H-R3b-0__c84_binary_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e768727e" :type "atom"
+  :subj "exp:H-R3b-0_c84_binary_baseline"
+  :pred "has_section_reports"
+  :obj "- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_h/output/cross_round_leaderboard_nav.csv` (R3b-0)\n- [[arc_260516a__reporter_20260517_0547]]"
+  :source "experiments/arc_260516a__team_h__H-R3b-0__c84_binary_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_46b3f2ed" :type "atom"
+  :subj "exp:H-R3b-0_c84_binary_baseline"
+  :pred "has_section_notes"
+  :obj "- **方法论 lesson**：任何 sizing-axis 实验必须包含 λ=0 / size=const baseline，否则没法判断 sizing add 了多少。R3b 系列做对了这条 —— 下次 arc 必须沿用。\n- R3b-0 vs C8.4 数字一致是 sanity，但**当 sizing helper 引入 bug 时**，R3b-0 会与 C8.4 不一致 —— 这是 vault 留它的另一个理由：可作 regression test reference。"
+  :source "experiments/arc_260516a__team_h__H-R3b-0__c84_binary_baseline.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")

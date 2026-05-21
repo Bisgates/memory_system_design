@@ -1,0 +1,195 @@
+(card "lin:arc_260516a__team_f__microstructure_vpin_ofi" :type "lineage"
+  :subj "lin:arc_260516a__team_f__microstructure_vpin_ofi"
+  :body "---\ntype: lineage_overview\nteam: f\narc: 260516a\nstatus: falsified\npeak_train_nav: 2.0846\npeak_test_nav: null\nrounds_done: 2\ncandidates_total: 6\nchampions: 0\ntags: [vault/lineage, team/f, arc/260516a, status/falsified, axis/microstructure, axis/vpin, axis/ofi, anti_pattern/anchor_already_implicit_ratio_sort]\n---\n\n# Team F — VPIN / OFI microstructure lineage (arc 260516a)\n\n> Team F 走经典 microstructure axis (VPIN + Order Flow Imbalance) reverse-direction post-filter。R1 (2 cand) + R2 (4 cand) **全 6 个 candidate train NAV ≤ anchor**, lineage **fully falsified**。根因：**anchor G2 baseline 已隐式做 `amount_div_ratio` 排序, 这与 VPIN/OFI 的高质量 outlier 选择度高度相关**, microstructure axis 没有边际信息可加。\n\n## Round 演进时间线\n\n| Round | candidate | mechanism | n | train NAV | val_nav_mean | NAV champion |\n|---|---|---|---|---|---|---|\n| R1 | F-R1-1 OFI drop extreme | drop \\|OFI@30s\\| ≥ trailing q90 | 126 | 2.0846 | 1.0562 | ✗ |\n| R1 | F-R1-2 VPIN q80 admit | keep VPIN@300s ≥ trailing q80 | 42 | 1.1480 | 1.0114 | ✗ (count_fail, mean dropped to 0.330%) |\n| R2 | **F-R2-1** VPIN drop q80@300s | drop VPIN ≥ trailing q80 | 111 | **1.9565** | 1.0509 | ✗ (best R2 NAV but < anchor 2.19) |\n| R2 | F-R2-2 VPIN drop q70@300s | drop VPIN ≥ trailing q70 | 92 | 1.7290 | 1.0446 | ✗ (count_fail) |\n| R2 | F-R2-3 VPIN drop q80@600s | drop VPIN ≥ trailing q80 (lookback 600s) | 105 | 1.8719 | 1.0471 | ✗ |\n| R2 | F-R2-4 OFI dir-align | drop OFI@30s > 0 (sell-side align) | 78 | 1.4698 | 1.0296 | ✗ (count_fail) |\n\nanchor 参考 train_nav 2.1882, val_nav_mean 1.0601, n=140.\n\n## 决策点 / 反思\n\n- **Data caveat (R1)**: parquet 缺 bid/ask volume, 用 Lee-Ready tick rule proxy 算 VPIN/OFI。Proxy noise 是合理 risk 但不影响最终 falsify 结论（R2 多 lookback 网格全失败 → 不是 proxy 选错的问题）。\n- **R1-2 反向信号识别**: F-R1-2 (VPIN q80+ admit) → mean_per_trade 0.330% (anchor 0.564% 的 ~59%)。**强烈反向信号**: anchor pool 的 alpha **集中在低 VPIN 的 non-informed flow 区** —— informed flow 早被 cap/threshold 过滤掉了。R2 设计直接反向 (drop high-VPIN) 即基于此发现。\n- **R2 每 trade mean 略升 0.564→0.609%，但 NAV ≤ anchor**: 关键现象，**drop 高 VPIN 同时也 drop 掉了对 NAV 贡献最大的复利节点**。mean improve 不等于 NAV improve, 当被 drop 的极少数 high VPIN trade 中含 outlier winner 时, 复利效应 > 均值损失。\n- **OFI direction-align (R2-4) n=78 fail count**: 方向轴 (signed OFI) 在此 anchor pool 上也未 beat anchor, magnitude 没起色。\n- **核心 falsification finding**: VPIN signal 对此 anchor pool 的 alpha 解释力 **≤ G2 baseline 已隐式做的 amount_div_ratio 排序** —— anchor 通过 `baseline_max_avg` cap + `valid_threshold` + `arbitrage_threshold` 已经把 high-impact 高质量 trade 选出来了。VPIN/OFI 作为 secondary microstructure feature 与 amount_div_ratio 高度相关, 没有边际信息。\n- **R3 转向**: round_2_design.md §5 提议 F 队转其他 axis（具体未列在 status.md 摘要里）, R3 status 未出现, lineage 实际 pause。\n- **leak audit 全 clean**: R1 + R2 共 1314 records 0 violation; 全部 lookback × q 网格预定 (pre-committed grid), 未基于 NAV 调参 —— 不能用 data-snoop 解释 falsification。\n\n## 跨 lineage 关系\n\n- **shares_anti_pattern_with**: [[arc_260516a__team_a__multi_axis_singleaxis_discipline]] C19 today_vol_regime_gate (VPIN-style proxy, 也是 over-cull, threshold 太紧 n=84<100) —— 跨队同 axis 同结论, 双轴反证 microstructure 在此 anchor pool 上 magnitude 不够。\n- **shares_root_cause**: [[arc_260516a__team_anchor__anchor_g2__baseline]] —— anchor 的 `amount_div_ratio` 排序 + `baseline_max_avg` cap 已隐式做了 microstructure 类选择, F 系所有 candidate 是在已被 microstructure-sorted 的 pool 上再 microstructure post-filter, redundant by construction。\n- **falsifies_external_literature**: Easley et al. VPIN (high-VPIN trades = informed flow) 在 copy-follower regime 不 transfer —— 我们是 follower 不是 maker, informed flow 已被前序 gate 滤掉; Kolm-Turiel-Westray 2024 OFI 同诊断。\n- **does_not_compose_with**: [[arc_260516a__team_b__blacklist_axis]] / [[arc_260516a__team_c__top_k_no_open3min]] —— F 系所有 candidate 都 ≤ anchor, 无 base 可供其他队 build on, 也无 mechanism 值得 cross-team compose import。\n- **不像 Team E 那样 paused-with-pivot-plan**: F 是 falsified-and-rotated, R3 设计 implicitly drop 整 microstructure axis, 转向 round_2_design.md §5 列的其他方向。\n\n## 终态判定理由（falsified）\n\n1. **R1 + R2 合计 6 candidate 100% train NAV ≤ anchor**: 三种轴 (VPIN admit / VPIN drop / OFI direction) × 两种 lookback (300s / 600s) × 两种 quantile (q70 / q80) 网格已 cover, 全 fail。\n2. **R2 best NAV 1.9565 vs anchor 2.1882**: 距 anchor 还差 -10.6%, 不是 marginal fail。\n3. **Mean improve but NAV fail 的 mechanism 已诊断清楚** (drop 高 VPIN = drop NAV-contributing outliers), 不是 hyper-param 调一调可以救的 axis level 问题。\n4. **anchor 已隐式做 microstructure 排序** 这一 finding 是 axis-killing 结论 (而不是 candidate-killing), 同 axis 在同 pool 上再 sweep 都不会 work。\n5. **leak audit 0 violation × 1314 records + pre-committed grid** 排除 data-snoop / leak 解释。\n6. **R3 未 dispatch**: status.md 写 \"F 系 R3 转向其他 axis\", 实际 R3 round 未出现 in arcs/.../team_f/output/, lineage 在 R2 完成后 close。\n\n## For future sub-agent\n\n**不要重蹈：**\n\n1. **不要在 anchor pre-filtered pool 上做 VPIN / OFI post-filter** —— anchor 已隐式 amount_div_ratio 排序 = microstructure proxy, 6 candidate × 多 lookback × 多 quantile 全死。\n2. **不要相信 mean-per-trade 改善 = NAV 改善** —— F R2 mean 0.564→0.609% 看着是 lift, NAV 反而 -10%, drop high-VPIN 同时 drop 了 NAV-contributing outliers。\n3. **不要用 Lee-Ready tick rule proxy 当 VPIN signal 来 single-pass design** —— 即使 proxy 不准, 多 lookback 网格仍全 fail 说明 axis 本身死了, 不是 proxy 选错。但 proxy noise 仍是 future arc 的潜在 confounder, 要么拿到真实 bid/ask volume 要么放弃 axis。\n4. **不要把外部 microstructure paper (Easley VPIN / Kolm OFI) 当 transferable axis** —— informed flow vs follower flow regime 完全不同, paper 的 maker 视角不 transfer 到 taker copy-follower。\n5. **不要在 default-admit pool 上沿 microstructure axis 重启** —— 没跑过, 但 anchor implicit ratio sort 的根因在 default-admit 框架下可能仍存在（default-admit pool 仍来自同 raw signal）。要 retry 必须先 ablation 验证 ratio sort 是否仍隐式 active。\n\n**可以继承：**\n\n1. **F R2 \"mean ↑ but NAV ↓\" 现象** 作为 vault 内 cross-axis lesson: **drop 类 filter 在 NAV ranking 下要先 audit dropped trades 的 outlier 分布, 否则 mean 改善但 NAV 退步是 default failure mode**。所有 future arc 用 NAV ranking 的 drop-filter 都该带 outlier-impact 检查。\n2. **pre-committed grid (lookback × quantile) + leak-clean audit + 0/1314 violation** 是 microstructure axis 干净 falsification 的模板, 之后 future arc 如果还要碰这类 axis, 用 F 的 audit 框架 paste-and-rerun 即可。\n3. **anchor 已隐式做 amount_div_ratio 排序** 这一发现 应作 vault root cause card —— Team A C19 VPIN proxy 也用此解释, future arc 第一步先确认 anchor pool 是否已 microstructure-sorted。\n4. **F R1-2 的反向信号识别 (admit high-VPIN → mean 跌一半) 是高质量 mechanism 信号**, 即使 candidate 本身死, 它告诉下一轮 \"反向试 drop\" 是直接 actionable 的, 不要 throw away negative result。\n5. **每 trade mean / NAV / Sharpe / win 维度的 4 元同时观察** 比单 metric ranking 更能识别 drop-filter 的\"mean ↑ NAV ↓\"陷阱 —— Team F status.md 的 4-column leaderboard 是 vault baseline 模板。\n\n## 备注\n\n- report R1 `output/team_f_R1_report_20260516T185213Z.html` + R2 `team_f/output/round_2/_R2_report.html`。\n- final test slice 未触碰 (无 candidate 值得 burn)。\n- Team F 是 arc 内**唯一全队 falsified-no-champion 且数据 quality 受 proxy 限制** 的 lineage —— 跨 arc copy 时若拿到真实 L2 quote / signed-volume 数据可以重启 axis, 但要 ablation 验证 anchor implicit sort 是否仍 active。\n"
+  :path "lineages/arc_260516a__team_f__microstructure_vpin_ofi.md"
+  :source_mtime "2026-05-17T10:21:02+08:00"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_741e95f6" :type "atom"
+  :subj "lin:arc_260516a__team_f__microstructure_vpin_ofi"
+  :pred "has_type"
+  :obj "lineage_overview"
+  :source "lineages/arc_260516a__team_f__microstructure_vpin_ofi.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_874434e0" :type "atom"
+  :subj "lin:arc_260516a__team_f__microstructure_vpin_ofi"
+  :pred "has_team"
+  :obj "f"
+  :source "lineages/arc_260516a__team_f__microstructure_vpin_ofi.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_8e93f7be" :type "atom"
+  :subj "lin:arc_260516a__team_f__microstructure_vpin_ofi"
+  :pred "has_arc"
+  :obj "260516a"
+  :source "lineages/arc_260516a__team_f__microstructure_vpin_ofi.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_6cebe3ef" :type "atom"
+  :subj "lin:arc_260516a__team_f__microstructure_vpin_ofi"
+  :pred "has_status"
+  :obj "falsified"
+  :source "lineages/arc_260516a__team_f__microstructure_vpin_ofi.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_7004b74e" :type "atom"
+  :subj "lin:arc_260516a__team_f__microstructure_vpin_ofi"
+  :pred "has_peak_train_nav"
+  :obj 2.0846
+  :source "lineages/arc_260516a__team_f__microstructure_vpin_ofi.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1b5762b1" :type "atom"
+  :subj "lin:arc_260516a__team_f__microstructure_vpin_ofi"
+  :pred "has_rounds_done"
+  :obj 2
+  :source "lineages/arc_260516a__team_f__microstructure_vpin_ofi.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9ffba68e" :type "atom"
+  :subj "lin:arc_260516a__team_f__microstructure_vpin_ofi"
+  :pred "has_candidates_total"
+  :obj 6
+  :source "lineages/arc_260516a__team_f__microstructure_vpin_ofi.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_734cd4e5" :type "atom"
+  :subj "lin:arc_260516a__team_f__microstructure_vpin_ofi"
+  :pred "has_champions"
+  :obj 0
+  :source "lineages/arc_260516a__team_f__microstructure_vpin_ofi.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f6f56389" :type "atom"
+  :subj "lin:arc_260516a__team_f__microstructure_vpin_ofi"
+  :pred "has_tag"
+  :obj "tag:vault/lineage"
+  :source "lineages/arc_260516a__team_f__microstructure_vpin_ofi.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_68b1c99b" :type "atom"
+  :subj "lin:arc_260516a__team_f__microstructure_vpin_ofi"
+  :pred "has_tag"
+  :obj "tag:team/f"
+  :source "lineages/arc_260516a__team_f__microstructure_vpin_ofi.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_17e49220" :type "atom"
+  :subj "lin:arc_260516a__team_f__microstructure_vpin_ofi"
+  :pred "has_tag"
+  :obj "tag:arc/260516a"
+  :source "lineages/arc_260516a__team_f__microstructure_vpin_ofi.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d9a72c96" :type "atom"
+  :subj "lin:arc_260516a__team_f__microstructure_vpin_ofi"
+  :pred "has_tag"
+  :obj "tag:status/falsified"
+  :source "lineages/arc_260516a__team_f__microstructure_vpin_ofi.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_002d6879" :type "atom"
+  :subj "lin:arc_260516a__team_f__microstructure_vpin_ofi"
+  :pred "has_tag"
+  :obj "tag:axis/microstructure"
+  :source "lineages/arc_260516a__team_f__microstructure_vpin_ofi.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_93dc33f7" :type "atom"
+  :subj "lin:arc_260516a__team_f__microstructure_vpin_ofi"
+  :pred "has_tag"
+  :obj "tag:axis/vpin"
+  :source "lineages/arc_260516a__team_f__microstructure_vpin_ofi.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_0b452611" :type "atom"
+  :subj "lin:arc_260516a__team_f__microstructure_vpin_ofi"
+  :pred "has_tag"
+  :obj "tag:axis/ofi"
+  :source "lineages/arc_260516a__team_f__microstructure_vpin_ofi.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_252c66fc" :type "atom"
+  :subj "lin:arc_260516a__team_f__microstructure_vpin_ofi"
+  :pred "has_tag"
+  :obj "tag:anti_pattern/anchor_already_implicit_ratio_sort"
+  :source "lineages/arc_260516a__team_f__microstructure_vpin_ofi.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b503f9c0" :type "atom"
+  :subj "lin:arc_260516a__team_f__microstructure_vpin_ofi"
+  :pred "has_section_intro"
+  :obj "# Team F — VPIN / OFI microstructure lineage (arc 260516a)\n\n> Team F 走经典 microstructure axis (VPIN + Order Flow Imbalance) reverse-direction post-filter。R1 (2 cand) + R2 (4 cand) **全 6 个 candidate train NAV ≤ anchor**, lineage **fully falsified**。根因：**anchor G2 baseline 已隐式做 `amount_div_ratio` 排序, 这与 VPIN/OFI 的高质量 outlier 选择度高度相关**, microstructure axis 没有边际信息可加。"
+  :source "lineages/arc_260516a__team_f__microstructure_vpin_ofi.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_2ec25335" :type "atom"
+  :subj "lin:arc_260516a__team_f__microstructure_vpin_ofi"
+  :pred "has_section_round_table"
+  :obj "| Round | candidate | mechanism | n | train NAV | val_nav_mean | NAV champion |\n|---|---|---|---|---|---|---|\n| R1 | F-R1-1 OFI drop extreme | drop \\|OFI@30s\\| ≥ trailing q90 | 126 | 2.0846 | 1.0562 | ✗ |\n| R1 | F-R1-2 VPIN q80 admit | keep VPIN@300s ≥ trailing q80 | 42 | 1.1480 | 1.0114 | ✗ (count_fail, mean dropped to 0.330%) |\n| R2 | **F-R2-1** VPIN drop q80@300s | drop VPIN ≥ trailing q80 | 111 | **1.9565** | 1.0509 | ✗ (best R2 NAV but < anchor 2.19) |\n| R2 | F-R2-2 VPIN drop q70@300s | drop VPIN ≥ trailing q70 | 92 | 1.7290 | 1.0446 | ✗ (count_fail) |\n| R2 | F-R2-3 VPIN drop q80@600s | drop VPIN ≥ trailing q80 (lookback 600s) | 105 | 1.8719 | 1.0471 | ✗ |\n| R2 | F-R2-4 OFI dir-align | drop OFI@30s > 0 (sell-side align) | 78 | 1.4698 | 1.0296 | ✗ (count_fail) |\n\nanchor 参考 train_nav 2.1882, val_nav_mean 1.0601, n=140."
+  :source "lineages/arc_260516a__team_f__microstructure_vpin_ofi.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1b847234" :type "atom"
+  :subj "lin:arc_260516a__team_f__microstructure_vpin_ofi"
+  :pred "has_section_decisions_reflections"
+  :obj "- **Data caveat (R1)**: parquet 缺 bid/ask volume, 用 Lee-Ready tick rule proxy 算 VPIN/OFI。Proxy noise 是合理 risk 但不影响最终 falsify 结论（R2 多 lookback 网格全失败 → 不是 proxy 选错的问题）。\n- **R1-2 反向信号识别**: F-R1-2 (VPIN q80+ admit) → mean_per_trade 0.330% (anchor 0.564% 的 ~59%)。**强烈反向信号**: anchor pool 的 alpha **集中在低 VPIN 的 non-informed flow 区** —— informed flow 早被 cap/threshold 过滤掉了。R2 设计直接反向 (drop high-VPIN) 即基于此发现。\n- **R2 每 trade mean 略升 0.564→0.609%，但 NAV ≤ anchor**: 关键现象，**drop 高 VPIN 同时也 drop 掉了对 NAV 贡献最大的复利节点**。mean improve 不等于 NAV improve, 当被 drop 的极少数 high VPIN trade 中含 outlier winner 时, 复利效应 > 均值损失。\n- **OFI direction-align (R2-4) n=78 fail count**: 方向轴 (signed OFI) 在此 anchor pool 上也未 beat anchor, magnitude 没起色。\n- **核心 falsification finding**: VPIN signal 对此 anchor pool 的 alpha 解释力 **≤ G2 baseline 已隐式做的 amount_div_ratio 排序** —— anchor 通过 `baseline_max_avg` cap + `valid_threshold` + `arbitrage_threshold` 已经把 high-impact 高质量 trade 选出来了。VPIN/OFI 作为 secondary microstructure feature 与 amount_div_ratio 高度相关, 没有边际信息。\n- **R3 转向**: round_2_design.md §5 提议 F 队转其他 axis（具体未列在 status.md 摘要里）, R3 status 未出现, lineage 实际 pause。\n- **leak audit 全 clean**: R1 + R2 共 1314 records 0 violation; 全部 lookback × q 网格预定 (pre-committed grid), 未基于 NAV 调参 —— 不能用 data-snoop 解释 falsification。"
+  :source "lineages/arc_260516a__team_f__microstructure_vpin_ofi.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_bdebd8a4" :type "atom"
+  :subj "lin:arc_260516a__team_f__microstructure_vpin_ofi"
+  :pred "shares_anti_pattern_with"
+  :obj "lin:arc_260516a__team_a__multi_axis_singleaxis_discipline"
+  :source "lineages/arc_260516a__team_f__microstructure_vpin_ofi.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_afa2d057" :type "atom"
+  :subj "lin:arc_260516a__team_f__microstructure_vpin_ofi"
+  :pred "shares_root_cause"
+  :obj "exp:anchor_g2_baseline"
+  :source "lineages/arc_260516a__team_f__microstructure_vpin_ofi.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e1de91f9" :type "atom"
+  :subj "lin:arc_260516a__team_f__microstructure_vpin_ofi"
+  :pred "does_not_compose_with"
+  :obj "lin:arc_260516a__team_b__blacklist_axis"
+  :source "lineages/arc_260516a__team_f__microstructure_vpin_ofi.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_afef09ec" :type "atom"
+  :subj "lin:arc_260516a__team_f__microstructure_vpin_ofi"
+  :pred "does_not_compose_with"
+  :obj "lin:arc_260516a__team_c__top_k_no_open3min"
+  :source "lineages/arc_260516a__team_f__microstructure_vpin_ofi.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_7efdf9de" :type "atom"
+  :subj "lin:arc_260516a__team_f__microstructure_vpin_ofi"
+  :pred "has_section_cross_lineage_relations"
+  :obj "- **shares_anti_pattern_with**: [[arc_260516a__team_a__multi_axis_singleaxis_discipline]] C19 today_vol_regime_gate (VPIN-style proxy, 也是 over-cull, threshold 太紧 n=84<100) —— 跨队同 axis 同结论, 双轴反证 microstructure 在此 anchor pool 上 magnitude 不够。\n- **shares_root_cause**: [[arc_260516a__team_anchor__anchor_g2__baseline]] —— anchor 的 `amount_div_ratio` 排序 + `baseline_max_avg` cap 已隐式做了 microstructure 类选择, F 系所有 candidate 是在已被 microstructure-sorted 的 pool 上再 microstructure post-filter, redundant by construction。\n- **falsifies_external_literature**: Easley et al. VPIN (high-VPIN trades = informed flow) 在 copy-follower regime 不 transfer —— 我们是 follower 不是 maker, informed flow 已被前序 gate 滤掉; Kolm-Turiel-Westray 2024 OFI 同诊断。\n- **does_not_compose_with**: [[arc_260516a__team_b__blacklist_axis]] / [[arc_260516a__team_c__top_k_no_open3min]] —— F 系所有 candidate 都 ≤ anchor, 无 base 可供其他队 build on, 也无 mechanism 值得 cross-team compose import。\n- **不像 Team E 那样 paused-with-pivot-plan**: F 是 falsified-and-rotated, R3 设计 implicitly drop 整 microstructure axis, 转向 round_2_design.md §5 列的其他方向。"
+  :source "lineages/arc_260516a__team_f__microstructure_vpin_ofi.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9bde6b57" :type "atom"
+  :subj "lin:arc_260516a__team_f__microstructure_vpin_ofi"
+  :pred "has_section_终态判定理由_falsified"
+  :obj "1. **R1 + R2 合计 6 candidate 100% train NAV ≤ anchor**: 三种轴 (VPIN admit / VPIN drop / OFI direction) × 两种 lookback (300s / 600s) × 两种 quantile (q70 / q80) 网格已 cover, 全 fail。\n2. **R2 best NAV 1.9565 vs anchor 2.1882**: 距 anchor 还差 -10.6%, 不是 marginal fail。\n3. **Mean improve but NAV fail 的 mechanism 已诊断清楚** (drop 高 VPIN = drop NAV-contributing outliers), 不是 hyper-param 调一调可以救的 axis level 问题。\n4. **anchor 已隐式做 microstructure 排序** 这一 finding 是 axis-killing 结论 (而不是 candidate-killing), 同 axis 在同 pool 上再 sweep 都不会 work。\n5. **leak audit 0 violation × 1314 records + pre-committed grid** 排除 data-snoop / leak 解释。\n6. **R3 未 dispatch**: status.md 写 \"F 系 R3 转向其他 axis\", 实际 R3 round 未出现 in arcs/.../team_f/output/, lineage 在 R2 完成后 close。"
+  :source "lineages/arc_260516a__team_f__microstructure_vpin_ofi.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_df3bd84d" :type "atom"
+  :subj "lin:arc_260516a__team_f__microstructure_vpin_ofi"
+  :pred "has_section_for_future_sub_agent"
+  :obj "**不要重蹈：**\n\n1. **不要在 anchor pre-filtered pool 上做 VPIN / OFI post-filter** —— anchor 已隐式 amount_div_ratio 排序 = microstructure proxy, 6 candidate × 多 lookback × 多 quantile 全死。\n2. **不要相信 mean-per-trade 改善 = NAV 改善** —— F R2 mean 0.564→0.609% 看着是 lift, NAV 反而 -10%, drop high-VPIN 同时 drop 了 NAV-contributing outliers。\n3. **不要用 Lee-Ready tick rule proxy 当 VPIN signal 来 single-pass design** —— 即使 proxy 不准, 多 lookback 网格仍全 fail 说明 axis 本身死了, 不是 proxy 选错。但 proxy noise 仍是 future arc 的潜在 confounder, 要么拿到真实 bid/ask volume 要么放弃 axis。\n4. **不要把外部 microstructure paper (Easley VPIN / Kolm OFI) 当 transferable axis** —— informed flow vs follower flow regime 完全不同, paper 的 maker 视角不 transfer 到 taker copy-follower。\n5. **不要在 default-admit pool 上沿 microstructure axis 重启** —— 没跑过, 但 anchor implicit ratio sort 的根因在 default-admit 框架下可能仍存在（default-admit pool 仍来自同 raw signal）。要 retry 必须先 ablation 验证 ratio sort 是否仍隐式 active。\n\n**可以继承：**\n\n1. **F R2 \"mean ↑ but NAV ↓\" 现象** 作为 vault 内 cross-axis lesson: **drop 类 filter 在 NAV ranking 下要先 audit dropped trades 的 outlier 分布, 否则 mean 改善但 NAV 退步是 default failure mode**。所有 future arc 用 NAV ranking 的 drop-filter 都该带 outlier-impact 检查。\n2. **pre-committed grid (lookback × quantile) + leak-clean audit + 0/1314 violation** 是 microstructure axis 干净 falsification 的模板, 之后 future arc 如果还要碰这类 axis, 用 F 的 audit 框架 paste-and-rerun 即可。\n3. **anchor 已隐式做 amount_div_ratio 排序** 这一发现 应作 vault root cause card —— Team A C19 VPIN proxy 也用此解释, future arc 第一步先确认 anchor pool 是否已 microstructure-sorted。\n4. **F R1-2 的反向信号识别 (admit high-VPIN → mean 跌一半) 是高质量 mechanism 信号**, 即使 candidate 本身死, 它告诉下一轮 \"反向试 drop\" 是直接 actionable 的, 不要 throw away negative result。\n5. **每 trade mean / NAV / Sharpe / win 维度的 4 元同时观察** 比单 metric ranking 更能识别 drop-filter 的\"mean ↑ NAV ↓\"陷阱 —— Team F status.md 的 4-column leaderboard 是 vault baseline 模板。"
+  :source "lineages/arc_260516a__team_f__microstructure_vpin_ofi.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_8b45271e" :type "atom"
+  :subj "lin:arc_260516a__team_f__microstructure_vpin_ofi"
+  :pred "has_section_remarks"
+  :obj "- report R1 `output/team_f_R1_report_20260516T185213Z.html` + R2 `team_f/output/round_2/_R2_report.html`。\n- final test slice 未触碰 (无 candidate 值得 burn)。\n- Team F 是 arc 内**唯一全队 falsified-no-champion 且数据 quality 受 proxy 限制** 的 lineage —— 跨 arc copy 时若拿到真实 L2 quote / signed-volume 数据可以重启 axis, 但要 ablation 验证 anchor implicit sort 是否仍 active。"
+  :source "lineages/arc_260516a__team_f__microstructure_vpin_ofi.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")

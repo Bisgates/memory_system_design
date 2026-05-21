@@ -1,0 +1,16 @@
+;; r004 — falsifies transitive cluster.
+;;
+;; Transitive closure on falsifies: if A falsifies B, and B falsifies C, then
+;; A inherits_falsification_of C (A inherits the falsification verdict that
+;; B passed onto C). The derived predicate is named `inherits_falsification`
+;; rather than reusing `falsifies` to preserve a distinct provenance trail —
+;; the original direct evidence stays on `falsifies` and the rule-inferred
+;; transitive claim lives on `inherits_falsification`.
+
+(card "rule:r004_falsifies_cluster" :type "rule"
+  :body "Transitive: A falsifies B and B falsifies C ⇒ A inherits_falsification C. Keeps the rule-inferred transitive claim separate from direct falsifies evidence so provenance is clear."
+  :when (("?a" "falsifies" "?b")
+         ("?b" "falsifies" "?c"))
+  :then (("?a" "inherits_falsification" "?c"))
+  :status "active"
+  :parents ("r004_falsifies_cluster"))

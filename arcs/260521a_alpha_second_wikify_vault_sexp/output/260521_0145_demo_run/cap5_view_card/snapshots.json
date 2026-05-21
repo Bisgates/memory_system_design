@@ -1,0 +1,81 @@
+{
+  "view": {
+    "id": "m_5ce4acd2",
+    "type": "view",
+    "kvs": {
+      "name": "view_lin:arc_260516a__team_h__sizing_all_candidates",
+      "body": "All experiments registered under lineage lin:arc_260516a__team_h__sizing. Re-evaluated at read time so newly-ingested candidates surface without macro re-run.",
+      "query": {
+        "filter_pred": "parent_lineage",
+        "filter_obj": "lin:arc_260516a__team_h__sizing"
+      },
+      "parents": [
+        "lin:arc_260516a__team_h__sizing",
+        "m002_lineage_to_comparison_view"
+      ],
+      "derived_from": "m002_lineage_to_comparison_view",
+      "generated_at": "2026-05-20T17:55:32.985249+00:00"
+    }
+  },
+  "snapshot_1": {
+    "total": 14,
+    "atoms": 14,
+    "atom_subjs": [
+      "exp:H-R1-1_rolling_30d_median_solo",
+      "exp:H-R1-2_pre_avg_amount_sizing",
+      "exp:H-R1-3_ratio_vol_blend",
+      "exp:H-R2-1_c75_linear_sizing",
+      "exp:H-R2-2_c84_linear_sizing",
+      "exp:H-R2-3_b_r8_1_sizing",
+      "exp:H-R2-4_c75_sqrt_damp",
+      "exp:H-R3a-1_b_r11_2_sizing",
+      "exp:H-R3a-2_d_r2_3_sizing",
+      "exp:H-R3b-0_c84_binary_baseline",
+      "exp:H-R3b-1_c84_kelly_lambda_0.25",
+      "exp:H-R3b-2_c84_kelly_lambda_0.5",
+      "exp:H-R3b-3_c84_kelly_lambda_1.0",
+      "exp:H-R3b-4_c84_kelly_lambda_1.5"
+    ]
+  },
+  "snapshot_2": {
+    "total": 15,
+    "atoms": 15,
+    "atom_subjs": [
+      "exp:CAP5_SYNTHETIC_NEW_CANDIDATE",
+      "exp:H-R1-1_rolling_30d_median_solo",
+      "exp:H-R1-2_pre_avg_amount_sizing",
+      "exp:H-R1-3_ratio_vol_blend",
+      "exp:H-R2-1_c75_linear_sizing",
+      "exp:H-R2-2_c84_linear_sizing",
+      "exp:H-R2-3_b_r8_1_sizing",
+      "exp:H-R2-4_c75_sqrt_damp",
+      "exp:H-R3a-1_b_r11_2_sizing",
+      "exp:H-R3a-2_d_r2_3_sizing",
+      "exp:H-R3b-0_c84_binary_baseline",
+      "exp:H-R3b-1_c84_kelly_lambda_0.25",
+      "exp:H-R3b-2_c84_kelly_lambda_0.5",
+      "exp:H-R3b-3_c84_kelly_lambda_1.0",
+      "exp:H-R3b-4_c84_kelly_lambda_1.5"
+    ]
+  },
+  "snapshot_3": {
+    "total": 14,
+    "atoms": 14,
+    "atom_subjs": [
+      "exp:H-R1-1_rolling_30d_median_solo",
+      "exp:H-R1-2_pre_avg_amount_sizing",
+      "exp:H-R1-3_ratio_vol_blend",
+      "exp:H-R2-1_c75_linear_sizing",
+      "exp:H-R2-2_c84_linear_sizing",
+      "exp:H-R2-3_b_r8_1_sizing",
+      "exp:H-R2-4_c75_sqrt_damp",
+      "exp:H-R3a-1_b_r11_2_sizing",
+      "exp:H-R3a-2_d_r2_3_sizing",
+      "exp:H-R3b-0_c84_binary_baseline",
+      "exp:H-R3b-1_c84_kelly_lambda_0.25",
+      "exp:H-R3b-2_c84_kelly_lambda_0.5",
+      "exp:H-R3b-3_c84_kelly_lambda_1.0",
+      "exp:H-R3b-4_c84_kelly_lambda_1.5"
+    ]
+  }
+}

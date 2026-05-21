@@ -1,0 +1,384 @@
+(card "exp:F-R1-2_vpin_q80_admit" :type "experiment"
+  :subj "exp:F-R1-2_vpin_q80_admit"
+  :body "---\nnav: 32\ntype: experiment\nid: F-R1-2_vpin_q80_admit\nshort_name: vpin_q80_admit\ntitle: \"F-R1-2 — anchor default-admit + keep only VPIN@300s trailing-cum q80+\"\narc: 260516a\nteam: f\nround: r1\nparent_arc: \"[[arcs/260516a]]\"\nparent_lineage: \"[[lineages/arc_260516a__team_f__microstructure]]\"\ntrain_nav: 1.1480\ntrain_trade_count: 42\ntrain_win_rate: 0.8095\ntrain_sharpe: 7.0311\ntrain_max_drawdown: -0.0043\nval_nav_mean: 1.0114\nval_nav_sigma: 0.0092\nval_window_count: 10\ntest_nav: null\ntest_trade_count: null\ntest_sharpe: null\ntest_win_rate: null\ntest_max_drawdown: null\nanchor_train_nav: 2.1882\nanchor_test_nav: 1.2486\nstatus: falsified\noutcome: no_test_run\nchampion: false\noverfit_score: 1\nleak_audit: clean\naxis: [microstructure, whitelist]\npast_only_window_days: null\nwarmup_required: 10\ncreated: 2026-05-17T01:30:00\nlast_updated: 2026-05-17T05:09:00\ntags: [arc/260516a, team/f, round/r1, axis/microstructure, axis/whitelist, status/falsified, outcome/no_test_run, leak/clean, size/small]\n---\n\n# F-R1-2 — anchor + keep only VPIN@300s q80+\n\n> **TL;DR** —— F-R1-2 是 F-R1-1 的**反向 hypothesis**：不是 drop 高 VPIN 而是只 keep。train 42 笔/NAV 1.15 << anchor 2.19, count_fail。证明 \"high-VPIN admit\" 这条 microstructure 路线在 anchor pool 上 sample 太稀。\n\n## 假设 (Hypothesis)\n- 假设：trailing-cum q80+ 的高 VPIN trade = informed traders 在场 → 这类 trade alpha 更强 → 应只 admit。\n- 反向于 F-R1-1 (drop high OFI)。\n- 实测：whitelist 砍到 42 笔 (anchor 140)，未 strict beat anchor，未上 test。\n\n## 实现 (Implementation)\n- 主脚本：`/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_f/scripts/round_1_runner.py`\n- 步骤：default-admit base → keep only legs with VPIN@300s ≥ trailing-cum q80; warmup<10 admit.\n\n## Past-only window 处理\n- trailing-cum quantile strict past-only。`#leak/clean`（F-R1-1 同源 helper, edge-leak fix applied）。\n\n## 结果 (Results)\n| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 1.1480 | 42 | 7.03 | 81.0% | -0.43% |\n| Val (rolling 10w only) | 1.0114 ± 0.009 | - | - | - | - |\n| Test | NOT RUN (count_fail) | - | - | - | - |\n| **Δ train NAV vs anchor** | **-1.04 (FAIL)** | -98 | -0.67 | -4.7pp | +0.58pp |\n\n## 风险 & overfit 嫌疑\n- overfit_score = 1 (count_fail).\n- mechanism 太严, sample 崩。\n\n## Lineage（双链网）\n- **antithesis_of**: [[arc_260516a__team_f__F-R1-1__ofi_drop_extreme]] (drop 反, admit 正)\n- **derived_from**: [[arc_260516a__team_d__D-R2-1__default_admit_baseline]]\n- **same_team_alt**: [[arc_260516a__team_f__F-R2-1__vpin_drop_q80_300s]]\n- **builds against**: [[arc_260516a__team_anchor__anchor_g2__baseline]]\n\n## Reports\n- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_f/output/cross_round_leaderboard_nav.csv` (F-R1-2)\n- [[arc_260516a__reporter_20260517_0547]]\n\n## Notes / 下次迭代\n- **double falsification**: F-R1-1 (drop q90) 也失败，F-R1-2 (admit q80+) 也失败 → 说明 VPIN/OFI 与 trade 收益**不是 monotone 关系**，整个 microstructure-as-binary-gate axis 在该 arc 不可用。\n- 见 [[arc_260516a__team_f__F-R1-1__ofi_drop_extreme]] Notes \"anti-pattern\" 段。\n"
+  :path "experiments/arc_260516a__team_f__F-R1-2__vpin_q80_admit.md"
+  :source_mtime "2026-05-17T10:28:11+08:00"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d3b2507c" :type "atom"
+  :subj "exp:F-R1-2_vpin_q80_admit"
+  :pred "has_nav"
+  :obj 32
+  :source "experiments/arc_260516a__team_f__F-R1-2__vpin_q80_admit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_091752fe" :type "atom"
+  :subj "exp:F-R1-2_vpin_q80_admit"
+  :pred "has_type"
+  :obj "experiment"
+  :source "experiments/arc_260516a__team_f__F-R1-2__vpin_q80_admit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_0bd24107" :type "atom"
+  :subj "exp:F-R1-2_vpin_q80_admit"
+  :pred "has_id"
+  :obj "F-R1-2_vpin_q80_admit"
+  :source "experiments/arc_260516a__team_f__F-R1-2__vpin_q80_admit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e0366bb9" :type "atom"
+  :subj "exp:F-R1-2_vpin_q80_admit"
+  :pred "has_short_name"
+  :obj "vpin_q80_admit"
+  :source "experiments/arc_260516a__team_f__F-R1-2__vpin_q80_admit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_2614e648" :type "atom"
+  :subj "exp:F-R1-2_vpin_q80_admit"
+  :pred "has_title"
+  :obj "F-R1-2 — anchor default-admit + keep only VPIN@300s trailing-cum q80+"
+  :source "experiments/arc_260516a__team_f__F-R1-2__vpin_q80_admit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_2470ff08" :type "atom"
+  :subj "exp:F-R1-2_vpin_q80_admit"
+  :pred "has_arc"
+  :obj "260516a"
+  :source "experiments/arc_260516a__team_f__F-R1-2__vpin_q80_admit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b58fc5c3" :type "atom"
+  :subj "exp:F-R1-2_vpin_q80_admit"
+  :pred "has_team"
+  :obj "f"
+  :source "experiments/arc_260516a__team_f__F-R1-2__vpin_q80_admit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_8257a928" :type "atom"
+  :subj "exp:F-R1-2_vpin_q80_admit"
+  :pred "has_round"
+  :obj "r1"
+  :source "experiments/arc_260516a__team_f__F-R1-2__vpin_q80_admit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_fd453959" :type "atom"
+  :subj "exp:F-R1-2_vpin_q80_admit"
+  :pred "parent_arc"
+  :obj "arc:260516a"
+  :source "experiments/arc_260516a__team_f__F-R1-2__vpin_q80_admit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_56712210" :type "atom"
+  :subj "exp:F-R1-2_vpin_q80_admit"
+  :pred "parent_lineage"
+  :obj "lin:arc_260516a__team_f__microstructure"
+  :source "experiments/arc_260516a__team_f__F-R1-2__vpin_q80_admit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_34e066c9" :type "atom"
+  :subj "exp:F-R1-2_vpin_q80_admit"
+  :pred "has_train_nav"
+  :obj 1.148
+  :source "experiments/arc_260516a__team_f__F-R1-2__vpin_q80_admit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_fe9e351f" :type "atom"
+  :subj "exp:F-R1-2_vpin_q80_admit"
+  :pred "has_train_trade_count"
+  :obj 42
+  :source "experiments/arc_260516a__team_f__F-R1-2__vpin_q80_admit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c8331e2b" :type "atom"
+  :subj "exp:F-R1-2_vpin_q80_admit"
+  :pred "has_train_win_rate"
+  :obj 0.8095
+  :source "experiments/arc_260516a__team_f__F-R1-2__vpin_q80_admit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_34b5969c" :type "atom"
+  :subj "exp:F-R1-2_vpin_q80_admit"
+  :pred "has_train_sharpe"
+  :obj 7.0311
+  :source "experiments/arc_260516a__team_f__F-R1-2__vpin_q80_admit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f8197a08" :type "atom"
+  :subj "exp:F-R1-2_vpin_q80_admit"
+  :pred "has_train_max_drawdown"
+  :obj -0.0043
+  :source "experiments/arc_260516a__team_f__F-R1-2__vpin_q80_admit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f8121ec8" :type "atom"
+  :subj "exp:F-R1-2_vpin_q80_admit"
+  :pred "has_val_nav_mean"
+  :obj 1.0114
+  :source "experiments/arc_260516a__team_f__F-R1-2__vpin_q80_admit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_59c63245" :type "atom"
+  :subj "exp:F-R1-2_vpin_q80_admit"
+  :pred "has_val_nav_sigma"
+  :obj 0.0092
+  :source "experiments/arc_260516a__team_f__F-R1-2__vpin_q80_admit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5dd0d7b1" :type "atom"
+  :subj "exp:F-R1-2_vpin_q80_admit"
+  :pred "has_val_window_count"
+  :obj 10
+  :source "experiments/arc_260516a__team_f__F-R1-2__vpin_q80_admit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_65f2b71b" :type "atom"
+  :subj "exp:F-R1-2_vpin_q80_admit"
+  :pred "has_anchor_train_nav"
+  :obj 2.1882
+  :source "experiments/arc_260516a__team_f__F-R1-2__vpin_q80_admit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_837e7729" :type "atom"
+  :subj "exp:F-R1-2_vpin_q80_admit"
+  :pred "has_anchor_test_nav"
+  :obj 1.2486
+  :source "experiments/arc_260516a__team_f__F-R1-2__vpin_q80_admit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_51bd5016" :type "atom"
+  :subj "exp:F-R1-2_vpin_q80_admit"
+  :pred "has_status"
+  :obj "falsified"
+  :source "experiments/arc_260516a__team_f__F-R1-2__vpin_q80_admit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9cdf5698" :type "atom"
+  :subj "exp:F-R1-2_vpin_q80_admit"
+  :pred "has_outcome"
+  :obj "no_test_run"
+  :source "experiments/arc_260516a__team_f__F-R1-2__vpin_q80_admit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_68c6f5b8" :type "atom"
+  :subj "exp:F-R1-2_vpin_q80_admit"
+  :pred "has_champion"
+  :obj false
+  :source "experiments/arc_260516a__team_f__F-R1-2__vpin_q80_admit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c8309662" :type "atom"
+  :subj "exp:F-R1-2_vpin_q80_admit"
+  :pred "has_overfit_score"
+  :obj 1
+  :source "experiments/arc_260516a__team_f__F-R1-2__vpin_q80_admit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ce58f688" :type "atom"
+  :subj "exp:F-R1-2_vpin_q80_admit"
+  :pred "has_leak_audit"
+  :obj "clean"
+  :source "experiments/arc_260516a__team_f__F-R1-2__vpin_q80_admit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9791f548" :type "atom"
+  :subj "exp:F-R1-2_vpin_q80_admit"
+  :pred "has_axis"
+  :obj "axis:microstructure"
+  :source "experiments/arc_260516a__team_f__F-R1-2__vpin_q80_admit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a030d518" :type "atom"
+  :subj "exp:F-R1-2_vpin_q80_admit"
+  :pred "has_axis"
+  :obj "axis:whitelist"
+  :source "experiments/arc_260516a__team_f__F-R1-2__vpin_q80_admit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_6f34e606" :type "atom"
+  :subj "exp:F-R1-2_vpin_q80_admit"
+  :pred "has_axis_list"
+  :obj ("microstructure" "whitelist")
+  :source "experiments/arc_260516a__team_f__F-R1-2__vpin_q80_admit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a187208b" :type "atom"
+  :subj "exp:F-R1-2_vpin_q80_admit"
+  :pred "has_warmup_required"
+  :obj 10
+  :source "experiments/arc_260516a__team_f__F-R1-2__vpin_q80_admit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b16b7c11" :type "atom"
+  :subj "exp:F-R1-2_vpin_q80_admit"
+  :pred "has_created"
+  :obj "2026-05-17 01:30:00"
+  :source "experiments/arc_260516a__team_f__F-R1-2__vpin_q80_admit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_dc63db64" :type "atom"
+  :subj "exp:F-R1-2_vpin_q80_admit"
+  :pred "has_last_updated"
+  :obj "2026-05-17 05:09:00"
+  :source "experiments/arc_260516a__team_f__F-R1-2__vpin_q80_admit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5f48b62b" :type "atom"
+  :subj "exp:F-R1-2_vpin_q80_admit"
+  :pred "has_tag"
+  :obj "tag:arc/260516a"
+  :source "experiments/arc_260516a__team_f__F-R1-2__vpin_q80_admit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f20b070e" :type "atom"
+  :subj "exp:F-R1-2_vpin_q80_admit"
+  :pred "has_tag"
+  :obj "tag:team/f"
+  :source "experiments/arc_260516a__team_f__F-R1-2__vpin_q80_admit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_be87cc7d" :type "atom"
+  :subj "exp:F-R1-2_vpin_q80_admit"
+  :pred "has_tag"
+  :obj "tag:round/r1"
+  :source "experiments/arc_260516a__team_f__F-R1-2__vpin_q80_admit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_bd544e14" :type "atom"
+  :subj "exp:F-R1-2_vpin_q80_admit"
+  :pred "has_tag"
+  :obj "tag:axis/microstructure"
+  :source "experiments/arc_260516a__team_f__F-R1-2__vpin_q80_admit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_12e66320" :type "atom"
+  :subj "exp:F-R1-2_vpin_q80_admit"
+  :pred "has_tag"
+  :obj "tag:axis/whitelist"
+  :source "experiments/arc_260516a__team_f__F-R1-2__vpin_q80_admit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_60fd3cf0" :type "atom"
+  :subj "exp:F-R1-2_vpin_q80_admit"
+  :pred "has_tag"
+  :obj "tag:status/falsified"
+  :source "experiments/arc_260516a__team_f__F-R1-2__vpin_q80_admit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_484ffe45" :type "atom"
+  :subj "exp:F-R1-2_vpin_q80_admit"
+  :pred "has_tag"
+  :obj "tag:outcome/no_test_run"
+  :source "experiments/arc_260516a__team_f__F-R1-2__vpin_q80_admit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e3b2a19f" :type "atom"
+  :subj "exp:F-R1-2_vpin_q80_admit"
+  :pred "has_tag"
+  :obj "tag:leak/clean"
+  :source "experiments/arc_260516a__team_f__F-R1-2__vpin_q80_admit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_30446d34" :type "atom"
+  :subj "exp:F-R1-2_vpin_q80_admit"
+  :pred "has_tag"
+  :obj "tag:size/small"
+  :source "experiments/arc_260516a__team_f__F-R1-2__vpin_q80_admit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_2f3f0f5d" :type "atom"
+  :subj "exp:F-R1-2_vpin_q80_admit"
+  :pred "has_tl_dr"
+  :obj "F-R1-2 是 F-R1-1 的**反向 hypothesis**：不是 drop 高 VPIN 而是只 keep。train 42 笔/NAV 1.15 << anchor 2.19, count_fail。证明 \"high-VPIN admit\" 这条 microstructure 路线在 anchor pool 上 sample 太稀。"
+  :source "experiments/arc_260516a__team_f__F-R1-2__vpin_q80_admit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a0580ce5" :type "atom"
+  :subj "exp:F-R1-2_vpin_q80_admit"
+  :pred "has_section_intro"
+  :obj "# F-R1-2 — anchor + keep only VPIN@300s q80+\n\n> **TL;DR** —— F-R1-2 是 F-R1-1 的**反向 hypothesis**：不是 drop 高 VPIN 而是只 keep。train 42 笔/NAV 1.15 << anchor 2.19, count_fail。证明 \"high-VPIN admit\" 这条 microstructure 路线在 anchor pool 上 sample 太稀。"
+  :source "experiments/arc_260516a__team_f__F-R1-2__vpin_q80_admit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_3d7465fb" :type "atom"
+  :subj "exp:F-R1-2_vpin_q80_admit"
+  :pred "has_section_hypothesis"
+  :obj "- 假设：trailing-cum q80+ 的高 VPIN trade = informed traders 在场 → 这类 trade alpha 更强 → 应只 admit。\n- 反向于 F-R1-1 (drop high OFI)。\n- 实测：whitelist 砍到 42 笔 (anchor 140)，未 strict beat anchor，未上 test。"
+  :source "experiments/arc_260516a__team_f__F-R1-2__vpin_q80_admit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9502de23" :type "atom"
+  :subj "exp:F-R1-2_vpin_q80_admit"
+  :pred "has_section_implementation"
+  :obj "- 主脚本：`/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_f/scripts/round_1_runner.py`\n- 步骤：default-admit base → keep only legs with VPIN@300s ≥ trailing-cum q80; warmup<10 admit."
+  :source "experiments/arc_260516a__team_f__F-R1-2__vpin_q80_admit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a662b122" :type "atom"
+  :subj "exp:F-R1-2_vpin_q80_admit"
+  :pred "has_section_past_only_window"
+  :obj "- trailing-cum quantile strict past-only。`#leak/clean`（F-R1-1 同源 helper, edge-leak fix applied）。"
+  :source "experiments/arc_260516a__team_f__F-R1-2__vpin_q80_admit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_712eceb3" :type "atom"
+  :subj "exp:F-R1-2_vpin_q80_admit"
+  :pred "has_section_results"
+  :obj "| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 1.1480 | 42 | 7.03 | 81.0% | -0.43% |\n| Val (rolling 10w only) | 1.0114 ± 0.009 | - | - | - | - |\n| Test | NOT RUN (count_fail) | - | - | - | - |\n| **Δ train NAV vs anchor** | **-1.04 (FAIL)** | -98 | -0.67 | -4.7pp | +0.58pp |"
+  :source "experiments/arc_260516a__team_f__F-R1-2__vpin_q80_admit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_77aa3bc6" :type "atom"
+  :subj "exp:F-R1-2_vpin_q80_admit"
+  :pred "has_section_risk_overfit"
+  :obj "- overfit_score = 1 (count_fail).\n- mechanism 太严, sample 崩。"
+  :source "experiments/arc_260516a__team_f__F-R1-2__vpin_q80_admit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_474b708c" :type "atom"
+  :subj "exp:F-R1-2_vpin_q80_admit"
+  :pred "antithesis_of"
+  :obj "exp:F-R1-1_ofi_drop_extreme"
+  :source "experiments/arc_260516a__team_f__F-R1-2__vpin_q80_admit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a7492c21" :type "atom"
+  :subj "exp:F-R1-2_vpin_q80_admit"
+  :pred "derived_from"
+  :obj "exp:D-R2-1_default_admit_baseline"
+  :source "experiments/arc_260516a__team_f__F-R1-2__vpin_q80_admit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b519eb08" :type "atom"
+  :subj "exp:F-R1-2_vpin_q80_admit"
+  :pred "same_team_alt"
+  :obj "exp:F-R2-1_vpin_drop_q80_300s"
+  :source "experiments/arc_260516a__team_f__F-R1-2__vpin_q80_admit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_6bb7fa63" :type "atom"
+  :subj "exp:F-R1-2_vpin_q80_admit"
+  :pred "builds_against"
+  :obj "exp:anchor_g2_baseline"
+  :source "experiments/arc_260516a__team_f__F-R1-2__vpin_q80_admit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5896d3d5" :type "atom"
+  :subj "exp:F-R1-2_vpin_q80_admit"
+  :pred "has_section_lineage_links"
+  :obj "- **antithesis_of**: [[arc_260516a__team_f__F-R1-1__ofi_drop_extreme]] (drop 反, admit 正)\n- **derived_from**: [[arc_260516a__team_d__D-R2-1__default_admit_baseline]]\n- **same_team_alt**: [[arc_260516a__team_f__F-R2-1__vpin_drop_q80_300s]]\n- **builds against**: [[arc_260516a__team_anchor__anchor_g2__baseline]]"
+  :source "experiments/arc_260516a__team_f__F-R1-2__vpin_q80_admit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_278f03c7" :type "atom"
+  :subj "exp:F-R1-2_vpin_q80_admit"
+  :pred "has_section_reports"
+  :obj "- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_f/output/cross_round_leaderboard_nav.csv` (F-R1-2)\n- [[arc_260516a__reporter_20260517_0547]]"
+  :source "experiments/arc_260516a__team_f__F-R1-2__vpin_q80_admit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1a7b2513" :type "atom"
+  :subj "exp:F-R1-2_vpin_q80_admit"
+  :pred "has_section_notes"
+  :obj "- **double falsification**: F-R1-1 (drop q90) 也失败，F-R1-2 (admit q80+) 也失败 → 说明 VPIN/OFI 与 trade 收益**不是 monotone 关系**，整个 microstructure-as-binary-gate axis 在该 arc 不可用。\n- 见 [[arc_260516a__team_f__F-R1-1__ofi_drop_extreme]] Notes \"anti-pattern\" 段。"
+  :source "experiments/arc_260516a__team_f__F-R1-2__vpin_q80_admit.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")

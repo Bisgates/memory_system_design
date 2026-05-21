@@ -1,0 +1,146 @@
+[
+  {
+    "id": "m_ae8adfd4",
+    "type": "suggestion",
+    "kvs": {
+      "subj": "exp:H-R3b-4_c84_kelly_lambda_1.5",
+      "pred": "suggests_experiment",
+      "obj": "suggestion_baseline_exp:H-R3b-4_c84_kelly_lambda_1.5",
+      "body": "Baseline replication of exp:H-R3b-4_c84_kelly_lambda_1.5 — re-run the headline result on the canonical dataset, no hyperparameter change, to confirm reproducibility before any new variant is built on top.",
+      "parents": [
+        "exp:H-R3b-4_c84_kelly_lambda_1.5",
+        "m001_paper_to_experiment_suggestion"
+      ],
+      "derived_from": "m001_paper_to_experiment_suggestion",
+      "generated_at": "2026-05-20T17:55:31.920365+00:00"
+    }
+  },
+  {
+    "id": "m_447765d1",
+    "type": "suggestion",
+    "kvs": {
+      "subj": "exp:H-R3b-4_c84_kelly_lambda_1.5",
+      "pred": "suggests_experiment",
+      "obj": "suggestion_ablation_exp:H-R3b-4_c84_kelly_lambda_1.5",
+      "body": "Ablation of exp:H-R3b-4_c84_kelly_lambda_1.5 hypothesis — knock out the single mechanism the paper claims is load-bearing and confirm headline metric drops by a non-trivial margin.",
+      "parents": [
+        "exp:H-R3b-4_c84_kelly_lambda_1.5",
+        "m001_paper_to_experiment_suggestion"
+      ],
+      "derived_from": "m001_paper_to_experiment_suggestion",
+      "generated_at": "2026-05-20T17:55:31.920365+00:00"
+    }
+  },
+  {
+    "id": "m_a754873b",
+    "type": "suggestion",
+    "kvs": {
+      "subj": "exp:H-R3b-4_c84_kelly_lambda_1.5",
+      "pred": "suggests_experiment",
+      "obj": "suggestion_extension_exp:H-R3b-4_c84_kelly_lambda_1.5",
+      "body": "Axis extension of exp:H-R3b-4_c84_kelly_lambda_1.5 — take the principal axis the paper varies and probe one neighbouring axis (different bucket, different horizon, different ticker pool) to test the claim's transfer.",
+      "parents": [
+        "exp:H-R3b-4_c84_kelly_lambda_1.5",
+        "m001_paper_to_experiment_suggestion"
+      ],
+      "derived_from": "m001_paper_to_experiment_suggestion",
+      "generated_at": "2026-05-20T17:55:31.920365+00:00"
+    }
+  },
+  {
+    "id": "m_22379292",
+    "type": "suggestion",
+    "kvs": {
+      "subj": "exp:B-R10-2_blacklist_low_amt",
+      "pred": "suggests_experiment",
+      "obj": "suggestion_baseline_exp:B-R10-2_blacklist_low_amt",
+      "body": "Baseline replication of exp:B-R10-2_blacklist_low_amt — re-run the headline result on the canonical dataset, no hyperparameter change, to confirm reproducibility before any new variant is built on top.",
+      "parents": [
+        "exp:B-R10-2_blacklist_low_amt",
+        "m001_paper_to_experiment_suggestion"
+      ],
+      "derived_from": "m001_paper_to_experiment_suggestion",
+      "generated_at": "2026-05-20T17:55:31.920423+00:00"
+    }
+  },
+  {
+    "id": "m_b0a5ae5d",
+    "type": "suggestion",
+    "kvs": {
+      "subj": "exp:B-R10-2_blacklist_low_amt",
+      "pred": "suggests_experiment",
+      "obj": "suggestion_ablation_exp:B-R10-2_blacklist_low_amt",
+      "body": "Ablation of exp:B-R10-2_blacklist_low_amt hypothesis — knock out the single mechanism the paper claims is load-bearing and confirm headline metric drops by a non-trivial margin.",
+      "parents": [
+        "exp:B-R10-2_blacklist_low_amt",
+        "m001_paper_to_experiment_suggestion"
+      ],
+      "derived_from": "m001_paper_to_experiment_suggestion",
+      "generated_at": "2026-05-20T17:55:31.920423+00:00"
+    }
+  },
+  {
+    "id": "m_47a04088",
+    "type": "suggestion",
+    "kvs": {
+      "subj": "exp:B-R10-2_blacklist_low_amt",
+      "pred": "suggests_experiment",
+      "obj": "suggestion_extension_exp:B-R10-2_blacklist_low_amt",
+      "body": "Axis extension of exp:B-R10-2_blacklist_low_amt — take the principal axis the paper varies and probe one neighbouring axis (different bucket, different horizon, different ticker pool) to test the claim's transfer.",
+      "parents": [
+        "exp:B-R10-2_blacklist_low_amt",
+        "m001_paper_to_experiment_suggestion"
+      ],
+      "derived_from": "m001_paper_to_experiment_suggestion",
+      "generated_at": "2026-05-20T17:55:31.920423+00:00"
+    }
+  },
+  {
+    "id": "m_4c054d6b",
+    "type": "suggestion",
+    "kvs": {
+      "subj": "exp:H-R2-2_c84_linear_sizing",
+      "pred": "suggests_experiment",
+      "obj": "suggestion_baseline_exp:H-R2-2_c84_linear_sizing",
+      "body": "Baseline replication of exp:H-R2-2_c84_linear_sizing — re-run the headline result on the canonical dataset, no hyperparameter change, to confirm reproducibility before any new variant is built on top.",
+      "parents": [
+        "exp:H-R2-2_c84_linear_sizing",
+        "m001_paper_to_experiment_suggestion"
+      ],
+      "derived_from": "m001_paper_to_experiment_suggestion",
+      "generated_at": "2026-05-20T17:55:31.920448+00:00"
+    }
+  },
+  {
+    "id": "m_e2de419d",
+    "type": "suggestion",
+    "kvs": {
+      "subj": "exp:H-R2-2_c84_linear_sizing",
+      "pred": "suggests_experiment",
+      "obj": "suggestion_ablation_exp:H-R2-2_c84_linear_sizing",
+      "body": "Ablation of exp:H-R2-2_c84_linear_sizing hypothesis — knock out the single mechanism the paper claims is load-bearing and confirm headline metric drops by a non-trivial margin.",
+      "parents": [
+        "exp:H-R2-2_c84_linear_sizing",
+        "m001_paper_to_experiment_suggestion"
+      ],
+      "derived_from": "m001_paper_to_experiment_suggestion",
+      "generated_at": "2026-05-20T17:55:31.920448+00:00"
+    }
+  },
+  {
+    "id": "m_f3f7bc51",
+    "type": "suggestion",
+    "kvs": {
+      "subj": "exp:H-R2-2_c84_linear_sizing",
+      "pred": "suggests_experiment",
+      "obj": "suggestion_extension_exp:H-R2-2_c84_linear_sizing",
+      "body": "Axis extension of exp:H-R2-2_c84_linear_sizing — take the principal axis the paper varies and probe one neighbouring axis (different bucket, different horizon, different ticker pool) to test the claim's transfer.",
+      "parents": [
+        "exp:H-R2-2_c84_linear_sizing",
+        "m001_paper_to_experiment_suggestion"
+      ],
+      "derived_from": "m001_paper_to_experiment_suggestion",
+      "generated_at": "2026-05-20T17:55:31.920448+00:00"
+    }
+  }
+]

@@ -1,0 +1,15 @@
+;; r002 — derived_from reverse edge.
+;;
+;; Every derived_from edge implies a derives_to edge in the opposite direction
+;; so the base card can answer "who built on me?" in a single index lookup.
+;; This rule also closes the loop on r001b / r001c: those rules canonicalize
+;; descendants / base_for to derived_from, and r002 then fires on the new
+;; derived atoms to add the reverse edge. (RuleEngine.run_to_fixpoint handles
+;; the iteration; dedup by (subj, pred, obj) guarantees no double-fire.)
+
+(card "rule:r002_derived_from_reverse" :type "rule"
+  :body "A derived_from B implies B derives_to A. Lets a base experiment / paper answer 'who built on me?' without a reverse scan."
+  :when (("?a" "derived_from" "?b"))
+  :then (("?b" "derives_to" "?a"))
+  :status "active"
+  :parents ("r002_derived_from_reverse"))

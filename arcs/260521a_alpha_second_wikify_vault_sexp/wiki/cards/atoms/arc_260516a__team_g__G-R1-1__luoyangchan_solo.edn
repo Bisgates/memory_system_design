@@ -1,0 +1,398 @@
+(card "exp:G-R1-1_luoyangchan_solo" :type "experiment"
+  :subj "exp:G-R1-1_luoyangchan_solo"
+  :body "---\nnav: 28\ntype: experiment\nid: G-R1-1_luoyangchan_solo\nshort_name: luoyangchan_solo\ntitle: \"G-R1-1 — 洛阳铲 as primary signal source (source swap)\"\narc: 260516a\nteam: g\nround: r1\nparent_arc: \"[[arcs/260516a]]\"\nparent_lineage: \"[[lineages/arc_260516a__team_g__source_swap]]\"\ntrain_nav: 1.0395\ntrain_trade_count: 27\ntrain_win_rate: 0.7407\ntrain_sharpe: 5.0016\ntrain_max_drawdown: -0.0077\nval_nav_mean: 1.0038\nval_nav_sigma: 0.0081\nval_window_count: 8\ntest_nav: 1.0465\ntest_trade_count: 11\ntest_sharpe: 6.2969\ntest_win_rate: 0.7273\ntest_max_drawdown: -0.0065\nanchor_train_nav: 2.1882\nanchor_test_nav: 1.2486\nstatus: demoted\noutcome: test_fail\nchampion: false\noverfit_score: 1\nleak_audit: clean\naxis: [source_swap]\npast_only_window_days: null\nwarmup_required: null\ncreated: 2026-05-17T01:30:00\nlast_updated: 2026-05-17T05:09:00\ntags: [arc/260516a, team/g, round/r1, axis/source_swap, status/demoted, outcome/test_fail, leak/clean, size/small]\n---\n\n# G-R1-1 — 洛阳铲 as primary signal source\n\n> **TL;DR** —— Team G 探索\"换一个 signal source 当 primary\"的路线：用 `data/TriggerData/洛阳铲.csv` 取代 anchor 默认 source。**train NAV 1.04 vs anchor 2.19**（直接腰斩），test 1.05 vs 1.25。笔数只有 27（train）/ 11（test），**远低于 count gate**。这条 lineage 整体被 demoted —— **不是因为路线错，是因为 alt-source 单独跑 sparsity 太严重**，没有足够样本检验 hypothesis。\n\n## 假设 (Hypothesis)\n- anchor 用的 primary source 已被研究透；其它 source（洛阳铲、盈立、cross-source consensus）**可能藏着没被 mainstream 拣过的 alpha**。\n- 最简实验：替换 source，其它 config 不变 → 看 NAV 起点是否能跟 anchor 同级别。\n- 假设：洛阳铲 source 历史信号在 anchor pipeline 上能跑出至少 train_nav > 1.5。\n\n## 实现 (Implementation)\n- 主脚本：`/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_g/scripts/round_1_runner.py`\n- 步骤：\n  1. anchor G2 完整配置不动\n  2. 把 signal source 从 anchor default 换成 `data/TriggerData/洛阳铲.csv`\n  3. 其余 ratio_gate / volume_cap / horizon 全保留\n- 输出：train 27 笔, test 11 笔（笔数门槛 train 100-180 / test 5-15 双方都接近下限）。\n\n## Past-only window 处理\n- 没用 rolling stat。**无 lookahead 风险**。\n- 唯一 sanity：洛阳铲 source 自身的 timestamp 必须用 ET，与 anchor pipeline 时区一致 —— critic 已审。\n\n## 结果 (Results)\n| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 1.0395 | 27 | 5.00 | 74.1% | -0.77% |\n| Val (rolling 8w only — count 不足 13) | 1.0038 ± 0.008 | - | - | - | - |\n| Test | 1.0465 | 11 | 6.30 | 72.7% | -0.65% |\n| Anchor train | 2.1882 | 140 | 7.70 | 85.7% | -1.01% |\n| Anchor test | 1.2486 | 20 | 7.15 | 75.0% | -0.53% |\n| **Δ test NAV vs anchor** | **-0.202 (FAIL)** | -9 | -0.85 | -2.3pp | -0.12pp |\n\n- train_nav 1.04 几乎只跑出\"几乎不亏\"水平 —— alt-source 没接上 anchor 的高 alpha-density。\n- 笔数过少 → val 只有 8 个 window（vs anchor 13），统计稳定性不够。\n- test NAV 1.05 比 anchor 1.25 低 16% —— hold-out 上更明确失败。\n\n## 风险 & overfit 嫌疑\n- overfit_score = 1（critic 给的：笔数过少 + count_pass=False，认为统计可靠度不足，不算严重 overfit 但需要 flag）。\n- 真实原因：**信号源稀疏** —— 洛阳铲 source 在 train 上只触发 152 个 raw signal、186 post-ETF-blacklist event、最终 cap 后 46 个 → 远不够撑起 anchor pipeline 的 trade density。\n- R2 阶段 [[arc_260516a__team_g__G-R2-3__luoyangchan_nocap]] 把 baseline_max_avg cap 解除（\"+inf\"）后 trade_count 跳到 123，但 NAV 反而 1.03 < 1.04 —— 说明 cap 不是瓶颈，**source 本身 alpha-density 不足**。\n\n## Lineage（双链网）\n- **derived_from**: [[arc_260516a__team_anchor__anchor_g2__baseline]] (anchor pipeline 直接 swap source)\n- **descendants_in_team_g**:\n  - [[arc_260516a__team_g__G-R2-1__luoyangchan_cap26M]] (放宽 cap 到 2.6M，train 笔数 42)\n  - [[arc_260516a__team_g__G-R2-2__luoyangchan_cap5M]] (cap 5M，train 70 但 NAV 1.03)\n  - [[arc_260516a__team_g__G-R2-3__luoyangchan_nocap]] (无 cap，train 123 NAV 仍 1.03)\n  - [[arc_260516a__team_g__G-R1-2__yingli_solo]] (换盈立 source —— 更差，train NAV 1.01)\n  - [[arc_260516a__team_g__G-R1-3__cross_source_consensus_strict]] (cross-source consensus —— train NAV 1.03)\n- **competes_with**: [[arc_260516a__team_h__H-R3b-4__c84_kelly_lambda_1.5]] (SOTA, 走主 source + sizing 路线)\n- **builds against**: [[arc_260516a__team_anchor__anchor_g2__baseline]]\n\n## Reports\n- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/output/team_g_R1_report_20260516T185001Z.html`\n- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_g/output/cross_round_leaderboard_nav.csv`\n- [[arc_260516a__reporter_20260517_0547]]\n\n## Notes / 下次迭代\n- **source swap axis 的根本约束**：任何 alt-source 必须先证明它的 raw signal density (events / day) 至少接近 anchor source 的 1/3，否则 trade_count 会塌到 statistical-noise 水平。\n- 路线建议（下次 arc）：\n  1. **不要 single-source swap**。alt-source 应当作为 **multi-source ensemble** 接进 anchor pipeline（如 Team G 后期尝试的 cross_source_consensus），并要求 anchor source 仍占主导。\n  2. 若一定要 single-source 实验，先做\"raw signal density audit\"：alt-source 必须能在 anchor pipeline 上产生 ≥ 100 个 train trade，否则放弃 lineage。\n- **Demoted 但有价值**：本候选 + 同 lineage 集合 = 一个完整的 \"single-source swap is dead-end\" 反例集，价值在于**让未来 arc 不重蹈**。删除会丢失这条 anti-pattern。\n- Team G 在本 arc 末期实际上把研究重心切到了 cross_source_consensus，那条路线值得未来继续探（数据多了之后）。\n"
+  :path "experiments/arc_260516a__team_g__G-R1-1__luoyangchan_solo.md"
+  :source_mtime "2026-05-17T10:03:55+08:00"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_eb73e609" :type "atom"
+  :subj "exp:G-R1-1_luoyangchan_solo"
+  :pred "has_nav"
+  :obj 28
+  :source "experiments/arc_260516a__team_g__G-R1-1__luoyangchan_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b3d67bef" :type "atom"
+  :subj "exp:G-R1-1_luoyangchan_solo"
+  :pred "has_type"
+  :obj "experiment"
+  :source "experiments/arc_260516a__team_g__G-R1-1__luoyangchan_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_978e8de7" :type "atom"
+  :subj "exp:G-R1-1_luoyangchan_solo"
+  :pred "has_id"
+  :obj "G-R1-1_luoyangchan_solo"
+  :source "experiments/arc_260516a__team_g__G-R1-1__luoyangchan_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_39b45631" :type "atom"
+  :subj "exp:G-R1-1_luoyangchan_solo"
+  :pred "has_short_name"
+  :obj "luoyangchan_solo"
+  :source "experiments/arc_260516a__team_g__G-R1-1__luoyangchan_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_3950d2f8" :type "atom"
+  :subj "exp:G-R1-1_luoyangchan_solo"
+  :pred "has_title"
+  :obj "G-R1-1 — 洛阳铲 as primary signal source (source swap)"
+  :source "experiments/arc_260516a__team_g__G-R1-1__luoyangchan_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_77d906e5" :type "atom"
+  :subj "exp:G-R1-1_luoyangchan_solo"
+  :pred "has_arc"
+  :obj "260516a"
+  :source "experiments/arc_260516a__team_g__G-R1-1__luoyangchan_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_3445feb6" :type "atom"
+  :subj "exp:G-R1-1_luoyangchan_solo"
+  :pred "has_team"
+  :obj "g"
+  :source "experiments/arc_260516a__team_g__G-R1-1__luoyangchan_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_2d1fa349" :type "atom"
+  :subj "exp:G-R1-1_luoyangchan_solo"
+  :pred "has_round"
+  :obj "r1"
+  :source "experiments/arc_260516a__team_g__G-R1-1__luoyangchan_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_21eb9bb5" :type "atom"
+  :subj "exp:G-R1-1_luoyangchan_solo"
+  :pred "parent_arc"
+  :obj "arc:260516a"
+  :source "experiments/arc_260516a__team_g__G-R1-1__luoyangchan_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_06713a06" :type "atom"
+  :subj "exp:G-R1-1_luoyangchan_solo"
+  :pred "parent_lineage"
+  :obj "lin:arc_260516a__team_g__source_swap"
+  :source "experiments/arc_260516a__team_g__G-R1-1__luoyangchan_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_00281241" :type "atom"
+  :subj "exp:G-R1-1_luoyangchan_solo"
+  :pred "has_train_nav"
+  :obj 1.0395
+  :source "experiments/arc_260516a__team_g__G-R1-1__luoyangchan_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b648fa43" :type "atom"
+  :subj "exp:G-R1-1_luoyangchan_solo"
+  :pred "has_train_trade_count"
+  :obj 27
+  :source "experiments/arc_260516a__team_g__G-R1-1__luoyangchan_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_57e5c982" :type "atom"
+  :subj "exp:G-R1-1_luoyangchan_solo"
+  :pred "has_train_win_rate"
+  :obj 0.7407
+  :source "experiments/arc_260516a__team_g__G-R1-1__luoyangchan_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_93cdbfc8" :type "atom"
+  :subj "exp:G-R1-1_luoyangchan_solo"
+  :pred "has_train_sharpe"
+  :obj 5.0016
+  :source "experiments/arc_260516a__team_g__G-R1-1__luoyangchan_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_3b3c2d5d" :type "atom"
+  :subj "exp:G-R1-1_luoyangchan_solo"
+  :pred "has_train_max_drawdown"
+  :obj -0.0077
+  :source "experiments/arc_260516a__team_g__G-R1-1__luoyangchan_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_911d49a8" :type "atom"
+  :subj "exp:G-R1-1_luoyangchan_solo"
+  :pred "has_val_nav_mean"
+  :obj 1.0038
+  :source "experiments/arc_260516a__team_g__G-R1-1__luoyangchan_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ad2d42f9" :type "atom"
+  :subj "exp:G-R1-1_luoyangchan_solo"
+  :pred "has_val_nav_sigma"
+  :obj 0.0081
+  :source "experiments/arc_260516a__team_g__G-R1-1__luoyangchan_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c8646ef3" :type "atom"
+  :subj "exp:G-R1-1_luoyangchan_solo"
+  :pred "has_val_window_count"
+  :obj 8
+  :source "experiments/arc_260516a__team_g__G-R1-1__luoyangchan_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f5162c33" :type "atom"
+  :subj "exp:G-R1-1_luoyangchan_solo"
+  :pred "has_test_nav"
+  :obj 1.0465
+  :source "experiments/arc_260516a__team_g__G-R1-1__luoyangchan_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1a3bc2e9" :type "atom"
+  :subj "exp:G-R1-1_luoyangchan_solo"
+  :pred "has_test_trade_count"
+  :obj 11
+  :source "experiments/arc_260516a__team_g__G-R1-1__luoyangchan_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e6e4e90f" :type "atom"
+  :subj "exp:G-R1-1_luoyangchan_solo"
+  :pred "has_test_sharpe"
+  :obj 6.2969
+  :source "experiments/arc_260516a__team_g__G-R1-1__luoyangchan_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b0cb2ee8" :type "atom"
+  :subj "exp:G-R1-1_luoyangchan_solo"
+  :pred "has_test_win_rate"
+  :obj 0.7273
+  :source "experiments/arc_260516a__team_g__G-R1-1__luoyangchan_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9843c893" :type "atom"
+  :subj "exp:G-R1-1_luoyangchan_solo"
+  :pred "has_test_max_drawdown"
+  :obj -0.0065
+  :source "experiments/arc_260516a__team_g__G-R1-1__luoyangchan_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a570fe3c" :type "atom"
+  :subj "exp:G-R1-1_luoyangchan_solo"
+  :pred "has_anchor_train_nav"
+  :obj 2.1882
+  :source "experiments/arc_260516a__team_g__G-R1-1__luoyangchan_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c189475c" :type "atom"
+  :subj "exp:G-R1-1_luoyangchan_solo"
+  :pred "has_anchor_test_nav"
+  :obj 1.2486
+  :source "experiments/arc_260516a__team_g__G-R1-1__luoyangchan_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_28aac566" :type "atom"
+  :subj "exp:G-R1-1_luoyangchan_solo"
+  :pred "has_status"
+  :obj "demoted"
+  :source "experiments/arc_260516a__team_g__G-R1-1__luoyangchan_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ffc33fb3" :type "atom"
+  :subj "exp:G-R1-1_luoyangchan_solo"
+  :pred "has_outcome"
+  :obj "test_fail"
+  :source "experiments/arc_260516a__team_g__G-R1-1__luoyangchan_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_2b283fed" :type "atom"
+  :subj "exp:G-R1-1_luoyangchan_solo"
+  :pred "has_champion"
+  :obj false
+  :source "experiments/arc_260516a__team_g__G-R1-1__luoyangchan_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9e28221d" :type "atom"
+  :subj "exp:G-R1-1_luoyangchan_solo"
+  :pred "has_overfit_score"
+  :obj 1
+  :source "experiments/arc_260516a__team_g__G-R1-1__luoyangchan_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_20b8ab7d" :type "atom"
+  :subj "exp:G-R1-1_luoyangchan_solo"
+  :pred "has_leak_audit"
+  :obj "clean"
+  :source "experiments/arc_260516a__team_g__G-R1-1__luoyangchan_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_6002e2af" :type "atom"
+  :subj "exp:G-R1-1_luoyangchan_solo"
+  :pred "has_axis"
+  :obj "axis:source_swap"
+  :source "experiments/arc_260516a__team_g__G-R1-1__luoyangchan_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_615cbf8b" :type "atom"
+  :subj "exp:G-R1-1_luoyangchan_solo"
+  :pred "has_axis_list"
+  :obj ("source_swap")
+  :source "experiments/arc_260516a__team_g__G-R1-1__luoyangchan_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_6f00edca" :type "atom"
+  :subj "exp:G-R1-1_luoyangchan_solo"
+  :pred "has_created"
+  :obj "2026-05-17 01:30:00"
+  :source "experiments/arc_260516a__team_g__G-R1-1__luoyangchan_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5a967883" :type "atom"
+  :subj "exp:G-R1-1_luoyangchan_solo"
+  :pred "has_last_updated"
+  :obj "2026-05-17 05:09:00"
+  :source "experiments/arc_260516a__team_g__G-R1-1__luoyangchan_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5b4d4a2e" :type "atom"
+  :subj "exp:G-R1-1_luoyangchan_solo"
+  :pred "has_tag"
+  :obj "tag:arc/260516a"
+  :source "experiments/arc_260516a__team_g__G-R1-1__luoyangchan_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_dff492d8" :type "atom"
+  :subj "exp:G-R1-1_luoyangchan_solo"
+  :pred "has_tag"
+  :obj "tag:team/g"
+  :source "experiments/arc_260516a__team_g__G-R1-1__luoyangchan_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1c49541c" :type "atom"
+  :subj "exp:G-R1-1_luoyangchan_solo"
+  :pred "has_tag"
+  :obj "tag:round/r1"
+  :source "experiments/arc_260516a__team_g__G-R1-1__luoyangchan_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ad8aa5bd" :type "atom"
+  :subj "exp:G-R1-1_luoyangchan_solo"
+  :pred "has_tag"
+  :obj "tag:axis/source_swap"
+  :source "experiments/arc_260516a__team_g__G-R1-1__luoyangchan_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d926bccb" :type "atom"
+  :subj "exp:G-R1-1_luoyangchan_solo"
+  :pred "has_tag"
+  :obj "tag:status/demoted"
+  :source "experiments/arc_260516a__team_g__G-R1-1__luoyangchan_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_2e17f838" :type "atom"
+  :subj "exp:G-R1-1_luoyangchan_solo"
+  :pred "has_tag"
+  :obj "tag:outcome/test_fail"
+  :source "experiments/arc_260516a__team_g__G-R1-1__luoyangchan_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_0ef54022" :type "atom"
+  :subj "exp:G-R1-1_luoyangchan_solo"
+  :pred "has_tag"
+  :obj "tag:leak/clean"
+  :source "experiments/arc_260516a__team_g__G-R1-1__luoyangchan_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9b4bafd0" :type "atom"
+  :subj "exp:G-R1-1_luoyangchan_solo"
+  :pred "has_tag"
+  :obj "tag:size/small"
+  :source "experiments/arc_260516a__team_g__G-R1-1__luoyangchan_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_51a01388" :type "atom"
+  :subj "exp:G-R1-1_luoyangchan_solo"
+  :pred "has_tl_dr"
+  :obj "Team G 探索\"换一个 signal source 当 primary\"的路线：用 `data/TriggerData/洛阳铲.csv` 取代 anchor 默认 source。**train NAV 1.04 vs anchor 2.19**（直接腰斩），test 1.05 vs 1.25。笔数只有 27（train）/ 11（test），**远低于 count gate**。这条 lineage 整体被 demoted —— **不是因为路线错，是因为 alt-source 单独跑 sparsity 太严重**，没有足够样本检验 hypothesis。"
+  :source "experiments/arc_260516a__team_g__G-R1-1__luoyangchan_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b4b0898a" :type "atom"
+  :subj "exp:G-R1-1_luoyangchan_solo"
+  :pred "has_section_intro"
+  :obj "# G-R1-1 — 洛阳铲 as primary signal source\n\n> **TL;DR** —— Team G 探索\"换一个 signal source 当 primary\"的路线：用 `data/TriggerData/洛阳铲.csv` 取代 anchor 默认 source。**train NAV 1.04 vs anchor 2.19**（直接腰斩），test 1.05 vs 1.25。笔数只有 27（train）/ 11（test），**远低于 count gate**。这条 lineage 整体被 demoted —— **不是因为路线错，是因为 alt-source 单独跑 sparsity 太严重**，没有足够样本检验 hypothesis。"
+  :source "experiments/arc_260516a__team_g__G-R1-1__luoyangchan_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_046a5922" :type "atom"
+  :subj "exp:G-R1-1_luoyangchan_solo"
+  :pred "has_section_hypothesis"
+  :obj "- anchor 用的 primary source 已被研究透；其它 source（洛阳铲、盈立、cross-source consensus）**可能藏着没被 mainstream 拣过的 alpha**。\n- 最简实验：替换 source，其它 config 不变 → 看 NAV 起点是否能跟 anchor 同级别。\n- 假设：洛阳铲 source 历史信号在 anchor pipeline 上能跑出至少 train_nav > 1.5。"
+  :source "experiments/arc_260516a__team_g__G-R1-1__luoyangchan_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ee61cf64" :type "atom"
+  :subj "exp:G-R1-1_luoyangchan_solo"
+  :pred "has_section_implementation"
+  :obj "- 主脚本：`/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_g/scripts/round_1_runner.py`\n- 步骤：\n  1. anchor G2 完整配置不动\n  2. 把 signal source 从 anchor default 换成 `data/TriggerData/洛阳铲.csv`\n  3. 其余 ratio_gate / volume_cap / horizon 全保留\n- 输出：train 27 笔, test 11 笔（笔数门槛 train 100-180 / test 5-15 双方都接近下限）。"
+  :source "experiments/arc_260516a__team_g__G-R1-1__luoyangchan_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_57b3237f" :type "atom"
+  :subj "exp:G-R1-1_luoyangchan_solo"
+  :pred "has_section_past_only_window"
+  :obj "- 没用 rolling stat。**无 lookahead 风险**。\n- 唯一 sanity：洛阳铲 source 自身的 timestamp 必须用 ET，与 anchor pipeline 时区一致 —— critic 已审。"
+  :source "experiments/arc_260516a__team_g__G-R1-1__luoyangchan_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9b1d9591" :type "atom"
+  :subj "exp:G-R1-1_luoyangchan_solo"
+  :pred "has_section_results"
+  :obj "| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 1.0395 | 27 | 5.00 | 74.1% | -0.77% |\n| Val (rolling 8w only — count 不足 13) | 1.0038 ± 0.008 | - | - | - | - |\n| Test | 1.0465 | 11 | 6.30 | 72.7% | -0.65% |\n| Anchor train | 2.1882 | 140 | 7.70 | 85.7% | -1.01% |\n| Anchor test | 1.2486 | 20 | 7.15 | 75.0% | -0.53% |\n| **Δ test NAV vs anchor** | **-0.202 (FAIL)** | -9 | -0.85 | -2.3pp | -0.12pp |\n\n- train_nav 1.04 几乎只跑出\"几乎不亏\"水平 —— alt-source 没接上 anchor 的高 alpha-density。\n- 笔数过少 → val 只有 8 个 window（vs anchor 13），统计稳定性不够。\n- test NAV 1.05 比 anchor 1.25 低 16% —— hold-out 上更明确失败。"
+  :source "experiments/arc_260516a__team_g__G-R1-1__luoyangchan_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_35f089f4" :type "atom"
+  :subj "exp:G-R1-1_luoyangchan_solo"
+  :pred "has_section_risk_overfit"
+  :obj "- overfit_score = 1（critic 给的：笔数过少 + count_pass=False，认为统计可靠度不足，不算严重 overfit 但需要 flag）。\n- 真实原因：**信号源稀疏** —— 洛阳铲 source 在 train 上只触发 152 个 raw signal、186 post-ETF-blacklist event、最终 cap 后 46 个 → 远不够撑起 anchor pipeline 的 trade density。\n- R2 阶段 [[arc_260516a__team_g__G-R2-3__luoyangchan_nocap]] 把 baseline_max_avg cap 解除（\"+inf\"）后 trade_count 跳到 123，但 NAV 反而 1.03 < 1.04 —— 说明 cap 不是瓶颈，**source 本身 alpha-density 不足**。"
+  :source "experiments/arc_260516a__team_g__G-R1-1__luoyangchan_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f23c562f" :type "atom"
+  :subj "exp:G-R1-1_luoyangchan_solo"
+  :pred "derived_from"
+  :obj "exp:anchor_g2_baseline"
+  :source "experiments/arc_260516a__team_g__G-R1-1__luoyangchan_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_152df5d6" :type "atom"
+  :subj "exp:G-R1-1_luoyangchan_solo"
+  :pred "descendants_in_team_g"
+  :obj "exp:G-R2-1_luoyangchan_cap26M"
+  :source "experiments/arc_260516a__team_g__G-R1-1__luoyangchan_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_752c4e7c" :type "atom"
+  :subj "exp:G-R1-1_luoyangchan_solo"
+  :pred "competes_with"
+  :obj "exp:H-R3b-4_c84_kelly_lambda_1.5"
+  :source "experiments/arc_260516a__team_g__G-R1-1__luoyangchan_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5c41359b" :type "atom"
+  :subj "exp:G-R1-1_luoyangchan_solo"
+  :pred "builds_against"
+  :obj "exp:anchor_g2_baseline"
+  :source "experiments/arc_260516a__team_g__G-R1-1__luoyangchan_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d3853cb0" :type "atom"
+  :subj "exp:G-R1-1_luoyangchan_solo"
+  :pred "has_section_lineage_links"
+  :obj "- **derived_from**: [[arc_260516a__team_anchor__anchor_g2__baseline]] (anchor pipeline 直接 swap source)\n- **descendants_in_team_g**:\n  - [[arc_260516a__team_g__G-R2-1__luoyangchan_cap26M]] (放宽 cap 到 2.6M，train 笔数 42)\n  - [[arc_260516a__team_g__G-R2-2__luoyangchan_cap5M]] (cap 5M，train 70 但 NAV 1.03)\n  - [[arc_260516a__team_g__G-R2-3__luoyangchan_nocap]] (无 cap，train 123 NAV 仍 1.03)\n  - [[arc_260516a__team_g__G-R1-2__yingli_solo]] (换盈立 source —— 更差，train NAV 1.01)\n  - [[arc_260516a__team_g__G-R1-3__cross_source_consensus_strict]] (cross-source consensus —— train NAV 1.03)\n- **competes_with**: [[arc_260516a__team_h__H-R3b-4__c84_kelly_lambda_1.5]] (SOTA, 走主 source + sizing 路线)\n- **builds against**: [[arc_260516a__team_anchor__anchor_g2__baseline]]"
+  :source "experiments/arc_260516a__team_g__G-R1-1__luoyangchan_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_19cc620b" :type "atom"
+  :subj "exp:G-R1-1_luoyangchan_solo"
+  :pred "has_section_reports"
+  :obj "- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/output/team_g_R1_report_20260516T185001Z.html`\n- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_g/output/cross_round_leaderboard_nav.csv`\n- [[arc_260516a__reporter_20260517_0547]]"
+  :source "experiments/arc_260516a__team_g__G-R1-1__luoyangchan_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_7cd969a6" :type "atom"
+  :subj "exp:G-R1-1_luoyangchan_solo"
+  :pred "has_section_notes"
+  :obj "- **source swap axis 的根本约束**：任何 alt-source 必须先证明它的 raw signal density (events / day) 至少接近 anchor source 的 1/3，否则 trade_count 会塌到 statistical-noise 水平。\n- 路线建议（下次 arc）：\n  1. **不要 single-source swap**。alt-source 应当作为 **multi-source ensemble** 接进 anchor pipeline（如 Team G 后期尝试的 cross_source_consensus），并要求 anchor source 仍占主导。\n  2. 若一定要 single-source 实验，先做\"raw signal density audit\"：alt-source 必须能在 anchor pipeline 上产生 ≥ 100 个 train trade，否则放弃 lineage。\n- **Demoted 但有价值**：本候选 + 同 lineage 集合 = 一个完整的 \"single-source swap is dead-end\" 反例集，价值在于**让未来 arc 不重蹈**。删除会丢失这条 anti-pattern。\n- Team G 在本 arc 末期实际上把研究重心切到了 cross_source_consensus，那条路线值得未来继续探（数据多了之后）。"
+  :source "experiments/arc_260516a__team_g__G-R1-1__luoyangchan_solo.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")

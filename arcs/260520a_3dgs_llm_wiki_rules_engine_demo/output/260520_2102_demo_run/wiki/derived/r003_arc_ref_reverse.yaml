@@ -1,0 +1,60 @@
+- iteration: 1
+  binding:
+    ?A: doc:notes/fabu_pose_floor.md
+    ?B: arc:260508b
+  parents:
+  - a_9613e208
+  atom:
+    id: a_64d007a9
+    subj: arc:260508b
+    pred: referenced_by_arc
+    obj: doc:notes/fabu_pose_floor.md
+    source: ''
+    derived_from: r003_arc_ref_reverse
+    parents:
+    - a_9613e208
+- iteration: 1
+  binding:
+    ?A: doc:notes/fabu_preprocess.md
+    ?B: arc:260514a
+  parents:
+  - a_7dc63408
+  atom:
+    id: a_c4faefa7
+    subj: arc:260514a
+    pred: referenced_by_arc
+    obj: doc:notes/fabu_preprocess.md
+    source: ''
+    derived_from: r003_arc_ref_reverse
+    parents:
+    - a_7dc63408
+- iteration: 1
+  binding:
+    ?A: doc:notes/lidar_merge_quality_metric.md
+    ?B: arc:260508b
+  parents:
+  - a_539040a1
+  atom:
+    id: a_a4ad19ed
+    subj: arc:260508b
+    pred: referenced_by_arc
+    obj: doc:notes/lidar_merge_quality_metric.md
+    source: ''
+    derived_from: r003_arc_ref_reverse
+    parents:
+    - a_539040a1
+- iteration: 1
+  binding:
+    ?A: doc:notes/lidar_merge_quality_metric.md
+    ?B: arc:260508d
+  parents:
+  - a_52579d18
+  atom:
+    id: a_fd1028cc
+    subj: arc:260508d
+    pred: referenced_by_arc
+    obj: doc:notes/lidar_merge_quality_metric.md
+    source: ''
+    derived_from: r003_arc_ref_reverse
+    parents:
+    - a_52579d18

@@ -1,0 +1,14 @@
+;; r003 — competes_with symmetry closure.
+;;
+;; competes_with is naturally symmetric (if A competes with B then B competes
+;; with A). Emit the reverse edge so the closure is materialized. The rule
+;; engine dedups by (subj, pred, obj) so this fires exactly once per pair —
+;; after one fixpoint pass, competes_with edges are exactly 2× the original
+;; one-directional count and stop growing (verified in run_rules.py).
+
+(card "rule:r003_competes_with_symmetry" :type "rule"
+  :body "competes_with is a symmetric relation; close it under symmetry. RuleEngine triple-dedup prevents infinite ping-pong between A→B and B→A."
+  :when (("?a" "competes_with" "?b"))
+  :then (("?b" "competes_with" "?a"))
+  :status "active"
+  :parents ("r003_competes_with_symmetry"))

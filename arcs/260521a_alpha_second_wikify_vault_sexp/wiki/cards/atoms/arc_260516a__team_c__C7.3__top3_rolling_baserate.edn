@@ -1,0 +1,384 @@
+(card "exp:C7.3_top3_rolling_baserate" :type "experiment"
+  :subj "exp:C7.3_top3_rolling_baserate"
+  :body "---\nnav: 13\ntype: experiment\nid: C7.3\nshort_name: top3_rolling_baserate\ntitle: \"C7.3 — top-3 + ticker rolling base-rate N=30 cold-start n<3\"\narc: 260516a\nteam: c\nround: r7\nparent_arc: \"[[arcs/260516a]]\"\nparent_lineage: \"[[lineages/arc_260516a__team_c__no_open3min]]\"\ntrain_nav: 2.5148\ntrain_trade_count: 141\ntrain_win_rate: 0.9078\ntrain_sharpe: 9.1428\ntrain_max_drawdown: -0.0047\nval_nav_mean: 1.0732\nval_nav_sigma: 0.0764\nval_window_count: 13\ntest_nav: null\ntest_trade_count: null\ntest_sharpe: null\ntest_win_rate: null\ntest_max_drawdown: null\nanchor_train_nav: 2.1882\nanchor_test_nav: 1.2486\nstatus: challenger\noutcome: no_test_run\nchampion: false\noverfit_score: 0\nleak_audit: clean\naxis: [whitelist]\npast_only_window_days: 30\nwarmup_required: 3\ncreated: 2026-05-17T01:30:00\nlast_updated: 2026-05-17T05:09:00\ntags: [arc/260516a, team/c, round/r7, axis/whitelist, status/challenger, outcome/no_test_run, leak/clean, size/medium]\n---\n\n# C7.3 — top-3 + ticker rolling base-rate N=30 cold-start n<3\n\n> **TL;DR** —— R7 alt 路线：在 top-3 base 上加 **per-ticker 过去 30d 滚动 win-rate gate**（≥0.4 阈值，warmup n<3 时直接 admit）。train NAV 2.51 与 baseline_C6.4 几乎 tie，**未触发明显额外 NAV gain** —— per-ticker base-rate 信号被 top-3 自身的 leg-level signal 吃掉了。\n\n## 假设 (Hypothesis)\n- 假设：per-ticker 历史 30d win-rate 提供额外信号；admit 只 ticker 历史 win 率好的 leg。\n- 期待：trade_count 略降（剔除冷 ticker），NAV 升。\n- 实测：trade_count 141（vs baseline 142, 仅 -1），NAV 2.515 vs 2.511 (+0.16%) —— 改动太小，没真正生效。\n\n## 实现 (Implementation)\n- 主脚本：`/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_c/scripts/round_7_runner.py`\n- 步骤：\n  1. top-3 expand (baseline_C6.4)\n  2. 对每 leg ticker 计算 trigger 时刻前 30d 的 rolling win-rate\n  3. 若 sub-sample n ≥ 3 且 win-rate < 0.40 → drop leg\n  4. n < 3 → admit (cold-start fallback)\n\n## Past-only window 处理\n- ticker 30d 滚动 win-rate 严格 past-only (events 中 `event_time < t & event_time >= t-30d`)。\n- warmup n<3 即不足 3 样本 → admit (避免冷 ticker 被一律砍)。\n- critic audit pass。`#leak/clean`。\n\n## 结果 (Results)\n| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 2.5148 | 141 | 9.14 | 90.8% | -0.47% |\n| Val (rolling 13w) | 1.0732 ± 0.076 | - | - | - | - |\n| Test | NOT RUN | - | - | - | - |\n| **Δ vs baseline_C6.4** | +0.004 | -1 | +0.09 | +0.6pp | 0 |\n\n## 风险 & overfit 嫌疑\n- overfit_score = 0。\n- 真实 risk：mechanism 几乎 NO-OP（只砍掉 1 笔）。要么 warmup n<3 太宽容，要么 ticker base-rate 信号本身弱。\n\n## Lineage（双链网）\n- **derived_from**: [[arc_260516a__team_c__baseline_C6.4__top3_expand]]\n- **alt_route_for**: [[arc_260516a__team_c__C7.5__top3_no_open3min]] (R7 同 round 不同 axis)\n- **dominated_by**: [[arc_260516a__team_c__C7.5__top3_no_open3min]] (NAV +0.51 高)\n- **competes_with**: [[arc_260516a__team_b__B-R9-1__rolling_baserate]] (B 队相同 axis 不同 base)\n- **builds against**: [[arc_260516a__team_anchor__anchor_g2__baseline]]\n\n## Reports\n- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_c/output/cross_round_leaderboard.csv` (C7.3)\n- [[arc_260516a__reporter_20260517_0547]]\n\n## Notes / 下次迭代\n- 这条 axis (per-ticker rolling base-rate) 在 arc 260516a 的 trade pool 上**信号弱到难辨**。下次类似 axis 应：\n  1. 降低 warmup 阈值 (n<3 → n<2)，让 mechanism 更激进\n  2. 调阈值 (0.40 → 0.50/0.55)，提高 cutoff\n  3. 配合 trade_count 充足的 base (>= 200 笔)，否则 ticker-level statistics 太稀疏\n"
+  :path "experiments/arc_260516a__team_c__C7.3__top3_rolling_baserate.md"
+  :source_mtime "2026-05-17T10:25:07+08:00"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_090d233c" :type "atom"
+  :subj "exp:C7.3_top3_rolling_baserate"
+  :pred "has_nav"
+  :obj 13
+  :source "experiments/arc_260516a__team_c__C7.3__top3_rolling_baserate.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_371910be" :type "atom"
+  :subj "exp:C7.3_top3_rolling_baserate"
+  :pred "has_type"
+  :obj "experiment"
+  :source "experiments/arc_260516a__team_c__C7.3__top3_rolling_baserate.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_919fce97" :type "atom"
+  :subj "exp:C7.3_top3_rolling_baserate"
+  :pred "has_id"
+  :obj "C7.3"
+  :source "experiments/arc_260516a__team_c__C7.3__top3_rolling_baserate.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_6631be21" :type "atom"
+  :subj "exp:C7.3_top3_rolling_baserate"
+  :pred "has_short_name"
+  :obj "top3_rolling_baserate"
+  :source "experiments/arc_260516a__team_c__C7.3__top3_rolling_baserate.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ae3167e3" :type "atom"
+  :subj "exp:C7.3_top3_rolling_baserate"
+  :pred "has_title"
+  :obj "C7.3 — top-3 + ticker rolling base-rate N=30 cold-start n<3"
+  :source "experiments/arc_260516a__team_c__C7.3__top3_rolling_baserate.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c51417cb" :type "atom"
+  :subj "exp:C7.3_top3_rolling_baserate"
+  :pred "has_arc"
+  :obj "260516a"
+  :source "experiments/arc_260516a__team_c__C7.3__top3_rolling_baserate.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_04d656aa" :type "atom"
+  :subj "exp:C7.3_top3_rolling_baserate"
+  :pred "has_team"
+  :obj "c"
+  :source "experiments/arc_260516a__team_c__C7.3__top3_rolling_baserate.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_aac7ac3a" :type "atom"
+  :subj "exp:C7.3_top3_rolling_baserate"
+  :pred "has_round"
+  :obj "r7"
+  :source "experiments/arc_260516a__team_c__C7.3__top3_rolling_baserate.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a7877381" :type "atom"
+  :subj "exp:C7.3_top3_rolling_baserate"
+  :pred "parent_arc"
+  :obj "arc:260516a"
+  :source "experiments/arc_260516a__team_c__C7.3__top3_rolling_baserate.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1b6671d6" :type "atom"
+  :subj "exp:C7.3_top3_rolling_baserate"
+  :pred "parent_lineage"
+  :obj "lin:arc_260516a__team_c__no_open3min"
+  :source "experiments/arc_260516a__team_c__C7.3__top3_rolling_baserate.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_4b4d96a5" :type "atom"
+  :subj "exp:C7.3_top3_rolling_baserate"
+  :pred "has_train_nav"
+  :obj 2.5148
+  :source "experiments/arc_260516a__team_c__C7.3__top3_rolling_baserate.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_c3b7513e" :type "atom"
+  :subj "exp:C7.3_top3_rolling_baserate"
+  :pred "has_train_trade_count"
+  :obj 141
+  :source "experiments/arc_260516a__team_c__C7.3__top3_rolling_baserate.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_afe16ffc" :type "atom"
+  :subj "exp:C7.3_top3_rolling_baserate"
+  :pred "has_train_win_rate"
+  :obj 0.9078
+  :source "experiments/arc_260516a__team_c__C7.3__top3_rolling_baserate.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_4a53d3c2" :type "atom"
+  :subj "exp:C7.3_top3_rolling_baserate"
+  :pred "has_train_sharpe"
+  :obj 9.1428
+  :source "experiments/arc_260516a__team_c__C7.3__top3_rolling_baserate.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_93830f00" :type "atom"
+  :subj "exp:C7.3_top3_rolling_baserate"
+  :pred "has_train_max_drawdown"
+  :obj -0.0047
+  :source "experiments/arc_260516a__team_c__C7.3__top3_rolling_baserate.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1a7a00a6" :type "atom"
+  :subj "exp:C7.3_top3_rolling_baserate"
+  :pred "has_val_nav_mean"
+  :obj 1.0732
+  :source "experiments/arc_260516a__team_c__C7.3__top3_rolling_baserate.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_f74413d2" :type "atom"
+  :subj "exp:C7.3_top3_rolling_baserate"
+  :pred "has_val_nav_sigma"
+  :obj 0.0764
+  :source "experiments/arc_260516a__team_c__C7.3__top3_rolling_baserate.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_384d7385" :type "atom"
+  :subj "exp:C7.3_top3_rolling_baserate"
+  :pred "has_val_window_count"
+  :obj 13
+  :source "experiments/arc_260516a__team_c__C7.3__top3_rolling_baserate.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_44827410" :type "atom"
+  :subj "exp:C7.3_top3_rolling_baserate"
+  :pred "has_anchor_train_nav"
+  :obj 2.1882
+  :source "experiments/arc_260516a__team_c__C7.3__top3_rolling_baserate.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_8599b697" :type "atom"
+  :subj "exp:C7.3_top3_rolling_baserate"
+  :pred "has_anchor_test_nav"
+  :obj 1.2486
+  :source "experiments/arc_260516a__team_c__C7.3__top3_rolling_baserate.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_028bbbb2" :type "atom"
+  :subj "exp:C7.3_top3_rolling_baserate"
+  :pred "has_status"
+  :obj "challenger"
+  :source "experiments/arc_260516a__team_c__C7.3__top3_rolling_baserate.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1dbf692f" :type "atom"
+  :subj "exp:C7.3_top3_rolling_baserate"
+  :pred "has_outcome"
+  :obj "no_test_run"
+  :source "experiments/arc_260516a__team_c__C7.3__top3_rolling_baserate.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_4d2d858a" :type "atom"
+  :subj "exp:C7.3_top3_rolling_baserate"
+  :pred "has_champion"
+  :obj false
+  :source "experiments/arc_260516a__team_c__C7.3__top3_rolling_baserate.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e9d45c78" :type "atom"
+  :subj "exp:C7.3_top3_rolling_baserate"
+  :pred "has_overfit_score"
+  :obj 0
+  :source "experiments/arc_260516a__team_c__C7.3__top3_rolling_baserate.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_77778681" :type "atom"
+  :subj "exp:C7.3_top3_rolling_baserate"
+  :pred "has_leak_audit"
+  :obj "clean"
+  :source "experiments/arc_260516a__team_c__C7.3__top3_rolling_baserate.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_bc693444" :type "atom"
+  :subj "exp:C7.3_top3_rolling_baserate"
+  :pred "has_axis"
+  :obj "axis:whitelist"
+  :source "experiments/arc_260516a__team_c__C7.3__top3_rolling_baserate.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d2a568c4" :type "atom"
+  :subj "exp:C7.3_top3_rolling_baserate"
+  :pred "has_axis_list"
+  :obj ("whitelist")
+  :source "experiments/arc_260516a__team_c__C7.3__top3_rolling_baserate.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_3e30cef7" :type "atom"
+  :subj "exp:C7.3_top3_rolling_baserate"
+  :pred "has_past_only_window_days"
+  :obj 30
+  :source "experiments/arc_260516a__team_c__C7.3__top3_rolling_baserate.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_2a7a1dc3" :type "atom"
+  :subj "exp:C7.3_top3_rolling_baserate"
+  :pred "has_warmup_required"
+  :obj 3
+  :source "experiments/arc_260516a__team_c__C7.3__top3_rolling_baserate.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5d543994" :type "atom"
+  :subj "exp:C7.3_top3_rolling_baserate"
+  :pred "has_created"
+  :obj "2026-05-17 01:30:00"
+  :source "experiments/arc_260516a__team_c__C7.3__top3_rolling_baserate.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d7544024" :type "atom"
+  :subj "exp:C7.3_top3_rolling_baserate"
+  :pred "has_last_updated"
+  :obj "2026-05-17 05:09:00"
+  :source "experiments/arc_260516a__team_c__C7.3__top3_rolling_baserate.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_29702190" :type "atom"
+  :subj "exp:C7.3_top3_rolling_baserate"
+  :pred "has_tag"
+  :obj "tag:arc/260516a"
+  :source "experiments/arc_260516a__team_c__C7.3__top3_rolling_baserate.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_1bd117b6" :type "atom"
+  :subj "exp:C7.3_top3_rolling_baserate"
+  :pred "has_tag"
+  :obj "tag:team/c"
+  :source "experiments/arc_260516a__team_c__C7.3__top3_rolling_baserate.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_4c193ed8" :type "atom"
+  :subj "exp:C7.3_top3_rolling_baserate"
+  :pred "has_tag"
+  :obj "tag:round/r7"
+  :source "experiments/arc_260516a__team_c__C7.3__top3_rolling_baserate.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_a426633c" :type "atom"
+  :subj "exp:C7.3_top3_rolling_baserate"
+  :pred "has_tag"
+  :obj "tag:axis/whitelist"
+  :source "experiments/arc_260516a__team_c__C7.3__top3_rolling_baserate.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9208a924" :type "atom"
+  :subj "exp:C7.3_top3_rolling_baserate"
+  :pred "has_tag"
+  :obj "tag:status/challenger"
+  :source "experiments/arc_260516a__team_c__C7.3__top3_rolling_baserate.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_bb23c193" :type "atom"
+  :subj "exp:C7.3_top3_rolling_baserate"
+  :pred "has_tag"
+  :obj "tag:outcome/no_test_run"
+  :source "experiments/arc_260516a__team_c__C7.3__top3_rolling_baserate.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ceef1e8d" :type "atom"
+  :subj "exp:C7.3_top3_rolling_baserate"
+  :pred "has_tag"
+  :obj "tag:leak/clean"
+  :source "experiments/arc_260516a__team_c__C7.3__top3_rolling_baserate.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_30971c9f" :type "atom"
+  :subj "exp:C7.3_top3_rolling_baserate"
+  :pred "has_tag"
+  :obj "tag:size/medium"
+  :source "experiments/arc_260516a__team_c__C7.3__top3_rolling_baserate.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_0aee6fcc" :type "atom"
+  :subj "exp:C7.3_top3_rolling_baserate"
+  :pred "has_tl_dr"
+  :obj "R7 alt 路线：在 top-3 base 上加 **per-ticker 过去 30d 滚动 win-rate gate**（≥0.4 阈值，warmup n<3 时直接 admit）。train NAV 2.51 与 baseline_C6.4 几乎 tie，**未触发明显额外 NAV gain** —— per-ticker base-rate 信号被 top-3 自身的 leg-level signal 吃掉了。"
+  :source "experiments/arc_260516a__team_c__C7.3__top3_rolling_baserate.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ddc3634e" :type "atom"
+  :subj "exp:C7.3_top3_rolling_baserate"
+  :pred "has_section_intro"
+  :obj "# C7.3 — top-3 + ticker rolling base-rate N=30 cold-start n<3\n\n> **TL;DR** —— R7 alt 路线：在 top-3 base 上加 **per-ticker 过去 30d 滚动 win-rate gate**（≥0.4 阈值，warmup n<3 时直接 admit）。train NAV 2.51 与 baseline_C6.4 几乎 tie，**未触发明显额外 NAV gain** —— per-ticker base-rate 信号被 top-3 自身的 leg-level signal 吃掉了。"
+  :source "experiments/arc_260516a__team_c__C7.3__top3_rolling_baserate.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_b4f55819" :type "atom"
+  :subj "exp:C7.3_top3_rolling_baserate"
+  :pred "has_section_hypothesis"
+  :obj "- 假设：per-ticker 历史 30d win-rate 提供额外信号；admit 只 ticker 历史 win 率好的 leg。\n- 期待：trade_count 略降（剔除冷 ticker），NAV 升。\n- 实测：trade_count 141（vs baseline 142, 仅 -1），NAV 2.515 vs 2.511 (+0.16%) —— 改动太小，没真正生效。"
+  :source "experiments/arc_260516a__team_c__C7.3__top3_rolling_baserate.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_d8158f28" :type "atom"
+  :subj "exp:C7.3_top3_rolling_baserate"
+  :pred "has_section_implementation"
+  :obj "- 主脚本：`/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_c/scripts/round_7_runner.py`\n- 步骤：\n  1. top-3 expand (baseline_C6.4)\n  2. 对每 leg ticker 计算 trigger 时刻前 30d 的 rolling win-rate\n  3. 若 sub-sample n ≥ 3 且 win-rate < 0.40 → drop leg\n  4. n < 3 → admit (cold-start fallback)"
+  :source "experiments/arc_260516a__team_c__C7.3__top3_rolling_baserate.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_9c5aa167" :type "atom"
+  :subj "exp:C7.3_top3_rolling_baserate"
+  :pred "has_section_past_only_window"
+  :obj "- ticker 30d 滚动 win-rate 严格 past-only (events 中 `event_time < t & event_time >= t-30d`)。\n- warmup n<3 即不足 3 样本 → admit (避免冷 ticker 被一律砍)。\n- critic audit pass。`#leak/clean`。"
+  :source "experiments/arc_260516a__team_c__C7.3__top3_rolling_baserate.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_e4d0dc39" :type "atom"
+  :subj "exp:C7.3_top3_rolling_baserate"
+  :pred "has_section_results"
+  :obj "| | NAV | Trades | Sharpe | Win | MaxDD |\n|---|---|---|---|---|---|\n| Train | 2.5148 | 141 | 9.14 | 90.8% | -0.47% |\n| Val (rolling 13w) | 1.0732 ± 0.076 | - | - | - | - |\n| Test | NOT RUN | - | - | - | - |\n| **Δ vs baseline_C6.4** | +0.004 | -1 | +0.09 | +0.6pp | 0 |"
+  :source "experiments/arc_260516a__team_c__C7.3__top3_rolling_baserate.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_eb67adf6" :type "atom"
+  :subj "exp:C7.3_top3_rolling_baserate"
+  :pred "has_section_risk_overfit"
+  :obj "- overfit_score = 0。\n- 真实 risk：mechanism 几乎 NO-OP（只砍掉 1 笔）。要么 warmup n<3 太宽容，要么 ticker base-rate 信号本身弱。"
+  :source "experiments/arc_260516a__team_c__C7.3__top3_rolling_baserate.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5e9f7572" :type "atom"
+  :subj "exp:C7.3_top3_rolling_baserate"
+  :pred "derived_from"
+  :obj "exp:baseline_C6.4_top3_expand"
+  :source "experiments/arc_260516a__team_c__C7.3__top3_rolling_baserate.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_92dc564c" :type "atom"
+  :subj "exp:C7.3_top3_rolling_baserate"
+  :pred "alt_route_for"
+  :obj "exp:C7.5_top3_no_open3min"
+  :source "experiments/arc_260516a__team_c__C7.3__top3_rolling_baserate.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_ccbd1b95" :type "atom"
+  :subj "exp:C7.3_top3_rolling_baserate"
+  :pred "dominated_by"
+  :obj "exp:C7.5_top3_no_open3min"
+  :source "experiments/arc_260516a__team_c__C7.3__top3_rolling_baserate.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_5829d56d" :type "atom"
+  :subj "exp:C7.3_top3_rolling_baserate"
+  :pred "competes_with"
+  :obj "exp:B-R9-1_rolling_baserate"
+  :source "experiments/arc_260516a__team_c__C7.3__top3_rolling_baserate.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_00521d79" :type "atom"
+  :subj "exp:C7.3_top3_rolling_baserate"
+  :pred "builds_against"
+  :obj "exp:anchor_g2_baseline"
+  :source "experiments/arc_260516a__team_c__C7.3__top3_rolling_baserate.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_6e3aa1a2" :type "atom"
+  :subj "exp:C7.3_top3_rolling_baserate"
+  :pred "has_section_lineage_links"
+  :obj "- **derived_from**: [[arc_260516a__team_c__baseline_C6.4__top3_expand]]\n- **alt_route_for**: [[arc_260516a__team_c__C7.5__top3_no_open3min]] (R7 同 round 不同 axis)\n- **dominated_by**: [[arc_260516a__team_c__C7.5__top3_no_open3min]] (NAV +0.51 高)\n- **competes_with**: [[arc_260516a__team_b__B-R9-1__rolling_baserate]] (B 队相同 axis 不同 base)\n- **builds against**: [[arc_260516a__team_anchor__anchor_g2__baseline]]"
+  :source "experiments/arc_260516a__team_c__C7.3__top3_rolling_baserate.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_97e52205" :type "atom"
+  :subj "exp:C7.3_top3_rolling_baserate"
+  :pred "has_section_reports"
+  :obj "- `/Users/han/project/alpha/alpha_second_v1/arcs/all/260516a_agent_team_beat_current_sota/team_c/output/cross_round_leaderboard.csv` (C7.3)\n- [[arc_260516a__reporter_20260517_0547]]"
+  :source "experiments/arc_260516a__team_c__C7.3__top3_rolling_baserate.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
+
+(card "a_57fc9dec" :type "atom"
+  :subj "exp:C7.3_top3_rolling_baserate"
+  :pred "has_section_notes"
+  :obj "- 这条 axis (per-ticker rolling base-rate) 在 arc 260516a 的 trade pool 上**信号弱到难辨**。下次类似 axis 应：\n  1. 降低 warmup 阈值 (n<3 → n<2)，让 mechanism 更激进\n  2. 调阈值 (0.40 → 0.50/0.55)，提高 cutoff\n  3. 配合 trade_count 充足的 base (>= 200 笔)，否则 ticker-level statistics 太稀疏"
+  :source "experiments/arc_260516a__team_c__C7.3__top3_rolling_baserate.md"
+  :ingested_at "2026-05-21T01:29:42+08:00")
